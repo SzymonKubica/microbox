@@ -602,7 +602,9 @@ void render_wrapped_help_text(Platform *p,
 
         // We allocate dynamically a copy of the constant string as strtok
         // needs a mutable reference.
-        char *help_text_copy = (char *)calloc(strlen(help_text), sizeof(char));
+        char *help_text_copy = (char *)calloc(strlen(help_text) + 1, sizeof(char));
+        // We need to properly null-terminate the other string.
+        help_text_copy[strlen(help_text)] = '\0';
         strncpy(help_text_copy, help_text, strlen(help_text));
 
         char *word = strtok((char *)help_text_copy, " ");
