@@ -24,8 +24,6 @@
   each square separately.
 
 # TODO
-- [_] optimize simple help text rendering function to wrap text without relying
-      on heavy c++ utils.
 - [_] make the game of life random grid population truly random (currently it looks
       like the same pattern every time) (The idea is to mess with the seed on input and save
       it in persitent memory)
@@ -34,13 +32,14 @@
 - [_] add ability to erase eeprom (probably external sketch)
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options
-
 - [_] update readme and emulator get started instructions
 
 
 # In Progress
 
 # Done
+- [x] optimize simple help text rendering function to wrap text without relying
+      on heavy c++ utils.
 - [x] move simple help text rendering function somewhere where it can be reused.
 - [x] write help text that fits on the screen
 - [x] add ability to create help screens.

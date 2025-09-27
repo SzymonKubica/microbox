@@ -118,7 +118,7 @@ void select_game(Platform *p)
 
         auto maybe_interrupt = collect_game_menu_config(p, &config);
 
-        // this customization might not be initialized properly if the user
+        // This customization might not be initialized properly if the user
         // requests help message. The current version of the help text rendering
         // does not depend on it but this might become problematic in the
         // future.

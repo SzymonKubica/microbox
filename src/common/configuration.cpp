@@ -315,16 +315,16 @@ collect_configuration(Platform *p, Configuration *config,
                                         render_config_menu(p->display, config,
                                                            diff, true,
                                                            customization);
+                                        move_registered_delay();
                                         free(diff);
                                         continue;
                                 }
                         }
+                        move_registered_delay();
                         if (act == Action::BLUE && allow_exit) {
-                                move_registered_delay();
                                 return UserAction::Exit;
                         }
                         if (act == Action::YELLOW) {
-                                move_registered_delay();
                                 return UserAction::ShowHelp;
                         }
                 }
