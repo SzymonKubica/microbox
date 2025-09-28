@@ -24,7 +24,6 @@
   each square separately.
 
 # TODO
-- [_] implement generic help prompt functionality
 - [_] make game of life cursor snappy
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
@@ -41,6 +40,7 @@
 # In Progress
 
 # Done
+- [x] implement generic help prompt functionality
 - [x] add ability to hide help prompts and have that persisted
 - [x] optimize simple help text rendering function to wrap text without relying
       on heavy c++ utils.

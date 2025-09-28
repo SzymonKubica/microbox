@@ -317,8 +317,6 @@ UserAction game_of_life_loop(Platform *p,
                                         mode = PAUSED;
                                         LOG_DEBUG(TAG, "Simulation paused.");
                                 }
-                                p->delay_provider->delay_ms(
-                                    MOVE_REGISTERED_DELAY);
                                 break;
                         case RED:
                                 exit_requested = true;
@@ -371,9 +369,6 @@ UserAction game_of_life_loop(Platform *p,
                                            customization->accent_color);
 
                                 grid = new_grid;
-
-                                p->delay_provider->delay_ms(
-                                    MOVE_REGISTERED_DELAY);
                                 break;
                         }
                 }
@@ -765,7 +760,7 @@ void render_help_hints(Display *display, GameOfLifeGridDimensions *dimensions,
         int actual_height = dimensions->actual_height;
 
         int text_below_grid_y = y_margin + actual_height + 1 * border_offset;
-        int r = FONT_SIZE / 4;
+        int r = 2;
         int d = 2 * r;
         int circle_y_axis = text_below_grid_y + FONT_SIZE / 2 + r / 4;
         const char *select = "Spawn";
