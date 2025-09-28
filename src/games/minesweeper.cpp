@@ -165,6 +165,12 @@ UserAction minesweeper_loop(Platform *p,
 
         int total_uncovered = 0;
 
+        // To avoid button debounce issues, we only process action input if
+        // it wasn't processed on the last iteration. This is to avoid
+        // situations where the user holds the 'spawn' button for too long and
+        // the cell flickers instead of getting spawned properly. We implement
+        // this using this flag.
+        bool action_input_on_last_iteration = false;
         bool is_game_over = false;
         while (!is_game_over &&
                !(total_uncovered == cols * rows - config.mines_num)) {
@@ -221,7 +227,9 @@ UserAction minesweeper_loop(Platform *p,
                            the input snappy. */
                         continue;
                 }
-                if (action_input_registered(p->action_controllers, &act)) {
+                if (action_input_registered(p->action_controllers, &act) &&
+                    !action_input_on_last_iteration) {
+                        action_input_on_last_iteration = true;
                         LOG_DEBUG(TAG, "Action input received: %s",
                                   action_to_str(act));
 
@@ -277,6 +285,8 @@ UserAction minesweeper_loop(Platform *p,
                            polling delay at the end of the loop and make
                            the input snappy. */
                         continue;
+                } else {
+                        action_input_on_last_iteration = false;
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
         }
@@ -619,6 +629,9 @@ calculate_grid_dimensions(int display_width, int display_height,
             actual_width, actual_height);
 }
 
+void draw_controls_hints(Display *display,
+                         MinesweeperGridDimensions *dimensions,
+                         int border_offset);
 void draw_game_canvas(Platform *p, MinesweeperGridDimensions *dimensions,
                       UserInterfaceCustomization *customization)
 
@@ -656,8 +669,22 @@ void draw_game_canvas(Platform *p, MinesweeperGridDimensions *dimensions,
             actual_width + 2 * border_offset, actual_height + 2 * border_offset,
             Gray, border_width, false);
 
+        if (customization->show_help_text) {
+                draw_controls_hints(p->display, dimensions, border_offset);
+        }
+}
+
+void draw_controls_hints(Display *display,
+                         MinesweeperGridDimensions *dimensions,
+                         int border_offset)
+{
+        int x_margin = dimensions->left_horizontal_margin;
+        int y_margin = dimensions->top_vertical_margin;
+
+        int actual_width = dimensions->actual_width;
+        int actual_height = dimensions->actual_height;
         int text_below_grid_y = y_margin + actual_height + 2 * border_offset;
-        int r = FONT_SIZE / 4;
+        int r = 2;
         int d = 2 * r;
         int circle_y_axis = text_below_grid_y + FONT_SIZE / 2 + r / 4;
         const char *select = "Select";
@@ -667,22 +694,22 @@ void draw_game_canvas(Platform *p, MinesweeperGridDimensions *dimensions,
         // We calculate the even spacing for the two indicators
         int circles_width = 2 * d;
         int total_width = select_len + flag_len + circles_width;
-        int available_width = p->display->get_width() - 2 * x_margin;
+        int available_width = display->get_width() - 2 * x_margin;
         int remainder_space = available_width - total_width;
         int even_separator = remainder_space / 3;
 
         int green_circle_x = x_margin + even_separator;
-        p->display->draw_circle({.x = green_circle_x, .y = circle_y_axis}, r,
-                                Green, 0, true);
+        display->draw_circle({.x = green_circle_x, .y = circle_y_axis}, r,
+                             Green, 0, true);
 
         int select_text_x = green_circle_x + d;
-        p->display->draw_string({.x = select_text_x, .y = text_below_grid_y},
-                                (char *)select, FontSize::Size16, Black, White);
+        display->draw_string({.x = select_text_x, .y = text_below_grid_y},
+                             (char *)select, FontSize::Size16, Black, White);
 
         int flag_red_circle_x = select_text_x + select_len + even_separator;
-        p->display->draw_circle({.x = flag_red_circle_x, .y = circle_y_axis}, r,
-                                Red, 0, true);
+        display->draw_circle({.x = flag_red_circle_x, .y = circle_y_axis}, r,
+                             Red, 0, true);
         int flag_text_x = flag_red_circle_x + d;
-        p->display->draw_string({.x = flag_text_x, .y = text_below_grid_y},
-                                (char *)flag, FontSize::Size16, Black, White);
+        display->draw_string({.x = flag_text_x, .y = text_below_grid_y},
+                             (char *)flag, FontSize::Size16, Black, White);
 }
