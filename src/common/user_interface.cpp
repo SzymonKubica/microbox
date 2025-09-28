@@ -528,6 +528,9 @@ void render_config_menu(Display *display, Configuration *config,
         free(bar_positions);
 }
 
+/**
+ * Renders the default explanation of console UI controls.
+ */
 void render_controls_explanations(Display *display)
 {
 
@@ -554,7 +557,7 @@ void render_controls_explanations(Display *display)
                 total_text_len += strlen(text);
         }
 
-        int r = 3;
+        int circle_radius = 2;
 
         // Given that the help text is rendred at the bottom and the screen
         // has rounded corners, we need to set a fixed margin to ensure that
@@ -563,8 +566,7 @@ void render_controls_explanations(Display *display)
 
         int circle_text_gap_width = fw / 4;
         int total_len_to_render =
-            button_hints.size() *
-                (r + circle_text_gap_width) +
+            button_hints.size() * (circle_radius + circle_text_gap_width) +
             fw * total_text_len + 2 * x_margin;
 
         int remainder_width = w - total_len_to_render;
@@ -596,8 +598,8 @@ void render_controls_explanations(Display *display)
                 const char *hint = button_hints[button];
                 Color color = button_colors[button];
                 display->draw_circle({.x = x_pos, .y = circle_indicator_y},
-                                     r, color, 0, true);
-                x_pos += r + circle_text_gap_width;
+                                     circle_radius, color, 0, true);
+                x_pos += circle_radius + circle_text_gap_width;
                 display->draw_string({.x = x_pos, .y = help_text_y},
                                      (char *)hint, FontSize::Size16, Black,
                                      White);
