@@ -255,6 +255,12 @@ UserAction game_of_life_loop(Platform *p,
 
         bool exit_requested = false;
         SimulationMode mode = PAUSED;
+        // To avoid button debounce issues, we only process action input if
+        // it wasn't processed on the last iteration. This is to avoid
+        // situations where the user holds the 'spawn' button for too long and
+        // the cell flickers instead of getting spawned properly. We implement
+        // this using this flag.
+        bool action_input_on_last_iteration = false;
         while (!exit_requested) {
                 if (mode == RUNNING && iteration == evolution_period - 1) {
                         LOG_DEBUG(TAG, "Taking a simulation step");
@@ -300,7 +306,9 @@ UserAction game_of_life_loop(Platform *p,
                                            customization->accent_color);
                         }
                 }
-                if (action_input_registered(p->action_controllers, &act)) {
+                if (action_input_registered(p->action_controllers, &act) &&
+                    !action_input_on_last_iteration) {
+                        action_input_on_last_iteration = true;
                         switch (act) {
                         case YELLOW:
                                 if (mode == PAUSED) {
@@ -371,6 +379,8 @@ UserAction game_of_life_loop(Platform *p,
                                 grid = new_grid;
                                 break;
                         }
+                } else {
+                        action_input_on_last_iteration = false;
                 }
                 iteration += 1;
                 iteration %= evolution_period;
