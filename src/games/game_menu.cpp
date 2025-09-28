@@ -90,7 +90,7 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
             rendering_mode_to_str(initial_config->rendering_mode));
 
         auto *show_help_text = ConfigurationOption::of_strings(
-            "Show help", {"Yes", "No"},
+            "Hints", {"Yes", "No"},
             map_boolean_to_yes_or_no(initial_config->show_help_text));
 
         auto options = {game, accent_color, rendering_mode, show_help_text};
