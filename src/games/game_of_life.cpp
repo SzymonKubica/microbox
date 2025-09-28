@@ -4,7 +4,6 @@
 #include "../common/logging.hpp"
 #include "../common/constants.hpp"
 #include "../common/maths_utils.hpp"
-#include "game_executor.hpp"
 #include "game_of_life.hpp"
 #include "settings.hpp"
 #include "game_menu.hpp"
@@ -427,19 +426,6 @@ Configuration *assemble_game_of_life_configuration(PersistentStorage *storage)
         return new Configuration("Game of Life", options, "Start Game");
 }
 
-bool extract_yes_or_no_option(const char *value)
-{
-        if (strlen(value) == 3 && strncmp(value, "Yes", 3) == 0) {
-                return true;
-        }
-        return false;
-}
-
-const char *map_boolean_to_yes_or_no(bool value)
-{
-        return value ? "Yes" : "No";
-}
-
 void extract_game_config(GameOfLifeConfiguration *game_config,
                          Configuration *config)
 {
@@ -733,6 +719,8 @@ void erase_caret(Display *display, Point *grid_position,
                                 grid_background_color, 1, false);
 }
 
+void render_help_hints(Display *display, GameOfLifeGridDimensions *dimensions,
+                       int border_offset);
 void draw_game_canvas(Platform *p, GameOfLifeGridDimensions *dimensions,
                       UserInterfaceCustomization *customization)
 
@@ -754,7 +742,28 @@ void draw_game_canvas(Platform *p, GameOfLifeGridDimensions *dimensions,
         // partially)
         int border_offset = 2;
 
-        /* Rendering of help indicators below the grid */
+        if (customization->show_help_text) {
+                render_help_hints(p->display, dimensions, border_offset);
+        }
+
+        // We draw the border at the end to ensure that it doesn't get cropped
+        // by draw string operations above.
+        p->display->draw_rectangle(
+            {.x = x_margin - border_offset, .y = y_margin - border_offset},
+            actual_width + 2 * border_offset, actual_height + 2 * border_offset,
+            customization->accent_color, border_width, false);
+}
+
+void render_help_hints(Display *display, GameOfLifeGridDimensions *dimensions,
+                       int border_offset)
+{
+
+        int x_margin = dimensions->left_horizontal_margin;
+        int y_margin = dimensions->top_vertical_margin;
+
+        int actual_width = dimensions->actual_width;
+        int actual_height = dimensions->actual_height;
+
         int text_below_grid_y = y_margin + actual_height + 1 * border_offset;
         int r = FONT_SIZE / 4;
         int d = 2 * r;
@@ -771,31 +780,31 @@ void draw_game_canvas(Platform *p, GameOfLifeGridDimensions *dimensions,
         int text_circle_spacing_width = d;
         int total_width = select_len + exit_len + pause_len + circles_width +
                           (explanations_num - 1) * text_circle_spacing_width;
-        int available_width = p->display->get_width() - 2 * x_margin;
+        int available_width = display->get_width() - 2 * x_margin;
         int remainder_space = available_width - total_width;
         int even_separator = remainder_space / explanations_num;
 
         int green_circle_x = x_margin + even_separator;
-        p->display->draw_circle({.x = green_circle_x, .y = circle_y_axis}, r,
-                                Green, 0, true);
+        display->draw_circle({.x = green_circle_x, .y = circle_y_axis}, r,
+                             Green, 0, true);
 
         int spawn_text_x = green_circle_x + d;
-        p->display->draw_string({.x = spawn_text_x, .y = text_below_grid_y},
-                                (char *)select, FontSize::Size16, Black, White);
+        display->draw_string({.x = spawn_text_x, .y = text_below_grid_y},
+                             (char *)select, FontSize::Size16, Black, White);
 
         int yellow_circle_x = spawn_text_x + select_len + even_separator;
-        p->display->draw_circle({.x = yellow_circle_x, .y = circle_y_axis}, r,
-                                Yellow, 0, true);
+        display->draw_circle({.x = yellow_circle_x, .y = circle_y_axis}, r,
+                             Yellow, 0, true);
         int pause_text_x = yellow_circle_x + d;
-        p->display->draw_string({.x = pause_text_x, .y = text_below_grid_y},
-                                (char *)pause, FontSize::Size16, Black, White);
+        display->draw_string({.x = pause_text_x, .y = text_below_grid_y},
+                             (char *)pause, FontSize::Size16, Black, White);
 
         int red_circle_x = pause_text_x + select_len + even_separator;
-        p->display->draw_circle({.x = red_circle_x, .y = circle_y_axis}, r, Red,
-                                0, true);
+        display->draw_circle({.x = red_circle_x, .y = circle_y_axis}, r, Red, 0,
+                             true);
         int exit_text_x = red_circle_x + d;
-        p->display->draw_string({.x = exit_text_x, .y = text_below_grid_y},
-                                (char *)exit, FontSize::Size16, Black, White);
+        display->draw_string({.x = exit_text_x, .y = text_below_grid_y},
+                             (char *)exit, FontSize::Size16, Black, White);
 
         /* Rendering of help indicators above the grid */
         int text_grid_spacing = 4;
@@ -813,19 +822,12 @@ void draw_game_canvas(Platform *p, GameOfLifeGridDimensions *dimensions,
         int centering_margin = (available_width - total_width_above_grid) / 2;
 
         int blue_circle_x = x_margin + centering_margin;
-        p->display->draw_circle(
+        display->draw_circle(
             {.x = blue_circle_x, .y = circle_y_axis_above_grid}, r, DarkBlue, 0,
             true);
         int toggle_text_x = blue_circle_x + d;
-        p->display->draw_string({.x = toggle_text_x, .y = text_above_grid_y},
-                                (char *)toggle, FontSize::Size16, Black, White);
-
-        // We draw the border at the end to ensure that it doesn't get cropped
-        // by draw string operations above.
-        p->display->draw_rectangle(
-            {.x = x_margin - border_offset, .y = y_margin - border_offset},
-            actual_width + 2 * border_offset, actual_height + 2 * border_offset,
-            customization->accent_color, border_width, false);
+        display->draw_string({.x = toggle_text_x, .y = text_above_grid_y},
+                             (char *)toggle, FontSize::Size16, Black, White);
 }
 
 void draw_rewind_mode_indicator(Platform *p,

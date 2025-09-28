@@ -204,3 +204,12 @@ void populate_options(Configuration *config,
                       int currently_selected);
 
 void free_configuration(Configuration *config);
+
+/**
+ * Maps from 'Yes', 'No' config option values to boolean.
+ */
+bool extract_yes_or_no_option(const char *value);
+/**
+ * Maps boolean to 'Yes', 'No' config option values.
+ */
+const char *map_boolean_to_yes_or_no(bool value);

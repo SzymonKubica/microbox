@@ -89,14 +89,13 @@ void switch_edited_config_option_down(Configuration *config,
 /**
  * Shifts the currently edited config option. We wrap modulo
  * `config->config_values_len`
- * + 1 because the last config bar allows the user to confirm selection.
  */
 void shift_edited_config_option(Configuration *config, ConfigurationDiff *diff,
                                 int steps)
 {
         LOG_DEBUG(TAG, "Config option index before switching: %d",
                   config->curr_selected_option);
-        int config_len = config->options_len + 1;
+        int config_len = config->options_len;
         diff->previously_edited_option = config->curr_selected_option;
         config->curr_selected_option = mathematical_modulo(
             config->curr_selected_option + steps, config_len);
@@ -285,6 +284,9 @@ collect_configuration(Platform *p, Configuration *config,
 {
         ConfigurationDiff *diff = empty_diff();
         render_config_menu(p->display, config, diff, false, customization);
+        if (customization->show_help_text) {
+                render_controls_explanations(p->display);
+        }
         free(diff);
         while (true) {
                 Action act;
@@ -302,23 +304,20 @@ collect_configuration(Platform *p, Configuration *config,
 
                 if (action_input_registered(p->action_controllers, &act)) {
                         /* To make the UI more intuitive, we also allow users to
-                        cycle configuration options and confirm final selection
-                        using the green button. This change was inspired by
+                        cycle configuration options. This change was inspired by
                         initial play testing by Tomek. */
                         if (act == Action::GREEN) {
-                                if (confirmation_bar_selected) {
-                                        move_registered_delay();
-                                        break;
-                                } else {
-                                        increment_current_option_value(config,
-                                                                       diff);
-                                        render_config_menu(p->display, config,
-                                                           diff, true,
-                                                           customization);
-                                        move_registered_delay();
-                                        free(diff);
-                                        continue;
-                                }
+                                /*
+                                 Note that we re-render before peforming the
+                                 move_registered_delay to ensure that the UI is
+                                 snappy.
+                                 */
+                                increment_current_option_value(config, diff);
+                                render_config_menu(p->display, config, diff,
+                                                   true, customization);
+                                move_registered_delay();
+                                free(diff);
+                                continue;
                         }
                         move_registered_delay();
                         if (act == Action::BLUE && allow_exit) {
@@ -327,24 +326,12 @@ collect_configuration(Platform *p, Configuration *config,
                         if (act == Action::YELLOW) {
                                 return UserAction::ShowHelp;
                         }
+                        if (act == Action::RED) {
+                                break;
+                        }
                 }
                 if (directional_input_registered(p->directional_controllers,
                                                  &dir)) {
-                        /* When the user selects the last config bar,
-                           i.e. the 'confirmation cell' pressing right
-                           on it confirms the selected config and
-                           breaks out of the config collection loop. */
-                        if (confirmation_bar_selected) {
-                                p->delay_provider->delay_ms(
-                                    MOVE_REGISTERED_DELAY);
-                                if (dir == RIGHT) {
-                                        break;
-                                }
-                                if (dir == LEFT) {
-                                        continue;
-                                }
-                        }
-
                         switch (dir) {
                         case DOWN:
                                 switch_edited_config_option_down(config, diff);
@@ -370,4 +357,17 @@ collect_configuration(Platform *p, Configuration *config,
                 free(diff);
         }
         return std::nullopt;
+}
+
+bool extract_yes_or_no_option(const char *value)
+{
+        if (strlen(value) == 3 && strncmp(value, "Yes", 3) == 0) {
+                return true;
+        }
+        return false;
+}
+
+const char *map_boolean_to_yes_or_no(bool value)
+{
+        return value ? "Yes" : "No";
 }

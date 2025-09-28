@@ -12,8 +12,12 @@
 
 #define TAG "game_menu"
 
-GameMenuConfiguration DEFAULT_MENU_CONFIGURATION = {.game = GameOfLife,
-                                                    .accent_color = DarkBlue};
+GameMenuConfiguration DEFAULT_MENU_CONFIGURATION = {
+    .game = GameOfLife,
+    .accent_color = DarkBlue,
+    .rendering_mode = Minimalistic,
+    .show_help_text = true,
+};
 
 const char *game_to_string(Game game);
 
@@ -24,7 +28,9 @@ load_initial_menu_configuration(PersistentStorage *storage)
         int storage_offset = get_settings_storage_offsets()[MainMenu];
 
         GameMenuConfiguration configuration = {.game = Unknown,
-                                               .accent_color = DarkBlue};
+                                               .accent_color = DarkBlue,
+                                               .rendering_mode = Minimalistic,
+                                               .show_help_text = true};
 
         LOG_DEBUG(TAG,
                   "Trying to load initial settings from the persistent storage "
@@ -49,8 +55,8 @@ load_initial_menu_configuration(PersistentStorage *storage)
 
         LOG_DEBUG(TAG,
                   "Loaded menu configuration: game=%d, "
-                  "accent_color=%d",
-                  output->game, output->accent_color);
+                  "accent_color=%d, show_help_text=%d",
+                  output->game, output->accent_color, output->show_help_text);
 
         return output;
 }
@@ -83,7 +89,11 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
             "UI", available_modes,
             rendering_mode_to_str(initial_config->rendering_mode));
 
-        auto options = {game, accent_color, rendering_mode};
+        auto *show_help_text = ConfigurationOption::of_strings(
+            "Show help", {"Yes", "No"},
+            map_boolean_to_yes_or_no(initial_config->show_help_text));
+
+        auto options = {game, accent_color, rendering_mode, show_help_text};
 
         return new Configuration("Game Console", options, "Select game");
 }
@@ -110,6 +120,14 @@ void extract_game_config(GameMenuConfiguration *menu_configuration,
         const char *mode_str = static_cast<const char **>(
             rendering_mode.available_values)[curr_mode_idx];
         menu_configuration->rendering_mode = rendering_mode_from_str(mode_str);
+
+        ConfigurationOption show_help_text = *config->options[3];
+
+        int show_help_text_idx = show_help_text.currently_selected;
+        const char *yes_or_no = static_cast<const char **>(
+            show_help_text.available_values)[show_help_text_idx];
+        menu_configuration->show_help_text =
+            extract_yes_or_no_option(yes_or_no);
 }
 
 void select_game(Platform *p)
@@ -123,9 +141,7 @@ void select_game(Platform *p)
         // does not depend on it but this might become problematic in the
         // future.
         UserInterfaceCustomization customization = {
-            config.accent_color,
-            config.rendering_mode,
-        };
+            config.accent_color, config.rendering_mode, config.show_help_text};
 
         const char *help_text =
             "Move joystick up/down to switch between menu options. Move "
@@ -133,9 +149,8 @@ void select_game(Platform *p)
             "current option. Press green or move joystick left on the last "
             "cell to start the game.";
 
-            if (maybe_interrupt.has_value() &&
-                maybe_interrupt.value() == UserAction::ShowHelp)
-        {
+        if (maybe_interrupt.has_value() &&
+            maybe_interrupt.value() == UserAction::ShowHelp) {
                 render_wrapped_help_text(p, &customization, help_text);
                 wait_until_green_pressed(p);
                 return;
@@ -180,7 +195,9 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
 
         UserInterfaceCustomization customization = {
             .accent_color = initial_config->accent_color,
-            .rendering_mode = initial_config->rendering_mode};
+            .rendering_mode = initial_config->rendering_mode,
+            .show_help_text = initial_config->show_help_text,
+        };
 
         auto maybe_interrupt =
             collect_configuration(p, config, &customization, false);
@@ -197,17 +214,16 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
 
 Game game_from_string(const char *name)
 {
-        if (strcmp(name, "2048") == 0) {
+        if (strcmp(name, game_to_string(Clean2048)) == 0)
                 return Game::Clean2048;
-        } else if (strcmp(name, game_to_string(Minesweeper)) == 0) {
+        if (strcmp(name, game_to_string(Minesweeper)) == 0)
                 return Game::Minesweeper;
-        } else if (strcmp(name, game_to_string(GameOfLife)) == 0) {
+        if (strcmp(name, game_to_string(GameOfLife)) == 0)
                 return Game::GameOfLife;
-        } else if (strcmp(name, game_to_string(MainMenu)) == 0) {
+        if (strcmp(name, game_to_string(MainMenu)) == 0)
                 return Game::MainMenu;
-        } else if (strcmp(name, game_to_string(Settings)) == 0) {
+        if (strcmp(name, game_to_string(Settings)) == 0)
                 return Game::Settings;
-        }
         return Game::Unknown;
 }
 

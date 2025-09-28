@@ -24,14 +24,16 @@
   each square separately.
 
 # TODO
+- [_] add ability to scroll through the config menu for games that require more
+      than 3 config options
+- [_] add ability to hide help prompts and have that persisted
 - [_] make the game of life random grid population truly random (currently it looks
       like the same pattern every time) (The idea is to mess with the seed on input and save
       it in persitent memory)
 - [_] add high score saving to 2048.
 - [_] add username collection screen
 - [_] add ability to erase eeprom (probably external sketch)
-- [_] add ability to scroll through the config menu for games that require more
-      than 3 config options
+
 - [_] update readme and emulator get started instructions
 
 

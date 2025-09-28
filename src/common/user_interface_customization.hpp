@@ -32,4 +32,10 @@ typedef struct UserInterfaceCustomization {
          */
         Color accent_color;
         UserInterfaceRenderingMode rendering_mode;
+        /**
+         * If true, button-color-coded hints will be displayed in the UI guiding
+         * users on how to use the specific screen and what each of the buttons
+         * do.
+         */
+        bool show_help_text;
 } UserInterfaceCustomization;

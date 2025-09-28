@@ -11,6 +11,8 @@
 #define GRID_BG_COLOR White
 #define TAG "user_interface"
 
+#define SELECTOR_CIRCLE_RADIUS 5
+
 /* User Interface */
 
 /* Helper functions used by draw_configuration_menu */
@@ -435,16 +437,15 @@ void render_config_menu(Display *display, Configuration *config,
         int fh = FONT_SIZE;
         int left_margin = get_centering_margin(w, fw, text_max_length);
 
+        int bars_num = config->options_len;
+
         int bar_height = 2 * fh;
         int bar_gap_height = fh * 3 / 4;
-        int y_spacing = calculate_section_spacing(
-            h, config->options_len + 1, bar_height, bar_gap_height, Size24);
+        int y_spacing = calculate_section_spacing(h, bars_num, bar_height,
+                                                  bar_gap_height, Size24);
 
-        /* We need to add one to the number of config bars below because of the
-        confirmation button that is rendered at the bottom. */
         int *bar_positions = calculate_config_bar_positions(
-            y_spacing, Size24, bar_height, bar_gap_height,
-            config->options_len + 1);
+            y_spacing, Size24, bar_height, bar_gap_height, bars_num);
 
         // Render the config menu heading.
         render_text_bar_centered(display, y_spacing, text_max_length, 0,
@@ -452,11 +453,9 @@ void render_config_menu(Display *display, Configuration *config,
                                  customization->rendering_mode, Black, White,
                                  HEADING_FONT_WIDTH, Size24);
 
-        LOG_DEBUG(TAG, "Rendering %d config bars", config->options_len);
-
         for (int i = 0; i < config->options_len; i++) {
                 int bar_y = bar_positions[i];
-                char option_value[max_option_value_length];
+                char option_value_buff[max_option_value_length];
 
                 ConfigurationOption value = *config->options[i];
                 const char *option_text = value.name;
@@ -468,7 +467,8 @@ void render_config_menu(Display *display, Configuration *config,
                         char format_string[4];
                         sprintf(format_string, "%%%dd",
                                 max_option_value_length);
-                        sprintf(option_value, format_string, selected_value);
+                        sprintf(option_value_buff, format_string,
+                                selected_value);
                         break;
                 }
                 case STRING: {
@@ -477,7 +477,8 @@ void render_config_menu(Display *display, Configuration *config,
                         char format_string[10];
                         sprintf(format_string, "%%%ds",
                                 max_option_value_length);
-                        sprintf(option_value, format_string, selected_value);
+                        sprintf(option_value_buff, format_string,
+                                selected_value);
                         break;
                 }
                 case COLOR: {
@@ -486,28 +487,21 @@ void render_config_menu(Display *display, Configuration *config,
                         char format_string[10];
                         sprintf(format_string, "%%%ds",
                                 max_option_value_length);
-                        sprintf(option_value, format_string,
+                        sprintf(option_value_buff, format_string,
                                 color_to_string(selected_value));
                         break;
                 }
                 }
                 render_config_bar_centered(
                     display, bar_y, max_option_name_length,
-                    max_option_value_length, option_text, option_value,
+                    max_option_value_length, option_text, option_value_buff,
                     text_update_only, diff->modified_option_index == i,
                     customization);
                 LOG_DEBUG(TAG,
                           "Rendered config bar %d with option text '%s' and "
                           "value '%s'",
-                          i, option_text, option_value);
+                          i, option_text, option_value_buff);
         }
-
-        int confirmation_cell_y = bar_positions[config->options_len];
-        render_text_bar_centered(
-            display, confirmation_cell_y, max_option_name_length,
-            max_option_value_length, config->confirmation_cell_text,
-            text_update_only, customization->rendering_mode,
-            customization->accent_color);
 
         // Before we render the indicator dot we need to calculate its
         // positions. Note that the dot needs to appear exactly on the middle
@@ -520,51 +514,51 @@ void render_config_menu(Display *display, Configuration *config,
         int right_margin = display->get_width() - (left_margin + bar_width);
         int circle_x = left_margin + bar_width + right_margin / 2;
         int v_padding = fh / 2;
-        int circle_ys_len = config->options_len + 1;
-        int r = 5;
+        int circle_ys_len = bars_num;
         int circle_ys[circle_ys_len];
         for (int i = 0; i < circle_ys_len; i++) {
                 circle_ys[i] = bar_positions[i] + v_padding;
         }
 
-        render_circle_selector(display, text_update_only, circle_x, circle_ys,
-                               circle_ys_len, diff->previously_edited_option,
-                               diff->currently_edited_option, r, Black,
-                               customization->accent_color);
+        render_circle_selector(
+            display, text_update_only, circle_x, circle_ys, circle_ys_len,
+            diff->previously_edited_option, diff->currently_edited_option,
+            SELECTOR_CIRCLE_RADIUS, Black, customization->accent_color);
 
-        int confirmation_cell_end_y = confirmation_cell_y + fh + fh / 2;
-
-        // Below above the grid we always render the guide indicator that yellow
-        // button will show you the help screen.
-        if (!text_update_only) {
-                const char *help = "Help";
-                int help_text_len = strlen(help);
-
-                int help_text_x = 2 * fw;
-                int help_text_y = h - 3 * fh / 2;
-
-                int help_yellow_circle_x =
-                    help_text_x + (help_text_len + 1) * fw;
-                int help_yellow_circle_y = help_text_y + 3 * fh / 4;
-
-                // The font on the emulator differs slightly from the target
-                // LCD display font, so we need to apply this vertical alignment
-                // override.
-#ifndef EMULATOR
-                help_text_y += fh / 4;
-#endif
-
-                display->draw_string({.x = help_text_x, .y = help_text_y},
-                                     (char *)help, FontSize::Size16, Black,
-                                     White);
-
-                int radius = FONT_SIZE / 4;
-                int d = 2 * radius;
-                display->draw_circle(
-                    {.x = help_yellow_circle_x, .y = help_yellow_circle_y}, r,
-                    Yellow, 0, true);
-        }
         free(bar_positions);
+}
+
+void render_controls_explanations(Display *display)
+{
+
+        int h = display->get_height();
+        int w = display->get_width();
+        int fw = FONT_WIDTH;
+        int fh = FONT_SIZE;
+        // Below the grid we always render the guide indicator informing that
+        // yellow button will show you the help screen.
+        const char *help = "Help";
+        int help_text_len = strlen(help);
+
+        int help_text_x = 2 * fw;
+        int help_text_y = h - 3 * fh / 2;
+
+        int help_yellow_circle_x = help_text_x + (help_text_len + 1) * fw;
+        int help_yellow_circle_y = help_text_y + 3 * fh / 4;
+        int r = 5;
+
+        // The font on the emulator differs slightly from the target
+        // LCD display font, so we need to apply this vertical alignment
+        // override.
+#ifndef EMULATOR
+        help_text_y += fh / 4;
+#endif
+        display->draw_string({.x = help_text_x, .y = help_text_y}, (char *)help,
+                             FontSize::Size16, Black, White);
+
+        display->draw_circle(
+            {.x = help_yellow_circle_x, .y = help_yellow_circle_y},
+            SELECTOR_CIRCLE_RADIUS, Yellow, 0, true);
 }
 
 /**
@@ -602,7 +596,8 @@ void render_wrapped_help_text(Platform *p,
 
         // We allocate dynamically a copy of the constant string as strtok
         // needs a mutable reference.
-        char *help_text_copy = (char *)calloc(strlen(help_text) + 1, sizeof(char));
+        char *help_text_copy =
+            (char *)calloc(strlen(help_text) + 1, sizeof(char));
         // We need to properly null-terminate the other string.
         help_text_copy[strlen(help_text)] = '\0';
         strncpy(help_text_copy, help_text, strlen(help_text));

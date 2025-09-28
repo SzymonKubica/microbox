@@ -16,6 +16,7 @@ typedef struct GameMenuConfiguration {
         Game game;
         Color accent_color;
         UserInterfaceRenderingMode rendering_mode;
+        bool show_help_text;
 } GameMenuConfiguration;
 
 extern Game game_from_string(const char *name);
