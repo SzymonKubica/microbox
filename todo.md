@@ -24,9 +24,10 @@
   each square separately.
 
 # TODO
+- [_] implement generic help prompt functionality
+- [_] make game of life cursor snappy
 - [_] add ability to scroll through the config menu for games that require more
-      than 3 config options
-- [_] add ability to hide help prompts and have that persisted
+      than 3 config options (only if a game requires this, currently not needed)
 - [_] make the game of life random grid population truly random (currently it looks
       like the same pattern every time) (The idea is to mess with the seed on input and save
       it in persitent memory)
@@ -40,6 +41,7 @@
 # In Progress
 
 # Done
+- [x] add ability to hide help prompts and have that persisted
 - [x] optimize simple help text rendering function to wrap text without relying
       on heavy c++ utils.
 - [x] move simple help text rendering function somewhere where it can be reused.

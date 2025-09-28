@@ -531,34 +531,80 @@ void render_config_menu(Display *display, Configuration *config,
 void render_controls_explanations(Display *display)
 {
 
+        std::vector<const char *> button_hints(4);
+        button_hints[Action::BLUE] = "Back";
+        button_hints[Action::YELLOW] = "Help";
+        button_hints[Action::RED] = "Next";
+        button_hints[Action::GREEN] = "Toggle";
+
+        std::vector<Color> button_colors(4);
+        button_colors[Action::BLUE] = Blue;
+        button_colors[Action::YELLOW] = Yellow;
+        button_colors[Action::RED] = Red;
+        button_colors[Action::GREEN] = Green;
+
         int h = display->get_height();
         int w = display->get_width();
         int fw = FONT_WIDTH;
         int fh = FONT_SIZE;
-        // Below the grid we always render the guide indicator informing that
-        // yellow button will show you the help screen.
-        const char *help = "Help";
-        int help_text_len = strlen(help);
 
-        int help_text_x = 2 * fw;
+        // Dynamically find the total text length needed for even spacing
+        int total_text_len = 0;
+        for (auto text : button_hints) {
+                total_text_len += strlen(text);
+        }
+
+        int r = 3;
+
+        // Given that the help text is rendred at the bottom and the screen
+        // has rounded corners, we need to set a fixed margin to ensure that
+        // nothing is cropped by the corners.
+        int x_margin = 2 * fw;
+
+        int circle_text_gap_width = fw / 4;
+        int total_len_to_render =
+            button_hints.size() *
+                (r + circle_text_gap_width) +
+            fw * total_text_len + 2 * x_margin;
+
+        int remainder_width = w - total_len_to_render;
+        int gaps = button_hints.size() - 1;
+
+        int gap_size = remainder_width / gaps;
+
+        // This is empiricaly calibrated to look nice. It is set as a negative
+        // offset from the bottom of the screen and does not depend on what is
+        // rendered above.
         int help_text_y = h - 3 * fh / 2;
+        // Also eye-callibrated, not much logic to the 3/4 * fh.
+        int circle_indicator_y = help_text_y + 3 * fh / 4;
 
-        int help_yellow_circle_x = help_text_x + (help_text_len + 1) * fw;
-        int help_yellow_circle_y = help_text_y + 3 * fh / 4;
-        int r = 5;
-
+#ifndef EMULATOR
         // The font on the emulator differs slightly from the target
         // LCD display font, so we need to apply this vertical alignment
         // override.
-#ifndef EMULATOR
         help_text_y += fh / 4;
 #endif
-        display->draw_string({.x = help_text_x, .y = help_text_y}, (char *)help,
-                             FontSize::Size16, Black, White);
 
-        display->draw_circle(
-            {.x = help_yellow_circle_x, .y = help_yellow_circle_y},
-            SELECTOR_CIRCLE_RADIUS, Yellow, 0, true);
+        std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
+                                             Action::GREEN, Action::RED};
+
+        // We keep track of the current x position as we render hint items.
+        int x_pos = x_margin;
+        for (int i = 0; i < buttons_order.size(); i++) {
+                Action button = buttons_order[i];
+                const char *hint = button_hints[button];
+                Color color = button_colors[button];
+                display->draw_circle({.x = x_pos, .y = circle_indicator_y},
+                                     r, color, 0, true);
+                x_pos += r + circle_text_gap_width;
+                display->draw_string({.x = x_pos, .y = help_text_y},
+                                     (char *)hint, FontSize::Size16, Black,
+                                     White);
+
+                x_pos += strlen(hint) * fw;
+                x_pos += gap_size;
+        }
 }
 
 /**
