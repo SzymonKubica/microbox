@@ -24,7 +24,6 @@
   each square separately.
 
 # TODO
-- [_] onboard Minesweeper onto the dynamic help hint setup
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] make the game of life random grid population truly random (currently it looks
@@ -40,6 +39,7 @@
 # In Progress
 
 # Done
+- [x] onboard Minesweeper onto the dynamic help hint setup
 - [x] make game of life cursor snappy
 - [x] implement generic help prompt functionality
 - [x] add ability to hide help prompts and have that persisted
