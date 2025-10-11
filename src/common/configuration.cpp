@@ -315,7 +315,8 @@ collect_configuration(Platform *p, Configuration *config,
                                  */
                                 increment_current_option_value(config, diff);
                                 render_config_menu(p->display, config, diff,
-                                                   true, customization, should_render_logo);
+                                                   true, customization,
+                                                   should_render_logo);
                                 move_registered_delay();
                                 free(diff);
                                 continue;

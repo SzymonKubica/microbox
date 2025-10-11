@@ -1,4 +1,4 @@
 build/
-emulator-build/*
-emulator-build-debug/*
 build-debug/*
+build-emulator/*
+build-emulator-debug/*
