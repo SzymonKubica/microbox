@@ -1,10 +1,13 @@
 # [μ] MicroBox
 
-This repository contains source code of a simple game
-console built for Arduino UNO Rev 4.
+<p align="center">
+<img src="/assets/images/microbox-home-screen.png"alt="microbox-home-screen"/>
+<img src="/assets/images/microbox-top-view-compact.jpg" alt="microbox-case-top-view" height="239px"/>
 
-TODO: insert an image of the console here
-
+MicroBox is a handheld retro game console built using off-the-shelf microcontroller
+components. It's designed to be hackable and extensible. All of the code and
+CAD files open-source. This repository contains a DIY guide allowing you to build
+your own MicroBox.
 
 ## Project Folder Structure
 ```
@@ -67,5 +70,77 @@ cmake --build .
 ```
 
 
+# :video_game: MicroBox — Arduino Game Console
+
+**MicroBox** is a custom-built **game console powered by the Arduino UNO R4**, designed to bring simple yet classic games to the world of microcontrollers.
+Currently, MicroBox supports three built-in games:
+
+- :abacus: **2048** — Merge tiles to reach the magical 2048!
+- :boom: **Minesweeper** — Avoid hidden mines using logic and deduction.
+- :seedling: **Game of Life** — Watch cellular automata evolve based on Conway’s famous rules.
+
+---
+
+## :jigsaw: Overview
+
+MicroBox is a **C++-based game console framework** that demonstrates how much fun and interactivity can be achieved with limited hardware resources.
+It’s designed to be:
+
+- **Modular** — Easily add new games or features.
+- **Lightweight** — Runs efficiently on the Arduino UNO R4 with minimal memory usage.
+- **Open-source** — Ideal for hobbyists, students, and developers exploring embedded gaming.
+
+---
+
+## :gear: Hardware Requirements
+
+- Arduino UNO R4 (WiFi or Minima)
+- OLED or LCD display (depending on configuration)
+- Input controls (buttons, joystick, or keypad)
+- Optional: Buzzer or speaker for audio feedback
+
+---
+
+## :computer: Software Setup
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/<your-username>/MicroBox.git
+   cd MicroBox
 
 
+
+:hammer_and_wrench: Adding Your Own Games
+
+MicroBox is designed to make it easy to expand the game library.
+You can add new games by:
+
+Creating a new game class that inherits from the base Game interface.
+
+Implementing setup(), update(), and render() methods.
+
+Registering your game in the main MicroBox menu.
+
+:rocket: Future Plans
+
+:art: Add a pixel-based graphics library for richer visuals
+
+:sound: Integrate sound effects and music
+
+:floppy_disk: Save game progress and high scores
+
+:brain: Introduce AI opponents for certain games
+
+:handshake: Contributing
+
+Contributions are welcome!
+If you have ideas for new games, optimizations, or hardware improvements, feel free to fork the repo and open a pull request.
+
+:scroll: License
+
+This project is released under the MIT License — free to use, modify, and share.
+</p>
+
+<p align="center">
+<img src="/assets/images/microbox-slanted-view.jpg" alt="microbox-case-slanted-view" width="500"/>
+</p>
