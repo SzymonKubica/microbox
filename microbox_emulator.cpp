@@ -1,18 +1,17 @@
 #include "emulator_config.h"
 
-#include "../src/common/platform/interface/platform.hpp"
-#include "../src/common/platform/emulator/sfml_display.hpp"
-#include "../src/common/platform/emulator/emulator_delay.cpp"
-#include "../src/common/platform/emulator/sfml_controller.hpp"
-#include "../src/common/platform/emulator/sfml_awsd_controller.hpp"
-#include "../src/common/platform/emulator/sfml_hjkl_controller.hpp"
-#include "../src/common/platform/emulator/sfml_action_controller.hpp"
-#include "../src/common/platform/emulator/persistent_storage.hpp"
+#include "src/common/platform/interface/platform.hpp"
+#include "src/common/platform/emulator/sfml_display.hpp"
+#include "src/common/platform/emulator/emulator_delay.cpp"
+#include "src/common/platform/emulator/sfml_controller.hpp"
+#include "src/common/platform/emulator/sfml_awsd_controller.hpp"
+#include "src/common/platform/emulator/sfml_hjkl_controller.hpp"
+#include "src/common/platform/emulator/sfml_action_controller.hpp"
+#include "src/common/platform/emulator/persistent_storage.hpp"
 
-#include "../src/common/logging.hpp"
+#include "src/common/logging.hpp"
 
-#include "../src/games/game_menu.hpp"
-#include <iostream>
+#include "src/games/game_menu.hpp"
 
 // TODO: clean up the mainteinance of the size constants
 #define DISPLAY_HEIGHT 240

@@ -9,4 +9,4 @@ CompileFlags:
     # Ensures that the sfml-specific code in the src/ tree is enabled
     "-DEMULATOR"
   ]
-  CompilationDatabase: emulator-build/
+  CompilationDatabase: build-emulator/

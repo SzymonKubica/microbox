@@ -33,7 +33,7 @@ add_executable(microbox-emulator
   ${PLATFORM_DEFS}
   ${COMMON_SOURCES}
   ${GAME_SOURCES}
-  emulator/emulator_entrypoint.cpp)
+  microbox_emulator.cpp)
 
 target_include_directories(microbox-emulator PUBLIC
   "${PROJECT_BINARY_DIR}"
