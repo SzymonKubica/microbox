@@ -28,8 +28,8 @@ if [ "$platform" != "arduino" ] && [ "$platform" != "emulator" ]; then
 fi
 
 if [ "$platform" == "arduino" ]; then
-  cp .clangd-arduino .clangd
+  cp .clangd-arduino ../.clangd
 else
-  cp .clangd-emulator .clangd
+  cp .clangd-emulator ../.clangd
 fi
 
