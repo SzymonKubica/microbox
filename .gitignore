@@ -2,3 +2,4 @@ build/
 build-debug/*
 build-emulator/*
 build-emulator-debug/*
+persistent-storage.bin
