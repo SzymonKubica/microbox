@@ -190,7 +190,7 @@ int find_max_config_option_value_text_length(Configuration *config);
 std::optional<UserAction>
 collect_configuration(Platform *p, Configuration *config,
                       UserInterfaceCustomization *customization,
-                      bool allow_exit = true);
+                      bool allow_exit = true, bool should_render_logo = false);
 
 void populate_int_option_values(ConfigurationOption *value,
                                 std::vector<int> available_values);

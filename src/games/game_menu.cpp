@@ -95,7 +95,7 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
 
         auto options = {game, accent_color, rendering_mode, show_help_text};
 
-        return new Configuration("Game Console", options, "Select game");
+        return new Configuration("MicroBox", options, "Select game");
 }
 
 void extract_game_config(GameMenuConfiguration *menu_configuration,
@@ -133,6 +133,7 @@ void extract_game_config(GameMenuConfiguration *menu_configuration,
 void select_game(Platform *p)
 {
         GameMenuConfiguration config;
+
 
         auto maybe_interrupt = collect_game_menu_config(p, &config);
 
@@ -200,7 +201,7 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
         };
 
         auto maybe_interrupt =
-            collect_configuration(p, config, &customization, false);
+            collect_configuration(p, config, &customization, false, true);
         if (maybe_interrupt) {
                 return maybe_interrupt;
         }

@@ -24,6 +24,7 @@
   each square separately.
 
 # TODO
+- [_] update readme and emulator get started instructions, readme revamp.
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] make the game of life random grid population truly random (currently it looks
@@ -32,13 +33,15 @@
 - [_] add high score saving to 2048.
 - [_] add username collection screen
 - [_] add ability to erase eeprom (probably external sketch)
-
-- [_] update readme and emulator get started instructions
+- [_] think about proper copilot keybindings
 
 
 # In Progress
 
 # Done
+- [x] ensure that the logo is only rendered on the home screen
+- [x] figure out a name for the game
+- [x] make a game console logo
 - [x] onboard Minesweeper onto the dynamic help hint setup
 - [x] make game of life cursor snappy
 - [x] implement generic help prompt functionality

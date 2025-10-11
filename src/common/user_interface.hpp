@@ -9,7 +9,9 @@ void setup_display();
 
 void render_config_menu(Display *display, Configuration *config,
                         ConfigurationDiff *diff, bool text_update_only,
-                        UserInterfaceCustomization *customization);
+                        UserInterfaceCustomization *customization, bool should_render_logo = false);
+void render_logo(Display *display, UserInterfaceCustomization *customization,
+                 Point position);
 void render_controls_explanations(Display *display);
 
 void render_wrapped_help_text(Platform *p,

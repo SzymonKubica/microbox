@@ -201,6 +201,17 @@ void SfmlDisplay::draw_rounded_rectangle(Point start, int width, int height,
         draw_rectangle({.x = top_left_corner.x, .y = start.y + height - radius},
                        width - 2 * radius, radius + 1, color, 0, true);
 };
+
+void SfmlDisplay::draw_line(Point start, Point end, Color color)
+{
+        sf::Vertex line[] = {
+            sf::Vertex(sf::Vector2f(start.x, start.y), map_to_sf_color(color)),
+            sf::Vertex(sf::Vector2f(end.x, end.y), map_to_sf_color(color))};
+
+        texture->draw(line, 2, sf::PrimitiveType::Lines);
+        texture->display();
+        refresh();
+}
 void SfmlDisplay::draw_string(Point start, char *string_buffer,
                               FontSize font_size, Color bg_color,
                               Color fg_color)

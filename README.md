@@ -1,4 +1,4 @@
-# Game Console
+# [μ] MicroBox
 
 This repository contains source code of a simple game
 console built for Arduino UNO Rev 4.

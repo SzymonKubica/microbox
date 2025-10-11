@@ -59,6 +59,11 @@ class LcdDisplay : public Display
         virtual void draw_rounded_rectangle(Point start, int width, int height,
                                             int radius, Color color) override;
         /**
+         * Draws a line from a start point to the end point with specified
+         * color. Note that fill and thickness are not controllable yet.
+         */
+        virtual void draw_line(Point start, Point end, Color color) override;
+        /**
          * Prints a string on the display, allows for specifying the font size,
          * color and background color.
          */

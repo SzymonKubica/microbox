@@ -407,7 +407,8 @@ ConfigurationDiff *empty_diff()
  */
 void render_config_menu(Display *display, Configuration *config,
                         ConfigurationDiff *diff, bool text_update_only,
-                        UserInterfaceCustomization *customization)
+                        UserInterfaceCustomization *customization,
+                        bool should_render_logo)
 {
         int max_option_name_length =
             find_max_config_option_name_text_length(config);
@@ -421,11 +422,6 @@ void render_config_menu(Display *display, Configuration *config,
         int spacing = (display->get_height() - config->options_len * FONT_SIZE -
                        HEADING_FONT_SIZE) /
                       3;
-
-        if (!text_update_only) {
-                display->initialize();
-                display->clear(Black);
-        }
 
         const char *heading_text = config->name;
 
@@ -444,6 +440,11 @@ void render_config_menu(Display *display, Configuration *config,
         int y_spacing = calculate_section_spacing(h, bars_num, bar_height,
                                                   bar_gap_height, Size24);
 
+        if (!text_update_only) {
+                display->initialize();
+                display->clear(Black);
+        }
+
         int *bar_positions = calculate_config_bar_positions(
             y_spacing, Size24, bar_height, bar_gap_height, bars_num);
 
@@ -452,6 +453,10 @@ void render_config_menu(Display *display, Configuration *config,
                                  heading_text, text_update_only,
                                  customization->rendering_mode, Black, White,
                                  HEADING_FONT_WIDTH, Size24);
+
+        if (!text_update_only && should_render_logo) {
+                render_logo(display, customization, {.x = 10, .y = y_spacing});
+        }
 
         for (int i = 0; i < config->options_len; i++) {
                 int bar_y = bar_positions[i];
@@ -705,6 +710,114 @@ void render_wrapped_help_text(Platform *p,
         p->display->draw_circle(
             {.x = ok_green_circle_x, .y = ok_green_circle_y}, circle_radius,
             Green, 0, true);
+}
+
+void draw_cube_perspective(Display *display, Point position, int size,
+                           Color color)
+{
+        display->draw_rectangle(position, size, size, color, 1, false);
+
+        // When drawing rectangles and lines the positions are slightly
+        // misaligned and don't look pixel-accurate. We need to adjust the
+        // starting positions of the vertices to align with the rectangle
+        // vertices precisely. This is only required on the emulator. I suspect
+        // this is due to the slightly different implementations of drawing
+        // lines between the display libraries. In the future this could be
+        // moved to the emulator display library.
+
+#ifdef EMULATOR
+        int alignment_offset = 1;
+#endif
+#ifndef EMULATOR
+        int alignment_offset = 0;
+#endif
+
+        Point front_top_left_vertex = {position.x - alignment_offset,
+                                       position.y};
+        Point front_top_right_vertex = {position.x + size, position.y};
+        Point front_bottom_right_vertex = {
+            position.x + size, position.y + size + alignment_offset};
+        auto front_vertices = {front_top_left_vertex, front_top_right_vertex,
+                               front_bottom_right_vertex};
+
+        // Draw the three visible slanted edges
+        int perspective_offset = size / 3;
+
+        auto translate_to_back = [&perspective_offset](Point vertex) {
+                return Point{vertex.x + perspective_offset,
+                             vertex.y - perspective_offset};
+        };
+
+        for (Point vertex : front_vertices) {
+                display->draw_line(vertex, translate_to_back(vertex), color);
+        }
+
+        // Draw the two visible back edges
+        Point back_top_left_vertex = translate_to_back(front_top_left_vertex);
+        Point back_top_right_vertex = translate_to_back(front_top_right_vertex);
+        Point back_bottom_right_vertex =
+            translate_to_back(front_bottom_right_vertex);
+
+        display->draw_line(back_top_left_vertex, back_top_right_vertex, color);
+        display->draw_line(back_top_right_vertex, back_bottom_right_vertex,
+                           color);
+}
+/**
+ * Draws a Greek mu letter (μ) contained inside of a square box with edge width
+ * equal to `size`. Note that for pixel accuracy the size of the mu letter
+ * should be divisible by 6.
+ */
+void draw_mu_letter(Display *display, Point position, int size, Color color)
+{
+        int width = size / 3;
+        int height = 2 * width;
+        int v_margin = (size - height) / 2;
+        int h_margin = width;
+
+        // First we draw the 'leg' which is the vertical long part of the μ
+        // letter
+        Point letter_leg_start = {position.x + h_margin, position.y + v_margin};
+        Point letter_leg_end = {letter_leg_start.x,
+                                letter_leg_start.y + height};
+
+        display->draw_line(letter_leg_start, letter_leg_end, color);
+
+        // Controls how much the front of the μ letter sticks out from the round
+        // part.
+        int letter_front_gap = width / 6;
+        // Then we draw the front part of the letter
+        Point letter_front_start = {position.x + h_margin + width,
+                                    position.y + v_margin};
+        Point letter_front_end = {letter_front_start.x, letter_front_start.y +
+                                                            height / 2 +
+                                                            letter_front_gap};
+
+        display->draw_line(letter_front_start, letter_front_end, color);
+
+        // Now we connect the two parts with a semi-circle
+        int radius = width / 2 - 1;
+        Point center = {letter_leg_start.x + radius,
+                        letter_front_end.y - letter_front_gap};
+        // For pixel accuracy we decrease the diameter by 1 as the circle
+        // also has some thickness to it.
+        display->draw_circle(center, radius, color, 1, false);
+
+        // We now clear the top part of the circle to be left with the mu
+        // letter only.
+
+        display->clear_region(
+            letter_leg_start,
+            {letter_front_end.x - 1, letter_front_end.y - letter_front_gap},
+            Black);
+}
+void render_logo(Display *display, UserInterfaceCustomization *customization,
+                 Point position)
+{
+
+        int size = 24;
+        draw_cube_perspective(display, position, size,
+                              customization->accent_color);
+        draw_mu_letter(display, position, size, customization->accent_color);
 }
 
 void wait_until_green_pressed(Platform *p)

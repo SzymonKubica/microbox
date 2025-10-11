@@ -280,10 +280,11 @@ int get_config_option_string_value_index(ConfigurationOption *option,
 std::optional<UserAction>
 collect_configuration(Platform *p, Configuration *config,
                       UserInterfaceCustomization *customization,
-                      bool allow_exit)
+                      bool allow_exit, bool should_render_logo)
 {
         ConfigurationDiff *diff = empty_diff();
-        render_config_menu(p->display, config, diff, false, customization);
+        render_config_menu(p->display, config, diff, false, customization,
+                           should_render_logo);
         if (customization->show_help_text) {
                 render_controls_explanations(p->display);
         }
@@ -314,7 +315,7 @@ collect_configuration(Platform *p, Configuration *config,
                                  */
                                 increment_current_option_value(config, diff);
                                 render_config_menu(p->display, config, diff,
-                                                   true, customization);
+                                                   true, customization, should_render_logo);
                                 move_registered_delay();
                                 free(diff);
                                 continue;
@@ -348,7 +349,7 @@ collect_configuration(Platform *p, Configuration *config,
                         }
 
                         render_config_menu(p->display, config, diff, true,
-                                           customization);
+                                           customization, should_render_logo);
 
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }

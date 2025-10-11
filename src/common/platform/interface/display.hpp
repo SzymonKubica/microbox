@@ -1,5 +1,6 @@
 #pragma once
-// TODO: think about those dependencies. Should they be a part of the platform definition?
+// TODO: think about those dependencies. Should they be a part of the platform
+// definition?
 #include "../../point.hpp"
 #include "../../font_size.hpp"
 #include "color.hpp"
@@ -18,7 +19,8 @@ class Display
          * particular implementation of the display. In case of the hardware
          * display, this is supposed to initialize the display driver and erease
          * its previous contents. Note that this should be called inside of
-         * the `setup` Arduino function and is intended to be executed only once.
+         * the `setup` Arduino function and is intended to be executed only
+         * once.
          */
         virtual void setup() = 0;
         /**
@@ -58,6 +60,11 @@ class Display
         virtual void draw_rounded_rectangle(Point start, int width, int height,
                                             int radius, Color color) = 0;
         /**
+         * Draws a line from a start point to the end point with specified
+         * color. Note that fill and thickness are not controllable yet.
+         */
+        virtual void draw_line(Point start, Point end, Color color) = 0;
+        /**
          * Prints a string on the display, allows for specifying the font size,
          * color and background color.
          */
@@ -90,12 +97,11 @@ class Display
          */
         virtual int get_display_corner_radius() = 0;
 
-
         /**
          * For displays that require redrawing every frame, we need to provide
-         * ability to refresh their contents. Note that on the arduino LCD display
-         * this will be a no-op as that display does not require refreshing.
+         * ability to refresh their contents. Note that on the arduino LCD
+         * display this will be a no-op as that display does not require
+         * refreshing.
          */
         virtual void refresh() = 0;
-
 };
