@@ -11,9 +11,16 @@
 # file with the desired settings.
 #
 # This script accepts the name of the platform (arduino/emulator). Based on this
-# input, it will overwrite the .clangd file with either .clangd-arduino or .clangd-emulator
+# input, it will overwrite the .clangd file int the root of the repo with either .clangd-arduino or .clangd-emulator
+#
+# Note: while should be executed from the root of the repository.
 
 platform="$1"
+
+if [ "$(basename "$PWD")" != "microbox" ]; then
+    echo "This script should be executed from the root of the repository."
+    exit 1
+fi
 
 if [ -z "$platform" ]; then
     echo "Usage: $0 <platform>"
@@ -27,9 +34,10 @@ if [ "$platform" != "arduino" ] && [ "$platform" != "emulator" ]; then
     exit 1
 fi
 
+set -x # Enables command echo-ing
 if [ "$platform" == "arduino" ]; then
-  cp .clangd-arduino ../.clangd
+  cp scripts/clangd/clangd-arduino .clangd
 else
-  cp .clangd-emulator ../.clangd
+  cp scripts/clangd/clangd-emulator .clangd
 fi
-
+set -x
