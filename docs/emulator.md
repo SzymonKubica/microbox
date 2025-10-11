@@ -1,7 +1,54 @@
 
-## Emulated execution
+# MicroBox Emulator
+<p align="center">
+<img src="/assets/images/microbox-home-screen.png"alt="microbox-home-screen"/>
+<img src="/assets/images/game-of-life.png"alt="microbox-home-screen"/>
+</p>
 
-The game console can also be executed on a regular linux machine as an sfml-based
+## Quick Start Guide
+
+To set up CMake and build the emulator, clone the MicroBox repo:
+```bash
+git clone git@github.com:SzymonKubica/microbox.git
+```
+
+Then you need to run the following script:
+```
+./scripts/build-emulator.sh
+```
+This will do the following:
+- create a new directory for CMake build configurations
+- enter the directory
+- set up CMake there
+- execute CMake build process
+- create the `/build-emulator/microbox-emulator` artifact
+
+If you want to build the emulator with debug symbols and debug logging enabled,
+you should run:
+```
+./scripts/debug-build-emulator.sh
+```
+You can now run the emulator by invoking: `./build-emulator/microbox-emulator`
+
+If you want to change the code & recompile the emulator, you need to enter
+the relevant build directory (`build-emulator` or `build-emulator-debug`) and
+execute:
+```
+cmake --build .
+```
+This will update the emulator executable and you can run it from within the
+same directory:
+```
+./microbox-emulator
+```
+
+## Building & Running the Emulator
+
+If the above quick start scripts didn't work for you or you are trying to
+understand what we are doing step-by-step. Below you can find more detailed
+instructions.
+
+MicroBox can run on a regular linux machine as an SFML-based
 graphical application. This is configured as a CMake project which is configured
 in CMakeLists.txt
 

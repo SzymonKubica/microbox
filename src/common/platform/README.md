@@ -1,4 +1,4 @@
-# Game Console Platform Definitions
+# MicroBox Platform Definitions
 
 This module contains definitions of interfaces that are required to run the
 game console and all of the games. The idea is that the actual physical game

@@ -3,6 +3,7 @@
 <p align="center">
 <img src="/assets/images/microbox-home-screen.png"alt="microbox-home-screen"/>
 <img src="/assets/images/microbox-top-view-compact.jpg" alt="microbox-case-top-view" height="239px"/>
+</p>
 
 MicroBox is a handheld retro game console built using off-the-shelf microcontroller
 components. All of the its code and CAD files open-source.
@@ -37,7 +38,6 @@ If you have ideas for new games, optimizations, or hardware improvements, feel f
 ## :scroll: License
 
 This project is released under the MIT License — free to use, modify, and share.
-</p>
 
 <p align="center">
 <img src="/assets/images/microbox-slanted-view.jpg" alt="microbox-case-slanted-view" width="500"/>
