@@ -70,11 +70,27 @@ STL file: [battery-pack.stl](/assets/stl-objects/case-1.0/battery-pack.stl)
 ## :jigsaw: Putting Everything Together
 
 <p align="center">
-<img src="assets/images/all-case-components-disassembled.jpg" alt="full-case"/>
+<img src="/assets/images/all-case-components-disassembled.jpg" alt="full-case-disassembled"/>
 </p>
 
-?
-? assets/images/assembled-case-game-mode.jpg
-? assets/images/assembled-case-travel-mode.jpg
+When using the console ensure that the inner case sits in the outer one in a way
+that they holes on their sides line up and USB-C port of the Arduino is close
+to the port on the power bank. Connect the two with the cable and the console
+is ready to use.
+
+<p align="center">
+<img src="/assets/images/assembled-case-game-mode.jpg" alt="assembled-case-game-mode"/>
+</p>
+
+When travelling, place the cable at the bottom of the outer case, then slide the
+inner case 'upside down' in a way that the hole exposing Arduino USB-C port is
+shielded by the shorter side of the outer case that has no hole in it.
+
+This means that, in order to go from the **game mode** to **travel mode** you
+need to flip the inner case 180 degrees along its **shorter** edge.
+<p align="center">
+<img src="/assets/images/assembled-case-travel-mode.jpg" alt="assembled-case-travel-mode"/>
+</p>
+
 
 
