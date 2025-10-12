@@ -4,7 +4,7 @@
 - Arduino UNO R4 (WiFi or Minima)
 - This exact [LCD display](https://www.waveshare.com/1.69inch-lcd-module.htm)
 - Arduino [input shield](https://thepihut.com/products/input-shield-for-arduino?variant=27740616849)
-- any 3D Printer to print the enclosure.
+- any 3D Printer to [print the enclosure](./3d-printing.md).
 
 
 You will need to solder the LCD display wires onto the input shield.
