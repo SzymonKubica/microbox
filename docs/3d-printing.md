@@ -1,6 +1,6 @@
 # MicroBox Case 1.0
 <p align="center">
-<img src="/assets/images/assembled-case.png"alt="assembled-case" width="1000"/>
+<img src="/assets/images/assembled-case.png"alt="assembled-case" width="800"/>
 </p>
 
 CAD file: [microbox-case-1.0.FCStd](/assets/stl-objects/case-1.0/microbox-case-1.0.FCStd)
@@ -12,13 +12,13 @@ The case consists of three components:
 
 ## Inner Case
 <p align="center">
-<img src="/assets/images/front-plate.png"alt="front-plate" width="1000"/>
+<img src="/assets/images/front-plate.png"alt="front-plate" width="800"/>
 </p>
 
 STL file: [front-plate.stl](/assets/stl-objects/case-1.0/front-plate.stl)
 
 <p align="center">
-<img src="/assets/images/back-plate.png"alt="back-plate" width="1000"/>
+<img src="/assets/images/back-plate.png"alt="back-plate" width="800"/>
 </p>
 
 STL file: [back-plate.stl](/assets/stl-objects/case-1.0/back-plate.stl)
@@ -41,14 +41,14 @@ Steps to assemble the inner case:
 
 ## Outer Case
 <p align="center">
-<img src="/assets/images/outer-case.png"alt="outer-case" width="1000"/>
+<img src="/assets/images/outer-case.png"alt="outer-case" width="800"/>
 </p>
 
 STL file: [outer-case.stl](/assets/stl-objects/case-1.0/outer-case.stl)
 
 ## Battery Pack
 <p align="center">
-<img src="/assets/images/battery-pack.png"alt="battery-pack" width="1000"/>
+<img src="/assets/images/battery-pack.png"alt="battery-pack" width="800"/>
 </p>
 
 STL file: [battery-pack.stl](/assets/stl-objects/case-1.0/battery-pack.stl)
