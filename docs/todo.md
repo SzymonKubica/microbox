@@ -24,7 +24,6 @@
   each square separately.
 
 # TODO
-- [_] update readme and emulator get started instructions, readme revamp.
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] make the game of life random grid population truly random (currently it looks
@@ -39,6 +38,7 @@
 # In Progress
 
 # Done
+- [x] update readme and emulator get started instructions, readme revamp.
 - [x] ensure that the logo is only rendered on the home screen
 - [x] figure out a name for the game
 - [x] make a game console logo
