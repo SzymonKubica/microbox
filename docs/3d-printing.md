@@ -23,7 +23,7 @@ STL file: [front-plate.stl](/assets/stl-objects/case-1.0/front-plate.stl)
 
 STL file: [back-plate.stl](/assets/stl-objects/case-1.0/back-plate.stl)
 
-<p align="center">
+<p align="left">
 <img src="/assets/images/reset-button.png"alt="reset-button" height="200"/>
 </p>
 
@@ -67,7 +67,14 @@ STL file: [battery-pack.stl](/assets/stl-objects/case-1.0/battery-pack.stl)
     to glue the magnets in. You can do this if you want to make it extra secure.
 
 
+## :jigsaw: Putting Everything Together
 
+<p align="center">
+<img src="assets/images/all-case-components-disassembled.jpg" alt="full-case"/>
+</p>
 
+?
+? assets/images/assembled-case-game-mode.jpg
+? assets/images/assembled-case-travel-mode.jpg
 
 
