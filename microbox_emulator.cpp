@@ -1,3 +1,4 @@
+#ifdef EMULATOR
 #include "emulator_config.h"
 
 #include "src/common/platform/interface/platform.hpp"
@@ -98,3 +99,4 @@ void print_version(char *argv[])
         std::cout << argv[0] << "Version: " << EMULATOR_VERSION_MAJOR << "."
                   << EMULATOR_VERSION_MINOR << std::endl;
 }
+#endif // EMULATOR
