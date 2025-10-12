@@ -23,7 +23,7 @@ STL file: [front-plate.stl](/assets/stl-objects/case-1.0/front-plate.stl)
 
 STL file: [back-plate.stl](/assets/stl-objects/case-1.0/back-plate.stl)
 
-<p align="left">
+<p align="center">
 <img src="/assets/images/reset-button.png"alt="reset-button" height="200"/>
 </p>
 
