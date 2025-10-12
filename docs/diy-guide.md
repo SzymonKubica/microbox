@@ -8,6 +8,7 @@
 - Any USB-C to USB-C cable (but [this one](https://www.amazon.co.uk/dp/B0CN6CKDN5?ref=ppx_yo2ov_dt_b_fed_asin_title&th=1))
 - any 3D Printer to [print the enclosure](./3d-printing.md).
 - 8 (or more) 8x3mm magnets (e.g. [those ones](https://www.amazon.co.uk/dp/B0CXF3R1MD?ref=ppx_yo2ov_dt_b_fed_asin_title))
+- 4 screws with thread ~3mm and head at most 5mm
 
 
 You will need to solder the LCD display wires onto the input shield.
