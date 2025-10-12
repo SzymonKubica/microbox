@@ -10,7 +10,7 @@ components. All of the its code and CAD files open-source.
 Follow the [DIY guide](docs/diy-guide.md) if you want to build your own MicroBox.
 
 Want to see if the games are any good? Why not try out the [emulator](docs/emulator.md) and run games
-on your machine :computer:?
+on your machine?
 
 ## [μ] MicroBox - Microcontroller Game Console :video_game:
 
