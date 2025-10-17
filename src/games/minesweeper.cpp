@@ -83,9 +83,9 @@ void place_bombs(std::vector<std::vector<MinesweeperGridCell>> *grid,
                  int bomb_number, Point *caret_position);
 
 /**
- * Returns true if the user wants to play again. If they press blue on the
- * configuration screen it means that they want to exit, in which case this
- * function returns false.
+ * Collects the minesweeper game configuration and either starts the game,
+ * plays it and returns the user action to play again or returns early with
+ * an 'interrrupt action' if the user requested help screen or exit.
  */
 UserAction minesweeper_loop(Platform *platform,
                             UserInterfaceCustomization *customization);
@@ -586,10 +586,7 @@ Configuration *assemble_minesweeper_configuration(PersistentStorage *storage)
 void extract_game_config(MinesweeperConfiguration *game_config,
                          Configuration *config)
 {
-        // Grid size is the first config option in the game struct
-        // above.
         ConfigurationOption mines_num = *config->options[0];
-
         int curr_mines_count_idx = mines_num.currently_selected;
         game_config->mines_num = static_cast<int *>(
             mines_num.available_values)[curr_mines_count_idx];
