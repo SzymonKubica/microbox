@@ -10,6 +10,7 @@ typedef enum Game
             GameOfLife = 4,
             Settings = 5,
             RandomSeedPicker = 6,
+            Snake = 7,
     } Game;
 
 typedef struct GameMenuConfiguration {

@@ -5,6 +5,7 @@
 #include "settings.hpp"
 #include "game_of_life.hpp"
 #include "minesweeper.hpp"
+#include "random_seed_picker.hpp"
 
 #define TAG "settings"
 
@@ -76,7 +77,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
 
 std::vector<int> get_settings_storage_offsets()
 {
-        std::vector<int> offsets(7);
+        std::vector<int> offsets(8);
         offsets[MainMenu] = 0;
         offsets[Clean2048] = offsets[MainMenu] + sizeof(GameMenuConfiguration);
         offsets[Minesweeper] =
@@ -85,6 +86,7 @@ std::vector<int> get_settings_storage_offsets()
             offsets[Minesweeper] + sizeof(MinesweeperConfiguration);
         offsets[RandomSeedPicker] =
             offsets[GameOfLife] + sizeof(GameOfLifeConfiguration);
+        offsets[Snake] = offsets[RandomSeedPicker] + sizeof(RandomSeedPickerConfiguration);
         return offsets;
 }
 Configuration *assemble_settings_menu_configuration()

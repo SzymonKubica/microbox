@@ -9,6 +9,7 @@
 #include "minesweeper.hpp"
 #include "settings.hpp"
 #include "game_of_life.hpp"
+#include "snake.hpp"
 
 #define TAG "game_menu"
 
@@ -68,7 +69,7 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
         auto *game = ConfigurationOption::of_strings(
             "Game",
             {game_to_string(Game::Minesweeper), game_to_string(Game::Clean2048),
-             game_to_string(Game::GameOfLife), game_to_string(Game::Settings)},
+             game_to_string(Game::GameOfLife), game_to_string(Game::Snake), game_to_string(Game::Settings)},
             game_to_string(initial_config->game));
 
         auto available_colors = {
@@ -134,7 +135,6 @@ void select_game(Platform *p)
 {
         GameMenuConfiguration config;
 
-
         auto maybe_interrupt = collect_game_menu_config(p, &config);
 
         // This customization might not be initialized properly if the user
@@ -170,6 +170,8 @@ void select_game(Platform *p)
                         return new class GameOfLife();
                 case Settings:
                         return new class Settings();
+                case Snake:
+                        return new class Snake();
                 default:
                         return NULL;
                 }
@@ -225,6 +227,8 @@ Game game_from_string(const char *name)
                 return Game::MainMenu;
         if (strcmp(name, game_to_string(Settings)) == 0)
                 return Game::Settings;
+        if (strcmp(name, game_to_string(Snake)) == 0)
+                return Game::Snake;
         return Game::Unknown;
 }
 
@@ -241,6 +245,8 @@ const char *game_to_string(Game game)
                 return "Game Of Life";
         case Settings:
                 return "Settings";
+        case Snake:
+                return "Snake";
         default:
                 return "Unknown";
         }
