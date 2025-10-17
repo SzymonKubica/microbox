@@ -6,6 +6,7 @@
 #include "game_of_life.hpp"
 #include "minesweeper.hpp"
 #include "random_seed_picker.hpp"
+#include "snake.hpp"
 
 #define TAG "settings"
 
@@ -68,6 +69,14 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
+                case Snake: {
+                        SnakeConfiguration config;
+                        auto action = collect_snake_config(p, &config, custom);
+                        if (action && action.value() == UserAction::Exit) {
+                                return;
+                        }
+                        storage.put(offset, config);
+                } break;
                 default:
                         return;
                 }
@@ -86,7 +95,8 @@ std::vector<int> get_settings_storage_offsets()
             offsets[Minesweeper] + sizeof(MinesweeperConfiguration);
         offsets[RandomSeedPicker] =
             offsets[GameOfLife] + sizeof(GameOfLifeConfiguration);
-        offsets[Snake] = offsets[RandomSeedPicker] + sizeof(RandomSeedPickerConfiguration);
+        offsets[Snake] =
+            offsets[RandomSeedPicker] + sizeof(RandomSeedPickerConfiguration);
         return offsets;
 }
 Configuration *assemble_settings_menu_configuration()
