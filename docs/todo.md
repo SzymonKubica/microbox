@@ -24,6 +24,8 @@
   each square separately.
 
 # TODO
+- [_] add snake game
+- [_] figure out why grip depends on having access to the github API.
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] make the game of life random grid population truly random (currently it looks
