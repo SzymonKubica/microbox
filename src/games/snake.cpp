@@ -1,4 +1,6 @@
 #include "snake.hpp"
+#include "2048.hpp"
+#include "game_of_life.hpp"
 #include "settings.hpp"
 #include <optional>
 #include "game_menu.hpp"
@@ -12,10 +14,22 @@
 SnakeConfiguration DEFAULT_SNAKE_CONFIG = {
     .speed = 25, .accelerate = true, .allow_pause = false};
 
-UserAction snake_loop(Platform *p,
-                            UserInterfaceCustomization *customization);
+enum class SnakeGridCell : uint8_t {
+        Apple,
+        Snake,
+        Empty,
+};
 
-void Snake::game_loop(Platform *p, UserInterfaceCustomization *customization) {
+struct SnakeEntity {
+        Point head;
+        Point tail;
+        Direction currentDirection;
+};
+
+UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization);
+
+void Snake::game_loop(Platform *p, UserInterfaceCustomization *customization)
+{
         const char *help_text = "Some snake help";
 
         bool exit_requested = false;
@@ -38,14 +52,12 @@ void Snake::game_loop(Platform *p, UserInterfaceCustomization *customization) {
                         exit_requested = true;
                         break;
                 case UserAction::ShowHelp:
-                        LOG_DEBUG(TAG,
-                                  "User requested snake help screen");
+                        LOG_DEBUG(TAG, "User requested snake help screen");
                         render_wrapped_help_text(p, customization, help_text);
                         wait_until_green_pressed(p);
                         break;
                 }
         }
-
 }
 
 Configuration *assemble_snake_configuration(PersistentStorage *storage);
@@ -135,56 +147,58 @@ void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
         game_config->speed =
             static_cast<int *>(speed.available_values)[curr_speeed_idx];
 
-        ConfigurationOption accelerate = *config->options[0];
+        ConfigurationOption accelerate = *config->options[1];
         int curr_accelerate_idx = accelerate.currently_selected;
         const char *accelerate_choice = static_cast<const char **>(
             accelerate.available_values)[curr_accelerate_idx];
         game_config->accelerate = extract_yes_or_no_option(accelerate_choice);
 
-        ConfigurationOption allow_pause = *config->options[0];
+        ConfigurationOption allow_pause = *config->options[2];
         int curr_allow_pause_idx = allow_pause.currently_selected;
         const char *allow_pause_choice = static_cast<const char **>(
             allow_pause.available_values)[curr_allow_pause_idx];
         game_config->accelerate = extract_yes_or_no_option(allow_pause_choice);
 }
 
-UserAction snake_loop(Platform *p,
-                            UserInterfaceCustomization *customization)
+Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
+void update_grid(Display *display, GameOfLifeGridDimensions *dimensions,
+                 Point *location, SnakeGridCell cell_type);
+UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
         SnakeConfiguration config;
 
-        auto maybe_interrupt =
-            collect_snake_config(p, &config, customization);
+        auto maybe_interrupt = collect_snake_config(p, &config, customization);
 
         if (maybe_interrupt) {
                 return maybe_interrupt.value();
         }
 
-        //MinesweeperGridDimensions *gd = calculate_grid_dimensions(
-        //    p->display->get_width(), p->display->get_height(),
-        //    p->display->get_display_corner_radius());
-        //int rows = gd->rows;
-        //int cols = gd->cols;
+        GameOfLifeGridDimensions *gd = calculate_grid_dimensions(
+            p->display->get_width(), p->display->get_height(),
+            p->display->get_display_corner_radius());
+        int rows = gd->rows;
+        int cols = gd->cols;
 
-        //draw_game_canvas(p, gd, customization);
-        //LOG_DEBUG(TAG, "Minesweeper game canvas drawn.");
+        draw_game_canvas(p, gd, customization);
+        LOG_DEBUG(TAG, "Snake game canvas drawn.");
 
-        //p->display->refresh();
+        p->display->refresh();
 
-        //std::vector<std::vector<MinesweeperGridCell>> grid(
-        //    rows, std::vector<MinesweeperGridCell>(cols));
+        std::vector<std::vector<SnakeGridCell>> grid(
+            rows, std::vector<SnakeGridCell>(cols));
 
-        ///* We only place bombs after the user selects the cell to uncover.
-        //   This avoids situations where the first selected cell is a bomb
-        //   and the game is immediately over without user's logical error. */
-        //bool bombs_placed = false;
+        Point snake_head = {.x = cols / 2, .y = rows / 2};
+        Point snake_tail = {.x = snake_head.x - 1, .y = snake_head.y};
 
-        //Point caret_position = {.x = 0, .y = 0};
-        //draw_caret(p->display, &caret_position, gd);
-        //LOG_DEBUG(TAG, "Caret rendered at initial position.");
+        SnakeEntity snake = {snake_head, snake_tail, Direction::RIGHT};
+        grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
+        grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
+        update_grid(p->display, gd, &snake_head, SnakeGridCell::Snake);
+        update_grid(p->display, gd, &snake_tail, SnakeGridCell::Snake);
 
-        int total_uncovered = 0;
+        Point *apple_location = spawn_apple(&grid);
+        update_grid(p->display, gd, apple_location, SnakeGridCell::Apple);
 
         // To avoid button debounce issues, we only process action input if
         // it wasn't processed on the last iteration. This is to avoid
@@ -193,7 +207,7 @@ UserAction snake_loop(Platform *p,
         // this using this flag.
         bool action_input_on_last_iteration = false;
         bool is_game_over = false;
-        while (!is_game_over ) {
+        while (!is_game_over) {
                 Direction dir;
                 Action act;
                 if (directional_input_registered(p->directional_controllers,
@@ -209,4 +223,49 @@ UserAction snake_loop(Platform *p,
 
         p->display->refresh();
         return UserAction::PlayAgain;
+}
+
+void update_grid(Display *display, GameOfLifeGridDimensions *dimensions,
+                 Point *location, SnakeGridCell cell_type)
+{
+        int height = dimensions->actual_height / dimensions->rows;
+        int width = dimensions->actual_width / dimensions->cols;
+
+        Point grid_loc = *location;
+        Point start = {.x = grid_loc.x * width, .y = grid_loc.y * height};
+
+        switch (cell_type) {
+        case SnakeGridCell::Apple:
+                display->draw_rectangle(start, width, height, Color::Red, 0,
+                                        true);
+                break;
+        case SnakeGridCell::Snake:
+                display->draw_rectangle(start, width, height, Color::Blue, 0,
+                                        true);
+                break;
+        case SnakeGridCell::Empty:
+                display->draw_rectangle(start, width, height, Color::Black, 0,
+                                        true);
+                break;
+        }
+}
+
+Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid)
+{
+        int rows = grid->size();
+        int cols = (*grid->begin().base()).size();
+        while (true) {
+                int x = rand() % cols;
+                int y = rand() % rows;
+
+                SnakeGridCell selected = (*grid)[y][x];
+                if (selected != SnakeGridCell::Snake) {
+                        (*grid)[y][x] = SnakeGridCell::Apple;
+                        Point *random_position = new Point();
+                        random_position->x = x;
+                        random_position->y = y;
+                        return random_position;
+                        break;
+                }
+        }
 }

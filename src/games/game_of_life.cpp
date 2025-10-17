@@ -24,27 +24,6 @@
 #define ALIVE true
 #define EMPTY false
 
-/**
- * Stores all information required for rendering the finite grid for game of
- * life simulation. Note that this is similar to the struct that we are using
- * for Minesweeper so we might want to abstract away this commonality in the
- * future.
- */
-typedef struct GameOfLifeGridDimensions {
-        int rows;
-        int cols;
-        int top_vertical_margin;
-        int left_horizontal_margin;
-        int actual_width;
-        int actual_height;
-
-        GameOfLifeGridDimensions(int r, int c, int tvm, int lhm, int aw, int ah)
-            : rows(r), cols(c), top_vertical_margin(tvm),
-              left_horizontal_margin(lhm), actual_width(aw), actual_height(ah)
-        {
-        }
-} GameOfLifeGridDimensions;
-
 GameOfLifeConfiguration DEFAULT_GAME_OF_LIFE_CONFIG = {
     .prepopulate_grid = false,
     .use_toroidal_array = true,
@@ -201,6 +180,8 @@ void GameOfLife::game_loop(Platform *p,
         }
 }
 
+void render_help_hints(Display *display, GameOfLifeGridDimensions *dimensions,
+                       int border_offset);
 UserAction game_of_life_loop(Platform *p,
                              UserInterfaceCustomization *customization)
 {
@@ -220,6 +201,19 @@ UserAction game_of_life_loop(Platform *p,
         int rows = gd->rows;
         int cols = gd->cols;
         int total_cells = rows * cols;
+
+        // We need to make the border rectangle and the canvas slightly
+        // bigger to ensure that it does not overlap with the game area.
+        // Otherwise the caret rendering erases parts of the border as
+        // it moves around (as the caret intersects with the border
+        // partially). Note: this constant is duplicated inside of
+        // draw_game_canvas and was moved out of the function so that that other
+        // function can be reused for snake. Ideally we need to separate the two
+        // concepts in a clean way
+        int border_offset = 2;
+        if (customization->show_help_text) {
+                render_help_hints(p->display, gd, border_offset);
+        }
 
         draw_game_canvas(p, gd, customization);
         LOG_DEBUG(TAG, "Game of Life canvas drawn.");
@@ -724,8 +718,6 @@ void erase_caret(Display *display, Point *grid_position,
                                 grid_background_color, 1, false);
 }
 
-void render_help_hints(Display *display, GameOfLifeGridDimensions *dimensions,
-                       int border_offset);
 void draw_game_canvas(Platform *p, GameOfLifeGridDimensions *dimensions,
                       UserInterfaceCustomization *customization)
 
@@ -746,10 +738,6 @@ void draw_game_canvas(Platform *p, GameOfLifeGridDimensions *dimensions,
         // it moves around (as the caret intersects with the border
         // partially)
         int border_offset = 2;
-
-        if (customization->show_help_text) {
-                render_help_hints(p->display, dimensions, border_offset);
-        }
 
         // We draw the border at the end to ensure that it doesn't get cropped
         // by draw string operations above.

@@ -104,7 +104,8 @@ Configuration *assemble_settings_menu_configuration()
 
         auto available_games = {
             game_to_string(Game::MainMenu), game_to_string(Game::Minesweeper),
-            game_to_string(Game::Clean2048), game_to_string(Game::GameOfLife)};
+            game_to_string(Game::Clean2048), game_to_string(Game::GameOfLife),
+            game_to_string(Game::Snake)};
 
         auto *menu = ConfigurationOption::of_strings(
             "Modify", available_games, game_to_string(Game::MainMenu));
