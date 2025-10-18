@@ -20,6 +20,9 @@ typedef struct GameMenuConfiguration {
         bool show_help_text;
 } GameMenuConfiguration;
 
+bool is_valid_game(Game game);
+
+
 extern Game game_from_string(const char *name);
 
 extern const char *game_to_string(Game game);
@@ -32,5 +35,5 @@ void select_game(Platform *p);
  * requested exit by pressing the blue button, it returns false and this needs
  * to be handled by the main game loop.
  */
-std::optional<UserAction> collect_game_menu_config(Platform *p,
-                              GameMenuConfiguration *configuration);
+std::optional<UserAction>
+collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration);

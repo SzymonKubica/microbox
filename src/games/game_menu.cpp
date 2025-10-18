@@ -41,7 +41,7 @@ load_initial_menu_configuration(PersistentStorage *storage)
 
         GameMenuConfiguration *output = new GameMenuConfiguration();
 
-        if (configuration.game == Unknown) {
+        if (!is_valid_game(configuration.game)) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "game menu configuration, using default values.");
@@ -231,6 +231,21 @@ Game game_from_string(const char *name)
         if (strcmp(name, game_to_string(Snake)) == 0)
                 return Game::Snake;
         return Game::Unknown;
+}
+
+bool is_valid_game(Game game)
+{
+        switch (game) {
+        case MainMenu:
+        case Clean2048:
+        case Minesweeper:
+        case GameOfLife:
+        case Settings:
+        case Snake:
+                return true;
+        default:
+                return false;
+        }
 }
 
 const char *game_to_string(Game game)
