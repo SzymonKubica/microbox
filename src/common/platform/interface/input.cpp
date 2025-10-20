@@ -16,6 +16,20 @@ const char *direction_to_str(Direction direction)
         };
 };
 
+bool is_opposite(const Direction direction, const Direction other_direction) {
+  switch(direction) {
+  case UP:
+    return other_direction == DOWN;
+  case RIGHT:
+    return other_direction == LEFT;
+  case DOWN:
+    return other_direction == UP;
+  case LEFT:
+    return other_direction == RIGHT;
+  }
+  return false;
+}
+
 const char *action_to_str(Action action)
 {
         switch (action) {

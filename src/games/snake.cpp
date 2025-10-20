@@ -7,7 +7,6 @@
 
 #include "../common/configuration.hpp"
 #include "../common/logging.hpp"
-#include "../common/constants.hpp"
 
 #define GAME_LOOP_DELAY 50
 
@@ -223,13 +222,26 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // this using this flag.
         bool action_input_on_last_iteration = false;
         bool is_game_over = false;
+        // To make the UX more forgiving, if the user is about to bump into a
+        // wall we allow for a 'grace' period. This means that instead of
+        // failing the game immediately, we wait for an additonal snake movement
+        // tick and let the user change the direction. This requires rolling
+        // back the changes that we have already applied on the head of the
+        // snake and its segment body.
+        bool grace_used = false;
+        ;
         bool is_paused = false;
         while (!is_game_over) {
                 Direction dir;
                 Action act;
                 if (directional_input_registered(p->directional_controllers,
                                                  &dir)) {
-                        snake.direction = dir;
+                        // We prevent instant game-over when user presses the
+                        // direction that is opposite to the current direction
+                        // of the snake.
+                        if (!is_opposite(dir, snake.direction)) {
+                                snake.direction = dir;
+                        }
                 }
                 if (action_input_registered(p->action_controllers, &act) &&
                     !action_input_on_last_iteration) {
@@ -254,8 +266,29 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         // We check what lies on the cell that the snake has
                         // just entered (todo: bounds check before we do that)
                         if (is_out_of_bounds(&(snake.head), gd)) {
-                                is_game_over = true;
-                                break;
+                                if (grace_used) {
+                                        is_game_over = true;
+                                        break;
+                                } else {
+                                        // We allow the user to change the
+                                        // direction for an additional tick.
+                                        snake.head = {snake.body->end()->x,
+                                                      snake.body->end()->y};
+
+                                        grace_used = true;
+
+                                        // We short-circuit processing here.
+                                        iteration += 1;
+                                        iteration %= evolution_period;
+                                        p->delay_provider->delay_ms(
+                                            GAME_LOOP_DELAY);
+                                        p->display->refresh();
+                                        continue;
+                                }
+                        } else {
+                                if (grace_used) {
+                                        grace_used = false;
+                                }
                         }
                         SnakeGridCell next_head =
                             grid[snake.head.y][snake.head.x];
