@@ -17,9 +17,9 @@ SnakeConfiguration DEFAULT_SNAKE_CONFIG = {
     .speed = 2, .accelerate = true, .allow_pause = false};
 
 enum class SnakeGridCell : uint8_t {
-        Apple,
-        Snake,
         Empty,
+        Snake,
+        Apple,
 };
 
 struct SnakeEntity {
@@ -164,9 +164,9 @@ void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
 }
 
 Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
-void update_grid(Display *display, GameOfLifeGridDimensions *dimensions,
-                 std::vector<std::vector<SnakeGridCell>> *grid,
-                 Point *location);
+void re_render_grid_cell(Display *display, GameOfLifeGridDimensions *dimensions,
+                         std::vector<std::vector<SnakeGridCell>> *grid,
+                         Point *location);
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
@@ -198,16 +198,16 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
         std::vector<Point> body;
         SnakeEntity snake = {snake_head, snake_tail, Direction::RIGHT, &body};
-        snake.body->push_back(snake_head);
         snake.body->push_back(snake_tail);
+        snake.body->push_back(snake_head);
 
         grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
         grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
-        update_grid(p->display, gd, &grid, &snake_head);
-        update_grid(p->display, gd, &grid, &snake_tail);
+        re_render_grid_cell(p->display, gd, &grid, &snake_head);
+        re_render_grid_cell(p->display, gd, &grid, &snake_tail);
 
         Point *apple_location = spawn_apple(&grid);
-        update_grid(p->display, gd, &grid, apple_location);
+        re_render_grid_cell(p->display, gd, &grid, apple_location);
 
         int evolution_period = (1000 / config.speed) / GAME_LOOP_DELAY;
         int iteration = 0;
@@ -246,13 +246,23 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 if (!is_paused && iteration == evolution_period - 1) {
                         translate(&snake.head, snake.direction);
                         snake.body->push_back(snake.head);
+                        SnakeGridCell previous =
+                            grid[snake.head.y][snake.head.x];
                         grid[snake.head.y][snake.head.x] = SnakeGridCell::Snake;
-                        grid[snake.body->begin()->y][snake.body->begin()->x] =
-                            SnakeGridCell::Empty;
-                        update_grid(p->display, gd, &grid, &snake.head);
-                        update_grid(p->display, gd, &grid,
-                                    snake.body->begin().base());
-                        snake.body->erase(snake.body->begin());
+                        re_render_grid_cell(p->display, gd, &grid, &snake.head);
+
+                        if (previous != SnakeGridCell::Apple) {
+                                grid[snake.body->begin()->y]
+                                    [snake.body->begin()->x] =
+                                        SnakeGridCell::Empty;
+                                re_render_grid_cell(p->display, gd, &grid,
+                                                    snake.body->begin().base());
+                                snake.body->erase(snake.body->begin());
+                        } else {
+                                Point *apple_location = spawn_apple(&grid);
+                                re_render_grid_cell(p->display, gd, &grid,
+                                                    apple_location);
+                        }
                 }
 
                 iteration += 1;
@@ -265,8 +275,9 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         return UserAction::PlayAgain;
 }
 
-void update_grid(Display *display, GameOfLifeGridDimensions *dimensions,
-                 std::vector<std::vector<SnakeGridCell>> *grid, Point *location)
+void re_render_grid_cell(Display *display, GameOfLifeGridDimensions *dimensions,
+                         std::vector<std::vector<SnakeGridCell>> *grid,
+                         Point *location)
 {
         int height = dimensions->actual_height / dimensions->rows;
         int width = dimensions->actual_width / dimensions->cols;
