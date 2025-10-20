@@ -25,7 +25,8 @@ enum class SnakeGridCell : uint8_t {
 struct SnakeEntity {
         Point head;
         Point tail;
-        Direction currentDirection;
+        Direction direction;
+        std::vector<Point> *body;
 };
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization);
@@ -195,7 +196,11 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         Point snake_head = {.x = cols / 2, .y = rows / 2};
         Point snake_tail = {.x = snake_head.x - 1, .y = snake_head.y};
 
-        SnakeEntity snake = {snake_head, snake_tail, Direction::RIGHT};
+        std::vector<Point> body;
+        SnakeEntity snake = {snake_head, snake_tail, Direction::RIGHT, &body};
+        snake.body->push_back(snake_head);
+        snake.body->push_back(snake_tail);
+
         grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
         grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
         update_grid(p->display, gd, &grid, &snake_head);
@@ -214,18 +219,42 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // this using this flag.
         bool action_input_on_last_iteration = false;
         bool is_game_over = false;
+        bool is_paused = false;
         while (!is_game_over) {
                 Direction dir;
                 Action act;
                 if (directional_input_registered(p->directional_controllers,
-                                                 &dir) and
-                    iteration == evolution_period - 1) {
+                                                 &dir)) {
+                        snake.direction = dir;
                 }
                 if (action_input_registered(p->action_controllers, &act) &&
                     !action_input_on_last_iteration) {
+                        switch (act) {
+                        case YELLOW:
+                                is_paused = !is_paused;
+                                break;
+                        case RED:
+                        case GREEN:
+                        case BLUE:
+                                break;
+                        }
                 } else {
                         action_input_on_last_iteration = false;
                 }
+
+                // Actually move the snake here
+                if (!is_paused && iteration == evolution_period - 1) {
+                        translate(&snake.head, snake.direction);
+                        snake.body->push_back(snake.head);
+                        grid[snake.head.y][snake.head.x] = SnakeGridCell::Snake;
+                        grid[snake.body->begin()->y][snake.body->begin()->x] =
+                            SnakeGridCell::Empty;
+                        update_grid(p->display, gd, &grid, &snake.head);
+                        update_grid(p->display, gd, &grid,
+                                    snake.body->begin().base());
+                        snake.body->erase(snake.body->begin());
+                }
+
                 iteration += 1;
                 iteration %= evolution_period;
                 p->delay_provider->delay_ms(GAME_LOOP_DELAY);
