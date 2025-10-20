@@ -89,7 +89,7 @@ Configuration *assemble_snake_configuration(PersistentStorage *storage)
         SnakeConfiguration *initial_config = load_initial_snake_config(storage);
 
         ConfigurationOption *speed = ConfigurationOption::of_integers(
-            "Speed", {1, 2, 3, 4, 5, 6}, initial_config->speed);
+            "Speed", {1, 2, 3, 4, 5, 6, 7, 8}, initial_config->speed);
 
         auto *accelerate = ConfigurationOption::of_strings(
             "Accelerate", {"Yes", "No"},
@@ -258,6 +258,16 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         action_input_on_last_iteration = false;
                 }
 
+                // We exract the iteration ending code here as it needs to
+                // be called early by the grace handlers to skip snake position
+                // update code when doing the grace period.
+                auto end_iteration = [p, &iteration, evolution_period]() {
+                        iteration += 1;
+                        iteration %= evolution_period;
+                        p->delay_provider->delay_ms(GAME_LOOP_DELAY);
+                        p->display->refresh();
+                };
+
                 // Actually move the snake here
                 if (!is_paused && iteration == evolution_period - 1) {
 
@@ -278,20 +288,16 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                         grace_used = true;
 
                                         // We short-circuit processing here.
-                                        iteration += 1;
-                                        iteration %= evolution_period;
-                                        p->delay_provider->delay_ms(
-                                            GAME_LOOP_DELAY);
-                                        p->display->refresh();
+                                        end_iteration();
                                         continue;
-                                }
-                        } else {
-                                if (grace_used) {
-                                        grace_used = false;
                                 }
                         }
                         SnakeGridCell next_head =
                             grid[snake.head.y][snake.head.x];
+
+                        if (grace_used && next_head != SnakeGridCell::Snake) {
+                                grace_used = false;
+                        }
 
                         switch (next_head) {
                         case SnakeGridCell::Empty: {
@@ -311,9 +317,23 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
                                 break;
                         }
-                        case SnakeGridCell::Snake:
-                                is_game_over = true;
-                                break;
+                        case SnakeGridCell::Snake: {
+                                if (grace_used) {
+                                        is_game_over = true;
+                                        break;
+                                } else {
+                                        // We allow the user to change the
+                                        // direction for an additional tick.
+                                        snake.head = {snake.body->end()->x,
+                                                      snake.body->end()->y};
+
+                                        grace_used = true;
+
+                                        // We short-circuit processing here.
+                                        end_iteration();
+                                        continue;
+                                }
+                        }
 
                         case SnakeGridCell::Apple:
                                 // Update grid cell at the new location
@@ -332,10 +352,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         }
                 }
 
-                iteration += 1;
-                iteration %= evolution_period;
-                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
-                p->display->refresh();
+                end_iteration();
         }
 
         p->display->refresh();
