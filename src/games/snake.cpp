@@ -9,10 +9,12 @@
 #include "../common/logging.hpp"
 #include "../common/constants.hpp"
 
+#define GAME_LOOP_DELAY 100
+
 #define TAG "snake"
 
 SnakeConfiguration DEFAULT_SNAKE_CONFIG = {
-    .speed = 25, .accelerate = true, .allow_pause = false};
+    .speed = 2, .accelerate = true, .allow_pause = false};
 
 enum class SnakeGridCell : uint8_t {
         Apple,
@@ -87,7 +89,7 @@ Configuration *assemble_snake_configuration(PersistentStorage *storage)
         SnakeConfiguration *initial_config = load_initial_snake_config(storage);
 
         ConfigurationOption *speed = ConfigurationOption::of_integers(
-            "Speed", {10, 15, 25, 30, 35}, initial_config->speed);
+            "Speed", {1, 2, 3, 4}, initial_config->speed);
 
         auto *accelerate = ConfigurationOption::of_strings(
             "Accelerate", {"Yes", "No"},
@@ -162,8 +164,9 @@ void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
 
 Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
 void update_grid(Display *display, GameOfLifeGridDimensions *dimensions,
-                 Point *location,
-                 std::vector<std::vector<SnakeGridCell>> *grid);
+                 std::vector<std::vector<SnakeGridCell>> *grid,
+                 Point *location);
+
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
@@ -195,11 +198,14 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         SnakeEntity snake = {snake_head, snake_tail, Direction::RIGHT};
         grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
         grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
-        update_grid(p->display, gd, &snake_head, &grid);
-        update_grid(p->display, gd, &snake_tail, &grid);
+        update_grid(p->display, gd, &grid, &snake_head);
+        update_grid(p->display, gd, &grid, &snake_tail);
 
         Point *apple_location = spawn_apple(&grid);
-        update_grid(p->display, gd, apple_location, &grid);
+        update_grid(p->display, gd, &grid, apple_location);
+
+        int evolution_period = (1000 / config.speed) / GAME_LOOP_DELAY;
+        int iteration = 0;
 
         // To avoid button debounce issues, we only process action input if
         // it wasn't processed on the last iteration. This is to avoid
@@ -212,14 +218,18 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 Direction dir;
                 Action act;
                 if (directional_input_registered(p->directional_controllers,
-                                                 &dir)) {
+                                                 &dir) and
+                    iteration == evolution_period - 1) {
                 }
                 if (action_input_registered(p->action_controllers, &act) &&
                     !action_input_on_last_iteration) {
                 } else {
                         action_input_on_last_iteration = false;
                 }
-                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
+                iteration += 1;
+                iteration %= evolution_period;
+                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
+                p->display->refresh();
         }
 
         p->display->refresh();
@@ -227,7 +237,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 }
 
 void update_grid(Display *display, GameOfLifeGridDimensions *dimensions,
-                 Point *location, std::vector<std::vector<SnakeGridCell>> *grid)
+                 std::vector<std::vector<SnakeGridCell>> *grid, Point *location)
 {
         int height = dimensions->actual_height / dimensions->rows;
         int width = dimensions->actual_width / dimensions->cols;
