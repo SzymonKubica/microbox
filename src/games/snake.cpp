@@ -95,12 +95,16 @@ Configuration *assemble_snake_configuration(PersistentStorage *storage)
             "Accelerate", {"Yes", "No"},
             map_boolean_to_yes_or_no(initial_config->accelerate));
 
+        auto *allow_grace = ConfigurationOption::of_strings(
+            "Grace period", {"Yes", "No"},
+            map_boolean_to_yes_or_no(initial_config->allow_grace));
+
         auto *allow_pause = ConfigurationOption::of_strings(
             "Allow pause", {"Yes", "No"},
             map_boolean_to_yes_or_no(initial_config->allow_pause));
 
         std::vector<ConfigurationOption *> options = {speed, accelerate,
-                                                      allow_pause};
+                                                      allow_grace, allow_pause};
 
         return new Configuration("Snake", options, "Start Game");
 }
@@ -155,11 +159,17 @@ void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
             accelerate.available_values)[curr_accelerate_idx];
         game_config->accelerate = extract_yes_or_no_option(accelerate_choice);
 
-        ConfigurationOption allow_pause = *config->options[2];
+        ConfigurationOption allow_grace = *config->options[2];
+        int curr_allow_grace_idx = allow_grace.currently_selected;
+        const char *allow_grace_choice = static_cast<const char **>(
+            allow_grace.available_values)[curr_allow_grace_idx];
+        game_config->allow_grace = extract_yes_or_no_option(allow_grace_choice);
+
+        ConfigurationOption allow_pause = *config->options[3];
         int curr_allow_pause_idx = allow_pause.currently_selected;
         const char *allow_pause_choice = static_cast<const char **>(
             allow_pause.available_values)[curr_allow_pause_idx];
-        game_config->accelerate = extract_yes_or_no_option(allow_pause_choice);
+        game_config->allow_pause = extract_yes_or_no_option(allow_pause_choice);
 }
 
 Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
@@ -207,6 +217,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         auto update_display_cell = [p, gd, &grid](Point *location) {
                 re_render_grid_cell(p->display, gd, &grid, location);
         };
+        update_display_cell(&snake_head);
         update_display_cell(&snake_tail);
 
         Point *apple_location = spawn_apple(&grid);
@@ -276,7 +287,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         // We check what lies on the cell that the snake has
                         // just entered (todo: bounds check before we do that)
                         if (is_out_of_bounds(&(snake.head), gd)) {
-                                if (grace_used) {
+                                if (grace_used || !config.allow_grace) {
                                         is_game_over = true;
                                         break;
                                 } else {
@@ -318,7 +329,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                 break;
                         }
                         case SnakeGridCell::Snake: {
-                                if (grace_used) {
+                                if (grace_used || !config.allow_grace) {
                                         is_game_over = true;
                                         break;
                                 } else {

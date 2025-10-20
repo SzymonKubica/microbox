@@ -12,6 +12,11 @@ typedef struct SnakeConfiguration {
          */
         int speed;
         /**
+         * If true, the game engine will wait for an extra tick before ending
+         * the game when the player is about to crash into a wall or snake's tail.
+         */
+        bool allow_grace;
+        /**
          * [UNSUPPORTED YET] If true, the snake speeds up the larger it gets.
          */
         bool accelerate;
