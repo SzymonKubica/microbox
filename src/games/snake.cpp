@@ -9,7 +9,7 @@
 #include "../common/logging.hpp"
 #include "../common/constants.hpp"
 
-#define GAME_LOOP_DELAY 100
+#define GAME_LOOP_DELAY 50
 
 #define TAG "snake"
 
@@ -90,7 +90,7 @@ Configuration *assemble_snake_configuration(PersistentStorage *storage)
         SnakeConfiguration *initial_config = load_initial_snake_config(storage);
 
         ConfigurationOption *speed = ConfigurationOption::of_integers(
-            "Speed", {1, 2, 3, 4}, initial_config->speed);
+            "Speed", {1, 2, 3, 4, 5, 6}, initial_config->speed);
 
         auto *accelerate = ConfigurationOption::of_strings(
             "Accelerate", {"Yes", "No"},
@@ -167,6 +167,7 @@ Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
 void re_render_grid_cell(Display *display, GameOfLifeGridDimensions *dimensions,
                          std::vector<std::vector<SnakeGridCell>> *grid,
                          Point *location);
+bool is_out_of_bounds(Point *p, GameOfLifeGridDimensions *dimensions);
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
@@ -203,11 +204,14 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
         grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
         grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
-        re_render_grid_cell(p->display, gd, &grid, &snake_head);
-        re_render_grid_cell(p->display, gd, &grid, &snake_tail);
+
+        auto update_display_cell = [p, gd, &grid](Point *location) {
+                re_render_grid_cell(p->display, gd, &grid, location);
+        };
+        update_display_cell(&snake_tail);
 
         Point *apple_location = spawn_apple(&grid);
-        re_render_grid_cell(p->display, gd, &grid, apple_location);
+        update_display_cell(apple_location);
 
         int evolution_period = (1000 / config.speed) / GAME_LOOP_DELAY;
         int iteration = 0;
@@ -244,24 +248,54 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
                 // Actually move the snake here
                 if (!is_paused && iteration == evolution_period - 1) {
-                        translate(&snake.head, snake.direction);
-                        snake.body->push_back(snake.head);
-                        SnakeGridCell previous =
-                            grid[snake.head.y][snake.head.x];
-                        grid[snake.head.y][snake.head.x] = SnakeGridCell::Snake;
-                        re_render_grid_cell(p->display, gd, &grid, &snake.head);
 
-                        if (previous != SnakeGridCell::Apple) {
-                                grid[snake.body->begin()->y]
-                                    [snake.body->begin()->x] =
-                                        SnakeGridCell::Empty;
-                                re_render_grid_cell(p->display, gd, &grid,
-                                                    snake.body->begin().base());
-                                snake.body->erase(snake.body->begin());
-                        } else {
+                        // This modifies the snake.head pointer.
+                        translate(&snake.head, snake.direction);
+                        // We check what lies on the cell that the snake has
+                        // just entered (todo: bounds check before we do that)
+                        if (is_out_of_bounds(&(snake.head), gd)) {
+                                is_game_over = true;
+                                break;
+                        }
+                        SnakeGridCell next_head =
+                            grid[snake.head.y][snake.head.x];
+
+                        switch (next_head) {
+                        case SnakeGridCell::Empty: {
+                                // Update grid cell at the new location
+                                grid[snake.head.y][snake.head.x] =
+                                    SnakeGridCell::Snake;
+                                snake.body->push_back(snake.head);
+                                update_display_cell(&snake.head);
+
+                                // Handling of the tail (remove from snake body
+                                // and rerender)
+                                auto tail_iter = (*(snake.body)).begin();
+                                auto tail = tail_iter.base();
+                                grid[tail->y][tail->x] = SnakeGridCell::Empty;
+                                update_display_cell(tail);
+                                snake.body->erase(tail_iter);
+
+                                break;
+                        }
+                        case SnakeGridCell::Snake:
+                                is_game_over = true;
+                                break;
+
+                        case SnakeGridCell::Apple:
+                                // Update grid cell at the new location
+                                grid[snake.head.y][snake.head.x] =
+                                    SnakeGridCell::Snake;
+                                snake.body->push_back(snake.head);
+                                update_display_cell(&snake.head);
+
+                                // Eating an apple is handled by simply skipping
+                                // the step where we erase the last segment of
+                                // the snake. We then spawn a new apple.
                                 Point *apple_location = spawn_apple(&grid);
                                 re_render_grid_cell(p->display, gd, &grid,
                                                     apple_location);
+                                break;
                         }
                 }
 
@@ -275,27 +309,46 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         return UserAction::PlayAgain;
 }
 
+bool is_out_of_bounds(Point *p, GameOfLifeGridDimensions *dimensions)
+{
+        int x = p->x;
+        int y = p->y;
+
+        return x < 0 || y < 0 || x >= dimensions->cols || y >= dimensions->rows;
+}
+
 void re_render_grid_cell(Display *display, GameOfLifeGridDimensions *dimensions,
                          std::vector<std::vector<SnakeGridCell>> *grid,
                          Point *location)
 {
+        int padding = 1;
         int height = dimensions->actual_height / dimensions->rows;
         int width = dimensions->actual_width / dimensions->cols;
+        int left_margin = dimensions->left_horizontal_margin;
+        int top_margin = dimensions->top_vertical_margin;
 
         Point grid_loc = *location;
-        Point start = {.x = grid_loc.x * width, .y = grid_loc.y * height};
+        Point start = {.x = left_margin + grid_loc.x * width,
+                       .y = top_margin + grid_loc.y * height};
 
         SnakeGridCell cell_type = (*grid)[grid_loc.y][grid_loc.x];
 
         switch (cell_type) {
-        case SnakeGridCell::Apple:
-                display->draw_rectangle(start, width, height, Color::Red, 0,
+        case SnakeGridCell::Apple: {
+                Point apple_center = {.x = start.x + width / 2,
+                                      .y = start.y + width / 2};
+                display->draw_circle(apple_center, (width - 2 * padding) / 2,
+                                     Color::Red, 0, true);
+                break;
+        }
+        case SnakeGridCell::Snake: {
+                Point padded_start = {.x = start.x + padding,
+                                      .y = start.y + padding};
+                display->draw_rectangle(padded_start, width - 2 * padding,
+                                        height - 2 * padding, Color::Blue, 0,
                                         true);
                 break;
-        case SnakeGridCell::Snake:
-                display->draw_rectangle(start, width, height, Color::Blue, 0,
-                                        true);
-                break;
+        }
         case SnakeGridCell::Empty:
                 display->draw_rectangle(start, width, height, Color::Black, 0,
                                         true);
