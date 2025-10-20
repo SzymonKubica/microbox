@@ -162,7 +162,8 @@ void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
 
 Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
 void update_grid(Display *display, GameOfLifeGridDimensions *dimensions,
-                 Point *location, SnakeGridCell cell_type);
+                 Point *location,
+                 std::vector<std::vector<SnakeGridCell>> *grid);
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
@@ -194,11 +195,11 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         SnakeEntity snake = {snake_head, snake_tail, Direction::RIGHT};
         grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
         grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
-        update_grid(p->display, gd, &snake_head, SnakeGridCell::Snake);
-        update_grid(p->display, gd, &snake_tail, SnakeGridCell::Snake);
+        update_grid(p->display, gd, &snake_head, &grid);
+        update_grid(p->display, gd, &snake_tail, &grid);
 
         Point *apple_location = spawn_apple(&grid);
-        update_grid(p->display, gd, apple_location, SnakeGridCell::Apple);
+        update_grid(p->display, gd, apple_location, &grid);
 
         // To avoid button debounce issues, we only process action input if
         // it wasn't processed on the last iteration. This is to avoid
@@ -226,13 +227,15 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 }
 
 void update_grid(Display *display, GameOfLifeGridDimensions *dimensions,
-                 Point *location, SnakeGridCell cell_type)
+                 Point *location, std::vector<std::vector<SnakeGridCell>> *grid)
 {
         int height = dimensions->actual_height / dimensions->rows;
         int width = dimensions->actual_width / dimensions->cols;
 
         Point grid_loc = *location;
         Point start = {.x = grid_loc.x * width, .y = grid_loc.y * height};
+
+        SnakeGridCell cell_type = (*grid)[grid_loc.y][grid_loc.x];
 
         switch (cell_type) {
         case SnakeGridCell::Apple:

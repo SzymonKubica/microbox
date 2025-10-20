@@ -32,6 +32,7 @@
       like the same pattern every time) (The idea is to mess with the seed on input and save
       it in persitent memory)
 - [_] add high score saving to 2048.
+- [_] add ability to 'pause' a 2048 game and have it saved in the persistent storage
 - [_] add username collection screen
 - [_] add ability to erase eeprom (probably external sketch)
 - [_] think about proper copilot keybindings
