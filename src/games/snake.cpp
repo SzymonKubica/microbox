@@ -176,6 +176,10 @@ Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
 void re_render_grid_cell(Display *display, GameOfLifeGridDimensions *dimensions,
                          std::vector<std::vector<SnakeGridCell>> *grid,
                          Point *location);
+void render_segment_connection(Display *display,
+                               GameOfLifeGridDimensions *dimensions,
+                               std::vector<std::vector<SnakeGridCell>> *grid,
+                               Point *first_location, Point *second_location);
 bool is_out_of_bounds(Point *p, GameOfLifeGridDimensions *dimensions);
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
@@ -217,8 +221,15 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         auto update_display_cell = [p, gd, &grid](Point *location) {
                 re_render_grid_cell(p->display, gd, &grid, location);
         };
-        update_display_cell(&snake_head);
+        auto draw_segment_connection = [p, gd, &grid](Point *first_segment,
+                                                      Point *second_segment) {
+                render_segment_connection(p->display, gd, &grid, first_segment,
+                                          second_segment);
+        };
+
         update_display_cell(&snake_tail);
+        draw_segment_connection(&snake_tail, &snake_head);
+        update_display_cell(&snake_head);
 
         Point *apple_location = spawn_apple(&grid);
         update_display_cell(apple_location);
@@ -315,8 +326,11 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                 // Update grid cell at the new location
                                 grid[snake.head.y][snake.head.x] =
                                     SnakeGridCell::Snake;
-                                snake.body->push_back(snake.head);
+                                draw_segment_connection(
+                                    (snake.body->end() - 1).base(),
+                                    &snake.head);
                                 update_display_cell(&snake.head);
+                                snake.body->push_back(snake.head);
 
                                 // Handling of the tail (remove from snake body
                                 // and rerender)
@@ -344,14 +358,19 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                         end_iteration();
                                         continue;
                                 }
+                                break;
                         }
 
                         case SnakeGridCell::Apple:
                                 // Update grid cell at the new location
                                 grid[snake.head.y][snake.head.x] =
                                     SnakeGridCell::Snake;
-                                snake.body->push_back(snake.head);
+                                draw_segment_connection(
+                                    (snake.body->end() - 1).base(),
+                                    &snake.head);
                                 update_display_cell(&snake.head);
+                                snake.body->push_back(snake.head);
+                                LOG_DEBUG(TAG, "Rendered snake segment after eating apple.");
 
                                 // Eating an apple is handled by simply skipping
                                 // the step where we erase the last segment of
@@ -376,6 +395,67 @@ bool is_out_of_bounds(Point *p, GameOfLifeGridDimensions *dimensions)
         int y = p->y;
 
         return x < 0 || y < 0 || x >= dimensions->cols || y >= dimensions->rows;
+}
+
+/**
+ * Renders a segment that connects two adjacent locations on the grid.
+ * Note that this function assumes that the two points are adjacent and the
+ * caller of the function needs to ensure that this is indeed the case.
+ * Also note that here we are referring to the 'logical' locations, i.e. cells
+ * on the grid, not the actual pixel locations. This function performs the
+ * translation between the two concepts.
+ */
+void render_segment_connection(Display *display,
+                               GameOfLifeGridDimensions *dimensions,
+                               std::vector<std::vector<SnakeGridCell>> *grid,
+                               Point *first_location, Point *second_location)
+{
+
+        // Calculation logic to map from logical cells to the actual pixel
+        // values. Note that this is a duplicate of the same logic in
+        // `re_render_grid_cell` and could be refactored into some other
+        // function or merged into grid dimensions struct if it becomes useful
+        // somewhere else.
+        int padding = 1;
+        int height = dimensions->actual_height / dimensions->rows;
+        int width = dimensions->actual_width / dimensions->cols;
+        int left_margin = dimensions->left_horizontal_margin;
+        int top_margin = dimensions->top_vertical_margin;
+
+        bool adjacent_horizontally = first_location->y == second_location->y;
+
+        LOG_DEBUG(TAG, "Rendering segment connection between: {x: %d, y: %d} and {x: %d, y: %d}", first_location->x, first_location->y, second_location->x, second_location->y);
+
+        Point start;
+        if (adjacent_horizontally) {
+                Point left_point = first_location->x < second_location->x
+                                       ? *first_location
+                                       : *second_location;
+
+                // We start drawing from the end of the padded square, hence we
+                // add `width - padding below to get to that point` also note
+                // that we need to start drawing from the padded vertical start
+                // hence we add the padding in the y coordinate
+                start = {.x = left_margin + left_point.x * width + width -
+                              padding,
+                         .y = top_margin + left_point.y * height + padding};
+                display->draw_rectangle(start, 2 * padding,
+                                        height - 2 * padding, Color::Blue, 0,
+                                        true);
+
+        } else {
+                Point top_point = first_location->y < second_location->y
+                                      ? *first_location
+                                      : *second_location;
+                // We start drawing from the end of the padded square (bottom
+                // left corner), hence we add `height - padding below to get to
+                // that point`
+                start = {.x = left_margin + top_point.x * width + padding,
+                         .y = top_margin + top_point.y * height + height -
+                              padding};
+                display->draw_rectangle(start, width - 2 * padding, 2 * padding,
+                                        Color::Blue, 0, true);
+        }
 }
 
 void re_render_grid_cell(Display *display, GameOfLifeGridDimensions *dimensions,
