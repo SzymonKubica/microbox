@@ -2,6 +2,7 @@
 #include "2048.hpp"
 #include "game_of_life.hpp"
 #include "settings.hpp"
+#include <cassert>
 #include <optional>
 #include "game_menu.hpp"
 
@@ -209,6 +210,8 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
         grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
 
+        // Those helper lambdas avoid passing the grid and display parameters
+        // around each time we want to re-render a cell or draw a snake segment.
         auto update_display_cell = [p, gd, &grid](Point *location) {
                 re_render_grid_cell(p->display, gd, &grid, location);
         };
@@ -225,7 +228,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         Point *apple_location = spawn_apple(&grid);
         update_display_cell(apple_location);
 
-        int evolution_period = (1000 / config.speed) / GAME_LOOP_DELAY;
+        int move_period = (1000 / config.speed) / GAME_LOOP_DELAY;
         int iteration = 0;
 
         // To avoid button debounce issues, we only process action input if
@@ -242,7 +245,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // back the changes that we have already applied on the head of the
         // snake and its segment body.
         bool grace_used = false;
-        ;
+
         bool is_paused = false;
         while (!is_game_over) {
                 Direction dir;
@@ -258,123 +261,90 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 }
                 if (action_input_registered(p->action_controllers, &act) &&
                     !action_input_on_last_iteration) {
-                        switch (act) {
-                        case YELLOW:
+                        if (act == YELLOW) {
                                 is_paused = !is_paused;
-                                break;
-                        case RED:
-                        case GREEN:
-                        case BLUE:
-                                break;
+                                action_input_on_last_iteration = true;
                         }
                 } else {
                         action_input_on_last_iteration = false;
                 }
 
-                // We exract the iteration ending code here as it needs to
-                // be called early by the grace handlers to skip snake position
-                // update code when doing the grace period.
-                auto end_iteration = [p, &iteration, evolution_period]() {
-                        iteration += 1;
-                        iteration %= evolution_period;
-                        p->delay_provider->delay_ms(GAME_LOOP_DELAY);
-                        p->display->refresh();
-                };
+                if (!is_paused && iteration == move_period - 1) {
 
-                // Actually move the snake here
-                if (!is_paused && iteration == evolution_period - 1) {
-
-                        // This modifies the snake.head pointer.
+                        // This modifies the snake.head in place.
                         translate(&snake.head, snake.direction);
-                        // We check what lies on the cell that the snake has
-                        // just entered (todo: bounds check before we do that)
-                        if (is_out_of_bounds(&(snake.head), gd)) {
-                                if (grace_used || !config.allow_grace) {
-                                        is_game_over = true;
-                                        break;
-                                } else {
-                                        // We allow the user to change the
-                                        // direction for an additional tick.
-                                        snake.head = {snake.body->end()->x,
-                                                      snake.body->end()->y};
 
-                                        grace_used = true;
+                        bool hit_a_wall = is_out_of_bounds(&(snake.head), gd);
+                        SnakeGridCell next;
 
-                                        // We short-circuit processing here.
-                                        end_iteration();
-                                        continue;
-                                }
+                        if (!hit_a_wall) {
+                                next = grid[snake.head.y][snake.head.x];
                         }
-                        SnakeGridCell next_head =
-                            grid[snake.head.y][snake.head.x];
+                        bool tail_bitten = next == SnakeGridCell::Snake;
+                        bool failure = hit_a_wall || tail_bitten;
 
-                        if (grace_used && next_head != SnakeGridCell::Snake) {
+                        if (!failure) {
+                                // If we got here, it means that the next cell
+                                // is within bounds and is not occupied by the
+                                // snake body. This means that we can safely
+                                // clear grace.
                                 grace_used = false;
-                        }
 
-                        switch (next_head) {
-                        case SnakeGridCell::Empty: {
-                                // Update grid cell at the new location
+                                // The snake has entered the next location
                                 grid[snake.head.y][snake.head.x] =
                                     SnakeGridCell::Snake;
-                                draw_segment_connection(
-                                    (snake.body->end() - 1).base(),
-                                    &snake.head);
+
+                                // We need to draw the small rectangle that
+                                // connects the new snake head to the rest of
+                                // its body.
+                                Point *neck = (snake.body->end() - 1).base();
+                                draw_segment_connection(neck, &snake.head);
                                 update_display_cell(&snake.head);
                                 snake.body->push_back(snake.head);
 
-                                // Handling of the tail (remove from snake body
-                                // and rerender)
-                                auto tail_iter = (*(snake.body)).begin();
-                                auto tail = tail_iter.base();
-                                grid[tail->y][tail->x] = SnakeGridCell::Empty;
-                                update_display_cell(tail);
-                                snake.body->erase(tail_iter);
+                                if (next == SnakeGridCell::Apple) {
+                                        // Eating an apple is handled by simply
+                                        // skipping the step where we erase the
+                                        // last segment of the snake (the else
+                                        // branch). We then spawn a new apple.
+                                        Point *apple_location =
+                                            spawn_apple(&grid);
+                                        re_render_grid_cell(p->display, gd,
+                                                            &grid,
+                                                            apple_location);
+                                } else {
+                                        assert(next == SnakeGridCell::Empty);
 
-                                break;
-                        }
-                        case SnakeGridCell::Snake: {
+                                        // When no apple is consumed we move
+                                        // the snake forward by erasing its last
+                                        // segment.
+                                        auto tail = snake.body->begin();
+                                        grid[tail->y][tail->x] =
+                                            SnakeGridCell::Empty;
+                                        update_display_cell(tail.base());
+                                        snake.body->erase(tail);
+                                }
+
+                        } else {
                                 if (grace_used || !config.allow_grace) {
                                         is_game_over = true;
                                         break;
-                                } else {
-                                        // We allow the user to change the
-                                        // direction for an additional tick.
-                                        snake.head = {snake.body->end()->x,
-                                                      snake.body->end()->y};
-
-                                        grace_used = true;
-
-                                        // We short-circuit processing here.
-                                        end_iteration();
-                                        continue;
                                 }
-                                break;
-                        }
 
-                        case SnakeGridCell::Apple:
-                                // Update grid cell at the new location
-                                grid[snake.head.y][snake.head.x] =
-                                    SnakeGridCell::Snake;
-                                draw_segment_connection(
-                                    (snake.body->end() - 1).base(),
-                                    &snake.head);
-                                update_display_cell(&snake.head);
-                                snake.body->push_back(snake.head);
-                                LOG_DEBUG(TAG, "Rendered snake segment after "
-                                               "eating apple.");
+                                // We allow the user to change the
+                                // direction for an additional tick by
+                                // rolling back the head position.
+                                Point previous_head = *(snake.body->end() - 1);
+                                snake.head = {previous_head.x, previous_head.y};
 
-                                // Eating an apple is handled by simply skipping
-                                // the step where we erase the last segment of
-                                // the snake. We then spawn a new apple.
-                                Point *apple_location = spawn_apple(&grid);
-                                re_render_grid_cell(p->display, gd, &grid,
-                                                    apple_location);
-                                break;
+                                grace_used = true;
                         }
                 }
 
-                end_iteration();
+                iteration += 1;
+                iteration %= move_period;
+                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
+                p->display->refresh();
         }
 
         p->display->refresh();
