@@ -149,27 +149,18 @@ SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
 void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
 {
         ConfigurationOption speed = *config->options[0];
-        int curr_speeed_idx = speed.currently_selected;
-        game_config->speed =
-            static_cast<int *>(speed.available_values)[curr_speeed_idx];
-
         ConfigurationOption accelerate = *config->options[1];
-        int curr_accelerate_idx = accelerate.currently_selected;
-        const char *accelerate_choice = static_cast<const char **>(
-            accelerate.available_values)[curr_accelerate_idx];
-        game_config->accelerate = extract_yes_or_no_option(accelerate_choice);
-
         ConfigurationOption allow_grace = *config->options[2];
-        int curr_allow_grace_idx = allow_grace.currently_selected;
-        const char *allow_grace_choice = static_cast<const char **>(
-            allow_grace.available_values)[curr_allow_grace_idx];
-        game_config->allow_grace = extract_yes_or_no_option(allow_grace_choice);
-
         ConfigurationOption allow_pause = *config->options[3];
-        int curr_allow_pause_idx = allow_pause.currently_selected;
-        const char *allow_pause_choice = static_cast<const char **>(
-            allow_pause.available_values)[curr_allow_pause_idx];
-        game_config->allow_pause = extract_yes_or_no_option(allow_pause_choice);
+
+        auto yes_or_no_option_to_bool = [](ConfigurationOption option) {
+                return extract_yes_or_no_option(option.get_current_str_value());
+        };
+
+        game_config->speed = speed.get_curr_int_value();
+        game_config->accelerate = yes_or_no_option_to_bool(accelerate);
+        game_config->allow_grace = yes_or_no_option_to_bool(allow_grace);
+        game_config->allow_pause = yes_or_no_option_to_bool(allow_pause);
 }
 
 Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
@@ -370,7 +361,8 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                     &snake.head);
                                 update_display_cell(&snake.head);
                                 snake.body->push_back(snake.head);
-                                LOG_DEBUG(TAG, "Rendered snake segment after eating apple.");
+                                LOG_DEBUG(TAG, "Rendered snake segment after "
+                                               "eating apple.");
 
                                 // Eating an apple is handled by simply skipping
                                 // the step where we erase the last segment of
@@ -424,7 +416,11 @@ void render_segment_connection(Display *display,
 
         bool adjacent_horizontally = first_location->y == second_location->y;
 
-        LOG_DEBUG(TAG, "Rendering segment connection between: {x: %d, y: %d} and {x: %d, y: %d}", first_location->x, first_location->y, second_location->x, second_location->y);
+        LOG_DEBUG(TAG,
+                  "Rendering segment connection between: {x: %d, y: %d} and "
+                  "{x: %d, y: %d}",
+                  first_location->x, first_location->y, second_location->x,
+                  second_location->y);
 
         Point start;
         if (adjacent_horizontally) {

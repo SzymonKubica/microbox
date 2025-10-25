@@ -56,6 +56,17 @@ typedef struct ConfigurationOption {
                                               std::vector<Color> values,
                                               Color initial_value);
 
+        int get_curr_int_value()
+        {
+                return static_cast<int *>(available_values)[currently_selected];
+        }
+
+        char *get_current_str_value()
+        {
+                return static_cast<char **>(
+                    available_values)[currently_selected];
+        }
+
 } ConfigurationOption;
 
 /**
