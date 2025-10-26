@@ -268,8 +268,14 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // back the changes that we have already applied on the head of the
         // snake and its segment body.
         bool grace_used = false;
-
         bool is_paused = false;
+
+        // We let the user change the new snake direction at any point during the
+        // frame but it gets applied on the snake only at the end of the given frame.
+        // The reason for this is that doing it each time an input is registered
+        // led to issues where quick changes to the direction could make the snake go
+        // opposite (turn on the spot) and fail the game.
+        Direction chosen_snake_direction = snake.direction;
         while (!is_game_over) {
                 Direction dir;
                 Action act;
@@ -279,7 +285,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         // direction that is opposite to the current direction
                         // of the snake.
                         if (!is_opposite(dir, snake.direction)) {
-                                snake.direction = dir;
+                                chosen_snake_direction = dir;
                         }
                 }
                 if (action_input_registered(p->action_controllers, &act) &&
@@ -293,6 +299,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 }
 
                 if (!is_paused && iteration == move_period - 1) {
+                        snake.direction = chosen_snake_direction;
 
                         // This modifies the snake.head in place.
                         translate(&snake.head, snake.direction);
@@ -460,7 +467,8 @@ void render_segment_connection(Display *display, Color snake_color,
                 // add `width - padding below to get to that point` also note
                 // that we need to start drawing from the padded vertical start
                 // hence we add the padding in the y coordinate
-                start = {.x = left_margin + (left_point.x + 1) * width - adjustment,
+                start = {.x = left_margin + (left_point.x + 1) * width -
+                              adjustment,
                          .y = top_margin + left_point.y * height + padding};
                 display->draw_rectangle(
                     start, padding - border_width + adjustment,
@@ -554,7 +562,6 @@ void render_head(Display *display, Color snake_color,
                 eye_offset = {.x = 0, .y = -rectangle_h / 4};
                 break;
         }
-
 
         display->draw_rectangle({.x = start.x + offset.x + padding,
                                  .y = start.y + offset.y + padding},
