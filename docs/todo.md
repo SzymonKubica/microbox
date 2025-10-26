@@ -43,6 +43,7 @@
 - [_] replace all old instances of 'extract game config'
 
 # Done
+- [x] add target board switching to allow for compiling for minima
 - [x] think about proper copilot keybindings
 - [x] update snake game configurations to remove accelerate mode and slow speeds
 - [x] add snake game
