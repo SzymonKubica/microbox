@@ -44,7 +44,7 @@ typedef struct GameOfLifeGridDimensions {
 
 GameOfLifeGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
-                          int display_rounded_corner_radius);
+                          int display_rounded_corner_radius, int game_cell_width);
 
 void draw_game_canvas(Platform *p, GameOfLifeGridDimensions *dimensions,
                       UserInterfaceCustomization *customization);

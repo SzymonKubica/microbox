@@ -197,7 +197,7 @@ UserAction game_of_life_loop(Platform *p,
 
         GameOfLifeGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius());
+            p->display->get_display_corner_radius(), GAME_CELL_WIDTH);
         int rows = gd->rows;
         int cols = gd->cols;
         int total_cells = rows * cols;
@@ -632,7 +632,7 @@ void spawn_cells_randomly(Display *display, Grid grid,
 
 GameOfLifeGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
-                          int display_rounded_corner_radius)
+                          int display_rounded_corner_radius, int game_cell_width)
 {
         // Bind input params to short names for improved readability.
         int w = display_width;
@@ -642,11 +642,11 @@ calculate_grid_dimensions(int display_width, int display_height,
         int usable_width = w - r;
         int usable_height = h - r;
 
-        int max_cols = usable_width / GAME_CELL_WIDTH;
-        int max_rows = usable_height / GAME_CELL_WIDTH;
+        int max_cols = usable_width / game_cell_width;
+        int max_rows = usable_height / game_cell_width;
 
-        int actual_width = max_cols * GAME_CELL_WIDTH;
-        int actual_height = max_rows * GAME_CELL_WIDTH;
+        int actual_width = max_cols * game_cell_width;
+        int actual_height = max_rows * game_cell_width;
 
         // We calculate centering margins
         int left_horizontal_margin = (w - actual_width) / 2;

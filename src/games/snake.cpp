@@ -19,8 +19,6 @@ SnakeConfiguration DEFAULT_SNAKE_CONFIG = {
 enum class SnakeGridCell : uint8_t {
         Empty,
         Snake,
-        // Equivalent to `SnakeGridCell::Snake` but with different rendering.
-        SnakeHead,
         Apple,
         // After an apple is eaten this is left on the grid. Note that from
         // game mechanics perspective this is equivalent to
@@ -186,6 +184,10 @@ void render_segment_connection(Display *display, Color snake_color,
                                GameOfLifeGridDimensions *dimensions,
                                std::vector<std::vector<SnakeGridCell>> *grid,
                                Point *first_location, Point *second_location);
+void render_head(Display *display, Color snake_color,
+                 GameOfLifeGridDimensions *dimensions,
+                 std::vector<std::vector<SnakeGridCell>> *grid, Point *head,
+                 Direction direction);
 bool is_out_of_bounds(Point *p, GameOfLifeGridDimensions *dimensions);
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
@@ -199,9 +201,10 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 return maybe_interrupt.value();
         }
 
+        int game_cell_width = 10;
         GameOfLifeGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius());
+            p->display->get_display_corner_radius(), game_cell_width);
         int rows = gd->rows;
         int cols = gd->cols;
 
@@ -221,7 +224,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         snake.body->push_back(snake_tail);
         snake.body->push_back(snake_head);
 
-        grid[snake_head.y][snake_head.x] = SnakeGridCell::SnakeHead;
+        grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
         grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
 
         // Those helper lambdas avoid passing the grid and display parameters
@@ -231,16 +234,18 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 re_render_grid_cell(p->display, customization->accent_color, gd,
                                     &grid, location);
         };
-        auto draw_segment_connection = [p, gd, &grid,
-                                        customization](Point *first_segment,
-                                                       Point *second_segment) {
+        auto draw_neck_and_head = [p, gd, &grid, customization,
+                                   &snake](Point *first_segment,
+                                           Point *second_segment) {
                 render_segment_connection(p->display,
                                           customization->accent_color, gd,
                                           &grid, first_segment, second_segment);
+                render_head(p->display, customization->accent_color, gd, &grid,
+                            second_segment, snake.direction);
         };
 
         update_display_cell(&snake_tail);
-        draw_segment_connection(&snake_tail, &snake_head);
+        draw_neck_and_head(&snake_tail, &snake_head);
         update_display_cell(&snake_head);
 
         Point *apple_location = spawn_apple(&grid);
@@ -300,7 +305,6 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         }
                         bool tail_bitten =
                             next == SnakeGridCell::Snake ||
-                            next == SnakeGridCell::SnakeHead ||
                             next == SnakeGridCell::SnakeWithApple;
                         bool failure = hit_a_wall || tail_bitten;
 
@@ -318,22 +322,22 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                 grid[snake.head.y][snake.head.x] =
                                     next == SnakeGridCell::Apple
                                         ? SnakeGridCell::SnakeWithApple
-                                        : SnakeGridCell::SnakeHead;
+                                        : SnakeGridCell::Snake;
 
                                 // We need to draw the small rectangle that
                                 // connects the new snake head to the rest of
                                 // its body.
                                 Point *neck = (snake.body->end() - 1).base();
-                                update_display_cell(&snake.head);
-                                draw_segment_connection(neck, &snake.head);
-                                // The neck is no longer a snake head so we
-                                // update it and re-render. We only do this if the
-                                // previous neck is not a snake-with-apple segment
-                                auto prev_neck = grid[neck->y][neck->x];
-                                if (prev_neck != SnakeGridCell::SnakeWithApple) {
-                                grid[neck->y][neck->x] = SnakeGridCell::Snake;
+                                // First time a cell is drawn it happens inside
+                                // of `draw_neck_and_head`. This is because
+                                // snake's head needs to have a different shape
+                                // from all other cells. Because of this, we
+                                // need to update the neck here to actually
+                                // render it's proper contents (i.e. whether it
+                                // is a regular snake cell or a cell that
+                                // contains an apple).
                                 update_display_cell(neck);
-                                }
+                                draw_neck_and_head(neck, &snake.head);
                                 snake.body->push_back(snake.head);
                                 if (next == SnakeGridCell::Apple) {
                                         // Eating an apple is handled by simply
@@ -466,12 +470,96 @@ void render_segment_connection(Display *display, Color snake_color,
         }
 }
 
+void render_head(Display *display, Color snake_color,
+                 GameOfLifeGridDimensions *dimensions,
+                 std::vector<std::vector<SnakeGridCell>> *grid, Point *head,
+                 Direction direction)
+{
+
+        // Calculation logic to map from logical cells to the actual pixel
+        // values. Note that this is a duplicate of the same logic in
+        // `re_render_grid_cell` and could be refactored into some other
+        // function or merged into grid dimensions struct if it becomes useful
+        // somewhere else.
+        int padding = 2;
+        // rectangle border width needs to be non-zero, else the physical LCD
+        // display will not render rectangles.
+        int border_width = 1;
+        int height = dimensions->actual_height / dimensions->rows;
+        int width = dimensions->actual_width / dimensions->cols;
+        int left_margin = dimensions->left_horizontal_margin;
+        int top_margin = dimensions->top_vertical_margin;
+
+        // We start drawing from the end of the padded square, hence we
+        // add `width - padding below to get to that point` also note
+        // that we need to start drawing from the padded vertical start
+        // hence we add the padding in the y coordinate
+        Point start = {.x = left_margin + head->x * width,
+                       .y = top_margin + head->y * height};
+
+        // We draw a 'half-cell' to connect snake head to the neck.
+        int snake_w = width - 2 * padding;
+        int snake_h = height - 2 * padding;
+        int rectangle_w, rectangle_h;
+        switch (direction) {
+        case UP:
+        case DOWN:
+                rectangle_w = snake_w;
+                rectangle_h = snake_h / 2;
+                break;
+        case RIGHT:
+        case LEFT:
+                rectangle_w = snake_w / 2;
+                rectangle_h = snake_h;
+        }
+
+        Point offset, eye_offset;
+        switch (direction) {
+        case UP:
+                offset = {.x = 0, .y = snake_h / 2};
+                eye_offset = {.x = -rectangle_w / 4, .y = 0};
+                break;
+        case LEFT:
+                offset = {.x = snake_w / 2, .y = 0};
+                eye_offset = {.x = 0, .y = rectangle_h / 4};
+                break;
+        case DOWN:
+                offset = {.x = 0, .y = 0};
+                eye_offset = {.x = rectangle_w / 4, .y = 0};
+                break;
+        case RIGHT:
+                offset = {.x = 0, .y = 0};
+                eye_offset = {.x = 0, .y = -rectangle_h / 4};
+                break;
+        }
+
+        display->draw_rectangle({.x = start.x + offset.x + padding,
+                                 .y = start.y + offset.y + padding},
+                                rectangle_w, rectangle_h, snake_color,
+                                border_width, true);
+        Point cell_center = {.x = start.x + width / 2,
+                             .y = start.y + height / 2};
+        Point eye_center = {
+            .x = start.x + offset.x + padding + rectangle_w / 2 + eye_offset.x,
+            .y = start.y + offset.y + padding + rectangle_h / 2 + eye_offset.y};
+        display->draw_circle(cell_center, (width - 2 * padding) / 2,
+                             snake_color, border_width, true);
+        display->draw_circle(eye_center, 1, Black, 0, true);
+}
+
 void re_render_grid_cell(Display *display, Color snake_color,
                          GameOfLifeGridDimensions *dimensions,
                          std::vector<std::vector<SnakeGridCell>> *grid,
                          Point *location)
 {
         int padding = 2;
+        // Because of pixel-precision inaccuracies we need to make the cells
+        // slightly higher on the physical display
+#ifndef EMULATOR
+        int height_adjustment = 1;
+#else
+        int height_adjustment = 0;
+#endif
         int height = dimensions->actual_height / dimensions->rows;
         int width = dimensions->actual_width / dimensions->cols;
         int left_margin = dimensions->left_horizontal_margin;
@@ -502,8 +590,9 @@ void re_render_grid_cell(Display *display, Color snake_color,
         }
         case SnakeGridCell::Snake: {
                 display->draw_rectangle(padded_start, width - 2 * padding,
-                                        height - 2 * padding, snake_color, 1,
-                                        true);
+                                        height - 2 * padding +
+                                            height_adjustment,
+                                        snake_color, 1, true);
                 break;
         }
         case SnakeGridCell::Empty: {
@@ -518,11 +607,12 @@ void re_render_grid_cell(Display *display, Color snake_color,
                 display->draw_rectangle(padded_start, width - 2 * padding,
                                         height - 2 * padding, snake_color, 1,
                                         true);
-                display->draw_circle(apple_center, (width - 2 * padding) / 2,
-                                     Color::Black, 0, true);
                 display->draw_circle(apple_center,
                                      (width - 2 * padding) / 2 - radius_offset,
-                                     Color::Red, 0, true);
+                                     Color::Black, 0, true);
+                display->draw_circle(
+                    apple_center, (width - 2 * padding) / 2 - 2 * radius_offset,
+                    Color::Red, 0, true);
                 break;
         }
         case SnakeGridCell::Poop: {
@@ -539,11 +629,6 @@ void re_render_grid_cell(Display *display, Color snake_color,
                             loc, (width - 2 * padding) / 2 - radius_offset,
                             Color::Brown, 0, true);
                 }
-                break;
-        }
-        case SnakeGridCell::SnakeHead: {
-                display->draw_circle(apple_center, (width - padding) / 2,
-                                     snake_color, 0, true);
                 break;
         }
         }
