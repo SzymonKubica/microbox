@@ -44,7 +44,10 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization);
 
 void Snake::game_loop(Platform *p, UserInterfaceCustomization *customization)
 {
-        const char *help_text = "Some snake help";
+        const char *help_text =
+            "Use the joystick to control where the snake goes."
+            "Consume apples to grow the snake. Avoid hitting the walls or "
+            "snake's tail. Press yellow to (un-)pause.";
 
         bool exit_requested = false;
         while (!exit_requested) {
