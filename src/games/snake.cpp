@@ -13,8 +13,10 @@
 
 #define TAG "snake"
 
-SnakeConfiguration DEFAULT_SNAKE_CONFIG = {
-    .speed = 2, .allow_grace = false, .accelerate = true, .allow_pause = false};
+SnakeConfiguration DEFAULT_SNAKE_CONFIG = {.speed = 6,
+                                           .allow_grace = false,
+                                           .enable_poop = true,
+                                           .allow_pause = false};
 
 enum class SnakeGridCell : uint8_t {
         Empty,
@@ -99,11 +101,11 @@ Configuration *assemble_snake_configuration(PersistentStorage *storage)
         SnakeConfiguration *initial_config = load_initial_snake_config(storage);
 
         ConfigurationOption *speed = ConfigurationOption::of_integers(
-            "Speed", {1, 2, 3, 4, 5, 6, 7, 8}, initial_config->speed);
+            "Speed", {4, 5, 6, 7, 8}, initial_config->speed);
 
-        auto *accelerate = ConfigurationOption::of_strings(
-            "Accelerate", {"Yes", "No"},
-            map_boolean_to_yes_or_no(initial_config->accelerate));
+        auto *poop = ConfigurationOption::of_strings(
+            "Poop", {"Yes", "No"},
+            map_boolean_to_yes_or_no(initial_config->enable_poop));
 
         auto *allow_grace = ConfigurationOption::of_strings(
             "Grace period", {"Yes", "No"},
@@ -113,8 +115,8 @@ Configuration *assemble_snake_configuration(PersistentStorage *storage)
             "Allow pause", {"Yes", "No"},
             map_boolean_to_yes_or_no(initial_config->allow_pause));
 
-        std::vector<ConfigurationOption *> options = {speed, accelerate,
-                                                      allow_grace, allow_pause};
+        std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
+                                                      allow_pause};
 
         return new Configuration("Snake", options, "Start Game");
 }
@@ -129,7 +131,7 @@ SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
         // to defaults if needed.
         SnakeConfiguration config = {.speed = 0,
                                      .allow_grace = 0,
-                                     .accelerate = false,
+                                     .enable_poop = false,
                                      .allow_pause = 0};
 
         LOG_DEBUG(
@@ -151,9 +153,9 @@ SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
         }
 
         LOG_DEBUG(TAG,
-                  "Loaded snake  game configuration: speed=%d, accelerate=%d, "
+                  "Loaded snake  game configuration: speed=%d, enable_poop=%d, "
                   "allow_pause=%d",
-                  output->speed, output->accelerate, output->allow_pause);
+                  output->speed, output->enable_poop, output->allow_pause);
 
         return output;
 }
@@ -161,7 +163,7 @@ SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
 void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
 {
         ConfigurationOption speed = *config->options[0];
-        ConfigurationOption accelerate = *config->options[1];
+        ConfigurationOption enable_poop = *config->options[1];
         ConfigurationOption allow_grace = *config->options[2];
         ConfigurationOption allow_pause = *config->options[3];
 
@@ -170,7 +172,7 @@ void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
         };
 
         game_config->speed = speed.get_curr_int_value();
-        game_config->accelerate = yes_or_no_option_to_bool(accelerate);
+        game_config->enable_poop = yes_or_no_option_to_bool(enable_poop);
         game_config->allow_grace = yes_or_no_option_to_bool(allow_grace);
         game_config->allow_pause = yes_or_no_option_to_bool(allow_pause);
 }
@@ -270,11 +272,12 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         bool grace_used = false;
         bool is_paused = false;
 
-        // We let the user change the new snake direction at any point during the
-        // frame but it gets applied on the snake only at the end of the given frame.
-        // The reason for this is that doing it each time an input is registered
-        // led to issues where quick changes to the direction could make the snake go
-        // opposite (turn on the spot) and fail the game.
+        // We let the user change the new snake direction at any point during
+        // the frame but it gets applied on the snake only at the end of the
+        // given frame. The reason for this is that doing it each time an input
+        // is registered led to issues where quick changes to the direction
+        // could make the snake go opposite (turn on the spot) and fail the
+        // game.
         Direction chosen_snake_direction = snake.direction;
         while (!is_game_over) {
                 Direction dir;
@@ -290,7 +293,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 }
                 if (action_input_registered(p->action_controllers, &act) &&
                     !action_input_on_last_iteration) {
-                        if (act == YELLOW) {
+                        if (act == YELLOW && config.allow_pause) {
                                 is_paused = !is_paused;
                                 action_input_on_last_iteration = true;
                         }
@@ -363,12 +366,14 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
                                         // When no apple is consumed we move
                                         // the snake forward by erasing its last
-                                        // segment.
+                                        // segment. If poop functionality is
+                                        // enabled we leave it behind.
                                         auto tail = snake.body->begin();
                                         auto previous = grid[tail->y][tail->x];
                                         auto updated =
                                             previous == SnakeGridCell::
-                                                            SnakeWithApple
+                                                            SnakeWithApple &&
+                                                    config.enable_poop
                                                 ? SnakeGridCell::Poop
                                                 : SnakeGridCell::Empty;
                                         grid[tail->y][tail->x] = updated;

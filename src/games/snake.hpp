@@ -17,11 +17,13 @@ typedef struct SnakeConfiguration {
          */
         bool allow_grace;
         /**
-         * [UNSUPPORTED YET] If true, the snake speeds up the larger it gets.
+         * If true, the snake snake will leave excrements after eating an apple
+         * Right now this is only a visual effect, in the future we might
+         * add a game mechanic tied to that;
          */
-        bool accelerate;
+        bool enable_poop;
         /**
-         * [UNSUPPORTED YET] If true, users can pause the game by pressing the
+         * If true, users can pause the game by pressing the
          * yellow button.
          */
         bool allow_pause;

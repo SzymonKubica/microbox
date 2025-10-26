@@ -24,7 +24,8 @@
   each square separately.
 
 # TODO
-- [_] add snake game
+- [_] replace all old instances of 'extract game config'
+- [_] update snake game configurations to remove accelerate mode and slow speeds
 - [_] figure out why grip depends on having access to the github API.
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
@@ -41,6 +42,7 @@
 # In Progress
 
 # Done
+- [x] add snake game
 - [x] update readme and emulator get started instructions, readme revamp.
 - [x] ensure that the logo is only rendered on the home screen
 - [x] figure out a name for the game
