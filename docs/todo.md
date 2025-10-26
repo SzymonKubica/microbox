@@ -24,7 +24,6 @@
   each square separately.
 
 # TODO
-- [_] replace all old instances of 'extract game config'
 - [_] update the lcd / sfml display libraries to remove the pixel-precision
       discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
 - [_] finish the random seed picker functionality.
@@ -41,6 +40,7 @@
 
 
 # In Progress
+- [_] replace all old instances of 'extract game config'
 
 # Done
 - [x] think about proper copilot keybindings

@@ -65,42 +65,40 @@ Configuration *assemble_game_of_life_configuration(PersistentStorage *storage);
 void extract_game_config(GameOfLifeConfiguration *game_config,
                          Configuration *config);
 
-GameOfLifeGridDimensions *
+SquareCellGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
                           int display_rounded_corner_radius);
 
-void draw_game_canvas(Platform *p, GameOfLifeGridDimensions *dimensions,
-                      UserInterfaceCustomization *customization);
 void draw_rewind_mode_indicator(Platform *p,
-                                GameOfLifeGridDimensions *dimensions,
+                                SquareCellGridDimensions *dimensions,
                                 UserInterfaceCustomization *customization);
 void clear_rewind_mode_indicator(Platform *p,
-                                 GameOfLifeGridDimensions *dimensions,
+                                 SquareCellGridDimensions *dimensions,
                                  UserInterfaceCustomization *customization);
 void draw_caret(Display *display, Point *grid_position,
-                GameOfLifeGridDimensions *dimensions, Color caret_color);
+                SquareCellGridDimensions *dimensions, Color caret_color);
 void erase_caret(Display *display, Point *grid_position,
-                 GameOfLifeGridDimensions *dimensions,
+                 SquareCellGridDimensions *dimensions,
                  Color grid_background_color);
 void draw_game_cell(Display *display, Point *grid_position,
-                    GameOfLifeGridDimensions *dimensions, Color color);
+                    SquareCellGridDimensions *dimensions, Color color);
 
 StateEvolution take_simulation_step(Grid grid,
-                                    GameOfLifeGridDimensions *dimensions,
+                                    SquareCellGridDimensions *dimensions,
                                     bool use_toroidal_array);
 
 void render_state_change(Display *display, StateEvolution evolution,
-                         GameOfLifeGridDimensions *dimensions);
+                         SquareCellGridDimensions *dimensions);
 
 void spawn_cells_randomly(Display *display, Grid grid,
-                          GameOfLifeGridDimensions *dimensions);
+                          SquareCellGridDimensions *dimensions);
 
 void save_grid_state_in_rewind_buffer(std::vector<Grid> *rewind_buffer,
                                       int *rewind_buf_idx, Grid grid);
 
 Grid handle_rewind(Direction dir, std::vector<Grid> *rewind_buffer,
                    int latest_state_idx, int *rewind_buf_idx, Grid grid,
-                   GameOfLifeGridDimensions *gd, Display *display);
+                   SquareCellGridDimensions *gd, Display *display);
 
 const char *map_boolean_to_yes_or_no(bool value);
 
@@ -180,7 +178,7 @@ void GameOfLife::game_loop(Platform *p,
         }
 }
 
-void render_help_hints(Display *display, GameOfLifeGridDimensions *dimensions,
+void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                        int border_offset);
 UserAction game_of_life_loop(Platform *p,
                              UserInterfaceCustomization *customization)
@@ -195,7 +193,7 @@ UserAction game_of_life_loop(Platform *p,
                 return maybe_interrupt.value();
         }
 
-        GameOfLifeGridDimensions *gd = calculate_grid_dimensions(
+        SquareCellGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
             p->display->get_display_corner_radius(), GAME_CELL_WIDTH);
         int rows = gd->rows;
@@ -215,7 +213,7 @@ UserAction game_of_life_loop(Platform *p,
                 render_help_hints(p->display, gd, border_offset);
         }
 
-        draw_game_canvas(p, gd, customization);
+        draw_grid_frame(p, customization, gd);
         LOG_DEBUG(TAG, "Game of Life canvas drawn.");
 
         Point caret_pos = {.x = 0, .y = 0};
@@ -452,7 +450,7 @@ void extract_game_config(GameOfLifeConfiguration *game_config,
 }
 
 StateEvolution take_simulation_step(Grid grid,
-                                    GameOfLifeGridDimensions *dimensions,
+                                    SquareCellGridDimensions *dimensions,
                                     bool use_toroidal_array)
 {
         // This assumes that the grid is rectangular.
@@ -509,7 +507,7 @@ StateEvolution take_simulation_step(Grid grid,
 }
 
 void render_state_change(Display *display, StateEvolution evolution,
-                         GameOfLifeGridDimensions *dimensions)
+                         SquareCellGridDimensions *dimensions)
 {
         int rows = dimensions->rows;
         int cols = dimensions->cols;
@@ -555,7 +553,7 @@ void save_grid_state_in_rewind_buffer(std::vector<Grid> *rewind_buffer,
 
 Grid handle_rewind(Direction dir, std::vector<Grid> *rewind_buffer,
                    int latest_state_idx, int *rewind_buf_idx, Grid grid,
-                   GameOfLifeGridDimensions *gd, Display *display)
+                   SquareCellGridDimensions *gd, Display *display)
 {
         // Ignore irrelevant input.
         if (dir == UP || dir == DOWN) {
@@ -614,7 +612,7 @@ Grid handle_rewind(Direction dir, std::vector<Grid> *rewind_buffer,
 }
 
 void spawn_cells_randomly(Display *display, Grid grid,
-                          GameOfLifeGridDimensions *dimensions)
+                          SquareCellGridDimensions *dimensions)
 {
         for (int y = 0; y < dimensions->rows; y++) {
                 for (int x = 0; x < dimensions->cols; x++) {
@@ -630,42 +628,9 @@ void spawn_cells_randomly(Display *display, Grid grid,
         }
 }
 
-GameOfLifeGridDimensions *
-calculate_grid_dimensions(int display_width, int display_height,
-                          int display_rounded_corner_radius, int game_cell_width)
-{
-        // Bind input params to short names for improved readability.
-        int w = display_width;
-        int h = display_height;
-        int r = display_rounded_corner_radius;
-
-        int usable_width = w - r;
-        int usable_height = h - r;
-
-        int max_cols = usable_width / game_cell_width;
-        int max_rows = usable_height / game_cell_width;
-
-        int actual_width = max_cols * game_cell_width;
-        int actual_height = max_rows * game_cell_width;
-
-        // We calculate centering margins
-        int left_horizontal_margin = (w - actual_width) / 2;
-        int top_vertical_margin = (h - actual_height) / 2;
-
-        LOG_DEBUG(TAG,
-                  "Calculated grid dimensions: %d rows, %d cols, "
-                  "left margin: %d, top margin: %d, actual width: %d, "
-                  "actual height: %d",
-                  max_rows, max_cols, left_horizontal_margin,
-                  top_vertical_margin, actual_width, actual_height);
-
-        return new GameOfLifeGridDimensions(
-            max_rows, max_cols, top_vertical_margin, left_horizontal_margin,
-            actual_width, actual_height);
-}
 
 void draw_caret(Display *display, Point *grid_position,
-                GameOfLifeGridDimensions *dimensions, Color caret_color)
+                SquareCellGridDimensions *dimensions, Color caret_color)
 {
 
         // We need to ensure that the caret is rendered INSIDE the text
@@ -684,7 +649,7 @@ void draw_caret(Display *display, Point *grid_position,
 }
 
 void draw_game_cell(Display *display, Point *grid_position,
-                    GameOfLifeGridDimensions *dimensions, Color color)
+                    SquareCellGridDimensions *dimensions, Color color)
 {
         Point actual_position = {.x = dimensions->left_horizontal_margin +
                                       grid_position->x * GAME_CELL_WIDTH,
@@ -698,7 +663,7 @@ void draw_game_cell(Display *display, Point *grid_position,
 }
 
 void erase_caret(Display *display, Point *grid_position,
-                 GameOfLifeGridDimensions *dimensions,
+                 SquareCellGridDimensions *dimensions,
                  Color grid_background_color)
 {
 
@@ -718,36 +683,7 @@ void erase_caret(Display *display, Point *grid_position,
                                 grid_background_color, 1, false);
 }
 
-void draw_game_canvas(Platform *p, GameOfLifeGridDimensions *dimensions,
-                      UserInterfaceCustomization *customization)
-
-{
-        p->display->initialize();
-        p->display->clear(Black);
-
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
-
-        int actual_width = dimensions->actual_width;
-        int actual_height = dimensions->actual_height;
-
-        int border_width = 1;
-        // We need to make the border rectangle and the canvas slightly
-        // bigger to ensure that it does not overlap with the game area.
-        // Otherwise the caret rendering erases parts of the border as
-        // it moves around (as the caret intersects with the border
-        // partially)
-        int border_offset = 2;
-
-        // We draw the border at the end to ensure that it doesn't get cropped
-        // by draw string operations above.
-        p->display->draw_rectangle(
-            {.x = x_margin - border_offset, .y = y_margin - border_offset},
-            actual_width + 2 * border_offset, actual_height + 2 * border_offset,
-            customization->accent_color, border_width, false);
-}
-
-void render_help_hints(Display *display, GameOfLifeGridDimensions *dimensions,
+void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                        int border_offset)
 {
 
@@ -824,7 +760,7 @@ void render_help_hints(Display *display, GameOfLifeGridDimensions *dimensions,
 }
 
 void draw_rewind_mode_indicator(Platform *p,
-                                GameOfLifeGridDimensions *dimensions,
+                                SquareCellGridDimensions *dimensions,
                                 UserInterfaceCustomization *customization)
 {
 
@@ -861,7 +797,7 @@ void draw_rewind_mode_indicator(Platform *p,
 }
 
 void clear_rewind_mode_indicator(Platform *p,
-                                 GameOfLifeGridDimensions *dimensions,
+                                 SquareCellGridDimensions *dimensions,
                                  UserInterfaceCustomization *customization)
 {
 

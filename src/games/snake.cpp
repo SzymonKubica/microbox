@@ -7,6 +7,7 @@
 #include "game_menu.hpp"
 
 #include "../common/configuration.hpp"
+#include "../common/grid.hpp"
 #include "../common/logging.hpp"
 
 #define GAME_LOOP_DELAY 50
@@ -182,18 +183,18 @@ void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
 
 Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
 void re_render_grid_cell(Display *display, Color snake_color,
-                         GameOfLifeGridDimensions *dimensions,
+                         SquareCellGridDimensions *dimensions,
                          std::vector<std::vector<SnakeGridCell>> *grid,
                          Point *location);
 void render_segment_connection(Display *display, Color snake_color,
-                               GameOfLifeGridDimensions *dimensions,
+                               SquareCellGridDimensions *dimensions,
                                std::vector<std::vector<SnakeGridCell>> *grid,
                                Point *first_location, Point *second_location);
 void render_head(Display *display, Color snake_color,
-                 GameOfLifeGridDimensions *dimensions,
+                 SquareCellGridDimensions *dimensions,
                  std::vector<std::vector<SnakeGridCell>> *grid, Point *head,
                  Direction direction);
-bool is_out_of_bounds(Point *p, GameOfLifeGridDimensions *dimensions);
+bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions);
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
@@ -207,13 +208,13 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         }
 
         int game_cell_width = 10;
-        GameOfLifeGridDimensions *gd = calculate_grid_dimensions(
+        SquareCellGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
             p->display->get_display_corner_radius(), game_cell_width);
         int rows = gd->rows;
         int cols = gd->cols;
 
-        draw_game_canvas(p, gd, customization);
+        draw_grid_frame(p, customization, gd);
         LOG_DEBUG(TAG, "Snake game canvas drawn.");
 
         p->display->refresh();
@@ -410,7 +411,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         return UserAction::PlayAgain;
 }
 
-bool is_out_of_bounds(Point *p, GameOfLifeGridDimensions *dimensions)
+bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions)
 {
         int x = p->x;
         int y = p->y;
@@ -427,7 +428,7 @@ bool is_out_of_bounds(Point *p, GameOfLifeGridDimensions *dimensions)
  * translation between the two concepts.
  */
 void render_segment_connection(Display *display, Color snake_color,
-                               GameOfLifeGridDimensions *dimensions,
+                               SquareCellGridDimensions *dimensions,
                                std::vector<std::vector<SnakeGridCell>> *grid,
                                Point *first_location, Point *second_location)
 {
@@ -499,7 +500,7 @@ void render_segment_connection(Display *display, Color snake_color,
 }
 
 void render_head(Display *display, Color snake_color,
-                 GameOfLifeGridDimensions *dimensions,
+                 SquareCellGridDimensions *dimensions,
                  std::vector<std::vector<SnakeGridCell>> *grid, Point *head,
                  Direction direction)
 {
@@ -586,7 +587,7 @@ void render_head(Display *display, Color snake_color,
 }
 
 void re_render_grid_cell(Display *display, Color snake_color,
-                         GameOfLifeGridDimensions *dimensions,
+                         SquareCellGridDimensions *dimensions,
                          std::vector<std::vector<SnakeGridCell>> *grid,
                          Point *location)
 {
