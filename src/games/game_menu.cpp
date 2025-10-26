@@ -104,32 +104,18 @@ void extract_game_config(GameMenuConfiguration *menu_configuration,
                          Configuration *config)
 {
         ConfigurationOption game_option = *config->options[0];
-
-        int curr_option_idx = game_option.currently_selected;
-        menu_configuration->game = game_from_string(static_cast<const char **>(
-            game_option.available_values)[curr_option_idx]);
-
         ConfigurationOption accent_color = *config->options[1];
-
-        int curr_accent_color_idx = accent_color.currently_selected;
-        Color color = static_cast<Color *>(
-            accent_color.available_values)[curr_accent_color_idx];
-        menu_configuration->accent_color = color;
-
         ConfigurationOption rendering_mode = *config->options[2];
-
-        int curr_mode_idx = rendering_mode.currently_selected;
-        const char *mode_str = static_cast<const char **>(
-            rendering_mode.available_values)[curr_mode_idx];
-        menu_configuration->rendering_mode = rendering_mode_from_str(mode_str);
-
         ConfigurationOption show_help_text = *config->options[3];
 
-        int show_help_text_idx = show_help_text.currently_selected;
-        const char *yes_or_no = static_cast<const char **>(
-            show_help_text.available_values)[show_help_text_idx];
+        menu_configuration->game =
+            game_from_string(game_option.get_current_str_value());
+        menu_configuration->accent_color =
+            accent_color.get_current_color_value();
+        menu_configuration->rendering_mode =
+            rendering_mode_from_str(rendering_mode.get_current_str_value());
         menu_configuration->show_help_text =
-            extract_yes_or_no_option(yes_or_no);
+            extract_yes_or_no_option(show_help_text.get_current_str_value());
 }
 
 void select_game(Platform *p)

@@ -116,8 +116,5 @@ Configuration *assemble_settings_menu_configuration()
 void extract_menu_setting(Game *selected_menu, Configuration *config)
 {
         ConfigurationOption menu_option = *config->options[0];
-
-        int curr_idx = menu_option.currently_selected;
-        *selected_menu = game_from_string(
-            static_cast<const char **>(menu_option.available_values)[curr_idx]);
+        *selected_menu = game_from_string(menu_option.get_current_str_value());
 }

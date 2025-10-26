@@ -68,7 +68,6 @@ void free_game_state(GameState *gs);
 UserAction enter_2048_loop(Platform *platform,
                            UserInterfaceCustomization *customization);
 
-
 void Clean2048::game_loop(Platform *p,
                           UserInterfaceCustomization *customization)
 {
@@ -94,7 +93,6 @@ void Clean2048::game_loop(Platform *p,
                 }
         }
 }
-
 
 UserAction enter_2048_loop(Platform *p,
                            UserInterfaceCustomization *customization)
@@ -223,17 +221,11 @@ void extract_game_config(Game2048Configuration *game_config,
 {
         // Grid size is the first config option in the game struct above.
         ConfigurationOption grid_size = *config->options[0];
-
-        int curr_grid_size_idx = grid_size.currently_selected;
-        game_config->grid_size =
-            static_cast<int *>(grid_size.available_values)[curr_grid_size_idx];
-
         // Game target is the second config option above.
         ConfigurationOption game_target = *config->options[1];
 
-        int curr_target_idx = game_target.currently_selected;
-        game_config->target_max_tile =
-            static_cast<int *>(game_target.available_values)[curr_target_idx];
+        game_config->grid_size = grid_size.get_curr_int_value();
+        game_config->target_max_tile = game_target.get_curr_int_value();
 }
 
 std::optional<UserAction>

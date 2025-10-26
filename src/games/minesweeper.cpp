@@ -587,9 +587,7 @@ void extract_game_config(MinesweeperConfiguration *game_config,
                          Configuration *config)
 {
         ConfigurationOption mines_num = *config->options[0];
-        int curr_mines_count_idx = mines_num.currently_selected;
-        game_config->mines_num = static_cast<int *>(
-            mines_num.available_values)[curr_mines_count_idx];
+        game_config->mines_num = mines_num.get_curr_int_value();
 }
 
 MinesweeperGridDimensions *

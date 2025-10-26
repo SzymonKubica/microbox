@@ -67,6 +67,11 @@ typedef struct ConfigurationOption {
                     available_values)[currently_selected];
         }
 
+        Color get_current_color_value()
+        {
+                return static_cast<Color *>(available_values)[currently_selected];
+        }
+
 } ConfigurationOption;
 
 /**

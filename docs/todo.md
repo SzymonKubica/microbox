@@ -25,7 +25,9 @@
 
 # TODO
 - [_] replace all old instances of 'extract game config'
-- [_] update snake game configurations to remove accelerate mode and slow speeds
+- [_] update the lcd / sfml display libraries to remove the pixel-precision
+      discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
+- [_] finish the random seed picker functionality.
 - [_] figure out why grip depends on having access to the github API.
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
@@ -36,12 +38,13 @@
 - [_] add ability to 'pause' a 2048 game and have it saved in the persistent storage
 - [_] add username collection screen
 - [_] add ability to erase eeprom (probably external sketch)
-- [_] think about proper copilot keybindings
 
 
 # In Progress
 
 # Done
+- [x] think about proper copilot keybindings
+- [x] update snake game configurations to remove accelerate mode and slow speeds
 - [x] add snake game
 - [x] update readme and emulator get started instructions, readme revamp.
 - [x] ensure that the logo is only rendered on the home screen
