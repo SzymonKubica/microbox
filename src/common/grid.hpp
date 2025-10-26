@@ -32,3 +32,5 @@ calculate_grid_dimensions(int display_width, int display_height,
                           int display_rounded_corner_radius, int game_cell_width);
 
 void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization, SquareCellGridDimensions *dimensions);
+
+bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions);

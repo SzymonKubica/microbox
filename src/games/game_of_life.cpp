@@ -628,7 +628,6 @@ void spawn_cells_randomly(Display *display, Grid grid,
         }
 }
 
-
 void draw_caret(Display *display, Point *grid_position,
                 SquareCellGridDimensions *dimensions, Color caret_color)
 {

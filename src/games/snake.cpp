@@ -14,10 +14,10 @@
 
 #define TAG "snake"
 
-SnakeConfiguration DEFAULT_SNAKE_CONFIG = {.speed = 6,
-                                           .allow_grace = false,
-                                           .enable_poop = true,
-                                           .allow_pause = false};
+SnakeConfiguration DEFAULT_CONFIG = {.speed = 6,
+                                     .allow_grace = false,
+                                     .enable_poop = true,
+                                     .allow_pause = false};
 
 enum class SnakeGridCell : uint8_t {
         Empty,
@@ -78,114 +78,11 @@ void Snake::game_loop(Platform *p, UserInterfaceCustomization *customization)
         }
 }
 
-Configuration *assemble_snake_configuration(PersistentStorage *storage);
-void extract_game_config(SnakeConfiguration *game_config,
-                         Configuration *config);
-std::optional<UserAction>
-collect_snake_config(Platform *p, SnakeConfiguration *game_config,
-                     UserInterfaceCustomization *customization)
-{
-
-        Configuration *config =
-            assemble_snake_configuration(p->persistent_storage);
-
-        auto maybe_interrupt = collect_configuration(p, config, customization);
-        if (maybe_interrupt) {
-                return maybe_interrupt;
-        }
-
-        extract_game_config(game_config, config);
-        free_configuration(config);
-        return std::nullopt;
-}
-
-SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage);
-Configuration *assemble_snake_configuration(PersistentStorage *storage)
-{
-        SnakeConfiguration *initial_config = load_initial_snake_config(storage);
-
-        ConfigurationOption *speed = ConfigurationOption::of_integers(
-            "Speed", {4, 5, 6, 7, 8}, initial_config->speed);
-
-        auto *poop = ConfigurationOption::of_strings(
-            "Poop", {"Yes", "No"},
-            map_boolean_to_yes_or_no(initial_config->enable_poop));
-
-        auto *allow_grace = ConfigurationOption::of_strings(
-            "Grace period", {"Yes", "No"},
-            map_boolean_to_yes_or_no(initial_config->allow_grace));
-
-        auto *allow_pause = ConfigurationOption::of_strings(
-            "Allow pause", {"Yes", "No"},
-            map_boolean_to_yes_or_no(initial_config->allow_pause));
-
-        std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
-                                                      allow_pause};
-
-        return new Configuration("Snake", options, "Start Game");
-}
-
-SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
-{
-        int storage_offset = get_settings_storage_offsets()[Snake];
-        LOG_DEBUG(TAG, "Loading snake saved config from offset %d",
-                  storage_offset);
-
-        // We initialize empty config to detect corrupted memory and fallback
-        // to defaults if needed.
-        SnakeConfiguration config = {.speed = 0,
-                                     .allow_grace = 0,
-                                     .enable_poop = false,
-                                     .allow_pause = 0};
-
-        LOG_DEBUG(
-            TAG, "Trying to load initial settings from the persistent storage");
-        storage->get(storage_offset, config);
-
-        SnakeConfiguration *output = new SnakeConfiguration();
-
-        if (config.speed == 0) {
-                LOG_DEBUG(TAG, "The storage does not contain a valid "
-                               "snake configuration, using default values.");
-                memcpy(output, &DEFAULT_SNAKE_CONFIG,
-                       sizeof(SnakeConfiguration));
-                storage->put(storage_offset, DEFAULT_SNAKE_CONFIG);
-
-        } else {
-                LOG_DEBUG(TAG, "Using configuration from persistent storage.");
-                memcpy(output, &config, sizeof(SnakeConfiguration));
-        }
-
-        LOG_DEBUG(TAG,
-                  "Loaded snake  game configuration: speed=%d, enable_poop=%d, "
-                  "allow_pause=%d",
-                  output->speed, output->enable_poop, output->allow_pause);
-
-        return output;
-}
-
-void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
-{
-        ConfigurationOption speed = *config->options[0];
-        ConfigurationOption enable_poop = *config->options[1];
-        ConfigurationOption allow_grace = *config->options[2];
-        ConfigurationOption allow_pause = *config->options[3];
-
-        auto yes_or_no_option_to_bool = [](ConfigurationOption option) {
-                return extract_yes_or_no_option(option.get_current_str_value());
-        };
-
-        game_config->speed = speed.get_curr_int_value();
-        game_config->enable_poop = yes_or_no_option_to_bool(enable_poop);
-        game_config->allow_grace = yes_or_no_option_to_bool(allow_grace);
-        game_config->allow_pause = yes_or_no_option_to_bool(allow_pause);
-}
-
 Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
-void re_render_grid_cell(Display *display, Color snake_color,
-                         SquareCellGridDimensions *dimensions,
-                         std::vector<std::vector<SnakeGridCell>> *grid,
-                         Point *location);
+void refresh_grid_cell(Display *display, Color snake_color,
+                       SquareCellGridDimensions *dimensions,
+                       std::vector<std::vector<SnakeGridCell>> *grid,
+                       Point *location);
 void render_segment_connection(Display *display, Color snake_color,
                                SquareCellGridDimensions *dimensions,
                                std::vector<std::vector<SnakeGridCell>> *grid,
@@ -194,7 +91,6 @@ void render_head(Display *display, Color snake_color,
                  SquareCellGridDimensions *dimensions,
                  std::vector<std::vector<SnakeGridCell>> *grid, Point *head,
                  Direction direction);
-bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions);
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
@@ -215,21 +111,20 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         int cols = gd->cols;
 
         draw_grid_frame(p, customization, gd);
-        LOG_DEBUG(TAG, "Snake game canvas drawn.");
+        LOG_DEBUG(TAG, "Snake game area border drawn.");
 
         p->display->refresh();
 
         std::vector<std::vector<SnakeGridCell>> grid(
             rows, std::vector<SnakeGridCell>(cols));
 
+        // The sake starts in the middle of the game area pointing to the right.
         Point snake_head = {.x = cols / 2, .y = rows / 2};
         Point snake_tail = {.x = snake_head.x - 1, .y = snake_head.y};
-
         std::vector<Point> body;
         SnakeEntity snake = {snake_head, snake_tail, Direction::RIGHT, &body};
         snake.body->push_back(snake_tail);
         snake.body->push_back(snake_head);
-
         grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
         grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
 
@@ -237,8 +132,8 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // around each time we want to re-render a cell or draw a snake segment.
         auto update_display_cell = [p, gd, &grid,
                                     customization](Point *location) {
-                re_render_grid_cell(p->display, customization->accent_color, gd,
-                                    &grid, location);
+                refresh_grid_cell(p->display, customization->accent_color, gd,
+                                  &grid, location);
         };
         auto draw_neck_and_head = [p, gd, &grid, customization,
                                    &snake](Point *first_segment,
@@ -259,6 +154,10 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
         int move_period = (1000 / config.speed) / GAME_LOOP_DELAY;
         int iteration = 0;
+
+        // [todo]: idea - all of those boolean flags are quite common across
+        // all game loops, we could abstract that out into a shared 'loop
+        // context'.
 
         // To avoid button debounce issues, we only process action input if
         // it wasn't processed on the last iteration. This is to avoid
@@ -343,16 +242,17 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                 // its body.
                                 Point *neck = (snake.body->end() - 1).base();
                                 // First time a cell is drawn it happens inside
-                                // of `draw_neck_and_head`. This is because
-                                // snake's head needs to have a different shape
-                                // from all other cells. Because of this, we
-                                // need to update the neck here to actually
-                                // render it's proper contents (i.e. whether it
-                                // is a regular snake cell or a cell that
-                                // contains an apple).
+                                // `draw_neck_and_head`.
+                                // This is needed as Snake's head needs to have
+                                // a different shape from all other segments.
+                                // Because of this, we need to update the neck
+                                // here to actually render it's proper contents
+                                // (i.e. whether it is a regular snake segment
+                                // or a segment that contains an apple).
                                 update_display_cell(neck);
                                 draw_neck_and_head(neck, &snake.head);
                                 snake.body->push_back(snake.head);
+
                                 if (next == SnakeGridCell::Apple) {
                                         // Eating an apple is handled by simply
                                         // skipping the step where we erase the
@@ -360,7 +260,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                         // branch). We then spawn a new apple.
                                         Point *apple_location =
                                             spawn_apple(&grid);
-                                        re_render_grid_cell(
+                                        refresh_grid_cell(
                                             p->display,
                                             customization->accent_color, gd,
                                             &grid, apple_location);
@@ -411,12 +311,24 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         return UserAction::PlayAgain;
 }
 
-bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions)
+Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid)
 {
-        int x = p->x;
-        int y = p->y;
+        int rows = grid->size();
+        int cols = (*grid->begin().base()).size();
+        while (true) {
+                int x = rand() % cols;
+                int y = rand() % rows;
 
-        return x < 0 || y < 0 || x >= dimensions->cols || y >= dimensions->rows;
+                SnakeGridCell selected = (*grid)[y][x];
+                if (selected != SnakeGridCell::Snake) {
+                        (*grid)[y][x] = SnakeGridCell::Apple;
+                        Point *random_position = new Point();
+                        random_position->x = x;
+                        random_position->y = y;
+                        return random_position;
+                        break;
+                }
+        }
 }
 
 /**
@@ -439,7 +351,7 @@ void render_segment_connection(Display *display, Color snake_color,
         // function or merged into grid dimensions struct if it becomes useful
         // somewhere else.
         int padding = 2;
-        // rectangle border width needs to be non-zero, else the physical LCD
+        // Rectangle border width needs to be non-zero, else the physical LCD
         // display will not render rectangles.
         int border_width = 1;
         int height = dimensions->actual_height / dimensions->rows;
@@ -499,6 +411,10 @@ void render_segment_connection(Display *display, Color snake_color,
         }
 }
 
+/**
+ * Renders the head of the snake. This contains snake's eye and a rounded front
+ * part of the snake.
+ */
 void render_head(Display *display, Color snake_color,
                  SquareCellGridDimensions *dimensions,
                  std::vector<std::vector<SnakeGridCell>> *grid, Point *head,
@@ -520,7 +436,7 @@ void render_head(Display *display, Color snake_color,
         int top_margin = dimensions->top_vertical_margin;
 
         // We start drawing from the end of the padded square, hence we
-        // add `width - padding below to get to that point` also note
+        // add `width - padding` below to get to that point. Also note
         // that we need to start drawing from the padded vertical start
         // hence we add the padding in the y coordinate
         Point start = {.x = left_margin + head->x * width,
@@ -586,10 +502,10 @@ void render_head(Display *display, Color snake_color,
         display->draw_circle(eye_center, 1, Black, 0, true);
 }
 
-void re_render_grid_cell(Display *display, Color snake_color,
-                         SquareCellGridDimensions *dimensions,
-                         std::vector<std::vector<SnakeGridCell>> *grid,
-                         Point *location)
+void refresh_grid_cell(Display *display, Color snake_color,
+                       SquareCellGridDimensions *dimensions,
+                       std::vector<std::vector<SnakeGridCell>> *grid,
+                       Point *location)
 {
         int padding = 2;
         // Because of pixel-precision inaccuracies we need to make the cells
@@ -674,22 +590,103 @@ void re_render_grid_cell(Display *display, Color snake_color,
         }
 }
 
-Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid)
+Configuration *assemble_snake_configuration(PersistentStorage *storage);
+void extract_game_config(SnakeConfiguration *game_config,
+                         Configuration *config);
+std::optional<UserAction>
+collect_snake_config(Platform *p, SnakeConfiguration *game_config,
+                     UserInterfaceCustomization *customization)
 {
-        int rows = grid->size();
-        int cols = (*grid->begin().base()).size();
-        while (true) {
-                int x = rand() % cols;
-                int y = rand() % rows;
+        Configuration *config =
+            assemble_snake_configuration(p->persistent_storage);
 
-                SnakeGridCell selected = (*grid)[y][x];
-                if (selected != SnakeGridCell::Snake) {
-                        (*grid)[y][x] = SnakeGridCell::Apple;
-                        Point *random_position = new Point();
-                        random_position->x = x;
-                        random_position->y = y;
-                        return random_position;
-                        break;
-                }
+        auto maybe_interrupt = collect_configuration(p, config, customization);
+        if (maybe_interrupt) {
+                return maybe_interrupt;
         }
+
+        extract_game_config(game_config, config);
+        free_configuration(config);
+        return std::nullopt;
+}
+
+SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage);
+Configuration *assemble_snake_configuration(PersistentStorage *storage)
+{
+        SnakeConfiguration *initial_config = load_initial_snake_config(storage);
+
+        ConfigurationOption *speed = ConfigurationOption::of_integers(
+            "Speed", {4, 5, 6, 7, 8}, initial_config->speed);
+
+        auto *poop = ConfigurationOption::of_strings(
+            "Poop", {"Yes", "No"},
+            map_boolean_to_yes_or_no(initial_config->enable_poop));
+
+        auto *allow_grace = ConfigurationOption::of_strings(
+            "Grace period", {"Yes", "No"},
+            map_boolean_to_yes_or_no(initial_config->allow_grace));
+
+        auto *allow_pause = ConfigurationOption::of_strings(
+            "Allow pause", {"Yes", "No"},
+            map_boolean_to_yes_or_no(initial_config->allow_pause));
+
+        std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
+                                                      allow_pause};
+
+        return new Configuration("Snake", options, "Start Game");
+}
+
+SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
+{
+        int storage_offset = get_settings_storage_offsets()[Snake];
+        LOG_DEBUG(TAG, "Loading config from offset %d", storage_offset);
+
+        // We initialize empty config to detect corrupted memory and fallback
+        // to defaults if needed.
+        SnakeConfiguration config = {.speed = 0,
+                                     .allow_grace = 0,
+                                     .enable_poop = false,
+                                     .allow_pause = 0};
+
+        LOG_DEBUG(TAG, "Trying to load settings from the persistent storage");
+        storage->get(storage_offset, config);
+
+        SnakeConfiguration *output = new SnakeConfiguration();
+
+        if (config.speed == 0) {
+                LOG_DEBUG(TAG, "The storage does not contain a valid "
+                               "snake configuration, using default values.");
+                memcpy(output, &DEFAULT_CONFIG, sizeof(SnakeConfiguration));
+                storage->put(storage_offset, DEFAULT_CONFIG);
+
+        } else {
+                LOG_DEBUG(TAG, "Using configuration from persistent storage.");
+                memcpy(output, &config, sizeof(SnakeConfiguration));
+        }
+
+        LOG_DEBUG(TAG,
+                  "Loaded snake configuration: speed=%d, enable_poop=%d, "
+                  "allow_grace=%d"
+                  "allow_pause=%d",
+                  output->speed, output->enable_poop, output->allow_grace,
+                  output->allow_pause);
+
+        return output;
+}
+
+void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
+{
+        ConfigurationOption speed = *config->options[0];
+        ConfigurationOption enable_poop = *config->options[1];
+        ConfigurationOption allow_grace = *config->options[2];
+        ConfigurationOption allow_pause = *config->options[3];
+
+        auto yes_or_no_option_to_bool = [](ConfigurationOption option) {
+                return extract_yes_or_no_option(option.get_current_str_value());
+        };
+
+        game_config->speed = speed.get_curr_int_value();
+        game_config->enable_poop = yes_or_no_option_to_bool(enable_poop);
+        game_config->allow_grace = yes_or_no_option_to_bool(allow_grace);
+        game_config->allow_pause = yes_or_no_option_to_bool(allow_pause);
 }

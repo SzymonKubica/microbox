@@ -64,3 +64,11 @@ void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization, Squ
             actual_width + 2 * border_offset, actual_height + 2 * border_offset,
             customization->accent_color, border_width, false);
 }
+
+bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions)
+{
+        int x = p->x;
+        int y = p->y;
+
+        return x < 0 || y < 0 || x >= dimensions->cols || y >= dimensions->rows;
+}
