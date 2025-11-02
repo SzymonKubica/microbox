@@ -7,7 +7,7 @@
 #ifdef EMULATOR
 #define EXPLANATION_ABOVE_GRID_OFFEST 4
 #else
-#define EXPLANATION_ABOVE_GRID_OFFEST 0
+#define EXPLANATION_ABOVE_GRID_OFFEST 1
 #endif
 
 SquareCellGridDimensions *
