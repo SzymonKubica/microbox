@@ -121,7 +121,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // section above the grid is properly centered. When rendering the
         // actual score count, we need to cancel out the three spaces and
         // subtract them from score_end pixel position.
-        int score_end = render_centered_text_above_frame(p, gd, "Score:    ");
+        int score_end = render_centered_text_above_frame(p, gd, (char*)"Score:    ");
         update_score(p, gd, score_end, 0);
         LOG_DEBUG(TAG, "Snake game area border drawn.");
 
@@ -337,9 +337,17 @@ void update_score(Platform *p, SquareCellGridDimensions *dimensions,
 
         char buffer[4];
         sprintf(buffer, "%3d", score);
-        // We need to erase the previous score text if it exists
-        render_text_above_frame_starting_from(
-            p, dimensions, buffer, score_text_end_location - 3 * FONT_WIDTH, true);
+        // We start 3 letters after the end of the text end location.
+        // The reason for this is that the 'Score:' text is rendered centered
+        // using the render_centered_text_above_frame function and so it
+        // the string is right-padded with exactly 4 spaces to make enough
+        // horizontal space for the score digits to be printed (and have the
+        // entire text above the grid centered). Hence we need to start
+        // rendering the actual digits starting after the first space after the
+        // colon in 'Score:' text, so we move the start location by 3 spaces.
+        int start_position = score_text_end_location - 3 * FONT_WIDTH;
+        render_text_above_frame_starting_from(p, dimensions, buffer,
+                                              start_position, true);
 }
 
 Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid)
