@@ -26,10 +26,10 @@ typedef struct SnakeDuelConfiguration {
          * Color of the snake that the keypad player owns.
          */
         Color secondary_player_color;
-} SnakeConfiguration;
+} SnakeDuelConfiguration;
 
 std::optional<UserAction>
-collect_snake__duel_config(Platform *p, SnakeDuelConfiguration *game_config,
+collect_snake_duel_config(Platform *p, SnakeDuelConfiguration *game_config,
                      UserInterfaceCustomization *customization);
 
 class SnakeDuel : public GameExecutor

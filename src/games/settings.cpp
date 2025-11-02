@@ -7,6 +7,7 @@
 #include "minesweeper.hpp"
 #include "random_seed_picker.hpp"
 #include "snake.hpp"
+#include "snake_duel.hpp"
 
 #define TAG "settings"
 
@@ -77,6 +78,15 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
+                case SnakeDuel: {
+                        SnakeDuelConfiguration config;
+                        auto action =
+                            collect_snake_duel_config(p, &config, custom);
+                        if (action && action.value() == UserAction::Exit) {
+                                return;
+                        }
+                        storage.put(offset, config);
+                } break;
                 default:
                         return;
                 }
@@ -86,7 +96,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
 
 std::vector<int> get_settings_storage_offsets()
 {
-        std::vector<int> offsets(8);
+        std::vector<int> offsets(9);
         offsets[MainMenu] = 0;
         offsets[Clean2048] = offsets[MainMenu] + sizeof(GameMenuConfiguration);
         offsets[Minesweeper] =
@@ -97,15 +107,16 @@ std::vector<int> get_settings_storage_offsets()
             offsets[GameOfLife] + sizeof(GameOfLifeConfiguration);
         offsets[Snake] =
             offsets[RandomSeedPicker] + sizeof(RandomSeedPickerConfiguration);
+        offsets[SnakeDuel] = offsets[Snake] + sizeof(SnakeConfiguration);
         return offsets;
 }
 Configuration *assemble_settings_menu_configuration()
 {
 
         auto available_games = {
-            game_to_string(Game::MainMenu), game_to_string(Game::Minesweeper),
+            game_to_string(Game::MainMenu),  game_to_string(Game::Minesweeper),
             game_to_string(Game::Clean2048), game_to_string(Game::GameOfLife),
-            game_to_string(Game::Snake)};
+            game_to_string(Game::Snake),     game_to_string(Game::SnakeDuel)};
 
         auto *menu = ConfigurationOption::of_strings(
             "Modify", available_games, game_to_string(Game::MainMenu));

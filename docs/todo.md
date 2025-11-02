@@ -24,7 +24,7 @@
   each square separately.
 
 # TODO
-- [_] implement snake duel
+- [_] remove all duplication between snake and snake duel
 - [_] update the lcd / sfml display libraries to remove the pixel-precision
       discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
 - [_] finish the random seed picker functionality.
@@ -41,10 +41,11 @@
 
 
 # In Progress
-- [_] replace all old instances of 'extract game config'
 
 # Done
+- [x] implement snake duel
 - [x] Add score counting functionality to Snake
+- [x] replace all old instances of 'extract game config'
 - [x] add target board switching to allow for compiling for minima
 - [x] think about proper copilot keybindings
 - [x] update snake game configurations to remove accelerate mode and slow speeds

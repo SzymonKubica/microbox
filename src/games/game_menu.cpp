@@ -10,6 +10,7 @@
 #include "settings.hpp"
 #include "game_of_life.hpp"
 #include "snake.hpp"
+#include "snake_duel.hpp"
 
 #define TAG "game_menu"
 
@@ -69,7 +70,8 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
         auto *game = ConfigurationOption::of_strings(
             "Game",
             {game_to_string(Game::Minesweeper), game_to_string(Game::Clean2048),
-             game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
+             game_to_string(Game::GameOfLife), game_to_string(Game::Snake), game_to_string(Game::SnakeDuel),
+
              game_to_string(Game::Settings)},
             game_to_string(initial_config->game));
 
@@ -159,6 +161,8 @@ void select_game(Platform *p)
                         return new class Settings();
                 case Snake:
                         return new class Snake();
+                case SnakeDuel:
+                        return new class SnakeDuel();
                 default:
                         return NULL;
                 }
@@ -216,6 +220,8 @@ Game game_from_string(const char *name)
                 return Game::Settings;
         if (strcmp(name, game_to_string(Snake)) == 0)
                 return Game::Snake;
+        if (strcmp(name, game_to_string(SnakeDuel)) == 0)
+                return Game::SnakeDuel;
         return Game::Unknown;
 }
 
@@ -228,6 +234,7 @@ bool is_valid_game(Game game)
         case GameOfLife:
         case Settings:
         case Snake:
+        case SnakeDuel:
                 return true;
         default:
                 return false;
@@ -249,6 +256,8 @@ const char *game_to_string(Game game)
                 return "Settings";
         case Snake:
                 return "Snake";
+        case SnakeDuel:
+                return "Snake Duel";
         default:
                 return "Unknown";
         }

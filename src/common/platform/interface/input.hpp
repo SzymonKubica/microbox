@@ -13,3 +13,4 @@ typedef enum Action { YELLOW = 0, RED = 1, GREEN = 2, BLUE = 3 } Action;
 
 const char *direction_to_str(Direction direction);
 const char *action_to_str(Action action);
+const Direction action_to_direction(Action action);
