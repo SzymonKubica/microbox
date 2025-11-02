@@ -9,8 +9,8 @@
  * future.
  *
  * Note: this is currently used for the snake grid as well. In the future this
- * should be moved to a shared module. TODO: remove and move to shared module once
- * Snake prototype is done. (Note 2: Minesweeper also uses the same thing).
+ * should be moved to a shared module. TODO: remove and move to shared module
+ * once Snake prototype is done. (Note 2: Minesweeper also uses the same thing).
  */
 typedef struct GameOfLifeGridDimensions {
         int rows;
@@ -29,8 +29,26 @@ typedef struct GameOfLifeGridDimensions {
 
 SquareCellGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
-                          int display_rounded_corner_radius, int game_cell_width);
+                          int display_rounded_corner_radius,
+                          int game_cell_width);
 
-void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization, SquareCellGridDimensions *dimensions);
+void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
+                     SquareCellGridDimensions *dimensions);
+
+/**
+ * Renders text above the grid frame.
+ *
+ * @return pixel location of the end of the text. Useful for rendering other
+ * things behind the centered text (e.g. incrementable score count).
+ */
+int render_centered_text_above_frame(Platform *p,
+                                     SquareCellGridDimensions *dimensions,
+                                     char *text);
+/**
+ * Renders text above the grid frame starting from the supplied pixel position
+ */
+int render_text_above_frame_starting_from(Platform *p,
+                                     SquareCellGridDimensions *dimensions,
+                                     char *text, int position, bool erase_previous = false);
 
 bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions);

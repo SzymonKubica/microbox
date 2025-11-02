@@ -7,6 +7,7 @@
 #include "game_menu.hpp"
 
 #include "../common/configuration.hpp"
+#include "../common/constants.hpp"
 #include "../common/grid.hpp"
 #include "../common/logging.hpp"
 
@@ -92,6 +93,9 @@ void render_head(Display *display, Color snake_color,
                  std::vector<std::vector<SnakeGridCell>> *grid, Point *head,
                  Direction direction);
 
+void update_score(Platform *p, SquareCellGridDimensions *dimensions,
+                  int score_text_end_location, int score);
+
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
@@ -111,6 +115,14 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         int cols = gd->cols;
 
         draw_grid_frame(p, customization, gd);
+
+        // We render the 'Score:' text only once but including the empty space
+        // required for the score. This is needed to ensure that the score
+        // section above the grid is properly centered. When rendering the
+        // actual score count, we need to cancel out the three spaces and
+        // subtract them from score_end pixel position.
+        int score_end = render_centered_text_above_frame(p, gd, "Score:    ");
+        update_score(p, gd, score_end, 0);
         LOG_DEBUG(TAG, "Snake game area border drawn.");
 
         p->display->refresh();
@@ -182,6 +194,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // could make the snake go opposite (turn on the spot) and fail the
         // game.
         Direction chosen_snake_direction = snake.direction;
+        int game_score = 0;
         while (!is_game_over) {
                 Direction dir;
                 Action act;
@@ -264,6 +277,9 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                             p->display,
                                             customization->accent_color, gd,
                                             &grid, apple_location);
+                                        game_score++;
+                                        update_score(p, gd, score_end,
+                                                     game_score);
                                 } else {
                                         assert(next == SnakeGridCell::Empty ||
                                                next == SnakeGridCell::Poop);
@@ -309,6 +325,21 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
         p->display->refresh();
         return UserAction::PlayAgain;
+}
+
+/**
+ * Re-renders the text location above the grid informing the user about the
+ * current score in the game.
+ */
+void update_score(Platform *p, SquareCellGridDimensions *dimensions,
+                  int score_text_end_location, int score)
+{
+
+        char buffer[4];
+        sprintf(buffer, "%3d", score);
+        // We need to erase the previous score text if it exists
+        render_text_above_frame_starting_from(
+            p, dimensions, buffer, score_text_end_location - 3 * FONT_WIDTH, true);
 }
 
 Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid)

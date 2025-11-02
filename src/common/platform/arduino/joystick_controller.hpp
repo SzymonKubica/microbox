@@ -9,7 +9,7 @@
 #define LOW_THRESHOLD 100
 
 /** Pins controlling the joystick */
-#define A0 13 // TODO: verify if this pin number is accurate
+#define A0 13
 #define STICK_BUTTON_PIN A0
 #define STICK_Y_PIN 16
 #define STICK_X_PIN 17
