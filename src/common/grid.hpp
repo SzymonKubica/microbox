@@ -3,16 +3,10 @@
 #include "user_interface_customization.hpp"
 
 /**
- * Stores all information required for rendering the finite grid for game of
- * life simulation. Note that this is similar to the struct that we are using
- * for Minesweeper so we might want to abstract away this commonality in the
- * future.
- *
- * Note: this is currently used for the snake grid as well. In the future this
- * should be moved to a shared module. TODO: remove and move to shared module
- * once Snake prototype is done. (Note 2: Minesweeper also uses the same thing).
+ * Stores all dimension information required for rendering a grid with square
+ * cells.
  */
-typedef struct GameOfLifeGridDimensions {
+typedef struct SquareCellGridDimensions {
         int rows;
         int cols;
         int top_vertical_margin;
@@ -20,7 +14,7 @@ typedef struct GameOfLifeGridDimensions {
         int actual_width;
         int actual_height;
 
-        GameOfLifeGridDimensions(int r, int c, int tvm, int lhm, int aw, int ah)
+        SquareCellGridDimensions(int r, int c, int tvm, int lhm, int aw, int ah)
             : rows(r), cols(c), top_vertical_margin(tvm),
               left_horizontal_margin(lhm), actual_width(aw), actual_height(ah)
         {
@@ -48,7 +42,8 @@ int render_centered_text_above_frame(Platform *p,
  * Renders text above the grid frame starting from the supplied pixel position
  */
 int render_text_above_frame_starting_from(Platform *p,
-                                     SquareCellGridDimensions *dimensions,
-                                     char *text, int position, bool erase_previous = false);
+                                          SquareCellGridDimensions *dimensions,
+                                          char *text, int position,
+                                          bool erase_previous = false);
 
 bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions);

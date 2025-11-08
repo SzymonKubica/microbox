@@ -4,6 +4,7 @@
 #include "../common/configuration.hpp"
 #include "../common/logging.hpp"
 #include "../common/platform/interface/color.hpp"
+#include "../common/constants.hpp"
 #include "2048.hpp"
 #include "game_executor.hpp"
 #include "minesweeper.hpp"
@@ -70,20 +71,14 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
         auto *game = ConfigurationOption::of_strings(
             "Game",
             {game_to_string(Game::Minesweeper), game_to_string(Game::Clean2048),
-             game_to_string(Game::GameOfLife), game_to_string(Game::Snake), game_to_string(Game::SnakeDuel),
+             game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
+             game_to_string(Game::SnakeDuel),
 
              game_to_string(Game::Settings)},
             game_to_string(initial_config->game));
 
-        auto available_colors = {
-            Color::Red,      Color::Green,      Color::Blue,  Color::DarkBlue,
-            Color::Magenta,  Color::Cyan,       Color::Gblue, Color::Brown,
-            Color::Yellow,   Color::BRRed,      Color::Gray,  Color::LightBlue,
-            Color::GrayBlue, Color::LightGreen, Color::LGray, Color::LGrayBlue,
-            Color::LBBlue};
-
         auto *accent_color = ConfigurationOption::of_colors(
-            "Color", available_colors, initial_config->accent_color);
+            "Color", AVAILABLE_COLORS, initial_config->accent_color);
 
         auto available_modes = {
             rendering_mode_to_str(UserInterfaceRenderingMode::Minimalistic),

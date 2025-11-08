@@ -4,11 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include "../../constants.hpp"
 
-// TODO: move those defines to common constants so that changes to them affect
-// both the emulator and the production build.
-#define DISPLAY_HEIGHT 240
-#define DISPLAY_WIDTH 280
-
 #define SCREEN_BORDER_WIDTH 3
 
 void SfmlDisplay::setup() {};

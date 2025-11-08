@@ -637,10 +637,8 @@ void render_wrapped_help_text(Platform *p,
         // radius
         int maximum_line_chars = (w - margin) / fw;
 
-        // TODO: properly split the input text into lines.
         int help_text_len = strlen(help_text);
         int help_text_x = margin / 2;
-        // TODO: calculate dynamically
         int help_text_start_y = 2 * fh;
 
         int lines_drawn = 0;

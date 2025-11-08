@@ -37,8 +37,6 @@ void setup(void)
 
         // Initializes the source of randomness from the
         // noise present on the first digital pin
-        // Todo: move this to some randomness provider as it is not specific
-        // to the 2048 game.
         initialize_randomness_seed(analogRead(0));
 }
 

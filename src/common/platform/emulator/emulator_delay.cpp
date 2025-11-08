@@ -3,7 +3,9 @@
 #include <chrono>
 #include <thread>
 
-// TODO: rename the entire directory 'sfml' to 'emulator'
+/**
+ * Delay provider implementation for the emulator platform.
+ */
 class EmulatorDelay : public DelayProvider
 {
         void delay_ms(int ms) override

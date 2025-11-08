@@ -270,30 +270,21 @@ UserAction game_of_life_loop(Platform *p,
                     get_cell(caret_pos.x, caret_pos.y, gd->cols, grid);
                 if (directional_input_registered(p->directional_controllers,
                                                  &dir)) {
-                        // TODO: clean up control flow to remove this deeply
-                        // nested logic.
                         if (mode == REWIND) {
                                 grid = handle_rewind(
                                     dir, &rewind_buffer, rewind_initial_idx,
                                     &rewind_buf_idx, grid, gd, p->display);
                         } else {
-                                if (curr == EMPTY) {
-                                        erase_caret(p->display, &caret_pos, gd,
-                                                    Black);
-                                } else if (curr == ALIVE) {
-                                        erase_caret(p->display, &caret_pos, gd,
-                                                    White);
-                                }
+                                Color bg_color =
+                                    (curr == EMPTY) ? Black : White;
+                                erase_caret(p->display, &caret_pos, gd,
+                                            bg_color);
 
-                                if (config.use_toroidal_array) {
-                                        translate_toroidal_array(&caret_pos,
-                                                                 dir, gd->rows,
-                                                                 gd->cols);
-                                } else {
-                                        translate_within_bounds(&caret_pos, dir,
-                                                                gd->rows,
-                                                                gd->cols);
-                                }
+                                // Move the caret according to the user input.
+                                auto translate = (config.use_toroidal_array)
+                                                     ? translate_toroidal_array
+                                                     : translate_within_bounds;
+                                translate(&caret_pos, dir, gd->rows, gd->cols);
                                 draw_caret(p->display, &caret_pos, gd,
                                            customization->accent_color);
                         }

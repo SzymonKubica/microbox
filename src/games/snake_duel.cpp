@@ -783,18 +783,8 @@ Configuration *assemble_snake_duel_configuration(PersistentStorage *storage)
             "Grace", {"Yes", "No"},
             map_boolean_to_yes_or_no(initial_config->allow_grace));
 
-        // TODO: this is a duplicate of the list of colors in the main menu
-        // if those two are supposed to always be the same, consider moving
-        // the list to some shared place.
-        auto available_colors = {
-            Color::Red,      Color::Green,      Color::Blue,  Color::DarkBlue,
-            Color::Magenta,  Color::Cyan,       Color::Gblue, Color::Brown,
-            Color::Yellow,   Color::BRRed,      Color::Gray,  Color::LightBlue,
-            Color::GrayBlue, Color::LightGreen, Color::LGray, Color::LGrayBlue,
-            Color::LBBlue};
-
         auto *secondary_player_color = ConfigurationOption::of_colors(
-            "Color", available_colors, initial_config->secondary_player_color);
+            "Color", AVAILABLE_COLORS, initial_config->secondary_player_color);
 
         std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
                                                       secondary_player_color};

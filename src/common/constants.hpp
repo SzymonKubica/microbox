@@ -2,6 +2,8 @@
  * games.*/
 #pragma once
 
+#include "platform/interface/color.hpp"
+#include <vector>
 #define FONT_SIZE 16
 #define HEADING_FONT_SIZE 24
 
@@ -37,3 +39,8 @@
 #ifndef EMULATOR
 #define MOVE_REGISTERED_DELAY 150
 #endif
+
+#define DISPLAY_HEIGHT 240
+#define DISPLAY_WIDTH 280
+
+extern const std::vector<Color> AVAILABLE_COLORS;
