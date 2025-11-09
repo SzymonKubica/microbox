@@ -24,6 +24,11 @@
   each square separately.
 
 # TODO
+- [_] add dummy emulator implementation that would 'connect' to whatever wifi
+      the laptop is connected and display that in the network stats.
+- [_] add ability to save wifi passwords
+- [_] add platform interface for initializing wifi and making requests.
+- [_] document wifi setup (i.e. create a header file with secrets)
 - [_] improve the button debounce handling for physical console. Currently it is
       difficult to pause the game.
 - [_] explore using network stack to get true randomness.

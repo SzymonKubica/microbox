@@ -3,3 +3,4 @@ build-debug/*
 build-emulator/*
 build-emulator-debug/*
 persistent-storage.bin
+arduino_secrets.hpp
