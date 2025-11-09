@@ -17,6 +17,9 @@ void render_controls_explanations(Display *display);
 void render_wrapped_help_text(Platform *p,
                               UserInterfaceCustomization *customization,
                               const char *help_text);
+void render_wrapped_text(Platform *p,
+                              UserInterfaceCustomization *customization,
+                              const char *text);
 void wait_until_green_pressed(Platform *p);
 
 ConfigurationDiff *empty_diff();

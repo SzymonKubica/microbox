@@ -9,6 +9,7 @@
 #include "game_executor.hpp"
 #include "minesweeper.hpp"
 #include "settings.hpp"
+#include "wifi.hpp"
 #include "game_of_life.hpp"
 #include "snake.hpp"
 #include "snake_duel.hpp"
@@ -72,8 +73,7 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
             "Game",
             {game_to_string(Game::Minesweeper), game_to_string(Game::Clean2048),
              game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
-             game_to_string(Game::SnakeDuel),
-
+             game_to_string(Game::SnakeDuel), game_to_string(Game::WifiApp),
              game_to_string(Game::Settings)},
             game_to_string(initial_config->game));
 
@@ -158,6 +158,8 @@ void select_game(Platform *p)
                         return new class Snake();
                 case SnakeDuel:
                         return new class SnakeDuel();
+                case WifiApp:
+                        return new class WifiApp();
                 default:
                         return NULL;
                 }
@@ -217,6 +219,8 @@ Game game_from_string(const char *name)
                 return Game::Snake;
         if (strcmp(name, game_to_string(SnakeDuel)) == 0)
                 return Game::SnakeDuel;
+        if (strcmp(name, game_to_string(WifiApp)) == 0)
+                return Game::WifiApp;
         return Game::Unknown;
 }
 
@@ -230,6 +234,7 @@ bool is_valid_game(Game game)
         case Settings:
         case Snake:
         case SnakeDuel:
+        case WifiApp:
                 return true;
         default:
                 return false;
@@ -253,6 +258,8 @@ const char *game_to_string(Game game)
                 return "Snake";
         case SnakeDuel:
                 return "Snake Duel";
+        case WifiApp:
+                return "Wi-Fi Config";
         default:
                 return "Unknown";
         }

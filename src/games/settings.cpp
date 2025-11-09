@@ -8,6 +8,7 @@
 #include "random_seed_picker.hpp"
 #include "snake.hpp"
 #include "snake_duel.hpp"
+#include "wifi.hpp"
 
 #define TAG "settings"
 
@@ -87,6 +88,15 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
+                case WifiApp: {
+                        WifiAppConfiguration config;
+                        auto action =
+                            collect_wifi_app_config(p, &config, custom);
+                        if (action && action.value() == UserAction::Exit) {
+                                return;
+                        }
+                        storage.put(offset, config);
+                } break;
                 default:
                         return;
                 }
@@ -96,7 +106,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
 
 std::vector<int> get_settings_storage_offsets()
 {
-        std::vector<int> offsets(9);
+        std::vector<int> offsets(10);
         offsets[MainMenu] = 0;
         offsets[Clean2048] = offsets[MainMenu] + sizeof(GameMenuConfiguration);
         offsets[Minesweeper] =
@@ -108,6 +118,7 @@ std::vector<int> get_settings_storage_offsets()
         offsets[Snake] =
             offsets[RandomSeedPicker] + sizeof(RandomSeedPickerConfiguration);
         offsets[SnakeDuel] = offsets[Snake] + sizeof(SnakeConfiguration);
+        offsets[WifiApp] = offsets[SnakeDuel] + sizeof(SnakeDuelConfiguration);
         return offsets;
 }
 Configuration *assemble_settings_menu_configuration()
@@ -116,7 +127,8 @@ Configuration *assemble_settings_menu_configuration()
         auto available_games = {
             game_to_string(Game::MainMenu),  game_to_string(Game::Minesweeper),
             game_to_string(Game::Clean2048), game_to_string(Game::GameOfLife),
-            game_to_string(Game::Snake),     game_to_string(Game::SnakeDuel)};
+            game_to_string(Game::Snake),     game_to_string(Game::SnakeDuel),
+            game_to_string(Game::WifiApp)};
 
         auto *menu = ConfigurationOption::of_strings(
             "Modify", available_games, game_to_string(Game::MainMenu));

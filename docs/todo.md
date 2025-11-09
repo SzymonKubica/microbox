@@ -24,10 +24,12 @@
   each square separately.
 
 # TODO
+- [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
+- [_] add a 'game' allowing to specify wifi settings and choose if wifi connection
+      should be made at startup.
 - [_] add dummy emulator implementation that would 'connect' to whatever wifi
       the laptop is connected and display that in the network stats.
 - [_] add ability to save wifi passwords
-- [_] add platform interface for initializing wifi and making requests.
 - [_] document wifi setup (i.e. create a header file with secrets)
 - [_] improve the button debounce handling for physical console. Currently it is
       difficult to pause the game.
@@ -51,6 +53,7 @@
 # In Progress
 
 # Done
+- [x] add platform interface for initializing wifi
 - [x] implement snake duel
 - [x] Add score counting functionality to Snake
 - [x] replace all old instances of 'extract game config'

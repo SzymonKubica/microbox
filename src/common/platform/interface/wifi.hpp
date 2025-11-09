@@ -53,17 +53,10 @@ class WifiProvider
         virtual std::optional<WifiData *>
         connect_to_network(const char *ssid, const char *password) = 0;
         /**
-         * Tries to connect to the network with the given ssid and password.
-         * This is a non-blocking call that will return immediately. The caller
-         * is responsbible for checking the connection status later by calling
-         * the is_connected() method.
-         */
-        virtual void connect_to_network_async(const char *ssid,
-                                              const char *password) = 0;
-        /**
          * Returns true if we are currently connected to a WiFi network,
          */
         virtual bool is_connected() = 0;
 };
 
 extern char *get_wifi_data_string(WifiData *data);
+extern char *get_wifi_data_string_single_line(WifiData *data);

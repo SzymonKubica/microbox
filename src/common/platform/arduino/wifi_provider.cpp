@@ -1,4 +1,4 @@
-#include <Arduino_FreeRTOS.h>
+#ifndef EMULATOR
 #include <WiFiS3.h>
 #include "../interface/wifi.hpp"
 
@@ -54,52 +54,25 @@ class ArduinoWifiProvider : WifiProvider
                         Serial.println("Please upgrade the firmware");
                 }
 
-                Serial.print("Attempting to connect to WPA SSID: ");
-                Serial.println(ssid);
-
-                // Connect to WPA/WPA2 network:
-                status = WiFi.begin(ssid, password);
-
+                // attempt to connect to WiFi network:
                 while (status != WL_CONNECTED) {
+                        Serial.print("Attempting to connect to WPA SSID: ");
+                        Serial.println(ssid);
+                        // Connect to WPA/WPA2 network:
+                        status = WiFi.begin(ssid, password);
+
+                        // wait 10 seconds for connection only if not connected
                         if (status == WL_CONNECTED) {
                                 break;
                         }
-                        vTaskDelay(500 / portTICK_PERIOD_MS);
+                        delay(500);
                 }
 
                 // you're connected now, so print out the data:
-                Serial.print("You're connected to the network");
+                Serial.println("You're connected to the network");
                 return get_wifi_data();
-        }
-
-        /**
-         * Tries to connect to the network with the given ssid and password.
-         * This is a non-blocking call that will return immediately. The caller
-         * is responsbible for checking the connection status later by calling
-         * the is_connected() method.
-         */
-        void connect_to_network_async(const char *ssid,
-                                      const char *password) override
-        {
-                int status = WL_IDLE_STATUS;
-
-                // check for the WiFi module:
-                if (WiFi.status() == WL_NO_MODULE) {
-                        Serial.println(
-                            "Communication with WiFi module failed!");
-                        return;
-                }
-
-                String fv = WiFi.firmwareVersion();
-                if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-                        Serial.println("Please upgrade the firmware");
-                }
-
-                Serial.print("Attempting to connect to WPA SSID: ");
-                Serial.println(ssid);
-                // Connect to WPA/WPA2 network:
-                status = WiFi.begin(ssid, password);
         }
 
         bool is_connected() override { return WiFi.status() == WL_CONNECTED; }
 };
+#endif

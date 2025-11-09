@@ -614,15 +614,9 @@ void render_controls_explanations(Display *display)
         }
 }
 
-/**
- * Renders a single block of wrapped text and a guide indicator saying that
- * pressing green will dismiss the help text.
- */
-void render_wrapped_help_text(Platform *p,
+void render_wrapped_text(Platform *p,
                               UserInterfaceCustomization *customization,
-                              const char *help_text)
-{
-
+                              const char *text) {
         p->display->clear(Black);
 
         // We exctract the display dimensions and font sizes into shorter
@@ -637,9 +631,9 @@ void render_wrapped_help_text(Platform *p,
         // radius
         int maximum_line_chars = (w - margin) / fw;
 
-        int help_text_len = strlen(help_text);
-        int help_text_x = margin / 2;
-        int help_text_start_y = 2 * fh;
+        int text_len = strlen(text);
+        int text_x = margin / 2;
+        int text_start_y = 2 * fh;
 
         int lines_drawn = 0;
         int curr_word_x_offset = 0;
@@ -647,15 +641,15 @@ void render_wrapped_help_text(Platform *p,
 
         // We allocate dynamically a copy of the constant string as strtok
         // needs a mutable reference.
-        char *help_text_copy =
-            (char *)calloc(strlen(help_text) + 1, sizeof(char));
+        char *text_copy =
+            (char *)calloc(strlen(text) + 1, sizeof(char));
         // We need to properly null-terminate the other string.
-        help_text_copy[strlen(help_text)] = '\0';
-        strncpy(help_text_copy, help_text, strlen(help_text));
+        text_copy[strlen(text)] = '\0';
+        strncpy(text_copy, text, strlen(text));
 
-        char *word = strtok((char *)help_text_copy, " ");
+        char *word = strtok((char *)text_copy, " ");
         while (word != nullptr) {
-                int curr_y = help_text_start_y + fh * lines_drawn;
+                int curr_y = text_start_y + fh * lines_drawn;
                 if (curr_word_x_offset + strlen(word) + 1 <=
                     maximum_line_chars) {
                         if (first_word) {
@@ -668,18 +662,37 @@ void render_wrapped_help_text(Platform *p,
                 } else {
                         lines_drawn++;
                         curr_word_x_offset = 0;
-                        curr_y = help_text_start_y + fh * lines_drawn;
+                        curr_y = text_start_y + fh * lines_drawn;
                 }
 
                 p->display->draw_string(
-                    {.x = help_text_x + fw * curr_word_x_offset, .y = curr_y},
+                    {.x = text_x + fw * curr_word_x_offset, .y = curr_y},
                     (char *)word, FontSize::Size16, Black, White);
                 curr_word_x_offset += strlen(word);
 
                 word = strtok(nullptr, " ");
         }
 
-        free(help_text_copy);
+        free(text_copy);
+}
+
+/**
+ * Renders a single block of wrapped text and a guide indicator saying that
+ * pressing green will dismiss the help text.
+ */
+void render_wrapped_help_text(Platform *p,
+                              UserInterfaceCustomization *customization,
+                              const char *help_text)
+{
+        render_wrapped_text(p, customization, help_text);
+
+        // We exctract the display dimensions and font sizes into shorter
+        // variable names to make the code easier to read.
+        int h = p->display->get_height();
+        int w = p->display->get_width();
+        int margin = p->display->get_display_corner_radius();
+        int fw = FONT_WIDTH;
+        int fh = FONT_SIZE;
 
         // We render the part saying that ok closes the help screen
         const char *ok = "OK";
