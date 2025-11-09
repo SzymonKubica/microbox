@@ -95,7 +95,7 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                 Serial.println(data_string);
                 char full_connected_text[256];
                 sprintf(full_connected_text,
-                        "Successfully connected to Wi-Fi!\n%s", data_string);
+                        "Successfully connected to Wi-Fi!  %s", data_string);
                 render_wrapped_help_text(p, customization, full_connected_text);
         }
 #else
