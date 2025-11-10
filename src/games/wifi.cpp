@@ -1,3 +1,4 @@
+#include <WiFiS3.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -98,6 +99,45 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                         "Successfully connected to Wi-Fi!  %s", data_string);
                 render_wrapped_help_text(p, customization, full_connected_text);
         }
+
+        const char *host = "www.randomnumberapi.com";
+        const int port = 80;
+
+        WiFiClient client;
+        if (client.connect(host, port)) {
+                client.println("GET "
+                    "http://www.randomnumberapi.com/api/v1.0/random?min=0&max=10000&count=1 HTTP/1.1");
+                client.println("Host: www.randomnumberapi.com");
+                client.println("Connection: close");
+                client.println();
+
+                // Wait for response
+                while (client.connected() && !client.available())
+                        delay(10);
+
+                String response;
+                while (client.available()) {
+                        response += client.readString();
+                }
+
+                Serial.println(response);
+                // Extract body (after headers)
+                int bodyStart = response.indexOf("\r\n\r\n");
+                if (bodyStart != -1) {
+                        String body = response.substring(bodyStart + 4);
+                        body.replace("[", "");
+                        body.replace("]", "");
+                        body.trim(); // remove trailing newlines/spaces
+                        unsigned long seed = body.toInt();
+                        Serial.print("Random seed from API: ");
+                        Serial.println(seed);
+                        srand(seed);
+                }
+
+                client.stop();
+        } else {
+                Serial.println("Connection to randomnumberapi.com failed");
+        }
 #else
         p->delay_provider->delay_ms(2000);
         const char *connected_text = "Successfully connected to Wi-Fi!";
@@ -114,7 +154,8 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
 
         WifiAppConfiguration config;
         LOG_DEBUG(TAG,
-                  "Trying to load initial settings from the persistent storage "
+                  "Trying to load initial settings from the persistent "
+                  "storage "
                   "at offset %d",
                   storage_offset);
         storage->get(storage_offset, config);
@@ -124,9 +165,9 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
         if (!config.is_initialized) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "wifi app configuration, using default values.");
-                // We need to populate the defaults on the fly here as we
-                // cannot simply use assignemnt with SECRET_SSID/PASS directly
-                // (those are fixed size arrays.)
+                // We need to populate the defaults on the fly here as
+                // we cannot simply use assignemnt with SECRET_SSID/PASS
+                // directly (those are fixed size arrays.)
                 sprintf(DEFAULT_WIFI_APP_CONFIG.ssid, "%s", SECRET_SSID);
                 sprintf(DEFAULT_WIFI_APP_CONFIG.password, "%s", SECRET_PASS);
                 DEFAULT_WIFI_APP_CONFIG.connect_on_startup = false;
