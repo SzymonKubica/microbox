@@ -861,18 +861,22 @@ void collect_string_input(Platform *p,
 
         p->display->clear(Black);
 
-        std::vector<const char *> rows = {
+        // Note how the bottom right part of the keyboard is filled with spaces
+        // this is needed to ensure that the selection cursor is translated
+        // within a rectangular area and we don't get ouside string buffer index
+        // errors.
+        std::vector<const char *> base_char_map = {
             "`1234567890-=",
             "qwertyuiop[]\\",
-            "asdfghjkl;'",
-            "zxcvbnm,./",
+            "asdfghjkl;'  ",
+            "zxcvbnm,./   ",
         };
 
-        std::vector<const char *> shift_rows = {
+        std::vector<const char *> shift_char_map = {
             "~!@#$%^&*()_+",
             "QWERTYUIOP{}|",
-            "ASDDFGHJKL:\"",
-            "ZXCVBNM<>?",
+            "ASDDFGHJKL:\" ",
+            "ZXCVBNM<>?    ",
         };
 
         std::vector<int> left_indent_map = {0, 1, 2, 3};
@@ -881,22 +885,85 @@ void collect_string_input(Platform *p,
         display->draw_string(input_text_start, "test", FontSize::Size16, Black,
                              White);
 
+        Point cursor = {0, 0};
+
         int keyboard_start_y =
             top_vertical_margin + (input_row + spacing) * FONT_SIZE;
-        for (int i = 0; i < rows.size(); i++) {
-                const char *row = rows[i];
-                int left_indent = left_indent_map[i];
-                for (int j = 0; j < strlen(row); j++) {
-                        // we mutiply the index by two here to spread out the
-                        // keyboard characters a bit.
-                        Point start = {.x = (left_indent + 2 * j) * FONT_WIDTH,
-                                       .y = keyboard_start_y + i * FONT_SIZE};
-                        char buffer[2];
-                        buffer[0] = row[j];
-                        buffer[1] = '\0';
-                        display->draw_string(start, buffer, FontSize::Size16,
-                                             Black, White);
+
+        auto render_character_at_location =
+            [display, &cursor, left_indent_map,
+             keyboard_start_y](Point location, Color color,
+                               std::vector<const char *> &character_map) {
+                    int x = location.x;
+                    int y = location.y;
+                    const char *row = character_map[y];
+                    int left_indent = left_indent_map[y];
+                    // we mutiply the index by two here to spread out the
+                    // keyboard characters a bit.
+                    Point start = {.x = (left_indent + 2 * x) * FONT_WIDTH,
+                                   .y = keyboard_start_y + y * FONT_SIZE};
+                    char buffer[2];
+                    buffer[0] = row[x];
+                    buffer[1] = '\0';
+                    display->clear_region(
+                        start, {start.x + FONT_WIDTH, start.y + FONT_SIZE + 3},
+                        Black);
+                    display->draw_string(start, buffer, FontSize::Size16, Black,
+                                         color);
+            };
+
+        // We define this reusasble lambda so that we can easily re-render the
+        // grid when the capitalization setting changes.
+        auto render_keyboard = [&cursor, customization,
+                                render_character_at_location](
+                                   std::vector<const char *> &character_map) {
+                for (int y = 0; y < character_map.size(); y++) {
+                        for (int x = 0; x < strlen(character_map[y]); x++) {
+                                Color color = (cursor.x == x && cursor.y == y)
+                                                  ? customization->accent_color
+                                                  : White;
+                                render_character_at_location({x, y}, color,
+                                                             character_map);
+                        }
                 }
+        };
+        render_keyboard(base_char_map);
+
+        bool input_confirmed = false;
+        bool is_capitalized = false;
+        auto curr_char_map = base_char_map;
+        while (!input_confirmed) {
+                Direction dir;
+                Action act;
+                if (directional_input_registered(p->directional_controllers,
+                                                 &dir)) {
+                        render_character_at_location(cursor, White,
+                                                     curr_char_map);
+                        translate_within_bounds(&cursor, dir,
+                                                curr_char_map.size(),
+                                                strlen(base_char_map[0]));
+                        render_character_at_location(
+                            cursor, customization->accent_color, curr_char_map);
+                }
+                if (action_input_registered(p->action_controllers, &act)) {
+                        switch (act) {
+                        case YELLOW: {
+                                is_capitalized = !is_capitalized;
+                                curr_char_map = is_capitalized ? shift_char_map
+                                                               : base_char_map;
+                                render_keyboard(curr_char_map);
+                                break;
+                        }
+                        case RED:
+                                input_confirmed = true;
+                                break;
+                        case GREEN:
+                        case BLUE:
+                                break;
+                        }
+                }
+                p->display->refresh();
+                p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
 
         wait_until_green_pressed(p);
