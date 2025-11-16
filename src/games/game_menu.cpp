@@ -128,7 +128,6 @@ void select_game(Platform *p)
         UserInterfaceCustomization customization = {
             config.accent_color, config.rendering_mode, config.show_help_text};
 
-
         const char *help_text =
             "Move joystick up/down to switch between menu options. Move "
             "joystick left/right or press green to change the value of the "
@@ -141,8 +140,6 @@ void select_game(Platform *p)
                 wait_until_green_pressed(p);
                 return;
         }
-
-        collect_string_input(p, &customization);
 
         LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
 

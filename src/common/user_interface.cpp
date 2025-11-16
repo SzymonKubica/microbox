@@ -827,7 +827,8 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
  * character array. The caller of this function is resposible for deallocating
  * this array once done processing the data. */
 char *collect_string_input(Platform *p,
-                           UserInterfaceCustomization *customization)
+                           UserInterfaceCustomization *customization,
+                           const char *input_prompt)
 {
         Display *display = p->display;
         LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
@@ -860,10 +861,18 @@ char *collect_string_input(Platform *p,
 
         p->display->clear(Black);
 
-        // Note how the bottom right part of the keyboard is filled with spaces
-        // this is needed to ensure that the selection cursor is translated
-        // within a rectangular area and we don't get ouside string buffer index
-        // errors.
+        int prompt_text_centering_margin =
+            (w - strlen(input_prompt) * FONT_WIDTH) / 2;
+        Point prompt_text_start = {.x = prompt_text_centering_margin,
+                                   .y = FONT_WIDTH};
+
+        p->display->draw_string(prompt_text_start, (char *)input_prompt,
+                                FontSize::Size16, Black, White);
+
+        // Note how the bottom right part of the keyboard is filled with
+        // spaces this is needed to ensure that the selection cursor is
+        // translated within a rectangular area and we don't get ouside
+        // string buffer index errors.
         std::vector<const char *> base_char_map = {
             "`1234567890-=",
             "qwertyuiop[]\\",
@@ -953,6 +962,7 @@ char *collect_string_input(Platform *p,
                                                 strlen(base_char_map[0]));
                         render_character_at_location(
                             cursor, customization->accent_color, curr_char_map);
+                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
                 if (action_input_registered(p->action_controllers, &act)) {
                         switch (act) {
@@ -991,23 +1001,24 @@ char *collect_string_input(Platform *p,
                         }
                         case BLUE:
                                 if (output_idx > 0) {
-                                        output_idx--;
-                                        output[output_idx] = '\0';
                                         display->clear_region(
+                                            input_text_start,
                                             {input_text_start.x +
-                                                 FONT_WIDTH * (output_idx),
-                                             input_text_start.y},
-                                            {input_text_start.x +
-                                                 FONT_WIDTH * (output_idx + 1),
+                                                 FONT_WIDTH * output_idx,
                                              input_text_start.y + FONT_SIZE +
                                                  4},
                                             Black);
+                                        output_idx--;
+                                        output[output_idx] = '\0';
+                                        display->draw_string(
+                                            input_text_start, output,
+                                            FontSize::Size16, Black, White);
                                 }
                                 break;
                         }
+                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
                 p->display->refresh();
-                p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
 
         return output;

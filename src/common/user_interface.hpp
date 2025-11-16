@@ -12,7 +12,7 @@ void render_config_menu(Display *display, Configuration *config,
                         UserInterfaceCustomization *customization, bool should_render_logo = false);
 
 char* collect_string_input(Platform *p,
-                          UserInterfaceCustomization *customization);
+                          UserInterfaceCustomization *customization, const char* input_prompt);
 void render_logo(Display *display, UserInterfaceCustomization *customization,
                  Point position);
 void render_controls_explanations(Display *display);
