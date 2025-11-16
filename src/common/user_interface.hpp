@@ -11,9 +11,8 @@ void render_config_menu(Display *display, Configuration *config,
                         ConfigurationDiff *diff, bool text_update_only,
                         UserInterfaceCustomization *customization, bool should_render_logo = false);
 
-void collect_string_input(Platform *p,
-                          UserInterfaceCustomization *customization,
-                          char *user_input);
+char* collect_string_input(Platform *p,
+                          UserInterfaceCustomization *customization);
 void render_logo(Display *display, UserInterfaceCustomization *customization,
                  Point position);
 void render_controls_explanations(Display *display);

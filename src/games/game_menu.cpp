@@ -142,8 +142,7 @@ void select_game(Platform *p)
                 return;
         }
 
-        char input_buffer[5];
-        collect_string_input(p, &customization, input_buffer);
+        collect_string_input(p, &customization);
 
         LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
 

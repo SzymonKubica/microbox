@@ -823,12 +823,11 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
 
 /**
  * Draws an on-screen keyboard and allows the user to move around it using the
- * cursor. The text entered by the user will be written into the `input` output
- * parameter.
- */
-void collect_string_input(Platform *p,
-                          UserInterfaceCustomization *customization,
-                          char *user_input)
+ * cursor. The text entered by the user will be returned in a heap-allocated
+ * character array. The caller of this function is resposible for deallocating
+ * this array once done processing the data. */
+char *collect_string_input(Platform *p,
+                           UserInterfaceCustomization *customization)
 {
         Display *display = p->display;
         LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
@@ -881,9 +880,12 @@ void collect_string_input(Platform *p,
 
         std::vector<int> left_indent_map = {0, 1, 2, 3};
 
+        // For now we only support up to two lines of user input. Longer strings
+        // are not supported.
+        int max_input_len = max_cols * 2;
+        char *output = (char *)malloc(sizeof(char) * max_input_len);
+
         Point input_text_start = {.x = 20, .y = top_vertical_margin};
-        display->draw_string(input_text_start, "test", FontSize::Size16, Black,
-                             White);
 
         Point cursor = {0, 0};
 
@@ -906,7 +908,7 @@ void collect_string_input(Platform *p,
                     buffer[0] = row[x];
                     buffer[1] = '\0';
                     display->clear_region(
-                        start, {start.x + FONT_WIDTH, start.y + FONT_SIZE + 3},
+                        start, {start.x + FONT_WIDTH, start.y + FONT_SIZE + 4},
                         Black);
                     display->draw_string(start, buffer, FontSize::Size16, Black,
                                          color);
@@ -927,11 +929,18 @@ void collect_string_input(Platform *p,
                         }
                 }
         };
+
+        auto extract_current_char =
+            [&cursor](std::vector<const char *> &character_map) {
+                    return character_map[cursor.y][cursor.x];
+            };
+
         render_keyboard(base_char_map);
 
         bool input_confirmed = false;
         bool is_capitalized = false;
         auto curr_char_map = base_char_map;
+        int output_idx = 0;
         while (!input_confirmed) {
                 Direction dir;
                 Action act;
@@ -957,7 +966,28 @@ void collect_string_input(Platform *p,
                         case RED:
                                 input_confirmed = true;
                                 break;
-                        case GREEN:
+                        case GREEN: {
+                                if (output_idx < max_input_len - 1) {
+                                        char selection =
+                                            extract_current_char(curr_char_map);
+                                        output[output_idx] = selection;
+                                        // We need to null-terminate the
+                                        // unfinished input to be able to print
+                                        // it.
+                                        output[output_idx + 1] = '\0';
+                                        output_idx++;
+                                        display->clear_region(
+                                            input_text_start,
+                                            {input_text_start.x +
+                                                 FONT_WIDTH * output_idx,
+                                             input_text_start.y + FONT_SIZE +
+                                                 4},
+                                            Black);
+                                        display->draw_string(
+                                            input_text_start, output,
+                                            FontSize::Size16, Black, White);
+                                }
+                        }
                         case BLUE:
                                 break;
                         }
@@ -966,15 +996,11 @@ void collect_string_input(Platform *p,
                 p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
 
-        wait_until_green_pressed(p);
-
-        // Draw squares with letters
-        // provide ability to move around with a cursor
-        // add controls:
         // yellow: toggles lowercase, shift and caps lock
         // green: accept a letter
         // blue: delete latest character
         // red: accept final input
+        return output;
 }
 
 void render_logo(Display *display, UserInterfaceCustomization *customization,
