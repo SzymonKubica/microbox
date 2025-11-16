@@ -24,11 +24,11 @@
   each square separately.
 
 # TODO
+- [_] add keyboard interface allowing to insert arbitrary text
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
 - [_] document wifi setup (i.e. create a header file with secrets)
 - [_] improve the button debounce handling for physical console. Currently it is
       difficult to pause the game.
-- [_] explore using network stack to get true randomness.
 - [_] remove all duplication between snake and snake duel
 - [_] update the lcd / sfml display libraries to remove the pixel-precision
       discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
@@ -48,6 +48,7 @@
 # In Progress
 
 # Done
+- [x] explore using network stack to get true randomness.
 - [x] add dummy emulator implementation that would 'connect' to whatever wifi
       the laptop is connected and display that in the network stats.
 - [_] add ability to save wifi passwords

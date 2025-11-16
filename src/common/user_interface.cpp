@@ -4,6 +4,7 @@
 #include "platform/interface/display.hpp"
 #include "../common/logging.hpp"
 #include "constants.hpp"
+#include <map>
 #include <cassert>
 #include <cstdio>
 #include <cstring>
@@ -614,9 +615,9 @@ void render_controls_explanations(Display *display)
         }
 }
 
-void render_wrapped_text(Platform *p,
-                              UserInterfaceCustomization *customization,
-                              const char *text) {
+void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
+                         const char *text)
+{
         p->display->clear(Black);
 
         // We exctract the display dimensions and font sizes into shorter
@@ -641,8 +642,7 @@ void render_wrapped_text(Platform *p,
 
         // We allocate dynamically a copy of the constant string as strtok
         // needs a mutable reference.
-        char *text_copy =
-            (char *)calloc(strlen(text) + 1, sizeof(char));
+        char *text_copy = (char *)calloc(strlen(text) + 1, sizeof(char));
         // We need to properly null-terminate the other string.
         text_copy[strlen(text)] = '\0';
         strncpy(text_copy, text, strlen(text));
@@ -821,6 +821,75 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
             {letter_front_end.x - 1, letter_front_end.y - letter_front_gap},
             Black);
 }
+
+/**
+ * Draws an on-screen keyboard and allows the user to move around it using the
+ * cursor. The text entered by the user will be written into the `input` output
+ * parameter.
+ */
+void collect_string_input(Platform *p,
+                          UserInterfaceCustomization *customization,
+                          char *user_input)
+{
+        Display *display = p->display;
+        LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
+
+        // Bind input params to short names for improved readability.
+        int w = display->get_width();
+        int h = display->get_height();
+        int r = display->get_display_corner_radius();
+
+        int margin = r / 4;
+        int usable_width = w - margin / 2;
+        int usable_height = h - margin / 2;
+
+        int max_cols = usable_width / FONT_WIDTH;
+        int max_rows = usable_height / FONT_SIZE;
+
+        int actual_width = max_cols * FONT_WIDTH;
+        int actual_height = max_rows * FONT_SIZE;
+
+        // We calculate centering margins
+        int left_horizontal_margin = (w - actual_width) / 2;
+        int top_vertical_margin = (h - actual_height) / 2;
+
+        LOG_DEBUG(TAG, "Keyboard grid area has %d available columns", max_cols);
+
+        p->display->clear(Black);
+
+        const char *row1 = "` 1 2 3 4 5 6 7 8 9 0 - =";
+        const char *row2 = "q w e r t y u i o p [ ] \\";
+        const char *row3 = "a s d f g h j k l ; '";
+        const char *row4 = "z x c v b n m , . /";
+
+        std::vector<const char *> rows = {row1, row2, row3, row4};
+        std::vector<int> left_indent_map = {0, 1, 2, 3};
+
+        for (int i = 0; i < rows.size(); i++) {
+                const char *row = rows[i];
+                int left_indent = left_indent_map[i];
+                for (int j = 0; j < strlen(row); j++) {
+                        Point start = {.x = (left_indent + j) * FONT_WIDTH,
+                                       .y = i * FONT_SIZE};
+                        char buffer[2];
+                        buffer[1] = '\0';
+                        buffer[0] = row[j];
+                        display->draw_string(start, buffer, FontSize::Size16,
+                                             Black, White);
+                }
+        }
+
+        wait_until_green_pressed(p);
+
+        // Draw squares with letters
+        // provide ability to move around with a cursor
+        // add controls:
+        // yellow: toggles lowercase, shift and caps lock
+        // green: accept a letter
+        // blue: delete latest character
+        // red: accept final input
+}
+
 void render_logo(Display *display, UserInterfaceCustomization *customization,
                  Point position)
 {

@@ -89,7 +89,7 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
         std::optional<WifiData *> wifi_data =
             p->wifi_provider->connect_to_network(SECRET_SSID, SECRET_PASS);
 
-        LOG_INFO(TAG,"Received wifi data structure");
+        LOG_INFO(TAG, "Received wifi data structure");
 
         char display_text_buffer[256];
         if (wifi_data.has_value()) {

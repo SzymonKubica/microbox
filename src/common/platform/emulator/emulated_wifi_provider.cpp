@@ -75,11 +75,10 @@ class EmulatedWifiProvider : public WifiProvider
 
                 // Get SSID/BSSID/RSSI via iw
                 std::string iw =
-                    // execute_command(("iw dev " + interface + "
-                    // link").c_str());
-                    //  Temporary override to read from a hand-rolled file to
-                    //  test iw command output parsing
-                    execute_command("cat mock-iw-output");
+                    execute_command(("iw dev " + interface + " link").c_str());
+                //  Temporary override to read from a hand-rolled file to
+                //  test iw command output parsing
+                // execute_command("cat mock-iw-output");
 
                 if (iw.find("Not connected.") != std::string::npos) {
                         this->connected = false;
@@ -99,7 +98,7 @@ class EmulatedWifiProvider : public WifiProvider
                         }
                 }
 
-                // Parse BSSID
+                // Parse BSSID (mac address of the router we are connected to).
                 {
                         std::regex re("Connected to ([0-9a-fA-F:]+)");
                         std::smatch m;
