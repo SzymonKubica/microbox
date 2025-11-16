@@ -1,9 +1,10 @@
+#ifndef EMULATOR
 #include <WiFiS3.h>
+#endif
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <cstring>
-#include <string>
 #include "wifi.hpp"
 
 #include "../common/logging.hpp"
@@ -84,29 +85,30 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
         const char *connecting_text = "Connecting to Wi-Fi network...";
         render_wrapped_text(p, customization, connecting_text);
         // We don't have the dummy wifi provider in in the emulator mode yet.
-#ifndef EMULATOR
         LOG_INFO(TAG, "Trying to connect to Wi-Fi.");
-        ArduinoWifiProvider wifi_provider = ArduinoWifiProvider{};
         auto wifi_data =
-            wifi_provider.connect_to_network(SECRET_SSID, SECRET_PASS);
+            p->wifi_provider->connect_to_network(SECRET_SSID, SECRET_PASS);
 
+        char display_text_buffer[256];
         if (wifi_data.has_value()) {
-                WifiData *data = wifi_provider.get_wifi_data();
+                WifiData *data = p->wifi_provider->get_wifi_data();
                 char *data_string = get_wifi_data_string_single_line(data);
-                Serial.println(data_string);
-                char full_connected_text[256];
-                sprintf(full_connected_text,
+                LOG_DEBUG("%s\n", data_string);
+                sprintf(display_text_buffer,
                         "Successfully connected to Wi-Fi!  %s", data_string);
-                render_wrapped_help_text(p, customization, full_connected_text);
+        } else {
+                sprintf(display_text_buffer, "Unable to connect to Wi-Fi!");
         }
-
+        render_wrapped_help_text(p, customization, display_text_buffer);
+#ifndef EMULATOR
         const char *host = "www.randomnumberapi.com";
         const int port = 80;
 
         WiFiClient client;
         if (client.connect(host, port)) {
                 client.println("GET "
-                    "http://www.randomnumberapi.com/api/v1.0/random?min=0&max=10000&count=1 HTTP/1.1");
+                               "http://www.randomnumberapi.com/api/v1.0/"
+                               "random?min=0&max=10000&count=1 HTTP/1.1");
                 client.println("Host: www.randomnumberapi.com");
                 client.println("Connection: close");
                 client.println();
@@ -138,10 +140,6 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
         } else {
                 Serial.println("Connection to randomnumberapi.com failed");
         }
-#else
-        p->delay_provider->delay_ms(2000);
-        const char *connected_text = "Successfully connected to Wi-Fi!";
-        render_wrapped_help_text(p, customization, connected_text);
 #endif
         wait_until_green_pressed(p);
 

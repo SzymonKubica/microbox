@@ -7,7 +7,7 @@
 #include <array>
 #include <string.h>
 
-class LinuxWifiProvider : public WifiProvider
+class EmulatedWifiProvider : public WifiProvider
 {
       private:
         WifiData data;
@@ -61,6 +61,7 @@ class LinuxWifiProvider : public WifiProvider
                                 connected = false;
                                 return;
                         }
+                        interface = maybe_interface.value();
                 }
 
                 // Read MAC address (device MAC)
@@ -118,7 +119,7 @@ class LinuxWifiProvider : public WifiProvider
         }
 
       public:
-        LinuxWifiProvider() { read_wifi_data(); }
+        EmulatedWifiProvider() { read_wifi_data(); }
 
         WifiData *get_wifi_data() override
         {

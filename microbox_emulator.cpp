@@ -3,6 +3,7 @@
 
 #include "src/common/platform/interface/platform.hpp"
 #include "src/common/platform/emulator/sfml_display.hpp"
+#include "src/common/platform/emulator/emulated_wifi_provider.cpp"
 #include "src/common/platform/emulator/emulator_delay.cpp"
 #include "src/common/platform/emulator/sfml_controller.hpp"
 #include "src/common/platform/emulator/sfml_awsd_controller.hpp"
@@ -27,6 +28,7 @@ SfmlAwsdInputController awsd_controller;
 SfmlHjklInputController hjkl_controller;
 SfmlActionInputController action_controller;
 PersistentStorage persistent_storage;
+WifiProvider *wifi_provider;
 
 void print_version(char *argv[]);
 int main(int argc, char *argv[])
@@ -71,12 +73,14 @@ int main(int argc, char *argv[])
             &action_controller,
         };
 
+        wifi_provider = new EmulatedWifiProvider();
 
         Platform platform = {.display = display,
                              .directional_controllers = &controllers,
                              .action_controllers = &action_controllers,
                              .delay_provider = &delay,
-                             .persistent_storage = &persistent_storage};
+                             .persistent_storage = &persistent_storage,
+                             .wifi_provider = wifi_provider};
 
         while (window.isOpen()) {
                 LOG_DEBUG(TAG, "Entering game loop...");

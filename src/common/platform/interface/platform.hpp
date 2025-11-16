@@ -3,6 +3,7 @@
 #include "delay.hpp"
 #include "display.hpp"
 #include "persistent_storage.hpp"
+#include "wifi.hpp"
 #include <vector>
 
 /**
@@ -15,4 +16,5 @@ struct Platform {
         std::vector<ActionController*> *action_controllers;
         DelayProvider *delay_provider;
         PersistentStorage *persistent_storage;
+        WifiProvider *wifi_provider;
 };
