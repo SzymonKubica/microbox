@@ -4,7 +4,6 @@
 #include "platform/interface/display.hpp"
 #include "../common/logging.hpp"
 #include "constants.hpp"
-#include <map>
 #include <cassert>
 #include <cstdio>
 #include <cstring>
@@ -851,29 +850,50 @@ void collect_string_input(Platform *p,
 
         // We calculate centering margins
         int left_horizontal_margin = (w - actual_width) / 2;
-        int top_vertical_margin = (h - actual_height) / 2;
+
+        int keyboard_rows = 4;
+        int input_row = 1;
+        int spacing = 2;
+        int text_rows = keyboard_rows + input_row + spacing;
+        int top_vertical_margin = (h - text_rows * FONT_SIZE) / 2;
 
         LOG_DEBUG(TAG, "Keyboard grid area has %d available columns", max_cols);
 
         p->display->clear(Black);
 
-        const char *row1 = "` 1 2 3 4 5 6 7 8 9 0 - =";
-        const char *row2 = "q w e r t y u i o p [ ] \\";
-        const char *row3 = "a s d f g h j k l ; '";
-        const char *row4 = "z x c v b n m , . /";
+        std::vector<const char *> rows = {
+            "`1234567890-=",
+            "qwertyuiop[]\\",
+            "asdfghjkl;'",
+            "zxcvbnm,./",
+        };
 
-        std::vector<const char *> rows = {row1, row2, row3, row4};
+        std::vector<const char *> shift_rows = {
+            "~!@#$%^&*()_+",
+            "QWERTYUIOP{}|",
+            "ASDDFGHJKL:\"",
+            "ZXCVBNM<>?",
+        };
+
         std::vector<int> left_indent_map = {0, 1, 2, 3};
 
+        Point input_text_start = {.x = 20, .y = top_vertical_margin};
+        display->draw_string(input_text_start, "test", FontSize::Size16, Black,
+                             White);
+
+        int keyboard_start_y =
+            top_vertical_margin + (input_row + spacing) * FONT_SIZE;
         for (int i = 0; i < rows.size(); i++) {
                 const char *row = rows[i];
                 int left_indent = left_indent_map[i];
                 for (int j = 0; j < strlen(row); j++) {
-                        Point start = {.x = (left_indent + j) * FONT_WIDTH,
-                                       .y = i * FONT_SIZE};
+                        // we mutiply the index by two here to spread out the
+                        // keyboard characters a bit.
+                        Point start = {.x = (left_indent + 2 * j) * FONT_WIDTH,
+                                       .y = keyboard_start_y + i * FONT_SIZE};
                         char buffer[2];
-                        buffer[1] = '\0';
                         buffer[0] = row[j];
+                        buffer[1] = '\0';
                         display->draw_string(start, buffer, FontSize::Size16,
                                              Black, White);
                 }
