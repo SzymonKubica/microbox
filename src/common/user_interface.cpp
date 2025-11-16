@@ -987,8 +987,22 @@ char *collect_string_input(Platform *p,
                                             input_text_start, output,
                                             FontSize::Size16, Black, White);
                                 }
+                                break;
                         }
                         case BLUE:
+                                if (output_idx > 0) {
+                                        output_idx--;
+                                        output[output_idx] = '\0';
+                                        display->clear_region(
+                                            {input_text_start.x +
+                                                 FONT_WIDTH * (output_idx),
+                                             input_text_start.y},
+                                            {input_text_start.x +
+                                                 FONT_WIDTH * (output_idx + 1),
+                                             input_text_start.y + FONT_SIZE +
+                                                 4},
+                                            Black);
+                                }
                                 break;
                         }
                 }
@@ -996,10 +1010,6 @@ char *collect_string_input(Platform *p,
                 p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
 
-        // yellow: toggles lowercase, shift and caps lock
-        // green: accept a letter
-        // blue: delete latest character
-        // red: accept final input
         return output;
 }
 
