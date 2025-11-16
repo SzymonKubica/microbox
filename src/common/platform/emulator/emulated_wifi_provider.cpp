@@ -68,7 +68,7 @@ class EmulatedWifiProvider : public WifiProvider
                 // Read MAC address (device MAC)
                 std::string mac = execute_command(
                     ("cat /sys/class/net/" + interface + "/address").c_str());
-                sscanf(mac.c_str(), "%02X:%02X:%02X:%02X:%02X:%02X",
+                sscanf(mac.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
                        &(data->mac_address[0]), &(data->mac_address[1]),
                        &(data->mac_address[2]), &(data->mac_address[3]),
                        &(data->mac_address[4]), &(data->mac_address[5]));
@@ -105,7 +105,7 @@ class EmulatedWifiProvider : public WifiProvider
                         std::smatch m;
                         if (std::regex_search(iw, m, re)) {
                                 sscanf(m[1].str().c_str(),
-                                       "%02X:%02X:%02X:%02X:%02X:%02X",
+                                       "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
                                        &(data->bssid[0]), &(data->bssid[1]),
                                        &(data->bssid[2]), &(data->bssid[3]),
                                        &(data->bssid[4]), &(data->bssid[5]));
@@ -123,12 +123,13 @@ class EmulatedWifiProvider : public WifiProvider
 
                 // Encryption: not directly available; set a dummy value
                 data->encryption_type = 2;
-                LOG_DEBUG("wifi_emulator", "Successfully parsed wifi information.");
+                LOG_DEBUG("wifi_emulator",
+                          "Successfully parsed wifi information.");
                 return data;
         }
 
       public:
-        EmulatedWifiProvider() { }
+        EmulatedWifiProvider() {}
 
         WifiData *get_wifi_data() override { return read_wifi_data(); }
 
@@ -138,14 +139,16 @@ class EmulatedWifiProvider : public WifiProvider
                 // Emulator does not connect—only checks if host is on that SSID
                 WifiData *data = read_wifi_data();
                 if (!connected) {
-                        LOG_DEBUG("wifi_emulator", "Returning empty optional as we are not connected to the Wi-Fi.");
+                        LOG_DEBUG("wifi_emulator",
+                                  "Returning empty optional as we are not "
+                                  "connected to the Wi-Fi.");
                         return std::nullopt;
                 }
                 if (strcmp(data->ssid, ssid) == 0) {
                         return data;
                 }
-                // For now we return connection details even if we are not on the
-                // configured network
+                // For now we return connection details even if we are not on
+                // the configured network
                 return data;
                 // return std::nullopt;
         }
