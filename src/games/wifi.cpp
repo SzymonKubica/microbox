@@ -86,8 +86,10 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
         render_wrapped_text(p, customization, connecting_text);
         // We don't have the dummy wifi provider in in the emulator mode yet.
         LOG_INFO(TAG, "Trying to connect to Wi-Fi.");
-        auto wifi_data =
+        std::optional<WifiData *> wifi_data =
             p->wifi_provider->connect_to_network(SECRET_SSID, SECRET_PASS);
+
+        LOG_INFO(TAG,"Received wifi data structure");
 
         char display_text_buffer[256];
         if (wifi_data.has_value()) {
