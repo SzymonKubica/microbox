@@ -29,10 +29,10 @@ typedef struct WifiAppConfiguration {
         // This is a hack to detected uninitialized struct from persistent
         // storage
         bool is_initialized;
-        bool connect_on_startup;
-        WifiAppAction action;
         char ssid[100];
         char password[100];
+        bool connect_on_startup;
+        WifiAppAction action;
 } WifiAppConfiguration;
 
 

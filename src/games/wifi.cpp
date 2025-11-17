@@ -82,68 +82,86 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                 return maybe_action.value();
         }
 
-        const char *connecting_text = "Connecting to Wi-Fi network...";
-        render_wrapped_text(p, customization, connecting_text);
-        // We don't have the dummy wifi provider in in the emulator mode yet.
-        LOG_INFO(TAG, "Trying to connect to Wi-Fi.");
-        std::optional<WifiData *> wifi_data =
-            p->wifi_provider->connect_to_network(SECRET_SSID, SECRET_PASS);
-
-        LOG_INFO(TAG, "Received wifi data structure");
-
-        char display_text_buffer[256];
-        if (wifi_data.has_value()) {
-                WifiData *data = p->wifi_provider->get_wifi_data();
-                char *data_string = get_wifi_data_string_single_line(data);
-                LOG_DEBUG("%s\n", data_string);
-                sprintf(display_text_buffer,
-                        "Successfully connected to Wi-Fi!  %s", data_string);
-        } else {
-                sprintf(display_text_buffer, "Unable to connect to Wi-Fi!");
+        switch (config.action) {
+        case AddNew:
+        case Modify: {
+                char *ssid =
+                    collect_string_input(p, customization, "Enter SSID");
+                char *password =
+                    collect_string_input(p, customization, "Enter password");
         }
-        render_wrapped_help_text(p, customization, display_text_buffer);
+        case Connect:
+                const char *connecting_text = "Connecting to Wi-Fi network...";
+                render_wrapped_text(p, customization, connecting_text);
+                // We don't have the dummy wifi provider in in the emulator mode
+                // yet.
+                LOG_INFO(TAG, "Trying to connect to Wi-Fi.");
+                std::optional<WifiData *> wifi_data =
+                    p->wifi_provider->connect_to_network(SECRET_SSID,
+                                                         SECRET_PASS);
+
+                LOG_INFO(TAG, "Received wifi data structure");
+
+                char display_text_buffer[256];
+                if (wifi_data.has_value()) {
+                        WifiData *data = p->wifi_provider->get_wifi_data();
+                        char *data_string =
+                            get_wifi_data_string_single_line(data);
+                        LOG_DEBUG("%s\n", data_string);
+                        sprintf(display_text_buffer,
+                                "Successfully connected to Wi-Fi!  %s",
+                                data_string);
+                } else {
+                        sprintf(display_text_buffer,
+                                "Unable to connect to Wi-Fi!");
+                }
+                render_wrapped_help_text(p, customization, display_text_buffer);
 #ifndef EMULATOR
-        const char *host = "www.randomnumberapi.com";
-        const int port = 80;
+                const char *host = "www.randomnumberapi.com";
+                const int port = 80;
 
-        WiFiClient client;
-        if (client.connect(host, port)) {
-                client.println("GET "
-                               "http://www.randomnumberapi.com/api/v1.0/"
-                               "random?min=0&max=10000&count=1 HTTP/1.1");
-                client.println("Host: www.randomnumberapi.com");
-                client.println("Connection: close");
-                client.println();
+                WiFiClient client;
+                if (client.connect(host, port)) {
+                        client.println(
+                            "GET "
+                            "http://www.randomnumberapi.com/api/v1.0/"
+                            "random?min=0&max=10000&count=1 HTTP/1.1");
+                        client.println("Host: www.randomnumberapi.com");
+                        client.println("Connection: close");
+                        client.println();
 
-                // Wait for response
-                while (client.connected() && !client.available())
-                        delay(10);
+                        // Wait for response
+                        while (client.connected() && !client.available())
+                                delay(10);
 
-                String response;
-                while (client.available()) {
-                        response += client.readString();
+                        String response;
+                        while (client.available()) {
+                                response += client.readString();
+                        }
+
+                        Serial.println(response);
+                        // Extract body (after headers)
+                        int bodyStart = response.indexOf("\r\n\r\n");
+                        if (bodyStart != -1) {
+                                String body = response.substring(bodyStart + 4);
+                                body.replace("[", "");
+                                body.replace("]", "");
+                                body.trim(); // remove trailing newlines/spaces
+                                unsigned long seed = body.toInt();
+                                Serial.print("Random seed from API: ");
+                                Serial.println(seed);
+                                srand(seed);
+                        }
+
+                        client.stop();
+                } else {
+                        Serial.println(
+                            "Connection to randomnumberapi.com failed");
                 }
-
-                Serial.println(response);
-                // Extract body (after headers)
-                int bodyStart = response.indexOf("\r\n\r\n");
-                if (bodyStart != -1) {
-                        String body = response.substring(bodyStart + 4);
-                        body.replace("[", "");
-                        body.replace("]", "");
-                        body.trim(); // remove trailing newlines/spaces
-                        unsigned long seed = body.toInt();
-                        Serial.print("Random seed from API: ");
-                        Serial.println(seed);
-                        srand(seed);
-                }
-
-                client.stop();
-        } else {
-                Serial.println("Connection to randomnumberapi.com failed");
-        }
 #endif
-        wait_until_green_pressed(p);
+                wait_until_green_pressed(p);
+                break;
+        }
 
         return UserAction::PlayAgain;
 }
