@@ -482,6 +482,9 @@ void render_config_menu(Display *display, Configuration *config,
                         char format_string[10];
                         sprintf(format_string, "%%%ds",
                                 max_option_value_length);
+                        LOG_DEBUG(TAG, format_string, "test");
+                        LOG_DEBUG(TAG, "%d", value.currently_selected);
+                        LOG_DEBUG(TAG, selected_value);
                         sprintf(option_value_buff, format_string,
                                 selected_value);
                         break;

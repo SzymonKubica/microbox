@@ -172,6 +172,7 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
                 sprintf(DEFAULT_WIFI_APP_CONFIG.password, "%s", SECRET_PASS);
                 DEFAULT_WIFI_APP_CONFIG.connect_on_startup = false;
                 DEFAULT_WIFI_APP_CONFIG.is_initialized = true;
+                DEFAULT_WIFI_APP_CONFIG.action = WifiAppAction::Modify;
                 memcpy(output, &DEFAULT_WIFI_APP_CONFIG,
                        sizeof(WifiAppConfiguration));
                 storage->put(storage_offset, DEFAULT_WIFI_APP_CONFIG);
@@ -206,10 +207,24 @@ Configuration *assemble_wifi_app_configuration(PersistentStorage *storage)
             "On Boot", {"Yes", "No"},
             map_boolean_to_yes_or_no(initial_config->connect_on_startup));
 
+        auto available_actions = {
+            wifi_app_action_to_string(WifiAppAction::Connect),
+            wifi_app_action_to_string(WifiAppAction::AddNew),
+            wifi_app_action_to_string(WifiAppAction::Modify)};
+
+        LOG_DEBUG(TAG, "Current initial config wifi action: %d",
+                  initial_config->action);
+        auto *app_action = ConfigurationOption::of_strings(
+            "Action", available_actions,
+            wifi_app_action_to_string(initial_config->action));
+
+        auto options = {ssid, password, connect_on_startup, app_action};
+
         free(initial_config);
 
-        auto options = {ssid, password, connect_on_startup};
-
+        // TODO: currently this string 'Connect' at the end takes no effect and
+        // is ignored since we migrated to the button-driven UI workflow. We
+        // need to remove this argument.
         return new Configuration("Wi-Fi", options, "Connect");
 }
 
@@ -219,12 +234,15 @@ void extract_game_config(WifiAppConfiguration *app_config,
         ConfigurationOption ssid = *config->options[0];
         ConfigurationOption password = *config->options[1];
         ConfigurationOption connect_on_startup = *config->options[2];
+        ConfigurationOption app_action = *config->options[3];
 
         app_config->is_initialized = true;
         sprintf(app_config->ssid, "%s", ssid.get_current_str_value());
         sprintf(app_config->password, "%s", password.get_current_str_value());
         app_config->connect_on_startup = extract_yes_or_no_option(
             connect_on_startup.get_current_str_value());
+        app_config->action =
+            action_from_string(app_action.get_current_str_value());
 }
 
 std::optional<UserAction>
@@ -242,4 +260,32 @@ collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
 
         extract_game_config(game_config, config);
         return std::nullopt;
+}
+
+const char *wifi_app_action_to_string(WifiAppAction action)
+{
+        switch (action) {
+        case WifiAppAction::AddNew:
+                return "Add New";
+        case WifiAppAction::Modify:
+                return "Modify";
+        case WifiAppAction::Connect:
+                return "Connect";
+        default:
+                return "UNKNOWN";
+        }
+        return "UNKNOWN";
+}
+
+WifiAppAction action_from_string(char *name)
+{
+        if (strcmp(name, wifi_app_action_to_string(WifiAppAction::AddNew)) == 0)
+                return WifiAppAction::AddNew;
+        if (strcmp(name, wifi_app_action_to_string(WifiAppAction::Modify)) == 0)
+                return WifiAppAction::Modify;
+        if (strcmp(name, wifi_app_action_to_string(WifiAppAction::Connect)) ==
+            0)
+                return WifiAppAction::Connect;
+        // For now we fallback on this one as a default.
+        return WifiAppAction::Connect;
 }
