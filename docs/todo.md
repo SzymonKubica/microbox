@@ -24,6 +24,7 @@
   each square separately.
 
 # TODO
+- [_] for longer string config options add ellipsis rendering
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
 - [_] document wifi setup (i.e. create a header file with secrets)
 - [_] improve the button debounce handling for physical console. Currently it is

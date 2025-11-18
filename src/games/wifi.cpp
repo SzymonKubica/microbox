@@ -52,9 +52,11 @@ UserAction wifi_app_loop(Platform *platform,
 void WifiApp::game_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         const char *help_text =
-            "Enter SSID and password to connect to WiFi network.";
+            "Select 'Modify' action and press next (red) to enter the new "
+            "wifi name and password. Select 'Connect' and press next to "
+            "initiate the wifi connection.";
 
-        bool exit_requested = false;
+            bool exit_requested = false;
         while (!exit_requested) {
                 switch (wifi_app_loop(p, customization)) {
                 case UserAction::PlayAgain:
