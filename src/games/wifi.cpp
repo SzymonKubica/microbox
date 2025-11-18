@@ -84,11 +84,27 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
 
         switch (config.action) {
         case AddNew:
+                // TODO: functionality to save multiple networks
         case Modify: {
+                LOG_DEBUG(TAG, "Getting user input for SSID...");
                 char *ssid =
                     collect_string_input(p, customization, "Enter SSID");
+                LOG_DEBUG(TAG, "User entered SSID: %s", ssid);
+                LOG_DEBUG(TAG, "Getting user input for password...");
                 char *password =
                     collect_string_input(p, customization, "Enter password");
+                LOG_DEBUG(TAG, "User entered password: %s", password);
+
+                std::vector<int> offsets = get_settings_storage_offsets();
+                int offset = offsets[WifiApp];
+
+                LOG_DEBUG(TAG, "Saving wifi app config at storage offset %d",
+                          offset);
+
+                sprintf(config.ssid, "%s", ssid);
+                sprintf(config.password, "%s", password);
+                p->persistent_storage->put(offset, config);
+                break;
         }
         case Connect:
                 const char *connecting_text = "Connecting to Wi-Fi network...";
@@ -97,8 +113,8 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                 // yet.
                 LOG_INFO(TAG, "Trying to connect to Wi-Fi.");
                 std::optional<WifiData *> wifi_data =
-                    p->wifi_provider->connect_to_network(SECRET_SSID,
-                                                         SECRET_PASS);
+                    p->wifi_provider->connect_to_network(config.ssid,
+                                                         config.password);
 
                 LOG_INFO(TAG, "Received wifi data structure");
 
@@ -208,18 +224,16 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
 /**
  * TODO
  */
-Configuration *assemble_wifi_app_configuration(PersistentStorage *storage)
+Configuration *
+assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 {
 
-        WifiAppConfiguration *initial_config =
-            load_initial_wifi_app_config(storage);
-
-        // Initialize the first config option: game gridsize
-        auto *ssid = ConfigurationOption::of_strings("SSID", {SECRET_SSID},
-                                                     initial_config->ssid);
-
+        // For now the system only supports saving a single wifi network and
+        // password, hence why we use the inital config as the only option
+        auto *ssid = ConfigurationOption::of_strings(
+            "SSID", {initial_config->ssid}, initial_config->ssid);
         auto *password = ConfigurationOption::of_strings(
-            "Password", {SECRET_PASS}, initial_config->password);
+            "Password", {initial_config->password}, initial_config->password);
 
         auto *connect_on_startup = ConfigurationOption::of_strings(
             "On Boot", {"Yes", "No"},
@@ -237,8 +251,6 @@ Configuration *assemble_wifi_app_configuration(PersistentStorage *storage)
             wifi_app_action_to_string(initial_config->action));
 
         auto options = {ssid, password, connect_on_startup, app_action};
-
-        free(initial_config);
 
         // TODO: currently this string 'Connect' at the end takes no effect and
         // is ignored since we migrated to the button-driven UI workflow. We
@@ -267,8 +279,9 @@ std::optional<UserAction>
 collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
                         UserInterfaceCustomization *customization)
 {
-        Configuration *config =
-            assemble_wifi_app_configuration(p->persistent_storage);
+        WifiAppConfiguration *initial_config =
+            load_initial_wifi_app_config(p->persistent_storage);
+        Configuration *config = assemble_wifi_app_configuration(initial_config);
 
         auto maybe_interrupt_action =
             collect_configuration(p, config, customization);
@@ -277,6 +290,7 @@ collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
         }
 
         extract_game_config(game_config, config);
+        free(initial_config);
         return std::nullopt;
 }
 

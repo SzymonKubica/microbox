@@ -482,9 +482,6 @@ void render_config_menu(Display *display, Configuration *config,
                         char format_string[10];
                         sprintf(format_string, "%%%ds",
                                 max_option_value_length);
-                        LOG_DEBUG(TAG, format_string, "test");
-                        LOG_DEBUG(TAG, "%d", value.currently_selected);
-                        LOG_DEBUG(TAG, selected_value);
                         sprintf(option_value_buff, format_string,
                                 selected_value);
                         break;
@@ -896,6 +893,9 @@ char *collect_string_input(Platform *p,
         // are not supported.
         int max_input_len = max_cols * 2;
         char *output = (char *)malloc(sizeof(char) * max_input_len);
+        // If the user enters nothing we need to be safe and still write the
+        // null terminator.
+        output[0] = '\0';
 
         Point input_text_start = {.x = 20, .y = top_vertical_margin};
 
