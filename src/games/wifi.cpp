@@ -116,7 +116,7 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                     p->wifi_provider->connect_to_network(config.ssid,
                                                          config.password);
 
-                LOG_INFO(TAG, "Received wifi data structure");
+                LOG_INFO(TAG, "Received wifi connection data");
 
                 char display_text_buffer[256];
                 if (wifi_data.has_value()) {

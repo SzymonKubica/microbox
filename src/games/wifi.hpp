@@ -36,8 +36,6 @@ typedef struct WifiAppConfiguration {
 } WifiAppConfiguration;
 
 
-
-
 /**
  * Similar to `collect_configuration` from `configuration.hpp`, it returns true
  * if the configuration was successfully collected. Otherwise, if the user
