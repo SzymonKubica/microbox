@@ -57,12 +57,16 @@ void loop(void)
         action_controllers[0] = keypad_controller;
 
         DelayProvider *delay_provider = new ArduinoDelay((void (*)(int))&delay);
+        WifiProvider *wifi_provider = new ArduinoWifiProvider{};
 
         Platform platform = {.display = &display,
                              .directional_controllers = &controllers,
                              .action_controllers = &action_controllers,
                              .delay_provider = delay_provider,
-                             .persistent_storage = &persistent_storage};
+                             .persistent_storage = &persistent_storage,
+                             .wifi_provider = wifi_provider
+
+        };
 
         select_game(&platform);
 }

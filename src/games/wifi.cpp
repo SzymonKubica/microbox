@@ -56,7 +56,7 @@ void WifiApp::game_loop(Platform *p, UserInterfaceCustomization *customization)
             "wifi name and password. Select 'Connect' and press next to "
             "initiate the wifi connection.";
 
-            bool exit_requested = false;
+        bool exit_requested = false;
         while (!exit_requested) {
                 switch (wifi_app_loop(p, customization)) {
                 case UserAction::PlayAgain:
@@ -113,7 +113,10 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                 render_wrapped_text(p, customization, connecting_text);
                 // We don't have the dummy wifi provider in in the emulator mode
                 // yet.
-                LOG_INFO(TAG, "Trying to connect to Wi-Fi.");
+                LOG_INFO(TAG,
+                         "Trying to connect to Wi-Fi using network %s and "
+                         "password %s",
+                         config.ssid, config.password);
                 std::optional<WifiData *> wifi_data =
                     p->wifi_provider->connect_to_network(config.ssid,
                                                          config.password);

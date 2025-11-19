@@ -4,7 +4,7 @@
 
 #include "arduino_secrets.hpp"
 
-class ArduinoWifiProvider : WifiProvider
+class ArduinoWifiProvider : public WifiProvider
 {
       public:
         /**
@@ -40,6 +40,7 @@ class ArduinoWifiProvider : WifiProvider
         connect_to_network(const char *ssid, const char *password) override
         {
 
+                Serial.println("Starting network connection.");
                 int status = WL_IDLE_STATUS;
 
                 // check for the WiFi module:
