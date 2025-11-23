@@ -24,6 +24,8 @@
   each square separately.
 
 # TODO
+- [_] add second line text spill for the input keyboard
+- [_] add ability to exit out of the text input collection screen
 - [_] for longer string config options add ellipsis rendering
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
 - [_] document wifi setup (i.e. create a header file with secrets)
@@ -48,6 +50,7 @@
 # In Progress
 
 # Done
+- [X] add button help prompts for the wifi input screen
 - [x] add keyboard interface allowing to insert arbitrary text
 - [x] explore using network stack to get true randomness.
 - [x] add dummy emulator implementation that would 'connect' to whatever wifi

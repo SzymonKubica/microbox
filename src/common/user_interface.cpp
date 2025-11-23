@@ -533,18 +533,9 @@ void render_config_menu(Display *display, Configuration *config,
         free(bar_positions);
 }
 
-/**
- * Renders the default explanation of console UI controls.
- */
-void render_controls_explanations(Display *display)
+void render_controls_explanations(Display *display,
+                                  std::map<Action, std::string> button_hints)
 {
-
-        std::vector<const char *> button_hints(4);
-        button_hints[Action::BLUE] = "Back";
-        button_hints[Action::YELLOW] = "Help";
-        button_hints[Action::RED] = "Next";
-        button_hints[Action::GREEN] = "Toggle";
-
         std::vector<Color> button_colors(4);
         button_colors[Action::BLUE] = Blue;
         button_colors[Action::YELLOW] = Yellow;
@@ -558,8 +549,8 @@ void render_controls_explanations(Display *display)
 
         // Dynamically find the total text length needed for even spacing
         int total_text_len = 0;
-        for (auto text : button_hints) {
-                total_text_len += strlen(text);
+        for (auto textMapping : button_hints) {
+                total_text_len += textMapping.second.length();
         }
 
         int circle_radius = 2;
@@ -600,18 +591,33 @@ void render_controls_explanations(Display *display)
         int x_pos = x_margin;
         for (int i = 0; i < buttons_order.size(); i++) {
                 Action button = buttons_order[i];
-                const char *hint = button_hints[button];
+                std::string hint = button_hints[button];
                 Color color = button_colors[button];
                 display->draw_circle({.x = x_pos, .y = circle_indicator_y},
                                      circle_radius, color, 0, true);
                 x_pos += circle_radius + circle_text_gap_width;
                 display->draw_string({.x = x_pos, .y = help_text_y},
-                                     (char *)hint, FontSize::Size16, Black,
-                                     White);
+                                     (char *)hint.c_str(), FontSize::Size16,
+                                     Black, White);
 
-                x_pos += strlen(hint) * fw;
+                x_pos += hint.length() * fw;
                 x_pos += gap_size;
         }
+}
+
+/**
+ * Renders the default explanation of console UI controls.
+ */
+void render_controls_explanations(Display *display)
+{
+
+        std::map<Action, std::string> button_hints;
+        button_hints[Action::BLUE] = "Back";
+        button_hints[Action::YELLOW] = "Help";
+        button_hints[Action::RED] = "Next";
+        button_hints[Action::GREEN] = "Toggle";
+
+        render_controls_explanations(display, button_hints);
 }
 
 void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
@@ -889,15 +895,26 @@ char *collect_string_input(Platform *p,
 
         std::vector<int> left_indent_map = {0, 1, 2, 3};
 
+        Point input_text_start = {.x = left_horizontal_margin,
+                                  .y = top_vertical_margin};
+        Point input_text_start_second_line = {
+            .x = left_horizontal_margin,
+            .y = top_vertical_margin + FONT_SIZE};
+
         // For now we only support up to two lines of user input. Longer strings
         // are not supported.
         int max_input_len = max_cols * 2;
         char *output = (char *)malloc(sizeof(char) * max_input_len);
+        // This is only used for rendering if the length of output string is
+        // greater than `max_cols`. Unlike the main output,
+        // this buffer is freed at the end and is not returned to the user.
+        char *output_line_1 =
+            (char *)malloc(sizeof(char) * (max_input_len + 1));
+        char *output_line_2 =
+            (char *)malloc(sizeof(char) * (max_input_len + 1));
         // If the user enters nothing we need to be safe and still write the
         // null terminator.
         output[0] = '\0';
-
-        Point input_text_start = {.x = 20, .y = top_vertical_margin};
 
         Point cursor = {0, 0};
 
@@ -947,7 +964,57 @@ char *collect_string_input(Platform *p,
                     return character_map[cursor.y][cursor.x];
             };
 
+        auto render_current_input_text = [display, input_text_start,
+                                          input_text_start_second_line,
+                                          max_cols, output,
+                                          output_line_1,
+                                          output_line_2](int output_idx) {
+                int line_1_end =
+                    std::min(output_idx, max_cols);
+                display->clear_region(
+                    input_text_start,
+                    {input_text_start.x + FONT_WIDTH * line_1_end,
+                     input_text_start.y + FONT_SIZE + 4},
+                    Black);
+
+                strncpy(output_line_1, output, line_1_end);
+                // ensure that the rendered line 1 is properly null-terminated
+                output_line_1[line_1_end] = '\0';
+                display->draw_string(input_text_start, output_line_1,
+                                     FontSize::Size16, Black, White);
+                // Only render second line if enough chars
+                if (output_idx > max_cols) {
+                        int line_2_end =
+                            output_idx - max_cols;
+                        display->clear_region(
+                            input_text_start_second_line,
+                            {input_text_start_second_line.x +
+                                 FONT_WIDTH * line_2_end,
+                             input_text_start_second_line.y + FONT_SIZE + 4},
+                            Black);
+
+                        strncpy(output_line_2,
+                                (output + max_cols),
+                                line_2_end);
+                        // ensure that the rendered line 2 is properly
+                        // null-terminated
+                        output_line_2[line_2_end] = '\0';
+                        display->draw_string(input_text_start_second_line,
+                                             output_line_2, FontSize::Size16,
+                                             Black, White);
+                }
+        };
+
         render_keyboard(base_char_map);
+
+        if (customization->show_help_text) {
+                std::map<Action, std::string> button_hints;
+                button_hints[Action::BLUE] = "Erase";
+                button_hints[Action::YELLOW] = "Caps";
+                button_hints[Action::RED] = "Done";
+                button_hints[Action::GREEN] = "Select";
+                render_controls_explanations(p->display, button_hints);
+        }
 
         bool input_confirmed = false;
         bool is_capitalized = false;
@@ -989,21 +1056,14 @@ char *collect_string_input(Platform *p,
                                         // it.
                                         output[output_idx + 1] = '\0';
                                         output_idx++;
-                                        display->clear_region(
-                                            input_text_start,
-                                            {input_text_start.x +
-                                                 FONT_WIDTH * output_idx,
-                                             input_text_start.y + FONT_SIZE +
-                                                 4},
-                                            Black);
-                                        display->draw_string(
-                                            input_text_start, output,
-                                            FontSize::Size16, Black, White);
+                                        render_current_input_text(output_idx);
                                 }
                                 break;
                         }
                         case BLUE:
                                 if (output_idx > 0) {
+                                  // TODO: add proper clear setup when entering
+                                  // input for multiple lines.
                                         display->clear_region(
                                             input_text_start,
                                             {input_text_start.x +
@@ -1024,6 +1084,7 @@ char *collect_string_input(Platform *p,
                 p->display->refresh();
         }
 
+        free(output_line_2);
         return output;
 }
 
