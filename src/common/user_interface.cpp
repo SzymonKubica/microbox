@@ -897,14 +897,16 @@ char *collect_string_input(Platform *p,
 
         Point input_text_start = {.x = left_horizontal_margin,
                                   .y = top_vertical_margin};
-        Point input_text_start_second_line = {
-            .x = left_horizontal_margin,
-            .y = top_vertical_margin + FONT_SIZE};
+        Point input_text_start_second_line = {.x = left_horizontal_margin,
+                                              .y = top_vertical_margin +
+                                                   FONT_SIZE + 4};
 
         // For now we only support up to two lines of user input. Longer strings
         // are not supported.
         int max_input_len = max_cols * 2;
-        char *output = (char *)malloc(sizeof(char) * max_input_len);
+        // We always itialize the buffer with size +1 to allow for the null
+        // terminator.
+        char *output = (char *)malloc(sizeof(char) * (max_input_len + 1));
         // This is only used for rendering if the length of output string is
         // greater than `max_cols`. Unlike the main output,
         // this buffer is freed at the end and is not returned to the user.
@@ -966,14 +968,14 @@ char *collect_string_input(Platform *p,
 
         auto render_current_input_text = [display, input_text_start,
                                           input_text_start_second_line,
-                                          max_cols, output,
-                                          output_line_1,
+                                          max_cols, output, output_line_1,
                                           output_line_2](int output_idx) {
-                int line_1_end =
-                    std::min(output_idx, max_cols);
+                int line_1_end = std::min(output_idx, max_cols);
+                // We clear one past the end of the line to ensure that this
+                // function also works for re-rendering after backspace is hit.
                 display->clear_region(
                     input_text_start,
-                    {input_text_start.x + FONT_WIDTH * line_1_end,
+                    {input_text_start.x + FONT_WIDTH * (line_1_end + 1),
                      input_text_start.y + FONT_SIZE + 4},
                     Black);
 
@@ -983,19 +985,21 @@ char *collect_string_input(Platform *p,
                 display->draw_string(input_text_start, output_line_1,
                                      FontSize::Size16, Black, White);
                 // Only render second line if enough chars
-                if (output_idx > max_cols) {
-                        int line_2_end =
-                            output_idx - max_cols;
+                int line_2_end = output_idx - max_cols;
+                if (output_idx >= max_cols) {
+                        // We clear even if it is equal to ensure that when this
+                        // function is used for re-rendering after backspace,
+                        // the last character from the second line disappears.
                         display->clear_region(
                             input_text_start_second_line,
                             {input_text_start_second_line.x +
-                                 FONT_WIDTH * line_2_end,
+                                 FONT_WIDTH * (line_2_end + 1),
                              input_text_start_second_line.y + FONT_SIZE + 4},
                             Black);
+                }
+                if (output_idx > max_cols) {
 
-                        strncpy(output_line_2,
-                                (output + max_cols),
-                                line_2_end);
+                        strncpy(output_line_2, (output + max_cols), line_2_end);
                         // ensure that the rendered line 2 is properly
                         // null-terminated
                         output_line_2[line_2_end] = '\0';
@@ -1047,7 +1051,7 @@ char *collect_string_input(Platform *p,
                                 input_confirmed = true;
                                 break;
                         case GREEN: {
-                                if (output_idx < max_input_len - 1) {
+                                if (output_idx < max_input_len) {
                                         char selection =
                                             extract_current_char(curr_char_map);
                                         output[output_idx] = selection;
@@ -1062,20 +1066,9 @@ char *collect_string_input(Platform *p,
                         }
                         case BLUE:
                                 if (output_idx > 0) {
-                                  // TODO: add proper clear setup when entering
-                                  // input for multiple lines.
-                                        display->clear_region(
-                                            input_text_start,
-                                            {input_text_start.x +
-                                                 FONT_WIDTH * output_idx,
-                                             input_text_start.y + FONT_SIZE +
-                                                 4},
-                                            Black);
                                         output_idx--;
                                         output[output_idx] = '\0';
-                                        display->draw_string(
-                                            input_text_start, output,
-                                            FontSize::Size16, Black, White);
+                                        render_current_input_text(output_idx);
                                 }
                                 break;
                         }
