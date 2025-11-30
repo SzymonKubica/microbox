@@ -998,7 +998,6 @@ char *collect_string_input(Platform *p,
                             Black);
                 }
                 if (output_idx > max_cols) {
-
                         strncpy(output_line_2, (output + max_cols), line_2_end);
                         // ensure that the rendered line 2 is properly
                         // null-terminated

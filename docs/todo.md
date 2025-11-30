@@ -24,6 +24,8 @@
   each square separately.
 
 # TODO
+- [_] add generic get requests interface allowing both the emulator and target
+      arduino implementation to source the randomness seed.
 - [_] add ability to exit out of the text input collection screen
 - [_] for longer string config options add ellipsis rendering
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.

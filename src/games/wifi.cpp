@@ -1,5 +1,6 @@
 #ifndef EMULATOR
 #include <WiFiS3.h>
+#include "../common/platform/arduino/arduino_http_client.hpp"
 #endif
 #include <stdlib.h>
 #include <stdbool.h>
@@ -139,46 +140,33 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                 render_wrapped_help_text(p, customization, display_text_buffer);
 #ifndef EMULATOR
                 const char *host = "www.randomnumberapi.com";
+                std::string host_string(host);
                 const int port = 80;
 
-                WiFiClient client;
-                if (client.connect(host, port)) {
-                        client.println(
-                            "GET "
-                            "http://www.randomnumberapi.com/api/v1.0/"
-                            "random?min=0&max=10000&count=1 HTTP/1.1");
-                        client.println("Host: www.randomnumberapi.com");
-                        client.println("Connection: close");
-                        client.println();
-
-                        // Wait for response
-                        while (client.connected() && !client.available())
-                                delay(10);
-
-                        String response;
-                        while (client.available()) {
-                                response += client.readString();
-                        }
-
-                        Serial.println(response);
-                        // Extract body (after headers)
-                        int bodyStart = response.indexOf("\r\n\r\n");
-                        if (bodyStart != -1) {
-                                String body = response.substring(bodyStart + 4);
-                                body.replace("[", "");
-                                body.replace("]", "");
-                                body.trim(); // remove trailing newlines/spaces
-                                unsigned long seed = body.toInt();
-                                Serial.print("Random seed from API: ");
-                                Serial.println(seed);
-                                srand(seed);
-                        }
-
-                        client.stop();
-                } else {
-                        Serial.println(
-                            "Connection to randomnumberapi.com failed");
+                auto client = new ArduinoHttpClient();
+                auto resp =
+                    client->get({.host = host_string, .port = port},
+                                "http://www.randomnumberapi.com/api/v1.0/"
+                                "random?min=0&max=10000&count=1");
+                if (!resp.has_value()) {
+                        Serial.println("Did not receive a successful response "
+                                       "from the API.");
                 }
+                Serial.println(resp.value().c_str());
+                String response = String(resp.value().c_str());
+                // Extract body (after headers)
+                int bodyStart = response.indexOf("\r\n\r\n");
+                if (bodyStart != -1) {
+                        String body = response.substring(bodyStart + 4);
+                        body.replace("[", "");
+                        body.replace("]", "");
+                        body.trim(); // remove trailing newlines/spaces
+                        unsigned long seed = body.toInt();
+                        Serial.print("Random seed from API: ");
+                        Serial.println(seed);
+                        srand(seed);
+                }
+
 #endif
                 wait_until_green_pressed(p);
                 break;
