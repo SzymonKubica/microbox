@@ -1,7 +1,6 @@
-#pragma once
 #include "../interface/http_client.hpp"
 
-class ArduinoHttpClient : public HttpClient {
+class EmulatorHttpClient : public HttpClient {
       public:
         /**
          * Performs a GET request to the specified URL and returns the response

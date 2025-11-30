@@ -1,5 +1,6 @@
 #include "src/common/platform/arduino/joystick_controller.hpp"
 #include "src/common/platform/arduino/wifi_provider.cpp"
+#include "src/common/platform/arduino/arduino_http_client.hpp"
 #include "src/common/platform/interface/wifi.hpp"
 #include "src/common/platform/arduino/keypad_controller.hpp"
 #include "src/common/platform/arduino/lcd_display.hpp"
@@ -58,14 +59,15 @@ void loop(void)
 
         DelayProvider *delay_provider = new ArduinoDelay((void (*)(int))&delay);
         WifiProvider *wifi_provider = new ArduinoWifiProvider{};
+        ArduinoHttpClient *client = new ArduinoHttpClient();
 
         Platform platform = {.display = &display,
                              .directional_controllers = &controllers,
                              .action_controllers = &action_controllers,
                              .delay_provider = delay_provider,
                              .persistent_storage = &persistent_storage,
-                             .wifi_provider = wifi_provider
-
+                             .wifi_provider = wifi_provider,
+                             .client = client
         };
 
         select_game(&platform);

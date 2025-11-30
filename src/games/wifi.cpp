@@ -138,20 +138,19 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                                 "Unable to connect to Wi-Fi!");
                 }
                 render_wrapped_help_text(p, customization, display_text_buffer);
-#ifndef EMULATOR
+
                 const char *host = "www.randomnumberapi.com";
                 std::string host_string(host);
                 const int port = 80;
-
-                auto client = new ArduinoHttpClient();
                 auto resp =
-                    client->get({.host = host_string, .port = port},
-                                "http://www.randomnumberapi.com/api/v1.0/"
-                                "random?min=0&max=10000&count=1");
+                    p->client->get({.host = host_string, .port = port},
+                                   "http://www.randomnumberapi.com/api/v1.0/"
+                                   "random?min=0&max=10000&count=1");
                 if (!resp.has_value()) {
-                        Serial.println("Did not receive a successful response "
+                        LOG_DEBUG(TAG, "Did not receive a successful response "
                                        "from the API.");
                 }
+#ifndef EMULATOR
                 Serial.println(resp.value().c_str());
                 String response = String(resp.value().c_str());
                 // Extract body (after headers)

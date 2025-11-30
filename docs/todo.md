@@ -24,8 +24,9 @@
   each square separately.
 
 # TODO
-- [_] add generic get requests interface allowing both the emulator and target
-      arduino implementation to source the randomness seed.
+- [_] move the randomness seed query to the separate game that does not happen
+      each time we connect to wifi.
+- [_] implement the http client interface on the emulator
 - [_] add ability to exit out of the text input collection screen
 - [_] for longer string config options add ellipsis rendering
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
@@ -51,6 +52,8 @@
 # In Progress
 
 # Done
+- [x] add generic get requests interface allowing both the emulator and target
+      arduino implementation to source the randomness seed.
 - [x] add second line text spill for the input keyboard
 - [X] add button help prompts for the wifi input screen
 - [x] add keyboard interface allowing to insert arbitrary text

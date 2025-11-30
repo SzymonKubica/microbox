@@ -1,4 +1,4 @@
-// #ifndef EMULATOR
+#ifndef EMULATOR
 #include "./arduino_http_client.hpp"
 #include <WiFiS3.h>
 #include <cstdint>
@@ -34,5 +34,4 @@ ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
                 return std::nullopt;
         }
 }
-
-// #endif
+#endif
