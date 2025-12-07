@@ -26,7 +26,7 @@ WifiAppAction action_from_string(char *string);
  * strings.
  */
 typedef struct WifiAppConfiguration {
-        // This is a hack to detected uninitialized struct from persistent
+        // This is a hack to detect uninitialized struct from persistent
         // storage
         bool is_initialized;
         char ssid[100];

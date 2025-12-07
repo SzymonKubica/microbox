@@ -149,7 +149,6 @@ class EmulatedWifiProvider : public WifiProvider
                 // For now we return connection details even if we are not on
                 // the configured network
                 return data;
-                // return std::nullopt;
         }
 
         bool is_connected() override

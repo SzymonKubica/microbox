@@ -97,6 +97,15 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
+                case RandomSeedPicker: {
+                        RandomSeedPickerConfiguration config;
+                        auto action =
+                            collect_random_seed_picker_config(p, &config, custom);
+                        if (action && action.value() == UserAction::Exit) {
+                                return;
+                        }
+                        storage.put(offset, config);
+                } break;
                 default:
                         return;
                 }
@@ -128,7 +137,7 @@ Configuration *assemble_settings_menu_configuration()
             game_to_string(Game::MainMenu),  game_to_string(Game::Minesweeper),
             game_to_string(Game::Clean2048), game_to_string(Game::GameOfLife),
             game_to_string(Game::Snake),     game_to_string(Game::SnakeDuel),
-            game_to_string(Game::WifiApp)};
+            game_to_string(Game::WifiApp), game_to_string(Game::RandomSeedPicker)};
 
         auto *menu = ConfigurationOption::of_strings(
             "Modify", available_games, game_to_string(Game::MainMenu));

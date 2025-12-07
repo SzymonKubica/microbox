@@ -1,192 +1,245 @@
-#include <cstdint>
 #include <cstring>
 
 #include "../common/logging.hpp"
-#include "../common/constants.hpp"
 #include "../common/maths_utils.hpp"
-#include "game_executor.hpp"
 #include "random_seed_picker.hpp"
 #include "settings.hpp"
 #include "game_menu.hpp"
 
 #define TAG "random_seed_picker"
-#define GAME_CELL_WIDTH 8
 
-#define GAME_LOOP_DELAY 100
+RandomSeedPickerConfiguration DEFAULT_RANDOM_SEED_PICKER_CONFIG = {
+    .seed = 1234, .action = RandomSeedSelectorAction::Download};
 
-/**
- * Assembles the generic configuration struct that can be used to collect user
- * input specifying the game of life configuration.
- */
-Configuration *assemble_game_of_life_configuration(PersistentStorage *storage);
+const char *selector_action_to_str(RandomSeedSelectorAction action)
+{
+        switch (action) {
+        case RandomSeedSelectorAction::Spin:
+                return "Spin";
+        case RandomSeedSelectorAction::Download:
+                return "Download";
+        case RandomSeedSelectorAction::Modify:
+                return "Modify";
+        default:
+                return "UNKNOWN";
+        }
+}
+
+RandomSeedSelectorAction selector_action_from_str(char *name)
+{
+        if (strcmp(name,
+                   selector_action_to_str(RandomSeedSelectorAction::Spin)) == 0)
+                return RandomSeedSelectorAction::Spin;
+        if (strcmp(name, selector_action_to_str(
+                             RandomSeedSelectorAction::Modify)) == 0)
+                return RandomSeedSelectorAction::Modify;
+        if (strcmp(name, selector_action_to_str(
+                             RandomSeedSelectorAction::Download)) == 0)
+                return RandomSeedSelectorAction::Download;
+        // For now we fallback on this one as a default.
+        return RandomSeedSelectorAction::Download;
+}
+
+UserAction random_seed_picker_loop(Platform *p,
+                                   UserInterfaceCustomization *customization);
+void RandomSeedPicker::game_loop(Platform *p,
+                                 UserInterfaceCustomization *customization)
+{
+        const char *help_text =
+            "Select 'Modify' action and press next (red) to change the seed"
+            "Select 'Download' to fetch a new seed from API (wifi connection "
+            "required)."
+            "Select 'Spin' to srand";
+
+        bool exit_requested = false;
+        while (!exit_requested) {
+                switch (random_seed_picker_loop(p, customization)) {
+                case UserAction::PlayAgain:
+                        LOG_INFO(TAG, "Re-entering the main wifi app loop.");
+                        continue;
+                case UserAction::Exit:
+                        exit_requested = true;
+                        break;
+                case UserAction::ShowHelp:
+                        LOG_INFO(TAG,
+                                 "User requsted help screen for wifi app.");
+                        render_wrapped_help_text(p, customization, help_text);
+                        wait_until_green_pressed(p);
+                        break;
+                }
+        }
+}
+
+UserAction random_seed_picker_loop(Platform *p,
+                                   UserInterfaceCustomization *customization)
+{
+        RandomSeedPickerConfiguration config;
+
+        auto maybe_action =
+            collect_random_seed_picker_config(p, &config, customization);
+        if (maybe_action) {
+                return maybe_action.value();
+        }
+
+        switch (config.action) {
+        case RandomSeedSelectorAction::Spin:
+                LOG_DEBUG(TAG, "Spin option selected");
+                break;
+        case RandomSeedSelectorAction::Download: {
+                LOG_DEBUG(TAG, "Download option selected");
+                const char *downloading_text = "Fetching new random seed...";
+                render_wrapped_text(p, customization, downloading_text);
+
+                const char *host = "www.randomnumberapi.com";
+                std::string host_string(host);
+                const int port = 80;
+                auto resp =
+                    p->client->get({.host = host_string, .port = port},
+                                   "http://www.randomnumberapi.com/api/v1.0/"
+                                   "random?min=0&max=10000&count=1");
+                if (!resp.has_value()) {
+                        LOG_DEBUG(TAG, "Did not receive a successful response "
+                                       "from the API.");
+                }
+                int new_seed;
+#ifndef EMULATOR
+                Serial.println(resp.value().c_str());
+                String response = String(resp.value().c_str());
+                // Extract body (after headers)
+                int bodyStart = response.indexOf("\r\n\r\n");
+                if (bodyStart != -1) {
+                        String body = response.substring(bodyStart + 4);
+                        body.replace("[", "");
+                        body.replace("]", "");
+                        body.trim(); // remove trailing newlines/spaces
+                        unsigned long seed = body.toInt();
+                        Serial.print("Random seed from API: ");
+                        Serial.println(seed);
+                        srand(seed);
+                        new_seed = seed;
+                }
+#else
+
+                new_seed = 12345;
+#endif
+
+                std::vector<int> offsets = get_settings_storage_offsets();
+                int offset = offsets[RandomSeedPicker];
+                config.seed = new_seed;
+                p->persistent_storage->put(offset, config);
+
+                char display_text_buffer[256];
+                sprintf(display_text_buffer, "Fetched new randomness seed: %d",
+                        new_seed);
+                render_wrapped_help_text(p, customization, display_text_buffer);
+
+                wait_until_green_pressed(p);
+                break;
+        }
+        case RandomSeedSelectorAction::Modify:
+                LOG_DEBUG(TAG, "Modify option selected");
+                break;
+        }
+
+        return UserAction::PlayAgain;
+}
 
 RandomSeedPickerConfiguration *
 load_initial_seed_picker_config(PersistentStorage *storage)
 {
-        /*
-              int storage_offset =
-           get_settings_storage_offsets()[RandomSeedPicker];
 
-              RandomSeedPickerConfiguration config = {
-                  .base_seed = 0,
-                  .reseed_iterations = 1,
-              };
+        int storage_offset = get_settings_storage_offsets()[RandomSeedPicker];
 
-              LOG_DEBUG(TAG,
-                        "Trying to load initial settings from the persistent
-           storage " "at offset %d", storage_offset);
-              storage->get(storage_offset, config);
+        RandomSeedPickerConfiguration config;
+        LOG_DEBUG(TAG,
+                  "Trying to load initial settings from the persistent "
+                  "storage "
+                  "at offset %d",
+                  storage_offset);
+        storage->get(storage_offset, config);
 
-              RandomSeedPickerConfiguration *output =
-                  new RandomSeedPickerConfiguration();
+        RandomSeedPickerConfiguration *output =
+            new RandomSeedPickerConfiguration();
 
-              if (config.reseed_iterations == 0) {
-                      LOG_DEBUG(
-                          TAG,
+        if (config.seed == 0) {
+                LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
-                          "random seed picker configuration, using default
-           values."); memcpy(output, &DEFAULT_GAME_OF_LIFE_CONFIG,
-                             sizeof(GameOfLifeConfiguration));
-                      storage->put(storage_offset, DEFAULT_GAME_OF_LIFE_CONFIG);
+                          "seed picker configuration, using default values.");
+                memcpy(output, &DEFAULT_RANDOM_SEED_PICKER_CONFIG,
+                       sizeof(RandomSeedPickerConfiguration));
+                storage->put(storage_offset, DEFAULT_RANDOM_SEED_PICKER_CONFIG);
 
-              } else {
-                      LOG_DEBUG(TAG, "Using configuration from persistent
-           storage."); memcpy(output, &config,
-           sizeof(RandomSeedPickerConfiguration));
-              }
-
-              return output;
-              */
-        return NULL;
-}
-
-/*
-void enter_random_seed_picker_loop(Platform *p,
-                                   GameCustomization *customization)
-{
-
-        LOG_DEBUG(TAG, "Entering Game of Life game loop");
-        GameOfLifeConfiguration config;
-
-        collect_random_seed_picker_configuration(p, &config, customization);
-
-        bool exit_requested = false;
-        while (!exit_requested) {
-                if (mode == RUNNING && iteration == evolution_period - 1) {
-                        LOG_DEBUG(TAG, "Taking a simulation step");
-                        StateEvolution evolution = take_simulation_step(
-                            grid, gd, config.use_toroidal_array);
-
-                        render_state_change(p->display, evolution, gd);
-                        save_grid_state_in_rewind_buffer(&rewind_buffer,
-                                                         &rewind_buf_idx, grid);
-                        grid = evolution.second;
-                }
-                Direction dir;
-                Action act;
-                GameOfLifeCell curr =
-                    get_cell(caret_pos.x, caret_pos.y, gd->cols, grid);
-                if (action_input_registered(p->action_controllers, &act)) {
-                        switch (act) {
-                        case RED:
-                                exit_requested = true;
-                                break;
-                        default:
-                                break;
-                        }
-                }
-                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
+        } else {
+                LOG_DEBUG(TAG, "Using configuration from persistent storage.");
+                memcpy(output, &config, sizeof(RandomSeedPickerConfiguration));
         }
+
+        LOG_DEBUG(TAG,
+                  "Loaded random seed picker configuration: seed=%d, action=%d",
+                  output->seed, output->action);
+
+        return output;
 }
 
-void collect_random_seed_picker_configuration(
+Configuration *assemble_random_seed_picker_configuration(
+    RandomSeedPickerConfiguration *initial_config);
+void extract_seed_picker_config(
+    RandomSeedPickerConfiguration *random_seed_picker_config,
+    Configuration *config);
+
+std::optional<UserAction> collect_random_seed_picker_config(
     Platform *p, RandomSeedPickerConfiguration *game_config,
-    GameCustomization *customization)
+    UserInterfaceCustomization *customization)
 {
+        RandomSeedPickerConfiguration *initial_config =
+            load_initial_seed_picker_config(p->persistent_storage);
         Configuration *config =
-            assemble_random_seed_picker_configuration(p->persistent_storage);
-        enter_configuration_collection_loop(p, config,
-                                            customization->accent_color);
-        extract_game_config(game_config, config);
-        free_configuration(config);
-}
+            assemble_random_seed_picker_configuration(initial_config);
 
-Configuration *
-assemble_random_seed_picker_configuration(PersistentStorage *storage)
-{
-        GameOfLifeConfiguration *initial_config =
-            load_initial_game_of_life_config(storage);
-
-        Configuration *config = new Configuration();
-        config->name = "Random Seed Picker";
-
-        // Initialize the first config option: base seed
-        ConfigurationOption *base_seed = new ConfigurationOption();
-        base_seed->name = "Base seed";
-        int total_seeds = 100;
-        std::vector<int> available_seeds(total_seeds);
-        for (int i = 0; i < total_seeds; i++) {
-                available_seeds.push_back(i);
+        auto maybe_interrupt_action =
+            collect_configuration(p, config, customization);
+        if (maybe_interrupt_action) {
+                return maybe_interrupt_action;
         }
-        populate_int_option_values(base_seed, available_seeds);
-        // We need to use this elaborate mechanism of getting the index of the
-        // default value because the config value is also saved in persistent
-        // storage so this can change and cannot be hardcoded.
-        base_seed->currently_selected = get_config_option_value_index(
-            base_seed, map_boolean_to_yes_or_no(initial_config->base_seed));
 
-        // Initialize the first config option: number of re-seed iterations.
-        ConfigurationOption *reseed_iterations = new ConfigurationOption();
-        reseed_iterations->name = "Base seed";
-        int total_available_iterations =
-            10 std::vector<int> available_iterations(
-                total_available_iterations);
-        for (int i = 0; i < total_available_iterations; i++) {
-                available_iterations.push_back(i);
-        }
-        populate_int_option_values(reseed_iterations, available_iterations);
-        // We need to use this elaborate mechanism of getting the index of the
-        // default value because the config value is also saved in persistent
-        // storage so this can change and cannot be hardcoded.
-        reseed_iterations->currently_selected = get_config_option_value_index(
-            reseed_iterations,
-            map_boolean_to_yes_or_no(initial_config->base_seed));
-
-        config->options_len = 2;
-        config->options = new ConfigurationOption *[config->options_len];
-        config->options[0] = base_seed;
-        config->options[1] = reseed_iterations;
-        config->curr_selected_option = 0;
-        config->confirmation_cell_text = "Generate Seed";
-
+        extract_seed_picker_config(game_config, config);
         free(initial_config);
-        return config;
+        return std::nullopt;
 }
 
-// TODO
-void extract_game_config(GameOfLifeConfiguration *game_config,
-                         Configuration *config)
+Configuration *assemble_random_seed_picker_configuration(
+    RandomSeedPickerConfiguration *initial_config)
+
+{
+        auto *seed = ConfigurationOption::of_integers(
+            "Seed", {initial_config->seed}, initial_config->seed);
+
+        auto available_actions = {
+            selector_action_to_str(RandomSeedSelectorAction::Download),
+            selector_action_to_str(RandomSeedSelectorAction::Modify),
+            selector_action_to_str(RandomSeedSelectorAction::Spin)};
+
+        auto *app_action = ConfigurationOption::of_strings(
+            "Action", available_actions,
+            selector_action_to_str(initial_config->action));
+
+        auto options = {seed, app_action};
+
+        // TODO: currently this string 'Connect' at the end takes no effect and
+        // is ignored since we migrated to the button-driven UI workflow. We
+        // need to remove this argument.
+        return new Configuration("Seed Picker", options, "todo-remove");
+}
+
+void extract_seed_picker_config(
+    RandomSeedPickerConfiguration *random_seed_picker_config,
+    Configuration *config)
 {
 
-        ConfigurationOption prepopulate_grid = *config->options[0];
-        int curr_choice_idx = prepopulate_grid.currently_selected;
-        const char *choice = static_cast<const char **>(
-            prepopulate_grid.available_values)[curr_choice_idx];
-        game_config->prepopulate_grid = extract_yes_or_no_option(choice);
+        ConfigurationOption seed = *config->options[0];
+        ConfigurationOption app_action = *config->options[1];
 
-        game_config->rewind_buffer_size = REWIND_BUF_SIZE;
-
-        ConfigurationOption simulation_speed = *config->options[1];
-        int curr_speed_idx = simulation_speed.currently_selected;
-        game_config->simulation_speed = static_cast<int *>(
-            simulation_speed.available_values)[curr_speed_idx];
-
-        ConfigurationOption use_toroidal_array = *config->options[2];
-        int use_toroidal_array_choice_idx =
-            use_toroidal_array.currently_selected;
-        const char *toroidal_array_choice = static_cast<const char **>(
-            use_toroidal_array.available_values)[use_toroidal_array_choice_idx];
-        game_config->use_toroidal_array =
-            extract_yes_or_no_option(toroidal_array_choice);
+        random_seed_picker_config->seed = seed.get_curr_int_value();
+        random_seed_picker_config->action =
+            selector_action_from_str(app_action.get_current_str_value());
 }
-*/

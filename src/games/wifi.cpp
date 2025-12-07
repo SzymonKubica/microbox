@@ -138,35 +138,6 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                                 "Unable to connect to Wi-Fi!");
                 }
                 render_wrapped_help_text(p, customization, display_text_buffer);
-
-                const char *host = "www.randomnumberapi.com";
-                std::string host_string(host);
-                const int port = 80;
-                auto resp =
-                    p->client->get({.host = host_string, .port = port},
-                                   "http://www.randomnumberapi.com/api/v1.0/"
-                                   "random?min=0&max=10000&count=1");
-                if (!resp.has_value()) {
-                        LOG_DEBUG(TAG, "Did not receive a successful response "
-                                       "from the API.");
-                }
-#ifndef EMULATOR
-                Serial.println(resp.value().c_str());
-                String response = String(resp.value().c_str());
-                // Extract body (after headers)
-                int bodyStart = response.indexOf("\r\n\r\n");
-                if (bodyStart != -1) {
-                        String body = response.substring(bodyStart + 4);
-                        body.replace("[", "");
-                        body.replace("]", "");
-                        body.trim(); // remove trailing newlines/spaces
-                        unsigned long seed = body.toInt();
-                        Serial.print("Random seed from API: ");
-                        Serial.println(seed);
-                        srand(seed);
-                }
-
-#endif
                 wait_until_green_pressed(p);
                 break;
         }
@@ -213,9 +184,6 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
         return output;
 }
 
-/**
- * TODO
- */
 Configuration *
 assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 {

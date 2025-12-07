@@ -1,18 +1,19 @@
 #pragma once
 #include "game_executor.hpp"
 #include "common_transitions.hpp"
-#include "../common/logging.hpp"
 #include "../common/configuration.hpp"
+
+enum class RandomSeedSelectorAction : uint8_t { Spin, Download, Modify };
+
+const char *selector_action_to_str(RandomSeedSelectorAction action);
+RandomSeedSelectorAction selector_action_from_str(char *string);
 
 void enter_random_seed_picker_loop(Platform *platform,
                                    UserInterfaceCustomization *customization);
 
 typedef struct RandomSeedPickerConfiguration {
-        // Starting point of the seed
-        int base_seed;
-        // Number of times we call `rand` with the initial seed and then set
-        // it with `srand`. Allows fora wider range of random seeds
-        int reseed_iterations;
+        int seed;
+        RandomSeedSelectorAction action;
 } RandomSeedPickerConfiguration;
 
 /**
@@ -22,31 +23,16 @@ typedef struct RandomSeedPickerConfiguration {
  * can call it, get the new default setttings and save them in the persistent
  * storage.
  */
-void collect_random_seed_picker_configuration(
+std::optional<UserAction> collect_random_seed_picker_config(
     Platform *p, RandomSeedPickerConfiguration *game_config,
     UserInterfaceCustomization *customization);
 
 class RandomSeedPicker : public GameExecutor
 {
       public:
-        void game_loop(Platform *p,
-                       UserInterfaceCustomization *customization) override
-        {
-                while (true) {
-                        enter_random_seed_picker_loop(p, customization);
-                        Direction dir;
-                        Action act;
-                        pause_until_input(p->directional_controllers,
-                                          p->action_controllers, &dir, &act,
-                                          p->delay_provider, p->display);
-
-                        if (act == Action::BLUE) {
-                                LOG_DEBUG("random_seed_picker",
-                                          "Exiting random seed picker loop.");
-                                break;
-                        }
-                }
-        }
+        virtual void
+        game_loop(Platform *p,
+                  UserInterfaceCustomization *customization) override;
 
         RandomSeedPicker() {}
 };

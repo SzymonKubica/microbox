@@ -11,6 +11,7 @@
 #include "settings.hpp"
 #include "wifi.hpp"
 #include "game_of_life.hpp"
+#include "random_seed_picker.hpp"
 #include "snake.hpp"
 #include "snake_duel.hpp"
 
@@ -74,7 +75,8 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
             {game_to_string(Game::Minesweeper), game_to_string(Game::Clean2048),
              game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
              game_to_string(Game::SnakeDuel), game_to_string(Game::WifiApp),
-             game_to_string(Game::Settings)},
+             game_to_string(Game::Settings),
+             game_to_string(Game::RandomSeedPicker)},
             game_to_string(initial_config->game));
 
         auto *accent_color = ConfigurationOption::of_colors(
@@ -160,6 +162,8 @@ void select_game(Platform *p)
                         return new class SnakeDuel();
                 case WifiApp:
                         return new class WifiApp();
+                case RandomSeedPicker:
+                        return new class RandomSeedPicker();
                 default:
                         return NULL;
                 }
@@ -221,6 +225,8 @@ Game game_from_string(const char *name)
                 return Game::SnakeDuel;
         if (strcmp(name, game_to_string(WifiApp)) == 0)
                 return Game::WifiApp;
+        if (strcmp(name, game_to_string(RandomSeedPicker)) == 0)
+                return Game::RandomSeedPicker;
         return Game::Unknown;
 }
 
@@ -235,6 +241,7 @@ bool is_valid_game(Game game)
         case Snake:
         case SnakeDuel:
         case WifiApp:
+        case RandomSeedPicker:
                 return true;
         default:
                 return false;
@@ -260,6 +267,8 @@ const char *game_to_string(Game game)
                 return "Snake Duel";
         case WifiApp:
                 return "Wi-Fi Config";
+        case RandomSeedPicker:
+                return "Seed Config";
         default:
                 return "Unknown";
         }
