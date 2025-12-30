@@ -49,5 +49,7 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 target_link_libraries(microbox-emulator PRIVATE SFML::Graphics)
+find_package(CURL REQUIRED)
+target_link_libraries(microbox-emulator PRIVATE CURL::libcurl)
 
 

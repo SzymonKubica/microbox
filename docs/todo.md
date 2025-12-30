@@ -24,7 +24,7 @@
   each square separately.
 
 # TODO
-- [_] implement the http client interface on the emulator
+- [_] ensure thta the arduino http-get client still works
 - [_] add ability to exit out of the text input collection screen
 - [_] for longer string config options add ellipsis rendering
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
@@ -50,6 +50,7 @@
 # In Progress
 
 # Done
+- [x] implement the http client interface on the emulator
 - [x] move the randomness seed query to the separate game that does not happen
       each time we connect to wifi.
 - [x] add generic get requests interface allowing both the emulator and target

@@ -25,9 +25,14 @@ ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
                 }
 
                 Serial.println(response);
-                // Extract body (after headers)
-                std::string output(response.c_str());
-                return output;
+
+                int body_start = response.find("\r\n\r\n");
+                if (body_start != -1) {
+                        std::string body = response.substr(body_start + 4);
+                        return body;
+                } else {
+                        return std::nullopt;
+                }
 
         } else {
                 Serial.println("Connection to host failed");

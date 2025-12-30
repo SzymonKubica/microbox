@@ -101,27 +101,16 @@ UserAction random_seed_picker_loop(Platform *p,
                         LOG_DEBUG(TAG, "Did not receive a successful response "
                                        "from the API.");
                 }
-                int new_seed;
-#ifndef EMULATOR
-                Serial.println(resp.value().c_str());
-                String response = String(resp.value().c_str());
-                // Extract body (after headers)
-                int bodyStart = response.indexOf("\r\n\r\n");
-                if (bodyStart != -1) {
-                        String body = response.substring(bodyStart + 4);
-                        body.replace("[", "");
-                        body.replace("]", "");
-                        body.trim(); // remove trailing newlines/spaces
-                        unsigned long seed = body.toInt();
-                        Serial.print("Random seed from API: ");
-                        Serial.println(seed);
-                        srand(seed);
-                        new_seed = seed;
-                }
-#else
-
-                new_seed = 12345;
-#endif
+                int new_seed = 0;
+                LOG_DEBUG(TAG, "Response from API: %s", resp.value().c_str());
+                std::string response = resp.value();
+                response.replace(response.find("["), 1, "");
+                response.replace(response.find("]"), 1, "");
+                response.erase(response.find_last_not_of(" \t\n\r\f\v") + 1);
+                unsigned long seed = std::stoi(response);
+                LOG_DEBUG(TAG, "Random seed from API: %d", seed);
+                srand(seed);
+                new_seed = seed;
 
                 std::vector<int> offsets = get_settings_storage_offsets();
                 int offset = offsets[RandomSeedPicker];
@@ -187,9 +176,10 @@ void extract_seed_picker_config(
     RandomSeedPickerConfiguration *random_seed_picker_config,
     Configuration *config);
 
-std::optional<UserAction> collect_random_seed_picker_config(
-    Platform *p, RandomSeedPickerConfiguration *game_config,
-    UserInterfaceCustomization *customization)
+std::optional<UserAction>
+collect_random_seed_picker_config(Platform *p,
+                                  RandomSeedPickerConfiguration *game_config,
+                                  UserInterfaceCustomization *customization)
 {
         RandomSeedPickerConfiguration *initial_config =
             load_initial_seed_picker_config(p->persistent_storage);
