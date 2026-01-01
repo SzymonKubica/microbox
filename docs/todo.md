@@ -24,11 +24,9 @@
   each square separately.
 
 # TODO
-- [_] ensure thta the arduino http-get client still works
 - [_] add ability to exit out of the text input collection screen
 - [_] for longer string config options add ellipsis rendering
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
-- [_] document wifi setup (i.e. create a header file with secrets)
 - [_] improve the button debounce handling for physical console. Currently it is
       difficult to pause the game.
 - [_] remove all duplication between snake and snake duel
@@ -50,6 +48,7 @@
 # In Progress
 
 # Done
+- [x] ensure that the arduino http-get client still works
 - [x] implement the http client interface on the emulator
 - [x] move the randomness seed query to the separate game that does not happen
       each time we connect to wifi.

@@ -1,5 +1,6 @@
 #ifndef EMULATOR
 #include "./arduino_http_client.hpp"
+#include "../../logging.hpp"
 #include <WiFiS3.h>
 #include <cstdint>
 
@@ -19,12 +20,12 @@ ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
                 while (client.connected() && !client.available())
                         delay(4);
 
-                String response;
+                std::string response;
                 while (client.available()) {
-                        response += client.readString();
+                        response += std::string(client.readString().c_str());
                 }
 
-                Serial.println(response);
+                LOG_DEBUG("wifi_client", response.c_str());
 
                 int body_start = response.find("\r\n\r\n");
                 if (body_start != -1) {
