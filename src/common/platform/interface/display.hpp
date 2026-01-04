@@ -1,6 +1,4 @@
 #pragma once
-// TODO: think about those dependencies. Should they be a part of the platform
-// definition?
 #include "../../point.hpp"
 #include "../../font_size.hpp"
 #include "color.hpp"

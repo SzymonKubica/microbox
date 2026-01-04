@@ -24,6 +24,7 @@
   each square separately.
 
 # TODO
+- [_] add ability to save multiple wifi network settings
 - [_] add ability to exit out of the text input collection screen
 - [_] for longer string config options add ellipsis rendering
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
@@ -32,13 +33,11 @@
 - [_] remove all duplication between snake and snake duel
 - [_] update the lcd / sfml display libraries to remove the pixel-precision
       discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
-- [_] finish the random seed picker functionality.
+- [_] finish the random seed picker functionality and add ability to overrride the
+      seed if there is no wifi support
 - [_] figure out why grip depends on having access to the github API.
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
-- [_] make the game of life random grid population truly random (currently it looks
-      like the same pattern every time) (The idea is to mess with the seed on input and save
-      it in persitent memory)
 - [_] add high score saving to 2048.
 - [_] add ability to 'pause' a 2048 game and have it saved in the persistent storage
 - [_] add username collection screen
@@ -48,6 +47,9 @@
 # In Progress
 
 # Done
+- [x] make the game of life random grid population truly random (currently it looks
+      like the same pattern every time) (The idea is to mess with the seed on input and save
+      it in persitent memory)
 - [x] ensure that the arduino http-get client still works
 - [x] implement the http client interface on the emulator
 - [x] move the randomness seed query to the separate game that does not happen

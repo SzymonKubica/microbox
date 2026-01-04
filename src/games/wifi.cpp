@@ -212,10 +212,7 @@ assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 
         auto options = {ssid, password, connect_on_startup, app_action};
 
-        // TODO: currently this string 'Connect' at the end takes no effect and
-        // is ignored since we migrated to the button-driven UI workflow. We
-        // need to remove this argument.
-        return new Configuration("Wi-Fi", options, "Connect");
+        return new Configuration("Wi-Fi", options);
 }
 
 void extract_game_config(WifiAppConfiguration *app_config,

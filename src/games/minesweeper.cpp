@@ -580,7 +580,7 @@ Configuration *assemble_minesweeper_configuration(PersistentStorage *storage)
 
         std::vector<ConfigurationOption *> options = {mines_count};
 
-        return new Configuration("Minesweeper", options, "Start Game");
+        return new Configuration("Minesweeper", options);
 }
 
 void extract_game_config(MinesweeperConfiguration *game_config,

@@ -131,7 +131,8 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         std::vector<std::vector<SnakeGridCell>> grid(
             rows, std::vector<SnakeGridCell>(cols));
 
-        // The snake starts in the middle of the game area pointing to the right.
+        // The snake starts in the middle of the game area pointing to the
+        // right.
         Point snake_head = {.x = cols / 2, .y = rows / 2};
         Point snake_tail = {.x = snake_head.x - 1, .y = snake_head.y};
         std::vector<Point> body;
@@ -167,10 +168,6 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
         int move_period = (1000 / config.speed) / GAME_LOOP_DELAY;
         int iteration = 0;
-
-        // [todo]: idea - all of those boolean flags are quite common across
-        // all game loops, we could abstract that out into a shared 'loop
-        // context'.
 
         // To avoid button debounce issues, we only process action input if
         // it wasn't processed on the last iteration. This is to avoid
@@ -230,10 +227,9 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         if (!hit_a_wall) {
                                 next = grid[snake.head.y][snake.head.x];
                         }
-                        bool tail_bitten =
-                            next == SnakeGridCell::Snake ||
-                            next == SnakeGridCell::SnakeWithApple;
-                        bool failure = hit_a_wall || tail_bitten;
+                        bool tail_hit = next == SnakeGridCell::Snake ||
+                                        next == SnakeGridCell::SnakeWithApple;
+                        bool failure = hit_a_wall || tail_hit;
 
                         if (!failure) {
                                 // If we got here, it means that the next cell
@@ -673,7 +669,7 @@ Configuration *assemble_snake_configuration(PersistentStorage *storage)
         std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
                                                       allow_pause};
 
-        return new Configuration("Snake", options, "Start Game");
+        return new Configuration("Snake", options);
 }
 
 SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)

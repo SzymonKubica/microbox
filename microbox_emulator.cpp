@@ -1,8 +1,8 @@
-#include "src/common/platform/interface/http_client.hpp"
 #ifdef EMULATOR
 #include "emulator_config.h"
 
 #include "src/common/platform/interface/platform.hpp"
+#include "src/common/constants.hpp"
 #include "src/common/platform/emulator/sfml_display.hpp"
 #include "src/common/platform/emulator/emulated_wifi_provider.cpp"
 #include "src/common/platform/emulator/emulator_http_client.hpp"
@@ -16,10 +16,6 @@
 #include "src/common/logging.hpp"
 
 #include "src/games/game_menu.hpp"
-
-// TODO: clean up the mainteinance of the size constants
-#define DISPLAY_HEIGHT 240
-#define DISPLAY_WIDTH 280
 
 #define TAG "emulator_entrypoint"
 

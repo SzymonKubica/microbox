@@ -96,7 +96,7 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
 
         auto options = {game, accent_color, rendering_mode, show_help_text};
 
-        return new Configuration("MicroBox", options, "Select game");
+        return new Configuration("MicroBox", options);
 }
 
 void extract_game_config(GameMenuConfiguration *menu_configuration,

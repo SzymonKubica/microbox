@@ -411,7 +411,7 @@ Configuration *assemble_game_of_life_configuration(PersistentStorage *storage)
 
         auto options = {spawn_randomly, simulation_speed, toroidal_array};
 
-        return new Configuration("Game of Life", options, "Start Game");
+        return new Configuration("Game of Life", options);
 }
 
 void extract_game_config(GameOfLifeConfiguration *game_config,

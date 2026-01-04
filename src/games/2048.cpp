@@ -214,7 +214,7 @@ Configuration *assemble_2048_configuration(PersistentStorage *storage)
 
         auto options = {grid_size, game_target};
 
-        return new Configuration("2048", options, "Start Game");
+        return new Configuration("2048", options);
 }
 void extract_game_config(Game2048Configuration *game_config,
                          Configuration *config)

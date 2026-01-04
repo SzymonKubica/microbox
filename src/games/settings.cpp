@@ -142,7 +142,7 @@ Configuration *assemble_settings_menu_configuration()
         auto *menu = ConfigurationOption::of_strings(
             "Modify", available_games, game_to_string(Game::MainMenu));
 
-        return new Configuration("Set Defaults", {menu}, "Next");
+        return new Configuration("Set Defaults", {menu});
 }
 
 void extract_menu_setting(Game *selected_menu, Configuration *config)

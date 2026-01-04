@@ -215,10 +215,7 @@ Configuration *assemble_random_seed_picker_configuration(
 
         auto options = {seed, app_action};
 
-        // TODO: currently this string 'Connect' at the end takes no effect and
-        // is ignored since we migrated to the button-driven UI workflow. We
-        // need to remove this argument.
-        return new Configuration("Seed Picker", options, "todo-remove");
+        return new Configuration("Seed Picker", options);
 }
 
 void extract_seed_picker_config(

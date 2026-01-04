@@ -100,7 +100,8 @@ void render_head(Display *display, Color snake_color,
                  Direction direction);
 
 void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
-                       int score_text_end_location, int score, bool is_secondary = false);
+                       int score_text_end_location, int score,
+                       bool is_secondary = false);
 
 void take_snake_step(SnakeEntity &snake, Direction chosen_snake_direction,
                      bool *grace_used, bool *is_game_over, int *game_score,
@@ -209,10 +210,6 @@ UserAction snake_duel_loop(Platform *p,
 
         int move_period = (1000 / config.speed) / GAME_LOOP_DELAY;
         int iteration = 0;
-
-        // [todo]: idea - all of those boolean flags are quite common across
-        // all game loops, we could abstract that out into a shared 'loop
-        // context'.
 
         bool is_snake_one_dead = false;
         bool is_snake_two_dead = false;
@@ -382,7 +379,8 @@ void take_snake_step(SnakeEntity &snake, Direction chosen_snake_direction,
                                           config.secondary_player_color, gd,
                                           &grid, apple_location);
                         (*game_score)++;
-                        update_duel_score(p, gd, score_end, *game_score, is_secondary);
+                        update_duel_score(p, gd, score_end, *game_score,
+                                          is_secondary);
                 } else {
                         assert(next == SnakeDuelGridCell::Empty ||
                                next == SnakeDuelGridCell::Poop);
@@ -420,23 +418,29 @@ void take_snake_step(SnakeEntity &snake, Direction chosen_snake_direction,
 /**
  * Re-renders the text location above the grid informing the user about the
  * current score in the game.
+ *
+ * @param is_secondary If set, the score of the second player (P2) will be
+ * updated.
  */
 void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
-                       int score_text_end_location, int score, bool is_secondary)
+                       int score_text_end_location, int score,
+                       bool is_secondary)
 {
 
         char buffer[4];
         sprintf(buffer, "%3d", score);
-        // TODO: update doc
-        // We start 3 letters after the end of the text end location.
-        // The reason for this is that the 'Score:' text is rendered centered
-        // using the render_centered_text_above_frame function and so it
-        // the string is right-padded with exactly 4 spaces to make enough
-        // horizontal space for the score digits to be printed (and have the
-        // entire text above the grid centered). Hence we need to start
+        // We start n letters after the end of the text end location.
+        // The reason for this is that the 'P1:' or 'P2' text is rendered
+        // centered using:
+        // int score_end =
+        // render_centered_text_above_frame(p, gd, (char *)"P1:    P2:    ");
+        // it the template is interspersed with 4 empty spaces to make enough
+        // horizontal space for the score digits. Hence we need to start
         // rendering the actual digits starting after the first space after the
-        // colon in 'Score:' text, so we move the start location by 3 spaces.
-        int offset = is_secondary ?  3 : 11;
+        // colon in 'P1:' text, so we move the start location by 3 spaces. If we
+        // are updating the score of the second player, we need to set the
+        // offset as 11 to start writing after the 'P2:' text.
+        int offset = is_secondary ? 3 : 11;
         int start_position = score_text_end_location - offset * FONT_WIDTH;
         render_text_above_frame_starting_from(p, dimensions, buffer,
                                               start_position, true);
@@ -789,7 +793,7 @@ Configuration *assemble_snake_duel_configuration(PersistentStorage *storage)
         std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
                                                       secondary_player_color};
 
-        return new Configuration("Snake Duel", options, "Start Game");
+        return new Configuration("Snake Duel", options);
 }
 
 SnakeDuelConfiguration *

@@ -9,7 +9,7 @@
 
 typedef enum WifiAppAction {
     // This is currently not available as we can only save one wifi config.
-    // TODO: implement this in the future.
+    // TODO: implement this
     AddNew = 0,
     //ShowPassword, future ide
     Modify = 1,

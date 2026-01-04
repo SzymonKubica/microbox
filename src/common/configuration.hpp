@@ -69,7 +69,8 @@ typedef struct ConfigurationOption {
 
         Color get_current_color_value()
         {
-                return static_cast<Color *>(available_values)[currently_selected];
+                return static_cast<Color *>(
+                    available_values)[currently_selected];
         }
 
 } ConfigurationOption;
@@ -122,25 +123,17 @@ struct Configuration {
          * UI and is being edited by the user.
          */
         int curr_selected_option;
-        /**
-         * At the bottom of each config list we render a button that allows the
-         * user to confirm their selection of all configs. This field allows us
-         * to customize the text that is displayed on the confirmation button.
-         */
-        const char *confirmation_cell_text;
 
         Configuration()
             : name(nullptr), options(nullptr), options_len(0),
-              curr_selected_option(0), confirmation_cell_text(nullptr)
+              curr_selected_option(0)
         {
         }
 
         Configuration(const char *name,
-                      std::vector<ConfigurationOption *> options,
-                      const char *confirmation_cell_text)
+                      std::vector<ConfigurationOption *> options)
             : name(name), options(nullptr), options_len(options.size()),
-              curr_selected_option(0),
-              confirmation_cell_text(confirmation_cell_text)
+              curr_selected_option(0)
         {
                 this->options = new ConfigurationOption *[this->options_len];
                 populate_options(this, options, 0);
