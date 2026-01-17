@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <cstring>
+#include <algorithm>
 #include "wifi.hpp"
 
 #include "../common/logging.hpp"
@@ -55,7 +56,7 @@ void WifiApp::game_loop(Platform *p, UserInterfaceCustomization *customization)
         const char *help_text =
             "Select 'Modify' action and press next (red) to enter the new "
             "wifi name and password. Select 'Connect' and press next to "
-            "initiate the wifi connection.";
+            "connect to wifi.";
 
         bool exit_requested = false;
         while (!exit_requested) {
@@ -98,29 +99,31 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
                     collect_string_input(p, customization, "Enter password");
                 LOG_DEBUG(TAG, "User entered password: %s", password);
 
-                std::vector<int> offsets = get_settings_storage_offsets();
-                int offset = offsets[WifiApp];
+                int offset = get_settings_storage_offset(WifiApp);
 
                 LOG_DEBUG(TAG, "Saving wifi app config at storage offset %d",
                           offset);
 
-                sprintf(config.ssid, "%s", ssid);
-                sprintf(config.password, "%s", password);
+                sprintf(config.saved_configurations[0].ssid, "%s", ssid);
+                sprintf(config.saved_configurations[0].password, "%s",
+                        password);
                 p->persistent_storage->put(offset, config);
                 break;
         }
         case Connect:
                 const char *connecting_text = "Connecting to Wi-Fi network...";
                 render_wrapped_text(p, customization, connecting_text);
+                auto credentials =
+                    config.saved_configurations[config.curr_config_idx];
                 // We don't have the dummy wifi provider in in the emulator mode
                 // yet.
                 LOG_INFO(TAG,
                          "Trying to connect to Wi-Fi using network %s and "
                          "password %s",
-                         config.ssid, config.password);
+                         credentials.ssid, credentials.password);
                 std::optional<WifiData *> wifi_data =
-                    p->wifi_provider->connect_to_network(config.ssid,
-                                                         config.password);
+                    p->wifi_provider->connect_to_network(credentials.ssid,
+                                                         credentials.password);
 
                 LOG_INFO(TAG, "Received wifi connection data");
 
@@ -147,7 +150,7 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
 
 WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
 {
-        int storage_offset = get_settings_storage_offsets()[WifiApp];
+        int storage_offset = get_settings_storage_offset(WifiApp);
 
         WifiAppConfiguration config;
         LOG_DEBUG(TAG,
@@ -165,8 +168,12 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
                 // We need to populate the defaults on the fly here as
                 // we cannot simply use assignemnt with SECRET_SSID/PASS
                 // directly (those are fixed size arrays.)
-                sprintf(DEFAULT_WIFI_APP_CONFIG.ssid, "%s", SECRET_SSID);
-                sprintf(DEFAULT_WIFI_APP_CONFIG.password, "%s", SECRET_PASS);
+                sprintf(DEFAULT_WIFI_APP_CONFIG.saved_configurations[0].ssid,
+                        "%s", SECRET_SSID);
+                sprintf(
+                    DEFAULT_WIFI_APP_CONFIG.saved_configurations[0].password,
+                    "%s", SECRET_PASS);
+                DEFAULT_WIFI_APP_CONFIG.curr_config_idx = 0;
                 DEFAULT_WIFI_APP_CONFIG.connect_on_startup = false;
                 DEFAULT_WIFI_APP_CONFIG.is_initialized = true;
                 DEFAULT_WIFI_APP_CONFIG.action = WifiAppAction::Modify;
@@ -188,12 +195,25 @@ Configuration *
 assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 {
 
-        // For now the system only supports saving a single wifi network and
-        // password, hence why we use the inital config as the only option
+        auto saved_configurations = initial_config->get_saved_configs();
+
+        std::vector<const char *> ssids(saved_configurations.size());
+        std::vector<const char *> passwords(saved_configurations.size());
+
+        std::transform(saved_configurations.begin(), saved_configurations.end(),
+                       ssids.begin(), [](WifiCredentials *credentials) {
+                               return credentials->ssid;
+                       });
+        std::transform(saved_configurations.begin(), saved_configurations.end(),
+                       passwords.begin(), [](WifiCredentials *credentials) {
+                               return credentials->password;
+                       });
+
         auto *ssid = ConfigurationOption::of_strings(
-            "SSID", {initial_config->ssid}, initial_config->ssid);
+            "SSID", ssids, initial_config->get_currently_selected_ssid());
         auto *password = ConfigurationOption::of_strings(
-            "Password", {initial_config->password}, initial_config->password);
+            "Password", passwords,
+            initial_config->get_currently_selected_password());
 
         auto *connect_on_startup = ConfigurationOption::of_strings(
             "On Boot", {"Yes", "No"},
@@ -216,6 +236,7 @@ assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 }
 
 void extract_game_config(WifiAppConfiguration *app_config,
+                         WifiAppConfiguration *initial_config,
                          Configuration *config)
 {
         ConfigurationOption ssid = *config->options[0];
@@ -224,8 +245,33 @@ void extract_game_config(WifiAppConfiguration *app_config,
         ConfigurationOption app_action = *config->options[3];
 
         app_config->is_initialized = true;
-        sprintf(app_config->ssid, "%s", ssid.get_current_str_value());
-        sprintf(app_config->password, "%s", password.get_current_str_value());
+
+        /**
+         * We infer the currently selected configuration index by comparing the
+         * selected ssid string with the saved strings. The first match will
+         * tell us the index.
+         */
+
+        // Get the available, saved configs.
+        auto saved_configurations = initial_config->get_saved_configs();
+        std::vector<const char *> ssids(saved_configurations.size());
+        std::transform(saved_configurations.begin(), saved_configurations.end(),
+                       ssids.begin(), [](WifiCredentials *credentials) {
+                               return credentials->ssid;
+                       });
+
+        auto current_selection = ssid.get_current_str_value();
+
+        int selected_idx = 0;
+        for (std::size_t i = 0; i < saved_configurations.size(); ++i) {
+                if (std::strcmp(current_selection, ssids[i]) == 0) {
+                        selected_idx = static_cast<int>(i);
+                        break;
+                }
+        }
+
+        app_config->curr_config_idx = selected_idx;
+
         app_config->connect_on_startup = extract_yes_or_no_option(
             connect_on_startup.get_current_str_value());
         app_config->action =
@@ -246,7 +292,7 @@ collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
                 return maybe_interrupt_action;
         }
 
-        extract_game_config(game_config, config);
+        extract_game_config(game_config, initial_config, config);
         free(initial_config);
         return std::nullopt;
 }
@@ -277,4 +323,27 @@ WifiAppAction action_from_string(char *name)
                 return WifiAppAction::Connect;
         // For now we fallback on this one as a default.
         return WifiAppAction::Connect;
+}
+
+/**
+ * Returns the saved configurations as a vector. This is used to allow for more
+ * convenient processing even though the actual representation needs to be a
+ * simple array so that we can safely serialize it to raw bytes in EEPROM.
+ */
+std::vector<WifiCredentials *> WifiAppConfiguration::get_saved_configs()
+{
+        std::vector<WifiCredentials *> output;
+        for (std::size_t i = 0; i < AVAILABLE_CONFIGURATION_SLOTS; i++) {
+                output.push_back(&this->saved_configurations[i]);
+        }
+        return output;
+}
+const char *WifiAppConfiguration::get_currently_selected_password() const
+{
+        return saved_configurations[curr_config_idx].password;
+}
+
+const char *WifiAppConfiguration::get_currently_selected_ssid() const
+{
+        return saved_configurations[curr_config_idx].ssid;
 }

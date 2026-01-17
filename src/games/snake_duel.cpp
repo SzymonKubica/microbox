@@ -290,7 +290,7 @@ void take_snake_step(SnakeEntity &snake, Direction chosen_snake_direction,
                      UserInterfaceCustomization *customization, Platform *p,
                      int score_end, bool is_secondary)
 {
-        // TODO: helper lambdas were copied from above ->  move to peroper
+        // TODO: helper lambdas were copied from above ->  move to proper
         // functions
         // TODO: clean up function signature to give a more logical parameter
         // order. Those helper lambdas avoid passing the grid and display
