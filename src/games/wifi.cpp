@@ -174,6 +174,7 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
                     DEFAULT_WIFI_APP_CONFIG.saved_configurations[0].password,
                     "%s", SECRET_PASS);
                 DEFAULT_WIFI_APP_CONFIG.curr_config_idx = 0;
+                DEFAULT_WIFI_APP_CONFIG.occupied_config_slots = 1;
                 DEFAULT_WIFI_APP_CONFIG.connect_on_startup = false;
                 DEFAULT_WIFI_APP_CONFIG.is_initialized = true;
                 DEFAULT_WIFI_APP_CONFIG.action = WifiAppAction::Modify;
@@ -195,19 +196,20 @@ Configuration *
 assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 {
 
-        auto saved_configurations = initial_config->get_saved_configs();
+        auto saved_configs = initial_config->get_saved_configs();
 
-        std::vector<const char *> ssids(saved_configurations.size());
-        std::vector<const char *> passwords(saved_configurations.size());
+        int occupied_configs = initial_config->occupied_config_slots;
+        std::vector<const char *> ssids(occupied_configs);
+        std::vector<const char *> passwords(occupied_configs);
 
-        std::transform(saved_configurations.begin(), saved_configurations.end(),
-                       ssids.begin(), [](WifiCredentials *credentials) {
-                               return credentials->ssid;
-                       });
-        std::transform(saved_configurations.begin(), saved_configurations.end(),
-                       passwords.begin(), [](WifiCredentials *credentials) {
-                               return credentials->password;
-                       });
+        std::transform(
+            saved_configs.begin(), saved_configs.begin() + occupied_configs,
+            ssids.begin(),
+            [](WifiCredentials *credentials) { return credentials->ssid; });
+        std::transform(
+            saved_configs.begin(), saved_configs.begin() + occupied_configs,
+            passwords.begin(),
+            [](WifiCredentials *credentials) { return credentials->password; });
 
         auto *ssid = ConfigurationOption::of_strings(
             "SSID", ssids, initial_config->get_currently_selected_ssid());
@@ -253,17 +255,16 @@ void extract_game_config(WifiAppConfiguration *app_config,
          */
 
         // Get the available, saved configs.
-        auto saved_configurations = initial_config->get_saved_configs();
-        std::vector<const char *> ssids(saved_configurations.size());
-        std::transform(saved_configurations.begin(), saved_configurations.end(),
-                       ssids.begin(), [](WifiCredentials *credentials) {
-                               return credentials->ssid;
-                       });
+        auto saved_config = initial_config->get_saved_configs();
+        std::vector<const char *> ssids(saved_config.size());
+        std::transform(
+            saved_config.begin(), saved_config.end(), ssids.begin(),
+            [](WifiCredentials *credentials) { return credentials->ssid; });
 
         auto current_selection = ssid.get_current_str_value();
 
         int selected_idx = 0;
-        for (std::size_t i = 0; i < saved_configurations.size(); ++i) {
+        for (std::size_t i = 0; i < saved_config.size(); ++i) {
                 if (std::strcmp(current_selection, ssids[i]) == 0) {
                         selected_idx = static_cast<int>(i);
                         break;

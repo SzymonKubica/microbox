@@ -42,6 +42,7 @@ typedef struct WifiAppConfiguration {
          */
         bool is_initialized;
         std::size_t curr_config_idx;
+        int occupied_config_slots;
         WifiCredentials saved_configurations[AVAILABLE_CONFIGURATION_SLOTS];
         bool connect_on_startup;
         WifiAppAction action;
@@ -50,7 +51,7 @@ typedef struct WifiAppConfiguration {
         std::vector<WifiCredentials*> get_saved_configs();
         const char *get_currently_selected_ssid() const;
         const char *get_currently_selected_password() const;
-} WifiAppConfiguration;
+} WifiAppConfiguration ;
 
 /**
  * Similar to `collect_configuration` from `configuration.hpp`, it returns empty
