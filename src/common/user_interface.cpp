@@ -15,6 +15,10 @@
 
 #define SELECTOR_CIRCLE_RADIUS 5
 
+// Maximum length of config option value text in characters.
+// This is needed to ensure that the config bars don't overflow the display.
+#define MAX_CONFIG_OPTION_VALUE_LENGTH 13
+
 /* User Interface */
 
 /* Helper functions used by draw_configuration_menu */
@@ -399,7 +403,8 @@ void render_config_menu(Display *display, Configuration *config,
         int max_option_name_length =
             find_max_config_option_name_text_length(config);
         int max_option_value_length =
-            find_max_config_option_value_text_length(config);
+            std::min(find_max_config_option_value_text_length(config),
+                     MAX_CONFIG_OPTION_VALUE_LENGTH);
         int text_max_length =
             max_option_name_length + max_option_value_length + 1;
 
@@ -446,7 +451,7 @@ void render_config_menu(Display *display, Configuration *config,
 
         for (int i = 0; i < config->options_len; i++) {
                 int bar_y = bar_positions[i];
-                char option_value_buff[max_option_value_length];
+                char option_value_buff[max_option_value_length+1];
 
                 ConfigurationOption value = *config->options[i];
                 const char *option_text = value.name;
@@ -465,6 +470,19 @@ void render_config_menu(Display *display, Configuration *config,
                 case STRING: {
                         char *selected_value = static_cast<char **>(
                             value.available_values)[value.currently_selected];
+                        if (strlen(selected_value) > max_option_value_length) {
+                                // We need to truncate the string to fit
+                                // in the value cell.
+                                int remainder_length =
+                                    max_option_value_length - 3;
+                                strncpy(option_value_buff, selected_value,
+                                        remainder_length);
+                                strncpy(option_value_buff + remainder_length,
+                                        "...", 3);
+                                option_value_buff[max_option_value_length] =
+                                    '\0'; // Null terminate
+                                break;
+                        }
                         char format_string[10];
                         sprintf(format_string, "%%%ds",
                                 max_option_value_length);
@@ -1025,8 +1043,8 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                         render_character_at_location(cursor, White,
                                                      curr_char_map);
                         translate_toroidal_array(&cursor, dir,
-                                                curr_char_map.size(),
-                                                strlen(base_char_map[0]));
+                                                 curr_char_map.size(),
+                                                 strlen(base_char_map[0]));
                         render_character_at_location(
                             cursor, customization->accent_color, curr_char_map);
                         p->delay_provider->delay_ms(INPUT_POLLING_DELAY);

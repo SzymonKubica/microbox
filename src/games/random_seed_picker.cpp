@@ -140,8 +140,8 @@ UserAction random_seed_picker_loop(Platform *p,
         case RandomSeedSelectorAction::Modify:
                 LOG_DEBUG(TAG, "Modify option selected");
 
-                auto maybe_input = collect_string_input(
-                    p, customization, "Enter new seed value");
+                auto maybe_input = collect_string_input(p, customization,
+                                                        "Enter new seed value");
 
                 if (!maybe_input.has_value()) {
                         LOG_DEBUG(TAG,
@@ -158,7 +158,8 @@ UserAction random_seed_picker_loop(Platform *p,
                 // Display the new seed to the user.
                 char display_text_buffer[256];
                 sprintf(display_text_buffer,
-                        "Saved the new, manually-entered randomness seed: %d", new_seed);
+                        "Saved the new, manually-entered randomness seed: %d",
+                        new_seed);
                 render_wrapped_help_text(p, customization, display_text_buffer);
                 wait_until_green_pressed(p);
                 break;

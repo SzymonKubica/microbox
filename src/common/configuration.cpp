@@ -153,17 +153,14 @@ void shift_current_config_option_value(Configuration *config,
         diff->modified_options.push_back(config->curr_selected_option);
 }
 
-/** For some reason when compiling the `max` function is not available.
- */
-int max(int a, int b) { return (a > b) ? a : b; }
-
 int find_max_config_option_value_text_length(Configuration *config)
 {
         int max_length = 0;
         for (int i = 0; i < config->options_len; i++) {
                 int current_option_value_length;
                 ConfigurationOption *current = config->options[i];
-                max_length = max(max_length, current->max_config_value_len);
+                max_length =
+                    std::max(max_length, current->max_config_value_len);
         }
         return max_length;
 }
@@ -173,7 +170,7 @@ int find_max_config_option_name_text_length(Configuration *config)
         int max_length = 0;
         for (int i = 0; i < config->options_len; i++) {
                 ConfigurationOption *current = config->options[i];
-                max_length = max(max_length, strlen(current->name));
+                max_length = std::max(max_length, (int)strlen(current->name));
         }
         return max_length;
 }
@@ -244,7 +241,8 @@ int find_max_number_length(std::vector<int> numbers)
 {
         int max_len = 0;
         for (int value : numbers) {
-                max_len = max(max_len, std::to_string(value).size());
+                max_len = std::max(
+                    max_len, static_cast<int>(std::to_string(value).size()));
         }
         return max_len;
 }
@@ -253,7 +251,7 @@ int find_max_string_length(std::vector<const char *> strings)
 {
         int max_len = 0;
         for (const char *value : strings) {
-                max_len = max(max_len, strlen(value));
+                max_len = std::max(max_len, static_cast<int>(strlen(value)));
         }
         return max_len;
 }
@@ -262,7 +260,8 @@ int find_max_color_str_length(std::vector<Color> colors)
 {
         int max_len = 0;
         for (Color value : colors) {
-                max_len = max(max_len, strlen(color_to_string(value)));
+                max_len = std::max(
+                    max_len, static_cast<int>(strlen(color_to_string(value))));
         }
         return max_len;
 }

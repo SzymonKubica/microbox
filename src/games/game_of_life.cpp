@@ -200,7 +200,6 @@ UserAction game_of_life_loop(Platform *p,
         int cols = gd->cols;
         int total_cells = rows * cols;
 
-
         draw_grid_frame(p, customization, gd);
         LOG_DEBUG(TAG, "Game of Life canvas drawn.");
 
