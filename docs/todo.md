@@ -29,6 +29,7 @@
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
 - [_] improve the button debounce handling for physical console. Currently it is
       difficult to pause the game.
+- [_] make the text input screen more speedy
 - [_] remove all duplication between snake and snake duel
 - [_] update the lcd / sfml display libraries to remove the pixel-precision
       discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
@@ -40,12 +41,12 @@
 - [_] add high score saving to 2048.
 - [_] add ability to 'pause' a 2048 game and have it saved in the persistent storage
 - [_] add username collection screen
-- [_] add ability to erase eeprom (probably external sketch)
 
 
 # In Progress
 
 # Done
+- [x] add ability to erase eeprom (probably external sketch)
 - [x] add ability to save multiple wifi network settings
 - [x] fix segfault when wrapping around a config option value (regression caused by the linked option values refactor)
 - [x] make the game of life random grid population truly random (currently it looks

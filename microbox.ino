@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include "src/common/platform/arduino/joystick_controller.hpp"
 #include "src/common/platform/arduino/wifi_provider.cpp"
 #include "src/common/platform/arduino/arduino_http_client.hpp"
@@ -16,6 +17,26 @@ JoystickController *joystick_controller;
 KeypadController *keypad_controller;
 PersistentStorage persistent_storage;
 
+/**
+ * When making breaking changes to the persistent storage used for game
+ * configs, sometimes it is required to clean EEPROM before the new schema
+ * of the config values can be written to it. This function allows for that.
+ *
+ * When performing the erase cycle, add this function to the setup method and
+ * flush this temporary version of the program to your arduino. Once it runs,
+ * your EEPROM will be erased. Note that you should rollback this change and
+ * flush a new version of the code without this erase function. EEPROM memory
+ * has a finite number of times that we can write to it, so you need to ensure
+ * that it doesn't get erased each time you run the setup() function.
+ */
+void eeprom_erase()
+{
+        // Iterate through all EEPROM addresses and write 0 to each
+        for (int i = 0; i < EEPROM.length(); i++) {
+                EEPROM.write(i, 0);
+        }
+}
+
 void setup(void)
 {
         // Initialise serial port for debugging
@@ -23,6 +44,8 @@ void setup(void)
         while (!Serial) {
                 // wait for serial port to connect
         }
+
+        //eeprom_erase();
 
         // Set up bins neeeded for controllers
         pinMode(STICK_BUTTON_PIN, INPUT);
@@ -67,8 +90,7 @@ void loop(void)
                              .delay_provider = delay_provider,
                              .persistent_storage = &persistent_storage,
                              .wifi_provider = wifi_provider,
-                             .client = client
-        };
+                             .client = client};
 
         select_game(&platform);
 }

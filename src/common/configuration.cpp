@@ -138,7 +138,8 @@ void shift_current_config_option_value(Configuration *config,
         current->currently_selected = mathematical_modulo(
             current->currently_selected + steps, current->available_values_len);
 
-        if (config->linked_options.contains(curr_idx)) {
+        if (config->linked_options.find(curr_idx) !=
+            config->linked_options.end()) {
                 for (int linked_idx : config->linked_options[curr_idx]) {
                         ConfigurationOption *linked =
                             config->options[linked_idx];
