@@ -205,13 +205,14 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                 chosen_snake_direction = dir;
                         }
                 }
-                if (action_input_registered(p->action_controllers, &act) &&
-                    !action_input_on_last_iteration) {
+                bool action_registered =
+                    action_input_registered(p->action_controllers, &act);
+                if (action_registered && !action_input_on_last_iteration) {
                         if (act == YELLOW && config.allow_pause) {
                                 is_paused = !is_paused;
                                 action_input_on_last_iteration = true;
                         }
-                } else {
+                } else if (!action_registered) {
                         action_input_on_last_iteration = false;
                 }
 

@@ -25,8 +25,6 @@
 
 # TODO
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
-- [_] improve the button debounce handling for physical console. Currently it is
-      difficult to pause the game.
 - [_] remove all duplication between snake and snake duel
 - [_] update the lcd / sfml display libraries to remove the pixel-precision
       discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
@@ -38,6 +36,8 @@
 # In Progress
 
 # Done
+- [x] improve the button debounce handling for physical console (especially for snake). Currently it is
+      difficult to pause the game.
 - [x] add ability to 'pause' a 2048 game and have it saved in the persistent storage
 - [x] for longer string config options add ellipsis rendering
 - [x] finish the random seed picker functionality and add ability to overrride the
