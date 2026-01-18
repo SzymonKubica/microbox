@@ -1,5 +1,7 @@
 #ifndef EMULATOR
+#if defined(ARDUINO_UNOR4_WIFI)
 #include <WiFiS3.h>
+#endif
 #include "../interface/wifi.hpp"
 
 #include "arduino_secrets.hpp"
@@ -13,6 +15,9 @@ class ArduinoWifiProvider : public WifiProvider
          */
         WifiData *get_wifi_data() override
         {
+#ifndef ARDUINO_UNOR4_WIFI
+                return nullptr;
+#else
                 WifiData *data = new WifiData();
 
                 WiFi.BSSID(data->bssid);
@@ -29,6 +34,7 @@ class ArduinoWifiProvider : public WifiProvider
                 // TODO: IPAddress ip = WiFi.localIP(); (not sure what this IP
                 // address structure is)
                 return data;
+#endif
         }
 
         /**
@@ -40,6 +46,9 @@ class ArduinoWifiProvider : public WifiProvider
         connect_to_network(const char *ssid, const char *password) override
         {
 
+#ifndef ARDUINO_UNOR4_WIFI
+                return std::nullopt;
+#else
                 Serial.println("Starting network connection.");
                 int status = WL_IDLE_STATUS;
 
@@ -72,8 +81,16 @@ class ArduinoWifiProvider : public WifiProvider
                 // you're connected now, so print out the data:
                 Serial.println("You're connected to the network");
                 return get_wifi_data();
+#endif
         }
 
-        bool is_connected() override { return WiFi.status() == WL_CONNECTED; }
+        bool is_connected() override
+        {
+#ifndef ARDUINO_UNOR4_WIFI
+                return false;
+#else
+                return WiFi.status() == WL_CONNECTED;
+#endif
+        }
 };
 #endif

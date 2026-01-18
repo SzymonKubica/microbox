@@ -1,7 +1,3 @@
-#ifndef EMULATOR
-#include <WiFiS3.h>
-#include "../common/platform/arduino/arduino_http_client.hpp"
-#endif
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
