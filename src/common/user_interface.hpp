@@ -28,5 +28,6 @@ void render_wrapped_help_text(Platform *p,
 void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
                          const char *text);
 void wait_until_green_pressed(Platform *p);
+Action wait_until_action_input(Platform *p);
 
 ConfigurationDiff *empty_diff();

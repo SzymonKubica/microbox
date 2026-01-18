@@ -451,7 +451,7 @@ void render_config_menu(Display *display, Configuration *config,
 
         for (int i = 0; i < config->options_len; i++) {
                 int bar_y = bar_positions[i];
-                char option_value_buff[max_option_value_length+1];
+                char option_value_buff[max_option_value_length + 1];
 
                 ConfigurationOption value = *config->options[i];
                 const char *option_text = value.name;
@@ -1125,6 +1125,19 @@ void wait_until_green_pressed(Platform *p)
                                     MOVE_REGISTERED_DELAY);
                                 return;
                         }
+                }
+                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
+                p->display->refresh();
+        }
+}
+
+Action wait_until_action_input(Platform *p)
+{
+        while (true) {
+                Action act;
+                if (action_input_registered(p->action_controllers, &act)) {
+                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        return act;
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
                 p->display->refresh();

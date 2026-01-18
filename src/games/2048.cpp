@@ -3,6 +3,7 @@
 #include <string.h>
 #include <cstring>
 #include <string>
+#include <cassert>
 #include "2048.hpp"
 
 #include "../common/logging.hpp"
@@ -41,6 +42,7 @@ const Color TEXT_COLOR = Black;
 Game2048Configuration DEFAULT_2048_GAME_CONFIG = {
     .grid_size = 4,
     .target_max_tile = 2048,
+    .is_game_in_progress = false,
 };
 
 static void copy_grid(int **source, int **destination, int size);
@@ -94,18 +96,69 @@ void Clean2048::game_loop(Platform *p,
         }
 }
 
+GameState *load_saved_game_state(Game2048Configuration config)
+{
+        assert(config.saved_grid_size >= 3 && config.saved_grid_size <= 5);
+        int size = config.saved_grid_size;
+        GameState *state =
+            initialize_game_state(size, config.saved_target_max_tile);
+        for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                        state->grid[i][j] = config.saved_grid[i][j];
+                }
+        }
+        return state;
+}
+
+void save_game_state(Platform *p, Game2048Configuration &config,
+                     GameState *state)
+{
+        config.is_game_in_progress = true;
+        config.saved_grid_size = state->grid_size;
+        config.saved_target_max_tile = state->target_max_tile;
+        for (int i = 0; i < state->grid_size; i++) {
+                for (int j = 0; j < state->grid_size; j++) {
+                        config.saved_grid[i][j] = state->grid[i][j];
+                }
+        }
+
+        int storage_offset = get_settings_storage_offset(Clean2048);
+        LOG_DEBUG(TAG,
+                  "Saving current 2048 game state to persistent storage at "
+                  "offset %d",
+                  storage_offset);
+        p->persistent_storage->put(storage_offset, config);
+}
+
 UserAction enter_2048_loop(Platform *p,
                            UserInterfaceCustomization *customization)
 {
-        Game2048Configuration config;
+        Game2048Configuration config{};
 
         auto maybe_action = collect_2048_config(p, &config, customization);
         if (maybe_action) {
                 return maybe_action.value();
         }
 
-        GameState *state =
-            initialize_game_state(config.grid_size, config.target_max_tile);
+        GameState *state;
+
+        if (config.is_game_in_progress) {
+                const char *help_text =
+                    "A game in progress was found. Press green to "
+                    "continue the previous game or red to start a "
+                    "new game.";
+                render_wrapped_text(p, customization, help_text);
+                auto action = wait_until_action_input(p);
+                if (action == Action::GREEN) {
+                        state = load_saved_game_state(config);
+                } else {
+                        state = initialize_game_state(config.grid_size,
+                                                      config.target_max_tile);
+                }
+        } else {
+                state = initialize_game_state(config.grid_size,
+                                              config.target_max_tile);
+        }
 
         draw_game_canvas(p->display, state, customization);
         update_game_grid(p->display, state, customization);
@@ -125,6 +178,17 @@ UserAction enter_2048_loop(Platform *p,
                                                    &act)) {
                         if (act == Action::BLUE) {
                                 LOG_DEBUG(TAG, "User requested to exit game.");
+                                const char *help_text =
+                                    "Would you like to save your current game "
+                                    "state and resume it later? Press green to "
+                                    "save and exit, or blue to exit without "
+                                    "saving.";
+                                render_wrapped_text(p, customization,
+                                                    help_text);
+                                auto action = wait_until_action_input(p);
+                                if (action == Action::GREEN) {
+                                        save_game_state(p, config, state);
+                                }
                                 free_game_state(state);
                                 p->delay_provider->delay_ms(
                                     MOVE_REGISTERED_DELAY);
@@ -151,11 +215,7 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
 {
         int storage_offset = get_settings_storage_offsets()[Clean2048];
 
-        Game2048Configuration config = {
-            .grid_size = 0,
-            .target_max_tile = 0,
-        };
-
+        Game2048Configuration config{};
         LOG_DEBUG(TAG,
                   "Trying to load initial settings from the persistent storage "
                   "at offset %d",
@@ -179,8 +239,9 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
 
         LOG_DEBUG(TAG,
                   "Loaded 2048 game configuration: grid_size=%d, "
-                  "target_max_tile=%d",
-                  output->grid_size, output->target_max_tile);
+                  "target_max_tile=%d, is_game_in_progress=%d, saved_grid_size=%d, saved_target_max_tile=%d",
+                  output->grid_size, output->target_max_tile, output->is_game_in_progress,
+                  output->saved_grid_size, output->saved_target_max_tile);
 
         return output;
 }
@@ -197,11 +258,13 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
  * function below to ensure that the specific game config can be successfully
  * extracted from the generic config struct.
  */
-Configuration *assemble_2048_configuration(PersistentStorage *storage)
+Configuration *
+assemble_2048_configuration(PersistentStorage *storage,
+                            Game2048Configuration *initial_config)
 {
-
-        Game2048Configuration *initial_config = load_initial_config(storage);
-
+        if (initial_config == nullptr) {
+                initial_config = load_initial_config(storage);
+        }
         // Initialize the first config option: game gridsize
         auto *grid_size = ConfigurationOption::of_integers(
             "Grid size", {3, 4, 5}, initial_config->grid_size);
@@ -210,15 +273,15 @@ Configuration *assemble_2048_configuration(PersistentStorage *storage)
             "Game target", {128, 256, 512, 1024, 2048, 4096},
             initial_config->target_max_tile);
 
-        free(initial_config);
-
         auto options = {grid_size, game_target};
 
         return new Configuration("2048", options);
 }
 void extract_game_config(Game2048Configuration *game_config,
+                         Game2048Configuration *initial_config,
                          Configuration *config)
 {
+
         // Grid size is the first config option in the game struct above.
         ConfigurationOption grid_size = *config->options[0];
         // Game target is the second config option above.
@@ -226,14 +289,22 @@ void extract_game_config(Game2048Configuration *game_config,
 
         game_config->grid_size = grid_size.get_curr_int_value();
         game_config->target_max_tile = game_target.get_curr_int_value();
+        game_config->is_game_in_progress = initial_config->is_game_in_progress;
+        game_config->saved_grid_size = initial_config->saved_grid_size;
+        game_config->saved_target_max_tile =
+            initial_config->saved_target_max_tile;
+        memcpy(game_config->saved_grid, initial_config->saved_grid,
+               sizeof(initial_config->saved_grid));
 }
 
 std::optional<UserAction>
 collect_2048_config(Platform *p, Game2048Configuration *game_config,
                     UserInterfaceCustomization *customization)
 {
+        Game2048Configuration *initial_config =
+            load_initial_config(p->persistent_storage);
         Configuration *config =
-            assemble_2048_configuration(p->persistent_storage);
+            assemble_2048_configuration(p->persistent_storage, initial_config);
 
         auto maybe_interrupt_action =
             collect_configuration(p, config, customization);
@@ -241,7 +312,7 @@ collect_2048_config(Platform *p, Game2048Configuration *game_config,
                 return maybe_interrupt_action;
         }
 
-        extract_game_config(game_config, config);
+        extract_game_config(game_config, initial_config, config);
         return std::nullopt;
 }
 

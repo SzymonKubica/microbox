@@ -24,7 +24,7 @@
   each square separately.
 
 # TODO
-- [_] for longer string config options add ellipsis rendering
+- [_] add ability to 'pause' a 2048 game and have it saved in the persistent storage
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
 - [_] improve the button debounce handling for physical console. Currently it is
       difficult to pause the game.
@@ -34,13 +34,13 @@
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] add high score saving to 2048.
-- [_] add ability to 'pause' a 2048 game and have it saved in the persistent storage
 - [_] add username collection screen
 
 
 # In Progress
 
 # Done
+- [x] for longer string config options add ellipsis rendering
 - [x] finish the random seed picker functionality and add ability to overrride the
       seed if there is no wifi support
 - [x] figure out why grip depends on having access to the github API.

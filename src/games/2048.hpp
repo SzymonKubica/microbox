@@ -10,6 +10,15 @@
 typedef struct Game2048Configuration {
         int grid_size;
         int target_max_tile;
+        // Indicates whether the game configuration has an ongoing game saved
+        // down.
+        bool is_game_in_progress;
+        // Saved state of the grid if an ongoing game is present.
+        // Note that we alloate a 5x5 grid even if the actual grid size is
+        // smaller. We need 5x5 as this is the max supported grid size.
+        int saved_grid[5][5];
+        int saved_grid_size;
+        int saved_target_max_tile;
 } Game2048Configuration;
 
 class GameState
