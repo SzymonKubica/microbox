@@ -24,8 +24,6 @@
   each square separately.
 
 # TODO
-- [_] fix segfault when wrapping around a config option value (regression caused by the linked option values refactor)
-- [_] add ability to save multiple wifi network settings
 - [_] add ability to exit out of the text input collection screen
 - [_] for longer string config options add ellipsis rendering
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
@@ -48,6 +46,8 @@
 # In Progress
 
 # Done
+- [x] add ability to save multiple wifi network settings
+- [x] fix segfault when wrapping around a config option value (regression caused by the linked option values refactor)
 - [x] make the game of life random grid population truly random (currently it looks
       like the same pattern every time) (The idea is to mess with the seed on input and save
       it in persitent memory)

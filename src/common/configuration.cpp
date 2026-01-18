@@ -294,19 +294,19 @@ collect_configuration(Platform *p, Configuration *config,
                       UserInterfaceCustomization *customization,
                       bool allow_exit, bool should_render_logo)
 {
-        ConfigurationDiff *diff = empty_diff();
+        ConfigurationDiff *diff = new ConfigurationDiff;
         render_config_menu(p->display, config, diff, false, customization,
                            should_render_logo);
         if (customization->show_help_text) {
                 render_controls_explanations(p->display);
         }
-        free(diff);
+        delete diff;
         while (true) {
                 Action act;
                 Direction dir;
                 // We get a fresh, empty diff during each iteration to avoid
                 // option value text rerendering when they are not modified.
-                ConfigurationDiff *diff = empty_diff();
+                ConfigurationDiff *diff = new ConfigurationDiff;
                 bool confirmation_bar_selected =
                     config->curr_selected_option == config->options_len;
 
@@ -330,7 +330,7 @@ collect_configuration(Platform *p, Configuration *config,
                                                    true, customization,
                                                    should_render_logo);
                                 move_registered_delay();
-                                free(diff);
+                                delete diff;
                                 continue;
                         }
                         move_registered_delay();

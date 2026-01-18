@@ -77,9 +77,19 @@ void WifiApp::game_loop(Platform *p, UserInterfaceCustomization *customization)
         }
 }
 
+/**
+ * Allocates two char buffers and handles the UI interaction to allow the user
+ * to input the network SSID and password. The caller of this function is
+ * responsible for deallocating the char buffers once they are saved in the
+ * destination EEPROM location.
+ */
+std::pair<char *, char *>
+get_network_ssid_and_password_input(Platform *p,
+                                    UserInterfaceCustomization *customization);
+
 UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
 {
-        WifiAppConfiguration config;
+        WifiAppConfiguration config{};
 
         auto maybe_action = collect_wifi_app_config(p, &config, customization);
         if (maybe_action) {
@@ -87,27 +97,48 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
         }
 
         switch (config.action) {
-        case AddNew:
-                // TODO: functionality to save multiple networks
-        case Modify: {
-                LOG_DEBUG(TAG, "Getting user input for SSID...");
-                char *ssid =
-                    collect_string_input(p, customization, "Enter SSID");
-                LOG_DEBUG(TAG, "User entered SSID: %s", ssid);
-                LOG_DEBUG(TAG, "Getting user input for password...");
-                char *password =
-                    collect_string_input(p, customization, "Enter password");
-                LOG_DEBUG(TAG, "User entered password: %s", password);
+        case AddNew: {
+                if (config.occupied_config_slots ==
+                    AVAILABLE_CONFIGURATION_SLOTS) {
+                        // Display help text.
+                        break;
+                }
+
+                auto [ssid, password] =
+                    get_network_ssid_and_password_input(p, customization);
+
+                int new_idx = config.occupied_config_slots;
+                config.occupied_config_slots += 1;
+                LOG_DEBUG(TAG,
+                          "Saving new wifi credentials at in storage slot %d.",
+                          new_idx);
+                auto &selected_config = config.saved_configurations[new_idx];
+                sprintf(selected_config.ssid, "%s", ssid);
+                sprintf(selected_config.password, "%s", password);
 
                 int offset = get_settings_storage_offset(WifiApp);
-
                 LOG_DEBUG(TAG, "Saving wifi app config at storage offset %d",
                           offset);
-
-                sprintf(config.saved_configurations[0].ssid, "%s", ssid);
-                sprintf(config.saved_configurations[0].password, "%s",
-                        password);
                 p->persistent_storage->put(offset, config);
+                free(ssid);
+                free(password);
+                break;
+        }
+        case Modify: {
+                auto [ssid, password] =
+                    get_network_ssid_and_password_input(p, customization);
+
+                auto selected_config =
+                    config.saved_configurations[config.curr_config_idx];
+                sprintf(selected_config.ssid, "%s", ssid);
+                sprintf(selected_config.password, "%s", password);
+
+                int offset = get_settings_storage_offset(WifiApp);
+                LOG_DEBUG(TAG, "Saving wifi app config at storage offset %d",
+                          offset);
+                p->persistent_storage->put(offset, config);
+                free(ssid);
+                free(password);
                 break;
         }
         case Connect:
@@ -148,11 +179,25 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
         return UserAction::PlayAgain;
 }
 
+std::pair<char *, char *>
+get_network_ssid_and_password_input(Platform *p,
+                                    UserInterfaceCustomization *customization)
+{
+        LOG_DEBUG(TAG, "Getting user input for SSID...");
+        char *ssid = collect_string_input(p, customization, "Enter SSID");
+        LOG_DEBUG(TAG, "User entered SSID: %s", ssid);
+        LOG_DEBUG(TAG, "Getting user input for password...");
+        char *password =
+            collect_string_input(p, customization, "Enter password");
+        LOG_DEBUG(TAG, "User entered password: %s", password);
+        return {ssid, password};
+}
+
 WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
 {
         int storage_offset = get_settings_storage_offset(WifiApp);
 
-        WifiAppConfiguration config;
+        WifiAppConfiguration config{};
         LOG_DEBUG(TAG,
                   "Trying to load initial settings from the persistent "
                   "storage "
@@ -198,10 +243,11 @@ assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 
         auto saved_configs = initial_config->get_saved_configs();
 
+        // 'Unzip' the saved configurations into ssids and passwords separately
+        // so that they can be rendered in the configuration menu.
         int occupied_configs = initial_config->occupied_config_slots;
         std::vector<const char *> ssids(occupied_configs);
         std::vector<const char *> passwords(occupied_configs);
-
         std::transform(
             saved_configs.begin(), saved_configs.begin() + occupied_configs,
             ssids.begin(),
@@ -234,6 +280,10 @@ assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 
         auto options = {ssid, password, connect_on_startup, app_action};
 
+        /*
+         * Those 'linked' values ensure that when the user changes the currently
+         * selected password/ssid the ssid/password changes as well.
+         */
         std::map<int, std::vector<int>> linked_values;
         linked_values[0] = {1};
         linked_values[1] = {0};
@@ -275,8 +325,12 @@ void extract_game_config(WifiAppConfiguration *app_config,
         }
 
         app_config->curr_config_idx = selected_idx;
-
-        app_config->connect_on_startup = extract_yes_or_no_option(
+        app_config->occupied_config_slots =
+            initial_config->occupied_config_slots;
+        memcpy(app_config->saved_configurations,
+               initial_config->saved_configurations,
+               sizeof(WifiCredentials[AVAILABLE_CONFIGURATION_SLOTS]));
+            app_config->connect_on_startup = extract_yes_or_no_option(
             connect_on_startup.get_current_str_value());
         app_config->action =
             action_from_string(app_action.get_current_str_value());

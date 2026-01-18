@@ -383,22 +383,6 @@ inline int get_centering_margin(int screen_width, int font_width,
         return (screen_width - text_length * font_width) / 2;
 }
 
-ConfigurationDiff *empty_diff()
-{
-        ConfigurationDiff *diff =
-            static_cast<ConfigurationDiff *>(malloc(sizeof(ConfigurationDiff)));
-
-        diff->currently_edited_option = 0;
-        diff->previously_edited_option = 0;
-
-        /* This -1 is really important. Re-rendering of config cell value text
-           is controlled by this and if it were initialized to 0, the first cell
-           text would always get re-rendered even if no diff were recorded for
-           it.*/
-        diff->modified_options = {};
-        return diff;
-}
-
 /**
  *
  * @param `text_update_only` controlls if the config menu has already been

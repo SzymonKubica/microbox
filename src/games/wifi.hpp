@@ -51,7 +51,8 @@ typedef struct WifiAppConfiguration {
         std::vector<WifiCredentials*> get_saved_configs();
         const char *get_currently_selected_ssid() const;
         const char *get_currently_selected_password() const;
-} WifiAppConfiguration ;
+
+} WifiAppConfiguration;
 
 /**
  * Similar to `collect_configuration` from `configuration.hpp`, it returns empty

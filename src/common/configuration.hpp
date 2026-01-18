@@ -180,8 +180,8 @@ struct ConfigurationDiff {
         int previously_edited_option;
         int currently_edited_option;
         /**
-         * If `option_switched` is false, this field tells us which
-         * configuration fields has been updated and need to be redrawn.
+         * List of indices of options that have changed their values and need
+         * to be redrawn
          */
         std::vector<int> modified_options;
 };
