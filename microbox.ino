@@ -41,9 +41,6 @@ void setup(void)
 {
         // Initialise serial port for debugging
         Serial.begin(115200);
-        while (!Serial) {
-                // wait for serial port to connect
-        }
 
         //eeprom_erase();
 
