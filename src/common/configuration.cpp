@@ -131,13 +131,25 @@ void shift_current_config_option_value(Configuration *config,
                                        ConfigurationDiff *diff, int steps)
 {
         assert(config->curr_selected_option != config->options_len);
-        ConfigurationOption *current =
-            config->options[config->curr_selected_option];
+
+        int curr_idx = config->curr_selected_option;
+        ConfigurationOption *current = config->options[curr_idx];
 
         current->currently_selected = mathematical_modulo(
             current->currently_selected + steps, current->available_values_len);
 
-        diff->modified_option_index = config->curr_selected_option;
+        if (config->linked_options.contains(curr_idx)) {
+                for (int linked_idx : config->linked_options[curr_idx]) {
+                        ConfigurationOption *linked =
+                            config->options[linked_idx];
+                        linked->currently_selected = mathematical_modulo(
+                            linked->currently_selected + steps,
+                            linked->available_values_len);
+                        diff->modified_options.push_back(linked_idx);
+                }
+        }
+
+        diff->modified_options.push_back(config->curr_selected_option);
 }
 
 /** For some reason when compiling the `max` function is not available.

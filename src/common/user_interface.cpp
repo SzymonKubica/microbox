@@ -5,6 +5,7 @@
 #include "../common/logging.hpp"
 #include "constants.hpp"
 #include <cassert>
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 
@@ -394,7 +395,7 @@ ConfigurationDiff *empty_diff()
            is controlled by this and if it were initialized to 0, the first cell
            text would always get re-rendered even if no diff were recorded for
            it.*/
-        diff->modified_option_index = -1;
+        diff->modified_options = {};
         return diff;
 }
 
@@ -500,7 +501,10 @@ void render_config_menu(Display *display, Configuration *config,
                 render_config_bar_centered(
                     display, bar_y, max_option_name_length,
                     max_option_value_length, option_text, option_value_buff,
-                    text_update_only, diff->modified_option_index == i,
+                    text_update_only,
+                    std::find(diff->modified_options.begin(),
+                              diff->modified_options.end(),
+                              i) != diff->modified_options.end(),
                     customization);
                 LOG_DEBUG(TAG,
                           "Rendered config bar %d with option text '%s' and "

@@ -234,7 +234,10 @@ assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 
         auto options = {ssid, password, connect_on_startup, app_action};
 
-        return new Configuration("Wi-Fi", options);
+        std::map<int, std::vector<int>> linked_values;
+        linked_values[0] = {1};
+        linked_values[1] = {0};
+        return new Configuration("Wi-Fi", options, linked_values);
 }
 
 void extract_game_config(WifiAppConfiguration *app_config,

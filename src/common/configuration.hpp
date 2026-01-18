@@ -2,6 +2,7 @@
 
 #include "platform/interface/platform.hpp"
 #include "user_interface_customization.hpp"
+#include "map"
 #include <optional>
 
 typedef enum ConfigurationOptionType {
@@ -123,17 +124,35 @@ struct Configuration {
          * UI and is being edited by the user.
          */
         int curr_selected_option;
+        /**
+         * Allows for 'linking' two configuration option indices. If the user
+         * toggles the option with index X and it has an entry in the map, all
+         * of the linked indices in the value from the map will be toggled as
+         * well. This is useful for allowing users to select related pairs of
+         * values, e.g. wifi (ssid, password) pairs.
+         */
+        std::map<int, std::vector<int>> linked_options;
 
         Configuration()
             : name(nullptr), options(nullptr), options_len(0),
-              curr_selected_option(0)
+              curr_selected_option(0), linked_options({})
         {
         }
 
         Configuration(const char *name,
                       std::vector<ConfigurationOption *> options)
             : name(name), options(nullptr), options_len(options.size()),
-              curr_selected_option(0)
+              curr_selected_option(0), linked_options({})
+        {
+                this->options = new ConfigurationOption *[this->options_len];
+                populate_options(this, options, 0);
+        }
+
+        Configuration(const char *name,
+                      std::vector<ConfigurationOption *> options,
+                      std::map<int, std::vector<int>> linked_options)
+            : name(name), options(nullptr), options_len(options.size()),
+              curr_selected_option(0), linked_options(linked_options)
         {
                 this->options = new ConfigurationOption *[this->options_len];
                 populate_options(this, options, 0);
@@ -162,9 +181,9 @@ struct ConfigurationDiff {
         int currently_edited_option;
         /**
          * If `option_switched` is false, this field tells us which
-         * configuration field has been updated and needs to be redrawn.
+         * configuration fields has been updated and need to be redrawn.
          */
-        int modified_option_index;
+        std::vector<int> modified_options;
 };
 
 void switch_edited_config_option_down(Configuration *config,
