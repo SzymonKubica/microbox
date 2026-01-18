@@ -24,6 +24,7 @@
   each square separately.
 
 # TODO
+- [_] fix segfault when wrapping around a config option value (regression caused by the linked option values refactor)
 - [_] add ability to save multiple wifi network settings
 - [_] add ability to exit out of the text input collection screen
 - [_] for longer string config options add ellipsis rendering
