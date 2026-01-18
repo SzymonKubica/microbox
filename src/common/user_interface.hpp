@@ -13,14 +13,14 @@ void render_config_menu(Display *display, Configuration *config,
                         UserInterfaceCustomization *customization,
                         bool should_render_logo = false);
 
-char *collect_string_input(Platform *p,
-                           UserInterfaceCustomization *customization,
-                           const char *input_prompt);
+std::optional<char *>
+collect_string_input(Platform *p, UserInterfaceCustomization *customization,
+                     const char *input_prompt);
 void render_logo(Display *display, UserInterfaceCustomization *customization,
                  Point position);
 void render_controls_explanations(Display *display);
-void render_controls_explanations(
-    Display *display, std::map<Action, std::string> button_hints);
+void render_controls_explanations(Display *display,
+                                  std::map<Action, std::string> button_hints);
 
 void render_wrapped_help_text(Platform *p,
                               UserInterfaceCustomization *customization,

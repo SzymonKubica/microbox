@@ -819,10 +819,12 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
  * Draws an on-screen keyboard and allows the user to move around it using the
  * cursor. The text entered by the user will be returned in a heap-allocated
  * character array. The caller of this function is resposible for deallocating
- * this array once done processing the data. */
-char *collect_string_input(Platform *p,
-                           UserInterfaceCustomization *customization,
-                           const char *input_prompt)
+ * this array once done processing the data. If the user cancels the input
+ * process, an empty optional is returned.
+ */
+std::optional<char *>
+collect_string_input(Platform *p, UserInterfaceCustomization *customization,
+                     const char *input_prompt)
 {
         Display *display = p->display;
         LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
@@ -866,20 +868,23 @@ char *collect_string_input(Platform *p,
         // Note how the bottom right part of the keyboard is filled with
         // spaces this is needed to ensure that the selection cursor is
         // translated within a rectangular area and we don't get ouside
-        // string buffer index errors.
+        // string buffer index errors. Also note that the 'x' character at the
+        // end is a placeholder for cancellation button. If the user selects
+        // that, the input process is aborted.
         std::vector<const char *> base_char_map = {
             "`1234567890-=",
             "qwertyuiop[]\\",
             "asdfghjkl;'  ",
-            "zxcvbnm,./   ",
+            "zxcvbnm,./  x",
         };
 
         std::vector<const char *> shift_char_map = {
             "~!@#$%^&*()_+",
             "QWERTYUIOP{}|",
             "ASDDFGHJKL:\" ",
-            "ZXCVBNM<>?    ",
+            "ZXCVBNM<>?   x",
         };
+        Point cancellation_key_location = {12, 3};
 
         std::vector<int> left_indent_map = {0, 1, 2, 3};
 
@@ -1023,7 +1028,7 @@ char *collect_string_input(Platform *p,
                                                 strlen(base_char_map[0]));
                         render_character_at_location(
                             cursor, customization->accent_color, curr_char_map);
-                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
                 }
                 if (action_input_registered(p->action_controllers, &act)) {
                         switch (act) {
@@ -1038,6 +1043,17 @@ char *collect_string_input(Platform *p,
                                 input_confirmed = true;
                                 break;
                         case GREEN: {
+                                if (cursor.x == cancellation_key_location.x &&
+                                    cursor.y == cancellation_key_location.y) {
+                                        LOG_DEBUG(
+                                            TAG,
+                                            "User selected the cancellation "
+                                            "key, aborting input collection.");
+                                        free(output);
+                                        free(output_line_1);
+                                        free(output_line_2);
+                                        return std::nullopt;
+                                }
                                 if (output_idx < max_input_len) {
                                         char selection =
                                             extract_current_char(curr_char_map);
