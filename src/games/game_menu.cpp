@@ -266,9 +266,9 @@ const char *game_to_string(Game game)
         case SnakeDuel:
                 return "Snake Duel";
         case WifiApp:
-                return "Wi-Fi Config";
+                return "Wi-Fi";
         case RandomSeedPicker:
-                return "Seed Config";
+                return "Randomness";
         default:
                 return "Unknown";
         }

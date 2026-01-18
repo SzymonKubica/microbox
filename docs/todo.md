@@ -24,21 +24,13 @@
   each square separately.
 
 # TODO
-- [_] fix game of life help prompts disappearing
-- [_] add toroidal array to the keyboard input
-- [_] add ability to exit out of the text input collection screen
 - [_] for longer string config options add ellipsis rendering
 - [_] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
 - [_] improve the button debounce handling for physical console. Currently it is
       difficult to pause the game.
-- [_] make the text input screen more speedy
-- [_] update app names to remove 'config' and make it more user-friendly
 - [_] remove all duplication between snake and snake duel
 - [_] update the lcd / sfml display libraries to remove the pixel-precision
       discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
-- [_] finish the random seed picker functionality and add ability to overrride the
-      seed if there is no wifi support
-- [_] figure out why grip depends on having access to the github API.
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] add high score saving to 2048.
@@ -49,6 +41,14 @@
 # In Progress
 
 # Done
+- [x] finish the random seed picker functionality and add ability to overrride the
+      seed if there is no wifi support
+- [x] figure out why grip depends on having access to the github API.
+- [x] fix game of life help prompts disappearing
+- [x] update app names to remove 'config' and make it more user-friendly
+- [x] make the text input screen more speedy
+- [x] add toroidal array to the keyboard input
+- [x] add ability to exit out of the text input collection screen
 - [x] add help prompt when user tries to save more than 5 wifi configs
 - [x] add ability to erase eeprom (probably external sketch)
 - [x] add ability to save multiple wifi network settings

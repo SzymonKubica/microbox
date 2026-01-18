@@ -200,6 +200,10 @@ UserAction game_of_life_loop(Platform *p,
         int cols = gd->cols;
         int total_cells = rows * cols;
 
+
+        draw_grid_frame(p, customization, gd);
+        LOG_DEBUG(TAG, "Game of Life canvas drawn.");
+
         // We need to make the border rectangle and the canvas slightly
         // bigger to ensure that it does not overlap with the game area.
         // Otherwise the caret rendering erases parts of the border as
@@ -212,9 +216,6 @@ UserAction game_of_life_loop(Platform *p,
         if (customization->show_help_text) {
                 render_help_hints(p->display, gd, border_offset);
         }
-
-        draw_grid_frame(p, customization, gd);
-        LOG_DEBUG(TAG, "Game of Life canvas drawn.");
 
         Point caret_pos = {.x = 0, .y = 0};
         draw_caret(p->display, &caret_pos, gd, customization->accent_color);

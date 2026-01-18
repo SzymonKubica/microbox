@@ -82,9 +82,22 @@ UserAction random_seed_picker_loop(Platform *p,
         }
 
         switch (config.action) {
-        case RandomSeedSelectorAction::Spin:
+        case RandomSeedSelectorAction::Spin: {
                 LOG_DEBUG(TAG, "Spin option selected");
+                int new_seed = rand();
+                srand(new_seed);
+                int offset = get_settings_storage_offset(RandomSeedPicker);
+                config.seed = new_seed;
+                p->persistent_storage->put(offset, config);
+
+                // Display the new seed to the user.
+                char display_text_buffer[256];
+                sprintf(display_text_buffer,
+                        "Generated a new randomness seed: %d", new_seed);
+                render_wrapped_help_text(p, customization, display_text_buffer);
+                wait_until_green_pressed(p);
                 break;
+        }
         case RandomSeedSelectorAction::Download: {
                 LOG_DEBUG(TAG, "Download option selected");
                 const char *downloading_text = "Fetching new random seed...";
@@ -112,8 +125,7 @@ UserAction random_seed_picker_loop(Platform *p,
                 srand(seed);
                 new_seed = seed;
 
-                std::vector<int> offsets = get_settings_storage_offsets();
-                int offset = offsets[RandomSeedPicker];
+                int offset = get_settings_storage_offset(RandomSeedPicker);
                 config.seed = new_seed;
                 p->persistent_storage->put(offset, config);
 
@@ -127,6 +139,28 @@ UserAction random_seed_picker_loop(Platform *p,
         }
         case RandomSeedSelectorAction::Modify:
                 LOG_DEBUG(TAG, "Modify option selected");
+
+                auto maybe_input = collect_string_input(
+                    p, customization, "Enter new seed value");
+
+                if (!maybe_input.has_value()) {
+                        LOG_DEBUG(TAG,
+                                  "User cancelled seed modification input.");
+                        break;
+                }
+                int new_seed = atoi(maybe_input.value());
+
+                srand(new_seed);
+                int offset = get_settings_storage_offset(RandomSeedPicker);
+                config.seed = new_seed;
+                p->persistent_storage->put(offset, config);
+
+                // Display the new seed to the user.
+                char display_text_buffer[256];
+                sprintf(display_text_buffer,
+                        "Saved the new, manually-entered randomness seed: %d", new_seed);
+                render_wrapped_help_text(p, customization, display_text_buffer);
+                wait_until_green_pressed(p);
                 break;
         }
 

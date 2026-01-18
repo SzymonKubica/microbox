@@ -4,6 +4,7 @@
 #include "platform/interface/display.hpp"
 #include "../common/logging.hpp"
 #include "constants.hpp"
+#include "point.hpp"
 #include <cassert>
 #include <algorithm>
 #include <cstdio>
@@ -875,16 +876,16 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
             "`1234567890-=",
             "qwertyuiop[]\\",
             "asdfghjkl;'  ",
-            "zxcvbnm,./  x",
+            "zxcvbnm,./ x ",
         };
 
         std::vector<const char *> shift_char_map = {
             "~!@#$%^&*()_+",
             "QWERTYUIOP{}|",
             "ASDDFGHJKL:\" ",
-            "ZXCVBNM<>?   x",
+            "ZXCVBNM<>?  x ",
         };
-        Point cancellation_key_location = {12, 3};
+        Point cancellation_key_location = {11, 3};
 
         std::vector<int> left_indent_map = {0, 1, 2, 3};
 
@@ -1023,7 +1024,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                                  &dir)) {
                         render_character_at_location(cursor, White,
                                                      curr_char_map);
-                        translate_within_bounds(&cursor, dir,
+                        translate_toroidal_array(&cursor, dir,
                                                 curr_char_map.size(),
                                                 strlen(base_char_map[0]));
                         render_character_at_location(
