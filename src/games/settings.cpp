@@ -145,7 +145,10 @@ Configuration *assemble_settings_menu_configuration()
                                 game_to_string(Game::GameOfLife),
                                 game_to_string(Game::Snake),
                                 game_to_string(Game::SnakeDuel),
+        // Disable the wifi functionality on the Uno R4 Minima
+#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
                                 game_to_string(Game::WifiApp),
+#endif
                                 game_to_string(Game::RandomSeedPicker)};
 
         auto *menu = ConfigurationOption::of_strings(

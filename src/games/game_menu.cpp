@@ -74,7 +74,11 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
             "Game",
             {game_to_string(Game::Minesweeper), game_to_string(Game::Clean2048),
              game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
-             game_to_string(Game::SnakeDuel), game_to_string(Game::WifiApp),
+             game_to_string(Game::SnakeDuel),
+        // Disable the WiFi app on the Uno R4 Minima
+#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
+             game_to_string(Game::WifiApp),
+#endif
              game_to_string(Game::Settings),
              game_to_string(Game::RandomSeedPicker)},
             game_to_string(initial_config->game));

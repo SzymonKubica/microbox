@@ -240,7 +240,10 @@ Configuration *assemble_random_seed_picker_configuration(
             "Seed", {initial_config->seed}, initial_config->seed);
 
         auto available_actions = {
+        // Disable the download functionality on the Uno R4 Minima
+#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
             selector_action_to_str(RandomSeedSelectorAction::Download),
+#endif
             selector_action_to_str(RandomSeedSelectorAction::Modify),
             selector_action_to_str(RandomSeedSelectorAction::Spin)};
 
