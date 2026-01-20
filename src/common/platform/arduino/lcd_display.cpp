@@ -117,8 +117,15 @@ void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
 
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
 
-        Paint_DrawRectangle(start.x, start.y, start.x + width,
-                            start.y + height, color,
+        /*
+         * We need to add the adjustment because of the pixel-precision inconsistency
+         * between the sfml emulator and the lcd display. The Paint_DrawRectangle
+         * starts drawing one unit too far to the right and ends one unit too high,
+         * so we need to add the adjustment
+         */
+        int adj = 1;
+        Paint_DrawRectangle(start.x -1, start.y, start.x + width,
+                            start.y + height +1, color,
                             static_cast<DOT_PIXEL>(border_width),
                             static_cast<DRAW_FILL>(filled_repr));
 };
