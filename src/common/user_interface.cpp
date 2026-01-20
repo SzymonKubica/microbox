@@ -446,7 +446,7 @@ void render_config_menu(Display *display, Configuration *config,
                                  HEADING_FONT_WIDTH, Size24);
 
         if (!text_update_only && should_render_logo) {
-                render_logo(display, customization, {.x = 10, .y = y_spacing});
+                render_logo(display, customization, {.x = 12, .y = y_spacing});
         }
 
         for (int i = 0; i < config->options_len; i++) {
@@ -743,17 +743,8 @@ void draw_cube_perspective(Display *display, Point position, int size,
         // When drawing rectangles and lines the positions are slightly
         // misaligned and don't look pixel-accurate. We need to adjust the
         // starting positions of the vertices to align with the rectangle
-        // vertices precisely. This is only required on the emulator. I suspect
-        // this is due to the slightly different implementations of drawing
-        // lines between the display libraries. In the future this could be
-        // moved to the emulator display library.
-
-#ifdef EMULATOR
+        // vertices precisely.
         int alignment_offset = 1;
-#endif
-#ifndef EMULATOR
-        int alignment_offset = 0;
-#endif
 
         Point front_top_left_vertex = {position.x - alignment_offset,
                                        position.y};

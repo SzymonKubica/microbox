@@ -151,7 +151,6 @@ void SfmlDisplay::draw_circle(Point center, int radius, Color color,
 void SfmlDisplay::draw_rectangle(Point start, int width, int height,
                                  Color color, int border_width, bool filled)
 {
-
         sf::RectangleShape rectangle({(float)width, (float)height});
         rectangle.setPosition({(float)start.x, (float)start.y});
         if (filled) {

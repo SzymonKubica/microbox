@@ -116,8 +116,10 @@ void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
 {
 
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
-        Paint_DrawRectangle(start.x, start.y, start.x + width, start.y + height,
-                            color, static_cast<DOT_PIXEL>(border_width),
+
+        Paint_DrawRectangle(start.x, start.y, start.x + width,
+                            start.y + height, color,
+                            static_cast<DOT_PIXEL>(border_width),
                             static_cast<DRAW_FILL>(filled_repr));
 };
 
@@ -157,8 +159,8 @@ void LcdDisplay::draw_rounded_rectangle(Point start, int width, int height,
 
 void LcdDisplay::draw_line(Point start, Point end, Color color)
 {
-        Paint_DrawLine(start.x, start.y, end.x, end.y, color,
-                       DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+        Paint_DrawLine(start.x, start.y, end.x, end.y, color, DOT_PIXEL_1X1,
+                       LINE_STYLE_SOLID);
 }
 
 sFONT *map_font_size(FontSize font_size);
@@ -172,7 +174,6 @@ void LcdDisplay::draw_string(Point start, char *string_buffer,
 void LcdDisplay::clear_region(Point top_left, Point bottom_right,
                               Color clear_color)
 {
-
         Paint_ClearWindows(top_left.x, top_left.y, bottom_right.x,
                            bottom_right.y, clear_color);
 };

@@ -25,16 +25,19 @@
 
 # TODO
 - [_] remove all duplication between snake and snake duel
-- [_] update the lcd / sfml display libraries to remove the pixel-precision
-      discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
+- [_] remove wifi game from the minima build
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] add high score saving to 2048.
+- [_] remove hacky pixel-level overrides in the snake code (most likely inaccurate logic)
 
 
 # In Progress
 
 # Done
+- [x] remove pixel-precision adjustments in snake duel
+- [x] update the lcd / sfml display libraries to remove the pixel-precision
+      discrepancies that require pixel-accurate adjustments (e.g. see line 454 in snake.cpp)
 - [x] add instrumentation disabling all wifi stuff on the Arduino R4 minima.
 - [x] improve the button debounce handling for physical console (especially for snake). Currently it is
       difficult to pause the game.

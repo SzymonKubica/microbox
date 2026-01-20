@@ -327,19 +327,23 @@ void Paint_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
 
         if (Filled) {
                 UWORD Ypoint;
-                for (Ypoint = Ystart; Ypoint < Yend; Ypoint++) {
-                        Paint_DrawLine(Xstart, Ypoint, Xend, Ypoint, Color,
+                // Modification here, hand-adjusted the values to be pixel-accruate
+                // compared to the sfml emulator. TODO: make this cleaner or move this
+                // to the interface layer.
+                // for (Ypoint = Ystart; Ypoint < Yend; Ypoint++) {
+                for (Ypoint = Ystart; Ypoint <= Yend; Ypoint++) {
+                        Paint_DrawLine(Xstart - 1, Ypoint, Xend, Ypoint, Color,
                                        Line_width, LINE_STYLE_SOLID);
                 }
         } else {
-                Paint_DrawLine(Xstart, Ystart, Xend, Ystart, Color, Line_width,
+                Paint_DrawLine(Xstart - 1, Ystart, Xend, Ystart, Color,
+                               Line_width, LINE_STYLE_SOLID);
+                Paint_DrawLine(Xstart - 1, Ystart, Xstart - 1, Yend + 1, Color,
+                               Line_width, LINE_STYLE_SOLID);
+                Paint_DrawLine(Xend, Yend + 1, Xend, Ystart, Color, Line_width,
                                LINE_STYLE_SOLID);
-                Paint_DrawLine(Xstart, Ystart, Xstart, Yend, Color, Line_width,
-                               LINE_STYLE_SOLID);
-                Paint_DrawLine(Xend, Yend, Xend, Ystart, Color, Line_width,
-                               LINE_STYLE_SOLID);
-                Paint_DrawLine(Xend, Yend, Xstart, Yend, Color, Line_width,
-                               LINE_STYLE_SOLID);
+                Paint_DrawLine(Xend, Yend + 1, Xstart - 1, Yend + 1, Color,
+                               Line_width, LINE_STYLE_SOLID);
         }
 }
 

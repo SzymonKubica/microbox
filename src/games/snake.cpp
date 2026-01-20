@@ -398,17 +398,6 @@ void render_segment_connection(Display *display, Color snake_color,
 
         bool adjacent_horizontally = first_location->y == second_location->y;
 
-        // Because of pixel-precision inaccuracies we need to make the
-        // segment connections slightly wider and higher on the physical
-        // display.
-#ifndef EMULATOR
-        int adjustment = 2;
-        int height_adjustment = 2;
-#else
-        int adjustment = 0;
-        int height_adjustment = 0;
-#endif
-
         LOG_DEBUG(TAG,
                   "Rendering segment connection between: {x: %d, y: %d} and "
                   "{x: %d, y: %d}",
@@ -425,13 +414,11 @@ void render_segment_connection(Display *display, Color snake_color,
                 // add `width - padding below to get to that point` also note
                 // that we need to start drawing from the padded vertical start
                 // hence we add the padding in the y coordinate
-                start = {.x = left_margin + (left_point.x + 1) * width -
-                              adjustment,
+                start = {.x = left_margin + (left_point.x + 1) * width,
                          .y = top_margin + left_point.y * height + padding};
-                display->draw_rectangle(
-                    start, padding - border_width + adjustment,
-                    height - 2 * padding + height_adjustment, snake_color,
-                    border_width, true);
+                display->draw_rectangle(start, padding - border_width,
+                                        height - 2 * padding, snake_color,
+                                        border_width, true);
 
         } else {
                 Point top_point = first_location->y < second_location->y
@@ -443,8 +430,8 @@ void render_segment_connection(Display *display, Color snake_color,
                 start = {.x = left_margin + top_point.x * width + padding,
                          .y = top_margin + (top_point.y + 1) * height};
                 display->draw_rectangle(start, width - 2 * padding,
-                                        padding - border_width + adjustment,
-                                        snake_color, border_width, true);
+                                        padding - border_width, snake_color,
+                                        border_width, true);
         }
 }
 
@@ -484,32 +471,28 @@ void render_head(Display *display, Color snake_color,
         int snake_h = height - 2 * padding;
         int rectangle_w, rectangle_h;
 
-        // Because of pixel-precision inaccuracies we need to make the
-        // segment connections slightly wider and higher on the physical
-        // display.
-#ifndef EMULATOR
-        int height_adjustment = 2;
-#else
-        int height_adjustment = 0;
-#endif
-
         switch (direction) {
         case UP:
         case DOWN:
                 rectangle_w = snake_w;
-                rectangle_h = snake_h / 2 + height_adjustment;
+                rectangle_h = snake_h / 2;
                 break;
         case RIGHT:
         case LEFT:
                 rectangle_w = snake_w / 2;
-                rectangle_h = snake_h + height_adjustment;
+                rectangle_h = snake_h;
         }
 
         Point offset, eye_offset;
+        // When going down we need to make the rectangle a bit larger.
+        // TODO: clean up
+        int vertical_extension = 0;
+        int height_adj = 0;
         switch (direction) {
         case UP:
                 offset = {.x = 0, .y = snake_h / 2};
                 eye_offset = {.x = -rectangle_w / 4, .y = 0};
+                height_adj = 1;
                 break;
         case LEFT:
                 offset = {.x = snake_w / 2, .y = 0};
@@ -518,6 +501,7 @@ void render_head(Display *display, Color snake_color,
         case DOWN:
                 offset = {.x = 0, .y = 0};
                 eye_offset = {.x = rectangle_w / 4, .y = 0};
+                vertical_extension = 3;
                 break;
         case RIGHT:
                 offset = {.x = 0, .y = 0};
@@ -525,10 +509,10 @@ void render_head(Display *display, Color snake_color,
                 break;
         }
 
-        display->draw_rectangle({.x = start.x + offset.x + padding,
-                                 .y = start.y + offset.y + padding},
-                                rectangle_w, rectangle_h, snake_color,
-                                border_width, true);
+        display->draw_rectangle(
+            {.x = start.x + offset.x + padding,
+             .y = start.y + offset.y + padding - vertical_extension},
+            rectangle_w, rectangle_h + vertical_extension + height_adj, snake_color, border_width, true);
         Point cell_center = {.x = start.x + width / 2,
                              .y = start.y + height / 2};
         Point eye_center = {
@@ -545,13 +529,6 @@ void refresh_grid_cell(Display *display, Color snake_color,
                        Point *location)
 {
         int padding = 2;
-        // Because of pixel-precision inaccuracies we need to make the cells
-        // slightly higher on the physical display
-#ifndef EMULATOR
-        int height_adjustment = 2;
-#else
-        int height_adjustment = 0;
-#endif
         int height = dimensions->actual_height / dimensions->rows;
         int width = dimensions->actual_width / dimensions->cols;
         int left_margin = dimensions->left_horizontal_margin;
@@ -582,9 +559,8 @@ void refresh_grid_cell(Display *display, Color snake_color,
         }
         case SnakeGridCell::Snake: {
                 display->draw_rectangle(padded_start, width - 2 * padding,
-                                        height - 2 * padding +
-                                            height_adjustment,
-                                        snake_color, 1, true);
+                                        height - 2 * padding, snake_color, 1,
+                                        true);
                 break;
         }
         case SnakeGridCell::Empty: {
@@ -597,9 +573,8 @@ void refresh_grid_cell(Display *display, Color snake_color,
                 // of it with an apple sitting there. This is to indicate
                 // segments of the snake that have 'consumed an apple'
                 display->draw_rectangle(padded_start, width - 2 * padding,
-                                        height - 2 * padding +
-                                            height_adjustment,
-                                        snake_color, 1, true);
+                                        height - 2 * padding, snake_color, 1,
+                                        true);
                 display->draw_circle(apple_center,
                                      (width - 2 * padding) / 2 - radius_offset,
                                      Color::Black, 0, true);
