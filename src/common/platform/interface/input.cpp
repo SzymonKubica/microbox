@@ -31,6 +31,23 @@ bool is_opposite(const Direction direction, const Direction other_direction)
         return false;
 }
 
+Direction get_opposite(const Direction direction)
+{
+        switch (direction) {
+        case UP:
+                return DOWN;
+        case RIGHT:
+                return LEFT;
+        case DOWN:
+                return UP;
+        case LEFT:
+                return RIGHT;
+        }
+        // garbage in, garbage out. If we get an unrecognized direction,
+        // we return it back.
+        return direction;
+}
+
 const char *action_to_str(Action action)
 {
         switch (action) {

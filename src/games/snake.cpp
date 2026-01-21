@@ -20,7 +20,9 @@ SnakeConfiguration DEFAULT_CONFIG = {.speed = 6,
                                      .enable_poop = true,
                                      .allow_pause = false};
 
-enum class SnakeGridCell : uint8_t {
+namespace SnakeDefs
+{
+enum class Cell : uint8_t {
         Empty,
         Snake,
         Apple,
@@ -34,12 +36,32 @@ enum class SnakeGridCell : uint8_t {
         // `SnakeGridCell::Snake` but it gets rendered differently.
         SnakeWithApple,
 };
+}
+
+using namespace SnakeDefs;
 
 struct SnakeEntity {
         Point head;
         Point tail;
         Direction direction;
-        std::vector<Point> *body;
+        std::vector<Point> body;
+
+      public:
+        SnakeEntity(Point head, Direction direction)
+            : head(head), direction(direction)
+        {
+                Point tail = head;
+                translate(&tail, get_opposite(direction));
+                this->tail = tail;
+                body = {this->tail, head};
+        }
+
+        /**
+         * Moves the snake one unit along its current direction.
+         */
+        void take_step() { translate(&this->head, this->direction); }
+
+        Point get_neck() { return *(this->body.end() - 1).base(); }
 };
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization);
@@ -79,19 +101,18 @@ void Snake::game_loop(Platform *p, UserInterfaceCustomization *customization)
         }
 }
 
-Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid);
+Point spawn_apple(std::vector<std::vector<Cell>> *grid);
 void refresh_grid_cell(Display *display, Color snake_color,
                        SquareCellGridDimensions *dimensions,
-                       std::vector<std::vector<SnakeGridCell>> *grid,
-                       Point *location);
+                       std::vector<std::vector<Cell>> *grid, Point &location);
 void render_segment_connection(Display *display, Color snake_color,
                                SquareCellGridDimensions *dimensions,
-                               std::vector<std::vector<SnakeGridCell>> *grid,
-                               Point *first_location, Point *second_location);
-void render_head(Display *display, Color snake_color,
-                 SquareCellGridDimensions *dimensions,
-                 std::vector<std::vector<SnakeGridCell>> *grid, Point *head,
-                 Direction direction);
+                               std::vector<std::vector<Cell>> *grid,
+                               Point &first_location, Point &second_location);
+void render_snake_head(Display *display, Color snake_color,
+                       SquareCellGridDimensions *dimensions,
+                       std::vector<std::vector<Cell>> *grid, const Point &head,
+                       Direction direction);
 
 void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score);
@@ -128,46 +149,62 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
         p->display->refresh();
 
-        std::vector<std::vector<SnakeGridCell>> grid(
-            rows, std::vector<SnakeGridCell>(cols));
+        std::vector<std::vector<Cell>> grid(rows, std::vector<Cell>(cols));
 
-        // The snake starts in the middle of the game area pointing to the
-        // right.
-        Point snake_head = {.x = cols / 2, .y = rows / 2};
-        Point snake_tail = {.x = snake_head.x - 1, .y = snake_head.y};
-        std::vector<Point> body;
-        SnakeEntity snake = {snake_head, snake_tail, Direction::RIGHT, &body};
-        snake.body->push_back(snake_tail);
-        snake.body->push_back(snake_head);
-        grid[snake_head.y][snake_head.x] = SnakeGridCell::Snake;
-        grid[snake_tail.y][snake_tail.x] = SnakeGridCell::Snake;
+        auto set_cell = [&grid](const Point &location, Cell value) {
+                grid[location.y][location.x] = value;
+        };
 
-        // Those helper lambdas avoid passing the grid and display parameters
-        // around each time we want to re-render a cell or draw a snake segment.
-        auto update_display_cell = [p, gd, &grid,
-                                    customization](Point *location) {
+        auto get_cell = [&grid](const Point &location) {
+                return grid[location.y][location.x];
+        };
+
+        // The snake starts in the middle of the area pointing to the right.
+        SnakeEntity snake{{.x = cols / 2, .y = rows / 2}, Direction::RIGHT};
+        set_cell(snake.head, Cell::Snake);
+        set_cell(snake.tail, Cell::Snake);
+
+        // Avoid passing the grid and display context parameters
+        // each time we want to re-render a cell or draw a snake segment.
+        auto render_cell = [p, gd, &grid, customization](Point &location) {
                 refresh_grid_cell(p->display, customization->accent_color, gd,
                                   &grid, location);
         };
-        auto draw_neck_and_head = [p, gd, &grid, customization,
-                                   &snake](Point *first_segment,
-                                           Point *second_segment) {
+        // Renders the snake's head including the neck (2nd segment right behind
+        // the head).
+        auto render_head = [p, gd, &grid, customization, &snake](Point &neck,
+                                                                 Point &head) {
                 render_segment_connection(p->display,
                                           customization->accent_color, gd,
-                                          &grid, first_segment, second_segment);
-                render_head(p->display, customization->accent_color, gd, &grid,
-                            second_segment, snake.direction);
+                                          &grid, neck, head);
+                render_snake_head(p->display, customization->accent_color, gd,
+                                  &grid, head, snake.direction);
         };
 
-        update_display_cell(&snake_tail);
-        draw_neck_and_head(&snake_tail, &snake_head);
-        update_display_cell(&snake_head);
+        // Helper lambda allowing to render current score value without
+        // passing in all context explicitly.
+        auto render_score = [p, gd, &grid, score_end](int score) {
+                update_score(p, gd, score_end, score);
+        };
 
-        Point *apple_location = spawn_apple(&grid);
-        update_display_cell(apple_location);
+        render_cell(snake.tail);
+        render_head(snake.tail, snake.head);
+        render_cell(snake.head);
+
+        Point apple_location = spawn_apple(&grid);
+        render_cell(apple_location);
 
         int move_period = (1000 / config.speed) / GAME_LOOP_DELAY;
         int iteration = 0;
+
+        // Convenience funtion to ensure each short-circuit exit of the
+        // loop iteration actually increments the counter and waits a bit.
+        auto increment_iteration_and_wait = [p, move_period, &iteration]() {
+                iteration += 1;
+                iteration %= move_period;
+                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
+                p->display->refresh();
+        };
 
         // To avoid button debounce issues, we only process action input if
         // it wasn't processed on the last iteration. This is to avoid
@@ -197,14 +234,14 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 Direction dir;
                 Action act;
                 if (directional_input_registered(p->directional_controllers,
-                                                 &dir)) {
+                                                 &dir) &&
+                    !is_opposite(dir, snake.direction)) {
                         // We prevent instant game-over when user presses the
                         // direction that is opposite to the current direction
                         // of the snake.
-                        if (!is_opposite(dir, snake.direction)) {
-                                chosen_snake_direction = dir;
-                        }
+                        chosen_snake_direction = dir;
                 }
+
                 bool action_registered =
                     action_input_registered(p->action_controllers, &act);
                 if (action_registered && !action_input_on_last_iteration) {
@@ -216,109 +253,89 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         action_input_on_last_iteration = false;
                 }
 
-                if (!is_paused && iteration == move_period - 1) {
-                        snake.direction = chosen_snake_direction;
-
-                        // This modifies the snake.head in place.
-                        translate(&snake.head, snake.direction);
-
-                        bool hit_a_wall = is_out_of_bounds(&(snake.head), gd);
-                        SnakeGridCell next;
-
-                        if (!hit_a_wall) {
-                                next = grid[snake.head.y][snake.head.x];
-                        }
-                        bool tail_hit = next == SnakeGridCell::Snake ||
-                                        next == SnakeGridCell::SnakeWithApple;
-                        bool failure = hit_a_wall || tail_hit;
-
-                        if (!failure) {
-                                // If we got here, it means that the next cell
-                                // is within bounds and is not occupied by the
-                                // snake body. This means that we can safely
-                                // clear grace.
-                                grace_used = false;
-
-                                // The snake has entered the next location, if
-                                // the next location is an apple, we mark it
-                                // as 'segment of snake with an apple in its
-                                // stomach' and render differently
-                                grid[snake.head.y][snake.head.x] =
-                                    next == SnakeGridCell::Apple
-                                        ? SnakeGridCell::SnakeWithApple
-                                        : SnakeGridCell::Snake;
-
-                                // We need to draw the small rectangle that
-                                // connects the new snake head to the rest of
-                                // its body.
-                                Point *neck = (snake.body->end() - 1).base();
-                                // First time a cell is drawn it happens inside
-                                // `draw_neck_and_head`.
-                                // This is needed as Snake's head needs to have
-                                // a different shape from all other segments.
-                                // Because of this, we need to update the neck
-                                // here to actually render it's proper contents
-                                // (i.e. whether it is a regular snake segment
-                                // or a segment that contains an apple).
-                                update_display_cell(neck);
-                                draw_neck_and_head(neck, &snake.head);
-                                snake.body->push_back(snake.head);
-
-                                if (next == SnakeGridCell::Apple) {
-                                        // Eating an apple is handled by simply
-                                        // skipping the step where we erase the
-                                        // last segment of the snake (the else
-                                        // branch). We then spawn a new apple.
-                                        Point *apple_location =
-                                            spawn_apple(&grid);
-                                        refresh_grid_cell(
-                                            p->display,
-                                            customization->accent_color, gd,
-                                            &grid, apple_location);
-                                        game_score++;
-                                        update_score(p, gd, score_end,
-                                                     game_score);
-                                } else {
-                                        assert(next == SnakeGridCell::Empty ||
-                                               next == SnakeGridCell::Poop);
-
-                                        // When no apple is consumed we move
-                                        // the snake forward by erasing its last
-                                        // segment. If poop functionality is
-                                        // enabled we leave it behind.
-                                        auto tail = snake.body->begin();
-                                        auto previous = grid[tail->y][tail->x];
-                                        auto updated =
-                                            previous == SnakeGridCell::
-                                                            SnakeWithApple &&
-                                                    config.enable_poop
-                                                ? SnakeGridCell::Poop
-                                                : SnakeGridCell::Empty;
-                                        grid[tail->y][tail->x] = updated;
-                                        update_display_cell(tail.base());
-                                        snake.body->erase(tail);
-                                }
-
-                        } else {
-                                if (grace_used || !config.allow_grace) {
-                                        is_game_over = true;
-                                        break;
-                                }
-
-                                // We allow the user to change the
-                                // direction for an additional tick by
-                                // rolling back the head position.
-                                Point previous_head = *(snake.body->end() - 1);
-                                snake.head = {previous_head.x, previous_head.y};
-
-                                grace_used = true;
-                        }
+                // If we are paused or it is not the time to move yet, we finish
+                // processing early.
+                if (is_paused || iteration != move_period - 1) {
+                        increment_iteration_and_wait();
+                        continue;
                 }
 
-                iteration += 1;
-                iteration %= move_period;
-                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
-                p->display->refresh();
+                Cell next;
+                snake.direction = chosen_snake_direction;
+                snake.take_step();
+                bool wall_hit = is_out_of_bounds(&(snake.head), gd);
+                if (!wall_hit) {
+                        next = get_cell(snake.head);
+                }
+
+                bool tail_hit =
+                    next == Cell::Snake || next == Cell::SnakeWithApple;
+
+                if (wall_hit || tail_hit) {
+                        if (grace_used || !config.allow_grace) {
+                                is_game_over = true;
+                                break;
+                        }
+
+                        // We allow the user to change the direction for an
+                        // additional tick by rolling back the head position.
+                        Point previous_head = *(snake.body.end() - 1);
+                        snake.head = previous_head;
+                        grace_used = true;
+                        increment_iteration_and_wait();
+                        continue;
+                }
+
+                // If we got here, it means that the next cell is within bounds
+                // and is not occupied by the snake body. This means that we can
+                // safely clear grace.
+                grace_used = false;
+
+                // The snake has entered the next location, if the next location
+                // is an apple, we mark it as 'segment of snake with an apple in
+                // its stomach' and render differently
+                auto next_segment =
+                    next == Cell::Apple ? Cell::SnakeWithApple : Cell::Snake;
+                set_cell(snake.head, next_segment);
+
+                // We need to draw the small rectangle that connects the new
+                // snake head to the rest of its body. This is needed as Snake's
+                // head needs to have a different shape from all other segments.
+                // Because of this, we need to update the neck here to actually
+                // render it's proper contents (i.e. whether it is a regular
+                // snake segment or a segment that contains an apple).
+                auto neck = snake.get_neck();
+                render_cell(neck);
+                render_head(neck, snake.head);
+                snake.body.push_back(snake.head);
+
+                if (next == Cell::Apple) {
+                        // Eating an apple is handled by simply skipping the
+                        // step where we erase the last segment of the snake
+                        // (the else branch). We then spawn a new apple.
+                        Point apple_loc = spawn_apple(&grid);
+                        game_score++;
+                        render_cell(apple_loc);
+                        render_score(game_score);
+                } else {
+                        assert(next == Cell::Empty || next == Cell::Poop);
+
+                        // When no apple is consumed we move the snake forward
+                        // by erasing its last segment.
+                        auto tail_iter = snake.body.begin();
+                        auto tail = *tail_iter;
+
+                        // If the last segment contains an apple and poop
+                        // visuals are enabled, we leave poop behind the snake.
+                        bool poop = config.enable_poop &&
+                                    get_cell(tail) == Cell::SnakeWithApple;
+                        auto updated = poop ? Cell::Poop : Cell::Empty;
+                        set_cell(tail, updated);
+                        render_cell(tail);
+                        snake.body.erase(tail_iter);
+                }
+
+                increment_iteration_and_wait();
         }
 
         p->display->refresh();
@@ -348,7 +365,7 @@ void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                                               start_position, true);
 }
 
-Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid)
+Point spawn_apple(std::vector<std::vector<Cell>> *grid)
 {
         int rows = grid->size();
         int cols = (*grid->begin().base()).size();
@@ -356,13 +373,10 @@ Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid)
                 int x = rand() % cols;
                 int y = rand() % rows;
 
-                SnakeGridCell selected = (*grid)[y][x];
-                if (selected != SnakeGridCell::Snake) {
-                        (*grid)[y][x] = SnakeGridCell::Apple;
-                        Point *random_position = new Point();
-                        random_position->x = x;
-                        random_position->y = y;
-                        return random_position;
+                Cell selected = (*grid)[y][x];
+                if (selected != Cell::Snake) {
+                        (*grid)[y][x] = Cell::Apple;
+                        return {x, y};
                         break;
                 }
         }
@@ -378,8 +392,8 @@ Point *spawn_apple(std::vector<std::vector<SnakeGridCell>> *grid)
  */
 void render_segment_connection(Display *display, Color snake_color,
                                SquareCellGridDimensions *dimensions,
-                               std::vector<std::vector<SnakeGridCell>> *grid,
-                               Point *first_location, Point *second_location)
+                               std::vector<std::vector<Cell>> *grid,
+                               Point &first_location, Point &second_location)
 {
 
         // Calculation logic to map from logical cells to the actual pixel
@@ -396,19 +410,19 @@ void render_segment_connection(Display *display, Color snake_color,
         int left_margin = dimensions->left_horizontal_margin;
         int top_margin = dimensions->top_vertical_margin;
 
-        bool adjacent_horizontally = first_location->y == second_location->y;
+        bool adjacent_horizontally = first_location.y == second_location.y;
 
         LOG_DEBUG(TAG,
                   "Rendering segment connection between: {x: %d, y: %d} and "
                   "{x: %d, y: %d}",
-                  first_location->x, first_location->y, second_location->x,
-                  second_location->y);
+                  first_location.x, first_location.y, second_location.x,
+                  second_location.y);
 
         Point start;
         if (adjacent_horizontally) {
-                Point left_point = first_location->x < second_location->x
-                                       ? *first_location
-                                       : *second_location;
+                Point &left_point = first_location.x < second_location.x
+                                        ? first_location
+                                        : second_location;
 
                 // We start drawing from the end of the padded square, hence we
                 // add `width - padding below to get to that point` also note
@@ -421,9 +435,9 @@ void render_segment_connection(Display *display, Color snake_color,
                                         border_width, true);
 
         } else {
-                Point top_point = first_location->y < second_location->y
-                                      ? *first_location
-                                      : *second_location;
+                Point &top_point = first_location.y < second_location.y
+                                       ? first_location
+                                       : second_location;
                 // We start drawing from the end of the padded square (bottom
                 // left corner), hence we add `height - padding below to get to
                 // that point`
@@ -439,10 +453,10 @@ void render_segment_connection(Display *display, Color snake_color,
  * Renders the head of the snake. This contains snake's eye and a rounded front
  * part of the snake.
  */
-void render_head(Display *display, Color snake_color,
-                 SquareCellGridDimensions *dimensions,
-                 std::vector<std::vector<SnakeGridCell>> *grid, Point *head,
-                 Direction direction)
+void render_snake_head(Display *display, Color snake_color,
+                       SquareCellGridDimensions *dimensions,
+                       std::vector<std::vector<Cell>> *grid, const Point &head,
+                       Direction direction)
 {
 
         // Calculation logic to map from logical cells to the actual pixel
@@ -463,8 +477,8 @@ void render_head(Display *display, Color snake_color,
         // add `width - padding` below to get to that point. Also note
         // that we need to start drawing from the padded vertical start
         // hence we add the padding in the y coordinate
-        Point start = {.x = left_margin + head->x * width,
-                       .y = top_margin + head->y * height};
+        Point start = {.x = left_margin + head.x * width,
+                       .y = top_margin + head.y * height};
 
         // We draw a 'half-cell' to connect snake head to the neck.
         int snake_w = width - 2 * padding;
@@ -512,7 +526,8 @@ void render_head(Display *display, Color snake_color,
         display->draw_rectangle(
             {.x = start.x + offset.x + padding,
              .y = start.y + offset.y + padding - vertical_extension},
-            rectangle_w, rectangle_h + vertical_extension + height_adj, snake_color, border_width, true);
+            rectangle_w, rectangle_h + vertical_extension + height_adj,
+            snake_color, border_width, true);
         Point cell_center = {.x = start.x + width / 2,
                              .y = start.y + height / 2};
         Point eye_center = {
@@ -525,8 +540,7 @@ void render_head(Display *display, Color snake_color,
 
 void refresh_grid_cell(Display *display, Color snake_color,
                        SquareCellGridDimensions *dimensions,
-                       std::vector<std::vector<SnakeGridCell>> *grid,
-                       Point *location)
+                       std::vector<std::vector<Cell>> *grid, Point &location)
 {
         int padding = 2;
         int height = dimensions->actual_height / dimensions->rows;
@@ -534,11 +548,10 @@ void refresh_grid_cell(Display *display, Color snake_color,
         int left_margin = dimensions->left_horizontal_margin;
         int top_margin = dimensions->top_vertical_margin;
 
-        Point grid_loc = *location;
-        Point start = {.x = left_margin + grid_loc.x * width,
-                       .y = top_margin + grid_loc.y * height};
+        Point start = {.x = left_margin + location.x * width,
+                       .y = top_margin + location.y * height};
 
-        SnakeGridCell cell_type = (*grid)[grid_loc.y][grid_loc.x];
+        Cell cell_type = (*grid)[location.y][location.x];
 
         // When rendering on the actual lcd display the circle comes out a bit
         // larger because of pixel inaccuracies and internal of that lcd display
@@ -551,24 +564,24 @@ void refresh_grid_cell(Display *display, Color snake_color,
                               .y = start.y + width / 2};
 
         switch (cell_type) {
-        case SnakeGridCell::Apple: {
+        case Cell::Apple: {
                 display->draw_circle(apple_center,
                                      (width - 2 * padding) / 2 - radius_offset,
                                      Color::Red, 0, true);
                 break;
         }
-        case SnakeGridCell::Snake: {
+        case Cell::Snake: {
                 display->draw_rectangle(padded_start, width - 2 * padding,
                                         height - 2 * padding, snake_color, 1,
                                         true);
                 break;
         }
-        case SnakeGridCell::Empty: {
+        case Cell::Empty: {
                 display->draw_rectangle(start, width, height, Color::Black, 1,
                                         true);
                 break;
         }
-        case SnakeGridCell::SnakeWithApple: {
+        case Cell::SnakeWithApple: {
                 // Here we render a normal snake segment that has a hole inside
                 // of it with an apple sitting there. This is to indicate
                 // segments of the snake that have 'consumed an apple'
@@ -583,7 +596,7 @@ void refresh_grid_cell(Display *display, Color snake_color,
                     Color::Red, 0, true);
                 break;
         }
-        case SnakeGridCell::Poop: {
+        case Cell::Poop: {
 
                 // First we clear the cell and then we draw a pile of shit.
                 display->draw_rectangle(start, width, height, Color::Black, 1,
