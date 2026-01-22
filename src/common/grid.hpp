@@ -35,9 +35,9 @@ void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
  * @return pixel location of the end of the text. Useful for rendering other
  * things behind the centered text (e.g. incrementable score count).
  */
-int render_centered_text_above_frame(Platform *p,
+int render_centered_above_frame(Platform *p,
                                      SquareCellGridDimensions *dimensions,
-                                     char *text);
+                                     std::string text);
 /**
  * Renders text above the grid frame starting from the supplied pixel position
  */

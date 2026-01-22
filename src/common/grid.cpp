@@ -73,9 +73,9 @@ void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
             customization->accent_color, border_width, false);
 }
 
-int render_centered_text_above_frame(Platform *p,
+int render_centered_above_frame(Platform *p,
                                      SquareCellGridDimensions *dimensions,
-                                     char *text)
+                                     std::string text)
 {
 
         int y_margin = dimensions->top_vertical_margin;
@@ -93,13 +93,14 @@ int render_centered_text_above_frame(Platform *p,
         int text_above_grid_y = y_margin - border_offset - FONT_SIZE -
                                 EXPLANATION_ABOVE_GRID_OFFEST;
 
-        int text_pixel_len = strlen(text) * FONT_WIDTH;
+        int text_pixel_len = text.size() * FONT_WIDTH;
 
         int centering_margin = (available_width - text_pixel_len) / 2;
 
         int toggle_text_x = x_margin + centering_margin;
         p->display->draw_string({.x = toggle_text_x, .y = text_above_grid_y},
-                                (char *)text, FontSize::Size16, Black, White);
+                                (char *)text.c_str(), FontSize::Size16, Black,
+                                White);
 
         return toggle_text_x + text_pixel_len;
 }

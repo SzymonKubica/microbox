@@ -138,8 +138,7 @@ UserAction snake_duel_loop(Platform *p,
         // section above the grid is properly centered. When rendering the
         // actual score count, we need to cancel out the three spaces and
         // subtract them from score_end pixel position.
-        int score_end =
-            render_centered_text_above_frame(p, gd, (char *)"P1:    P2:    ");
+        int score_end = render_centered_above_frame(p, gd, (char *)"P1:    P2:    ");
         update_duel_score(p, gd, score_end, 0);
         update_duel_score(p, gd, score_end, 0, true);
         LOG_DEBUG(TAG, "Snake game area border drawn.");

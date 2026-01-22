@@ -135,63 +135,71 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         int rows = gd->rows;
         int cols = gd->cols;
 
+        LOG_DEBUG(TAG, "Rendering snake game area.");
         draw_grid_frame(p, customization, gd);
+
+        std::vector<std::vector<Cell>> grid(rows, std::vector<Cell>(cols));
 
         // We render the 'Score:' text only once but including the empty space
         // required for the score. This is needed to ensure that the score
         // section above the grid is properly centered. When rendering the
         // actual score count, we need to cancel out the three spaces and
-        // subtract them from score_end pixel position.
-        int score_end =
-            render_centered_text_above_frame(p, gd, (char *)"Score:    ");
-        update_score(p, gd, score_end, 0);
-        LOG_DEBUG(TAG, "Snake game area border drawn.");
+        // subtract them from score_end pixel position. The function above
+        // returns the ending position of the score text so that we can render
+        // the score appropriately.
+        int score_text_end_x = render_centered_above_frame(p, gd, "Score:    ");
 
-        p->display->refresh();
+        /*
+         * Helper lambda expressions to avoid passing platform / context
+         * parametrs on each call site. The idea is to capture all parameters
+         * that don't change during the game.
+         */
 
-        std::vector<std::vector<Cell>> grid(rows, std::vector<Cell>(cols));
-
+        // Sets the required location on the grid to a provided value.
         auto set_cell = [&grid](const Point &location, Cell value) {
                 grid[location.y][location.x] = value;
         };
-
+        // Performs a lookup of the grid value without explicit array indexing.
         auto get_cell = [&grid](const Point &location) {
                 return grid[location.y][location.x];
         };
-
-        // The snake starts in the middle of the area pointing to the right.
-        SnakeEntity snake{{.x = cols / 2, .y = rows / 2}, Direction::RIGHT};
-        set_cell(snake.head, Cell::Snake);
-        set_cell(snake.tail, Cell::Snake);
-
-        // Avoid passing the grid and display context parameters
-        // each time we want to re-render a cell or draw a snake segment.
+        // Re-renders the score in the correct location above the grid as
+        // determined by grid dimensions and the score text end x position.
+        auto render_score = [p, gd, &grid, score_text_end_x](int score) {
+                update_score(p, gd, score_text_end_x, score);
+        };
+        // After the value of a given cell in the grid is changed, this
+        // re-renders that single cell in the display.
         auto render_cell = [p, gd, &grid, customization](Point &location) {
                 refresh_grid_cell(p->display, customization->accent_color, gd,
                                   &grid, location);
         };
         // Renders the snake's head including the neck (2nd segment right behind
         // the head).
-        auto render_head = [p, gd, &grid, customization, &snake](Point &neck,
-                                                                 Point &head) {
+        auto render_head = [p, gd, &grid, customization](SnakeEntity &snake) {
+                auto neck = snake.get_neck();
                 render_segment_connection(p->display,
                                           customization->accent_color, gd,
-                                          &grid, neck, head);
+                                          &grid, neck, snake.head);
                 render_snake_head(p->display, customization->accent_color, gd,
-                                  &grid, head, snake.direction);
+                                  &grid, snake.head, snake.direction);
         };
 
-        // Helper lambda allowing to render current score value without
-        // passing in all context explicitly.
-        auto render_score = [p, gd, &grid, score_end](int score) {
-                update_score(p, gd, score_end, score);
-        };
+        render_score(0);
 
-        render_cell(snake.tail);
-        render_head(snake.tail, snake.head);
-        render_cell(snake.head);
+        p->display->refresh();
 
+        // Initialize game entities
+        // The snake starts in the middle of the area pointing to the right.
+        SnakeEntity snake{{.x = cols / 2, .y = rows / 2}, Direction::RIGHT};
+        set_cell(snake.head, Cell::Snake);
+        set_cell(snake.tail, Cell::Snake);
         Point apple_location = spawn_apple(&grid);
+
+        // Render initial state of the game entities.
+        render_cell(snake.tail);
+        render_head(snake);
+        render_cell(snake.head);
         render_cell(apple_location);
 
         int move_period = (1000 / config.speed) / GAME_LOOP_DELAY;
@@ -306,7 +314,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 // snake segment or a segment that contains an apple).
                 auto neck = snake.get_neck();
                 render_cell(neck);
-                render_head(neck, snake.head);
+                render_head(snake);
                 snake.body.push_back(snake.head);
 
                 if (next == Cell::Apple) {
