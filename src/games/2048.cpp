@@ -167,14 +167,14 @@ UserAction enter_2048_loop(Platform *p,
         while (!(is_game_over(state) || is_game_finished(state))) {
                 Direction dir;
                 Action act;
-                if (directional_input_registered(p->directional_controllers,
+                if (poll_directional_input(p->directional_controllers,
                                                  &dir)) {
                         LOG_DEBUG(TAG, "Input received: %s",
                                   direction_to_str(dir));
                         take_turn(state, (int)dir);
                         update_game_grid(p->display, state, customization);
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
-                } else if (action_input_registered(p->action_controllers,
+                } else if (poll_action_input(p->action_controllers,
                                                    &act)) {
                         if (act == Action::BLUE) {
                                 LOG_DEBUG(TAG, "User requested to exit game.");

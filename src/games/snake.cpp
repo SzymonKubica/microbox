@@ -34,9 +34,54 @@ enum class Cell : uint8_t {
         // inside of it (this happens after the snake eats an apple). From the
         // game mechanics perspective this is equivalent to
         // `SnakeGridCell::Snake` but it gets rendered differently.
-        SnakeWithApple,
+        AppleSnake,
 };
-}
+
+/**
+ * Structure bundling up all flags / counters that are required to manage the
+ * state of an ongoing game loop.
+ */
+struct GameLoopState {
+        int move_period;
+        int iteration;
+        // To avoid button debounce issues, we only process action input if
+        // it wasn't processed on the last iteration. This is to avoid
+        // situations where the user holds the 'pause' button for too long and
+        // the game stutters instead of being properly paused.
+        bool action_input_on_last_iteration;
+        bool is_game_over;
+        // To make the UX more forgiving, if the user is about to bump into a
+        // wall we allow for a 'grace' period. This means that instead of
+        // failing the game immediately, we wait for an additonal snake movement
+        // tick and let the user change the direction. This requires rolling
+        // back the changes that we have already applied on the head of the
+        // snake and its segment body.
+        bool grace_used;
+        bool is_paused;
+
+      public:
+        GameLoopState(int moves_per_second)
+            : iteration(0), action_input_on_last_iteration(false),
+              is_game_over(false), grace_used(false), is_paused(false)
+        {
+                this->move_period = (1000 / moves_per_second) / GAME_LOOP_DELAY;
+        }
+
+        void increment_iteration()
+        {
+                iteration += 1;
+                iteration %= move_period;
+        }
+        void toggle_pause() { is_paused = !is_paused; }
+
+        /*
+         * Informs us whether a sufficient number of waiting iterations has
+         * passed to take a game loop step (e.g. advance the snake by one unit
+         * forward).
+         */
+        bool is_waiting() { return iteration != move_period - 1; }
+};
+} // namespace SnakeDefs
 
 using namespace SnakeDefs;
 
@@ -61,7 +106,7 @@ struct SnakeEntity {
          */
         void take_step() { translate(&this->head, this->direction); }
 
-        Point get_neck() { return *(this->body.end() - 1).base(); }
+        Point get_neck() { return *(this->body.end() - 2).base(); }
 };
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization);
@@ -113,7 +158,6 @@ void render_snake_head(Display *display, Color snake_color,
                        SquareCellGridDimensions *dimensions,
                        std::vector<std::vector<Cell>> *grid, const Point &head,
                        Direction direction);
-
 void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score);
 
@@ -185,8 +229,9 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                                   &grid, snake.head, snake.direction);
         };
 
+        // Initial score rendering to complete the game grid first, before the
+        // snake gets rendered.
         render_score(0);
-
         p->display->refresh();
 
         // Initialize game entities
@@ -199,36 +244,17 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // Render initial state of the game entities.
         render_cell(snake.tail);
         render_head(snake);
-        render_cell(snake.head);
         render_cell(apple_location);
 
-        int move_period = (1000 / config.speed) / GAME_LOOP_DELAY;
-        int iteration = 0;
+        GameLoopState state{config.speed};
 
         // Convenience funtion to ensure each short-circuit exit of the
         // loop iteration actually increments the counter and waits a bit.
-        auto increment_iteration_and_wait = [p, move_period, &iteration]() {
-                iteration += 1;
-                iteration %= move_period;
+        auto increment_iteration_and_wait = [p, &state]() {
+                state.increment_iteration();
                 p->delay_provider->delay_ms(GAME_LOOP_DELAY);
                 p->display->refresh();
         };
-
-        // To avoid button debounce issues, we only process action input if
-        // it wasn't processed on the last iteration. This is to avoid
-        // situations where the user holds the 'spawn' button for too long and
-        // the cell flickers instead of getting spawned properly. We implement
-        // this using this flag.
-        bool action_input_on_last_iteration = false;
-        bool is_game_over = false;
-        // To make the UX more forgiving, if the user is about to bump into a
-        // wall we allow for a 'grace' period. This means that instead of
-        // failing the game immediately, we wait for an additonal snake movement
-        // tick and let the user change the direction. This requires rolling
-        // back the changes that we have already applied on the head of the
-        // snake and its segment body.
-        bool grace_used = false;
-        bool is_paused = false;
 
         // We let the user change the new snake direction at any point during
         // the frame but it gets applied on the snake only at the end of the
@@ -238,11 +264,10 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // game.
         Direction chosen_snake_direction = snake.direction;
         int game_score = 0;
-        while (!is_game_over) {
+        while (!state.is_game_over) {
                 Direction dir;
                 Action act;
-                if (directional_input_registered(p->directional_controllers,
-                                                 &dir) &&
+                if (poll_directional_input(p->directional_controllers, &dir) &&
                     !is_opposite(dir, snake.direction)) {
                         // We prevent instant game-over when user presses the
                         // direction that is opposite to the current direction
@@ -250,20 +275,25 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         chosen_snake_direction = dir;
                 }
 
-                bool action_registered =
-                    action_input_registered(p->action_controllers, &act);
-                if (action_registered && !action_input_on_last_iteration) {
-                        if (act == YELLOW && config.allow_pause) {
-                                is_paused = !is_paused;
-                                action_input_on_last_iteration = true;
-                        }
-                } else if (!action_registered) {
-                        action_input_on_last_iteration = false;
+                bool action_taken =
+                    poll_action_input(p->action_controllers, &act);
+
+                if (config.allow_pause && action_taken && act == YELLOW &&
+                    !state.action_input_on_last_iteration) {
+                        state.toggle_pause();
+                        state.action_input_on_last_iteration = true;
+                } else if (!action_taken) {
+                        // We clear the action-held flag only if there is no
+                        // action registered. This is done to ensure that
+                        // if a pause button is held for a long time, the game
+                        // remains paused until it is depressed and clicked
+                        // again.
+                        state.action_input_on_last_iteration = false;
                 }
 
                 // If we are paused or it is not the time to move yet, we finish
                 // processing early.
-                if (is_paused || iteration != move_period - 1) {
+                if (state.is_paused || state.is_waiting()) {
                         increment_iteration_and_wait();
                         continue;
                 }
@@ -271,17 +301,18 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 Cell next;
                 snake.direction = chosen_snake_direction;
                 snake.take_step();
+
+                // Check for failure conditions.
                 bool wall_hit = is_out_of_bounds(&(snake.head), gd);
                 if (!wall_hit) {
                         next = get_cell(snake.head);
                 }
-
-                bool tail_hit =
-                    next == Cell::Snake || next == Cell::SnakeWithApple;
+                bool tail_hit = next == Cell::Snake || next == Cell::AppleSnake;
 
                 if (wall_hit || tail_hit) {
-                        if (grace_used || !config.allow_grace) {
-                                is_game_over = true;
+                        if (!config.allow_grace || state.grace_used) {
+                                LOG_INFO(TAG, "Snake game is over.");
+                                state.is_game_over = true;
                                 break;
                         }
 
@@ -289,7 +320,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         // additional tick by rolling back the head position.
                         Point previous_head = *(snake.body.end() - 1);
                         snake.head = previous_head;
-                        grace_used = true;
+                        state.grace_used = true;
                         increment_iteration_and_wait();
                         continue;
                 }
@@ -297,13 +328,13 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 // If we got here, it means that the next cell is within bounds
                 // and is not occupied by the snake body. This means that we can
                 // safely clear grace.
-                grace_used = false;
+                state.grace_used = false;
 
                 // The snake has entered the next location, if the next location
                 // is an apple, we mark it as 'segment of snake with an apple in
                 // its stomach' and render differently
                 auto next_segment =
-                    next == Cell::Apple ? Cell::SnakeWithApple : Cell::Snake;
+                    next == Cell::Apple ? Cell::AppleSnake : Cell::Snake;
                 set_cell(snake.head, next_segment);
 
                 // We need to draw the small rectangle that connects the new
@@ -312,37 +343,39 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 // Because of this, we need to update the neck here to actually
                 // render it's proper contents (i.e. whether it is a regular
                 // snake segment or a segment that contains an apple).
+                snake.body.push_back(snake.head);
                 auto neck = snake.get_neck();
                 render_cell(neck);
                 render_head(snake);
-                snake.body.push_back(snake.head);
 
                 if (next == Cell::Apple) {
                         // Eating an apple is handled by simply skipping the
                         // step where we erase the last segment of the snake
-                        // (the else branch). We then spawn a new apple.
+                        // We then spawn a new apple.
                         Point apple_loc = spawn_apple(&grid);
                         game_score++;
                         render_cell(apple_loc);
                         render_score(game_score);
-                } else {
-                        assert(next == Cell::Empty || next == Cell::Poop);
-
-                        // When no apple is consumed we move the snake forward
-                        // by erasing its last segment.
-                        auto tail_iter = snake.body.begin();
-                        auto tail = *tail_iter;
-
-                        // If the last segment contains an apple and poop
-                        // visuals are enabled, we leave poop behind the snake.
-                        bool poop = config.enable_poop &&
-                                    get_cell(tail) == Cell::SnakeWithApple;
-                        auto updated = poop ? Cell::Poop : Cell::Empty;
-                        set_cell(tail, updated);
-                        render_cell(tail);
-                        snake.body.erase(tail_iter);
+                        increment_iteration_and_wait();
+                        continue;
                 }
 
+                // If we got here it must be safe to advance the snake and
+                // erase the last tail location as no apple is consumed.
+                assert(next == Cell::Empty || next == Cell::Poop);
+                auto tail_iter = snake.body.begin();
+                auto tail = *tail_iter;
+
+                Cell updated = Cell::Empty;
+                // If the last segment contains an apple and poop
+                // visuals are enabled, we leave poop behind the snake.
+                if (config.enable_poop && get_cell(tail) == Cell::AppleSnake) {
+                        updated = Cell::Poop;
+                }
+
+                set_cell(tail, updated);
+                render_cell(tail);
+                snake.body.erase(tail_iter);
                 increment_iteration_and_wait();
         }
 
@@ -427,6 +460,8 @@ void render_segment_connection(Display *display, Color snake_color,
                   second_location.y);
 
         Point start;
+        int segment_width;
+        int segment_height;
         if (adjacent_horizontally) {
                 Point &left_point = first_location.x < second_location.x
                                         ? first_location
@@ -438,9 +473,8 @@ void render_segment_connection(Display *display, Color snake_color,
                 // hence we add the padding in the y coordinate
                 start = {.x = left_margin + (left_point.x + 1) * width,
                          .y = top_margin + left_point.y * height + padding};
-                display->draw_rectangle(start, padding - border_width,
-                                        height - 2 * padding, snake_color,
-                                        border_width, true);
+                segment_width = padding - border_width;
+                segment_height = height - 2 * padding;
 
         } else {
                 Point &top_point = first_location.y < second_location.y
@@ -451,10 +485,12 @@ void render_segment_connection(Display *display, Color snake_color,
                 // that point`
                 start = {.x = left_margin + top_point.x * width + padding,
                          .y = top_margin + (top_point.y + 1) * height};
-                display->draw_rectangle(start, width - 2 * padding,
-                                        padding - border_width, snake_color,
-                                        border_width, true);
+                segment_width = width - 2 * padding;
+                segment_height = padding - border_width;
         }
+
+        display->draw_rectangle(start, segment_width, segment_height,
+                                snake_color, border_width, true);
 }
 
 /**
@@ -589,7 +625,7 @@ void refresh_grid_cell(Display *display, Color snake_color,
                                         true);
                 break;
         }
-        case Cell::SnakeWithApple: {
+        case Cell::AppleSnake: {
                 // Here we render a normal snake segment that has a hole inside
                 // of it with an apple sitting there. This is to indicate
                 // segments of the snake that have 'consumed an apple'

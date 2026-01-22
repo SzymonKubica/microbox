@@ -4,7 +4,7 @@
  * Checks if any of the controllers has recorded user input. If so, the input
  * direction will be written into the `registered_dir` output parameter.
  */
-bool directional_input_registered(
+bool poll_directional_input(
     std::vector<DirectionalController *> *controllers,
     Direction *registered_dir)
 {
@@ -15,7 +15,7 @@ bool directional_input_registered(
         return input_registered;
 }
 
-bool action_input_registered(std::vector<ActionController *> *controllers,
+bool poll_action_input(std::vector<ActionController *> *controllers,
                              Action *registered_action)
 {
         bool input_registered = false;

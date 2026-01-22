@@ -82,7 +82,7 @@ void pause_until_any_directional_input(
     DelayProvider *delay_provider, Display *display)
 {
         Direction dir;
-        while (!directional_input_registered(controllers, &dir)) {
+        while (!poll_directional_input(controllers, &dir)) {
                 delay_provider->delay_ms(INPUT_POLLING_DELAY);
                 // On the target device this is a no-op, but on the SFML display
                 // this ensures that we poll for events while waiting for input
@@ -97,8 +97,8 @@ void pause_until_input(std::vector<DirectionalController *> *controllers,
                        Direction *direction, Action *action,
                        DelayProvider *delay_provider, Display *display)
 {
-        while (!directional_input_registered(controllers, direction) &&
-               !action_input_registered(action_controllers, action)) {
+        while (!poll_directional_input(controllers, direction) &&
+               !poll_action_input(action_controllers, action)) {
                 delay_provider->delay_ms(INPUT_POLLING_DELAY);
                 // On the target device this is a no-op, but on the SFML display
                 // this ensures that we poll for events while waiting for input

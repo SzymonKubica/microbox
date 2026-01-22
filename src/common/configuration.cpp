@@ -315,7 +315,7 @@ collect_configuration(Platform *p, Configuration *config,
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 };
 
-                if (action_input_registered(p->action_controllers, &act)) {
+                if (poll_action_input(p->action_controllers, &act)) {
                         /* To make the UI more intuitive, we also allow users to
                         cycle configuration options. This change was inspired by
                         initial play testing by Tomek. */
@@ -344,7 +344,7 @@ collect_configuration(Platform *p, Configuration *config,
                                 break;
                         }
                 }
-                if (directional_input_registered(p->directional_controllers,
+                if (poll_directional_input(p->directional_controllers,
                                                  &dir)) {
                         switch (dir) {
                         case DOWN:

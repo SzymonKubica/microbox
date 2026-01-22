@@ -268,7 +268,7 @@ UserAction game_of_life_loop(Platform *p,
                 Action act;
                 GameOfLifeCell curr =
                     get_cell(caret_pos.x, caret_pos.y, gd->cols, grid);
-                if (directional_input_registered(p->directional_controllers,
+                if (poll_directional_input(p->directional_controllers,
                                                  &dir)) {
                         if (mode == REWIND) {
                                 grid = handle_rewind(
@@ -289,7 +289,7 @@ UserAction game_of_life_loop(Platform *p,
                                            customization->accent_color);
                         }
                 }
-                if (action_input_registered(p->action_controllers, &act) &&
+                if (poll_action_input(p->action_controllers, &act) &&
                     !action_input_on_last_iteration) {
                         action_input_on_last_iteration = true;
                         switch (act) {

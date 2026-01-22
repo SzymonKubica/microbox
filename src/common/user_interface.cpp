@@ -1029,7 +1029,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
         while (!input_confirmed) {
                 Direction dir;
                 Action act;
-                if (directional_input_registered(p->directional_controllers,
+                if (poll_directional_input(p->directional_controllers,
                                                  &dir)) {
                         render_character_at_location(cursor, White,
                                                      curr_char_map);
@@ -1040,7 +1040,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                             cursor, customization->accent_color, curr_char_map);
                         p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
                 }
-                if (action_input_registered(p->action_controllers, &act)) {
+                if (poll_action_input(p->action_controllers, &act)) {
                         switch (act) {
                         case YELLOW: {
                                 is_capitalized = !is_capitalized;
@@ -1109,7 +1109,7 @@ void wait_until_green_pressed(Platform *p)
 {
         while (true) {
                 Action act;
-                if (action_input_registered(p->action_controllers, &act)) {
+                if (poll_action_input(p->action_controllers, &act)) {
                         if (act == Action::GREEN) {
                                 LOG_DEBUG(TAG, "User confirmed 'OK'");
                                 p->delay_provider->delay_ms(
@@ -1126,7 +1126,7 @@ Action wait_until_action_input(Platform *p)
 {
         while (true) {
                 Action act;
-                if (action_input_registered(p->action_controllers, &act)) {
+                if (poll_action_input(p->action_controllers, &act)) {
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         return act;
                 }

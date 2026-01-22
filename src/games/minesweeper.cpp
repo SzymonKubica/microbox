@@ -176,7 +176,7 @@ UserAction minesweeper_loop(Platform *p,
                !(total_uncovered == cols * rows - config.mines_num)) {
                 Direction dir;
                 Action act;
-                if (directional_input_registered(p->directional_controllers,
+                if (poll_directional_input(p->directional_controllers,
                                                  &dir)) {
                         LOG_DEBUG(TAG, "Directional input received: %s",
                                   direction_to_str(dir));
@@ -227,7 +227,7 @@ UserAction minesweeper_loop(Platform *p,
                            the input snappy. */
                         continue;
                 }
-                if (action_input_registered(p->action_controllers, &act) &&
+                if (poll_action_input(p->action_controllers, &act) &&
                     !action_input_on_last_iteration) {
                         action_input_on_last_iteration = true;
                         LOG_DEBUG(TAG, "Action input received: %s",

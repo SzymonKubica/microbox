@@ -59,9 +59,9 @@ class ActionController
 };
 
 extern bool
-directional_input_registered(std::vector<DirectionalController *> *controllers,
+poll_directional_input(std::vector<DirectionalController *> *controllers,
                              Direction *registered_dir);
 
 extern bool
-action_input_registered(std::vector<ActionController *> *controllers,
+poll_action_input(std::vector<ActionController *> *controllers,
                              Action *registered_action);
