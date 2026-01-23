@@ -122,7 +122,7 @@ void save_game_state(Platform *p, Game2048Configuration &config,
                 }
         }
 
-        int storage_offset = get_settings_storage_offset(Clean2048);
+        int storage_offset = get_settings_storage_offset(Game::Clean2048);
         LOG_DEBUG(TAG,
                   "Saving current 2048 game state to persistent storage at "
                   "offset %d",
@@ -167,15 +167,13 @@ UserAction enter_2048_loop(Platform *p,
         while (!(is_game_over(state) || is_game_finished(state))) {
                 Direction dir;
                 Action act;
-                if (poll_directional_input(p->directional_controllers,
-                                                 &dir)) {
+                if (poll_directional_input(p->directional_controllers, &dir)) {
                         LOG_DEBUG(TAG, "Input received: %s",
                                   direction_to_str(dir));
                         take_turn(state, (int)dir);
                         update_game_grid(p->display, state, customization);
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
-                } else if (poll_action_input(p->action_controllers,
-                                                   &act)) {
+                } else if (poll_action_input(p->action_controllers, &act)) {
                         if (act == Action::BLUE) {
                                 LOG_DEBUG(TAG, "User requested to exit game.");
                                 const char *help_text =
@@ -213,7 +211,7 @@ UserAction enter_2048_loop(Platform *p,
 
 Game2048Configuration *load_initial_config(PersistentStorage *storage)
 {
-        int storage_offset = get_settings_storage_offsets()[Clean2048];
+        int storage_offset = get_settings_storage_offset(Game::Clean2048);
 
         Game2048Configuration config{};
         LOG_DEBUG(TAG,
@@ -239,9 +237,11 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
 
         LOG_DEBUG(TAG,
                   "Loaded 2048 game configuration: grid_size=%d, "
-                  "target_max_tile=%d, is_game_in_progress=%d, saved_grid_size=%d, saved_target_max_tile=%d",
-                  output->grid_size, output->target_max_tile, output->is_game_in_progress,
-                  output->saved_grid_size, output->saved_target_max_tile);
+                  "target_max_tile=%d, is_game_in_progress=%d, "
+                  "saved_grid_size=%d, saved_target_max_tile=%d",
+                  output->grid_size, output->target_max_tile,
+                  output->is_game_in_progress, output->saved_grid_size,
+                  output->saved_target_max_tile);
 
         return output;
 }

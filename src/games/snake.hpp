@@ -33,12 +33,12 @@ std::optional<UserAction>
 collect_snake_config(Platform *p, SnakeConfiguration *game_config,
                      UserInterfaceCustomization *customization);
 
-class Snake : public GameExecutor
+class SnakeGame : public GameExecutor
 {
       public:
         virtual void
         game_loop(Platform *p,
                   UserInterfaceCustomization *customization) override;
 
-        Snake() {}
+        SnakeGame() {}
 };

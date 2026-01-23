@@ -18,7 +18,7 @@
 #define TAG "game_menu"
 
 GameMenuConfiguration DEFAULT_MENU_CONFIGURATION = {
-    .game = GameOfLife,
+    .game = Game::GameOfLife,
     .accent_color = DarkBlue,
     .rendering_mode = Minimalistic,
     .show_help_text = true,
@@ -30,9 +30,9 @@ GameMenuConfiguration *
 load_initial_menu_configuration(PersistentStorage *storage)
 {
 
-        int storage_offset = get_settings_storage_offsets()[MainMenu];
+        int storage_offset = get_settings_storage_offset(Game::MainMenu);
 
-        GameMenuConfiguration configuration = {.game = Unknown,
+        GameMenuConfiguration configuration = {.game = Game::Unknown,
                                                .accent_color = DarkBlue,
                                                .rendering_mode = Minimalistic,
                                                .show_help_text = true};
@@ -151,22 +151,22 @@ void select_game(Platform *p)
 
         GameExecutor *executor = [&]() -> GameExecutor * {
                 switch (config.game) {
-                case Unknown:
-                case Clean2048:
+                case Game::Unknown:
+                case Game::Clean2048:
                         return new class Clean2048();
-                case Minesweeper:
+                case Game::Minesweeper:
                         return new class Minesweeper();
-                case GameOfLife:
+                case Game::GameOfLife:
                         return new class GameOfLife();
-                case Settings:
+                case Game::Settings:
                         return new class Settings();
-                case Snake:
-                        return new class Snake();
-                case SnakeDuel:
+                case Game::Snake:
+                        return new class SnakeGame();
+                case Game::SnakeDuel:
                         return new class SnakeDuel();
-                case WifiApp:
+                case Game::WifiApp:
                         return new class WifiApp();
-                case RandomSeedPicker:
+                case Game::RandomSeedPicker:
                         return new class RandomSeedPicker();
                 default:
                         return NULL;
@@ -213,23 +213,23 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
 
 Game game_from_string(const char *name)
 {
-        if (strcmp(name, game_to_string(Clean2048)) == 0)
+        if (strcmp(name, game_to_string(Game::Clean2048)) == 0)
                 return Game::Clean2048;
-        if (strcmp(name, game_to_string(Minesweeper)) == 0)
+        if (strcmp(name, game_to_string(Game::Minesweeper)) == 0)
                 return Game::Minesweeper;
-        if (strcmp(name, game_to_string(GameOfLife)) == 0)
+        if (strcmp(name, game_to_string(Game::GameOfLife)) == 0)
                 return Game::GameOfLife;
-        if (strcmp(name, game_to_string(MainMenu)) == 0)
+        if (strcmp(name, game_to_string(Game::MainMenu)) == 0)
                 return Game::MainMenu;
-        if (strcmp(name, game_to_string(Settings)) == 0)
+        if (strcmp(name, game_to_string(Game::Settings)) == 0)
                 return Game::Settings;
-        if (strcmp(name, game_to_string(Snake)) == 0)
+        if (strcmp(name, game_to_string(Game::Snake)) == 0)
                 return Game::Snake;
-        if (strcmp(name, game_to_string(SnakeDuel)) == 0)
+        if (strcmp(name, game_to_string(Game::SnakeDuel)) == 0)
                 return Game::SnakeDuel;
-        if (strcmp(name, game_to_string(WifiApp)) == 0)
+        if (strcmp(name, game_to_string(Game::WifiApp)) == 0)
                 return Game::WifiApp;
-        if (strcmp(name, game_to_string(RandomSeedPicker)) == 0)
+        if (strcmp(name, game_to_string(Game::RandomSeedPicker)) == 0)
                 return Game::RandomSeedPicker;
         return Game::Unknown;
 }
@@ -237,15 +237,15 @@ Game game_from_string(const char *name)
 bool is_valid_game(Game game)
 {
         switch (game) {
-        case MainMenu:
-        case Clean2048:
-        case Minesweeper:
-        case GameOfLife:
-        case Settings:
-        case Snake:
-        case SnakeDuel:
-        case WifiApp:
-        case RandomSeedPicker:
+        case Game::MainMenu:
+        case Game::Clean2048:
+        case Game::Minesweeper:
+        case Game::GameOfLife:
+        case Game::Settings:
+        case Game::Snake:
+        case Game::SnakeDuel:
+        case Game::WifiApp:
+        case Game::RandomSeedPicker:
                 return true;
         default:
                 return false;
@@ -255,23 +255,23 @@ bool is_valid_game(Game game)
 const char *game_to_string(Game game)
 {
         switch (game) {
-        case MainMenu:
+        case Game::MainMenu:
                 return "Main Menu";
-        case Clean2048:
+        case Game::Clean2048:
                 return "2048";
-        case Minesweeper:
+        case Game::Minesweeper:
                 return "Minesweeper";
-        case GameOfLife:
+        case Game::GameOfLife:
                 return "Game Of Life";
-        case Settings:
+        case Game::Settings:
                 return "Settings";
-        case Snake:
+        case Game::Snake:
                 return "Snake";
-        case SnakeDuel:
+        case Game::SnakeDuel:
                 return "Snake Duel";
-        case WifiApp:
+        case Game::WifiApp:
                 return "Wi-Fi";
-        case RandomSeedPicker:
+        case Game::RandomSeedPicker:
                 return "Randomness";
         default:
                 return "Unknown";

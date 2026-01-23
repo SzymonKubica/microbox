@@ -116,7 +116,7 @@ UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
 
 void save_wifi_app_config(WifiAppConfiguration &config, Platform *p)
 {
-        int offset = get_settings_storage_offset(WifiApp);
+        int offset = get_settings_storage_offset(Game::WifiApp);
         LOG_DEBUG(TAG, "Saving wifi app config at storage offset %d", offset);
         p->persistent_storage->put(offset, config);
 }
@@ -232,7 +232,7 @@ get_ssid_and_password_input(Platform *p,
 
 WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
 {
-        int storage_offset = get_settings_storage_offset(WifiApp);
+        int storage_offset = get_settings_storage_offset(Game::WifiApp);
 
         WifiAppConfiguration config{};
         LOG_DEBUG(TAG,

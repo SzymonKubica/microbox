@@ -3,18 +3,18 @@
 #include "../common/user_interface.hpp"
 #include <optional>
 
-typedef enum Game
-    : int { Unknown = 0,
-            MainMenu = 1,
-            Clean2048 = 2,
-            Minesweeper = 3,
-            GameOfLife = 4,
-            Settings = 5,
-            RandomSeedPicker = 6,
-            Snake = 7,
-            SnakeDuel = 8,
-            WifiApp = 9,
-    } Game;
+enum class Game : int {
+        Unknown = 0,
+        MainMenu = 1,
+        Clean2048 = 2,
+        Minesweeper = 3,
+        GameOfLife = 4,
+        Settings = 5,
+        RandomSeedPicker = 6,
+        Snake = 7,
+        SnakeDuel = 8,
+        WifiApp = 9,
+};
 
 typedef struct GameMenuConfiguration {
         Game game;
@@ -24,7 +24,6 @@ typedef struct GameMenuConfiguration {
 } GameMenuConfiguration;
 
 bool is_valid_game(Game game);
-
 
 extern Game game_from_string(const char *name);
 

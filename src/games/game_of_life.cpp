@@ -105,7 +105,7 @@ const char *map_boolean_to_yes_or_no(bool value);
 GameOfLifeConfiguration *
 load_initial_game_of_life_config(PersistentStorage *storage)
 {
-        int storage_offset = get_settings_storage_offsets()[GameOfLife];
+        int storage_offset = get_settings_storage_offset(Game::GameOfLife);
 
         GameOfLifeConfiguration config = {.prepopulate_grid = false,
                                           .use_toroidal_array = false,

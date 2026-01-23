@@ -27,8 +27,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                 Game selected_game;
                 extract_menu_setting(&selected_game, config);
 
-                std::vector<int> offsets = get_settings_storage_offsets();
-                int offset = offsets[selected_game];
+                int offset = get_settings_storage_offset(selected_game);
                 LOG_DEBUG(
                     TAG,
                     "Computed configuration storage offset for game %s: %d",
@@ -37,7 +36,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                 PersistentStorage storage = *(p->persistent_storage);
 
                 switch (selected_game) {
-                case MainMenu: {
+                case Game::MainMenu: {
                         GameMenuConfiguration config;
                         auto action = collect_game_menu_config(p, &config);
                         if (action && action.value() == UserAction::Exit) {
@@ -45,7 +44,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
-                case Clean2048: {
+                case Game::Clean2048: {
                         Game2048Configuration config;
                         auto action = collect_2048_config(p, &config, custom);
                         if (action && action.value() == UserAction::Exit) {
@@ -53,7 +52,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
-                case Minesweeper: {
+                case Game::Minesweeper: {
                         MinesweeperConfiguration config;
                         auto action =
                             collect_minesweeper_config(p, &config, custom);
@@ -62,7 +61,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
-                case GameOfLife: {
+                case Game::GameOfLife: {
                         GameOfLifeConfiguration config;
                         auto action =
                             collect_game_of_life_config(p, &config, custom);
@@ -71,7 +70,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
-                case Snake: {
+                case Game::Snake: {
                         SnakeConfiguration config;
                         auto action = collect_snake_config(p, &config, custom);
                         if (action && action.value() == UserAction::Exit) {
@@ -79,7 +78,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
-                case SnakeDuel: {
+                case Game::SnakeDuel: {
                         SnakeDuelConfiguration config;
                         auto action =
                             collect_snake_duel_config(p, &config, custom);
@@ -88,7 +87,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
-                case WifiApp: {
+                case Game::WifiApp: {
                         WifiAppConfiguration config;
                         auto action =
                             collect_wifi_app_config(p, &config, custom);
@@ -97,7 +96,7 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         }
                         storage.put(offset, config);
                 } break;
-                case RandomSeedPicker: {
+                case Game::RandomSeedPicker: {
                         RandomSeedPickerConfiguration config;
                         auto action = collect_random_seed_picker_config(
                             p, &config, custom);
@@ -116,24 +115,33 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
 std::vector<int> get_settings_storage_offsets()
 {
         std::vector<int> offsets(10);
-        offsets[MainMenu] = 0;
-        offsets[Clean2048] = offsets[MainMenu] + sizeof(GameMenuConfiguration);
-        offsets[Minesweeper] =
-            offsets[Clean2048] + sizeof(Game2048Configuration);
-        offsets[GameOfLife] =
-            offsets[Minesweeper] + sizeof(MinesweeperConfiguration);
-        offsets[RandomSeedPicker] =
-            offsets[GameOfLife] + sizeof(GameOfLifeConfiguration);
-        offsets[Snake] =
-            offsets[RandomSeedPicker] + sizeof(RandomSeedPickerConfiguration);
-        offsets[SnakeDuel] = offsets[Snake] + sizeof(SnakeConfiguration);
-        offsets[WifiApp] = offsets[SnakeDuel] + sizeof(SnakeDuelConfiguration);
+        offsets[static_cast<int>(Game::MainMenu)] = 0;
+        offsets[static_cast<int>(Game::Clean2048)] =
+            offsets[static_cast<int>(Game::MainMenu)] +
+            sizeof(GameMenuConfiguration);
+        offsets[static_cast<int>(Game::Minesweeper)] =
+            offsets[static_cast<int>(Game::Clean2048)] +
+            sizeof(Game2048Configuration);
+        offsets[static_cast<int>(Game::GameOfLife)] =
+            offsets[static_cast<int>(Game::Minesweeper)] +
+            sizeof(MinesweeperConfiguration);
+        offsets[static_cast<int>(Game::RandomSeedPicker)] =
+            offsets[static_cast<int>(Game::GameOfLife)] +
+            sizeof(GameOfLifeConfiguration);
+        offsets[static_cast<int>(Game::Snake)] =
+            offsets[static_cast<int>(Game::RandomSeedPicker)] +
+            sizeof(RandomSeedPickerConfiguration);
+        offsets[static_cast<int>(Game::SnakeDuel)] =
+            offsets[static_cast<int>(Game::Snake)] + sizeof(SnakeConfiguration);
+        offsets[static_cast<int>(Game::WifiApp)] =
+            offsets[static_cast<int>(Game::SnakeDuel)] +
+            sizeof(SnakeDuelConfiguration);
         return offsets;
 }
 
 int get_settings_storage_offset(Game game)
 {
-        return get_settings_storage_offsets()[game];
+        return get_settings_storage_offsets()[static_cast<int>(game)];
 }
 
 Configuration *assemble_settings_menu_configuration()

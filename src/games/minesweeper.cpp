@@ -539,7 +539,7 @@ collect_minesweeper_config(Platform *p, MinesweeperConfiguration *game_config,
 MinesweeperConfiguration *
 load_initial_minesweeper_config(PersistentStorage *storage)
 {
-        int storage_offset = get_settings_storage_offsets()[Minesweeper];
+        int storage_offset = get_settings_storage_offset(Game::Minesweeper);
         LOG_DEBUG(TAG, "Loading minesweeper saved config from offset %d",
                   storage_offset);
 
