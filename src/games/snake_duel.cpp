@@ -266,7 +266,7 @@ UserAction snake_duel_loop(Platform *p,
         // needed for the 'AI' mode where the second snake picks the shortest
         // path to the apple.
         std::shared_ptr<Point> current_apple_location =
-            std::make_shared<Point>(apple_location.x, apple_location.y);
+            std::shared_ptr<Point>(new Point{apple_location.x, apple_location.y});
         // Here the color doesn't matter as apples are always red.
         render_cell(apple_location, primary_color);
 
@@ -620,11 +620,12 @@ find_next_direction_on_path_to_apple(Snake &snake, Point &apple,
         // Mark all cells where we cannot go.
         for (int y = 0; y < grid.size(); ++y) {
                 for (int x = 0; x < grid[0].size(); ++x) {
-                 if (grid[y][x] == Cell::Apple) {
+                        if (grid[y][x] == Cell::Apple) {
                                 apple = {x, y};
                         } else if (grid[y][x] != Cell::Empty) {
                                 inaccessible[y][x] = true;
-                        }}
+                        }
+                }
         }
 
         Point curr = snake.head;
@@ -680,7 +681,8 @@ find_path(Point &start, Point &end,
                   });
 
         for (auto &nb : neighbours) {
-                LOG_DEBUG(TAG, "Processing neighbour {x: %d, y: %d}", nb.x, nb.y);
+                LOG_DEBUG(TAG, "Processing neighbour {x: %d, y: %d}", nb.x,
+                          nb.y);
                 if (visited_or_inaccessible[nb.y][nb.x]) {
                         continue;
                 }

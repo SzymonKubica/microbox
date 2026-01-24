@@ -24,6 +24,8 @@
   each square separately.
 
 # TODO
+- [_] optimize memory usage of the path finding to prevent crashes on arduino
+- [_] add ability to kill a snake duel game against AI
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] add snake duel config option to enable/disable AI
