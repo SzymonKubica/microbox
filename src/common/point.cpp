@@ -3,6 +3,7 @@
 #include "platform/interface/input.hpp"
 
 #include "maths_utils.hpp"
+#include <optional>
 
 void translate(Point *p, Direction dir)
 {
@@ -40,6 +41,27 @@ Point translate_pure(const Point &p, Direction dir)
                 // No translation for unknown direction
                 return p;
         }
+}
+
+std::optional<Direction> determine_displacement_direction(Point &reference,
+                                                          Point &target)
+{
+
+        bool same_column = reference.x == target.x;
+        bool same_row = reference.y == target.y;
+        if (same_column) {
+                if (reference.y - 1 == target.y)
+                        return Direction::UP;
+                if (reference.y + 1 == target.y)
+                        return Direction::DOWN;
+        }
+        if (same_row) {
+                if (reference.x + 1 == target.x)
+                        return Direction::RIGHT;
+                if (reference.x - 1 == target.x)
+                        return Direction::LEFT;
+        }
+        return std::nullopt;
 }
 
 void translate_within_bounds(Point *p, Direction dir, int rows, int cols)
@@ -117,7 +139,8 @@ std::vector<Point> get_neighbours_inside_grid(Point *point, int rows, int cols)
         return neighbours;
 }
 
-std::vector<Point> get_adjacent_neighbours_inside_grid(Point *point, int rows, int cols)
+std::vector<Point> get_adjacent_neighbours_inside_grid(Point *point, int rows,
+                                                       int cols)
 {
         std::vector<Point> neighbours;
         // Dereference for readability;

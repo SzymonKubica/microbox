@@ -1,11 +1,14 @@
+#include <algorithm>
+#include <cassert>
+#include <functional>
+#include <memory>
+#include <optional>
+
 #include "snake_common.hpp"
 #include "snake_duel.hpp"
 #include "2048.hpp"
 #include "game_of_life.hpp"
 #include "settings.hpp"
-#include <cassert>
-#include <functional>
-#include <optional>
 #include "game_menu.hpp"
 
 #include "../common/configuration.hpp"
@@ -133,13 +136,17 @@ void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
                        int score_text_end_location, int score,
                        bool is_secondary = false);
 
+std::optional<Direction>
+find_next_direction_on_path_to_apple(Snake &snake, Point &apple,
+                                     std::vector<std::vector<Cell>> &grid);
 void take_snake_step(
     Platform *p, UserInterfaceCustomization *customization,
     SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
     std::function<void(Point &point, Color color)> &render_cell,
-    SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary);
+    SnakeDuelLoopState &state, ColoredSnake &snake,
+    std::shared_ptr<Point> apple_location, bool is_secondary);
 
 UserAction snake_duel_loop(Platform *p,
                            UserInterfaceCustomization *customization)
@@ -253,6 +260,13 @@ UserAction snake_duel_loop(Platform *p,
         render_cell(second_snake.head, second_snake.color);
 
         Point apple_location = spawn_apple(&grid);
+
+        // We initialize this pointer to the current apple location to
+        // track where the apple is at every iteration of the game. This is
+        // needed for the 'AI' mode where the second snake picks the shortest
+        // path to the apple.
+        std::shared_ptr<Point> current_apple_location =
+            std::make_shared<Point>(apple_location.x, apple_location.y);
         // Here the color doesn't matter as apples are always red.
         render_cell(apple_location, primary_color);
 
@@ -301,13 +315,22 @@ UserAction snake_duel_loop(Platform *p,
                         snake.direction = new_snake_direction;
                         take_snake_step(p, customization, config, gd, score_end,
                                         grid, render_head, render_cell, state,
-                                        snake, false);
+                                        snake, current_apple_location, false);
                 }
                 if (!state.is_snake_two_dead) {
+                        auto direction = find_next_direction_on_path_to_apple(
+                            second_snake, *current_apple_location, grid);
+                        if (direction.has_value() &&
+                            !is_opposite(direction.value(),
+                                         second_snake.direction)) {
+                                new_second_snake_direction = direction.value();
+                        }
+
                         second_snake.direction = new_second_snake_direction;
                         take_snake_step(p, customization, config, gd, score_end,
                                         grid, render_head, render_cell, state,
-                                        second_snake, true);
+                                        second_snake, current_apple_location,
+                                        true);
                 }
 
                 increment_iteration_and_wait();
@@ -323,7 +346,8 @@ void take_snake_step(
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
     std::function<void(Point &point, Color color)> &render_cell,
-    SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary)
+    SnakeDuelLoopState &state, ColoredSnake &snake,
+    std::shared_ptr<Point> current_apple_location, bool is_secondary)
 {
 
         // Performs a lookup of the grid value without explicit array indexing.
@@ -401,6 +425,10 @@ void take_snake_step(
                 // we erase the last segment of the snake (the else branch). We
                 // then spawn a new apple.
                 Point apple_location = spawn_apple(&grid);
+                // Update the apple location after it was consumed so that
+                // the 'AI' snake knows where to go.
+                current_apple_location->x = apple_location.x;
+                current_apple_location->y = apple_location.y;
                 // Here the color doesn't matter as apples are always red.
                 render_cell(apple_location, snake.color);
                 (*game_score)++;
@@ -566,4 +594,103 @@ void extract_game_config(SnakeDuelConfiguration *game_config,
         game_config->allow_grace = yes_or_no_option_to_bool(allow_grace);
         game_config->secondary_player_color =
             secondary_player_color.get_current_color_value();
+}
+
+/* Functions responsible for 'AI' snake steering follow below */
+
+/**
+ * Given the current position of the snake, and the
+ * grid with all currently occupied cells and apple location, it finds a path to
+ * the apple and directs the snake to follow that path.
+ */
+std::vector<Point>
+find_path(Point &start, Point &end,
+          std::vector<std::vector<bool>> &visited_or_inaccessible);
+
+std::optional<Direction>
+find_next_direction_on_path_to_apple(Snake &snake, Point &apple,
+                                     std::vector<std::vector<Cell>> &grid)
+{
+
+        std::vector<std::vector<bool>> inaccessible(
+            grid.size(), std::vector<bool>(grid[0].size(), false));
+
+        LOG_DEBUG(TAG, "Apple {x: %d, y: %d}", apple.x, apple.y);
+
+        // Mark all cells where we cannot go.
+        for (int y = 0; y < grid.size(); ++y) {
+                for (int x = 0; x < grid[0].size(); ++x) {
+                 if (grid[y][x] == Cell::Apple) {
+                                apple = {x, y};
+                        } else if (grid[y][x] != Cell::Empty) {
+                                inaccessible[y][x] = true;
+                        }}
+        }
+
+        Point curr = snake.head;
+        auto path = find_path(curr, apple, inaccessible);
+
+        if (path.empty()) {
+                LOG_DEBUG(TAG, "Path is empty.");
+                return std::nullopt;
+        }
+
+        for (auto &p : path) {
+                LOG_DEBUG(TAG, "{x: %d, y: %d}", p.x, p.y);
+        }
+
+        auto next_position = *(path.end() - 2);
+        LOG_DEBUG(TAG, "Next location: {x: %d, y: %d}", next_position.x,
+                  next_position.y);
+        LOG_DEBUG(TAG, "Head: {x: %d, y: %d}", snake.head.x, snake.head.y);
+
+        return determine_displacement_direction(snake.head, next_position);
+}
+
+std::vector<Point>
+find_path(Point &start, Point &end,
+          std::vector<std::vector<bool>> &visited_or_inaccessible)
+{
+        LOG_DEBUG(TAG, "Start {x: %d, y: %d}", start.x, start.y);
+        LOG_DEBUG(TAG, "End {x: %d, y: %d}", end.x, end.y);
+        // If we are already at the end we return a path with just the end.
+        // This is the base case of the recursion.
+        if (start.x == end.x && start.y == end.y) {
+                return {end};
+        }
+
+        // Indicate that we already visited start before we do any other
+        // processing.
+        visited_or_inaccessible[start.y][start.x] = true;
+
+        int rows = visited_or_inaccessible.size();
+        int cols = visited_or_inaccessible[0].size();
+
+        auto neighbours =
+            get_adjacent_neighbours_inside_grid(&start, rows, cols);
+
+        // We sort the neighbours based on which one is the closest to the
+        // target. This is required to avoid the snake taking 'stupid' paths.
+        auto distance_to_end = [end](Point &p) {
+                return abs(end.x - p.x) + abs(end.y - p.y);
+        };
+        std::sort(neighbours.begin(), neighbours.end(),
+                  [&distance_to_end](Point &p1, Point &p2) {
+                          return distance_to_end(p1) < distance_to_end(p2);
+                  });
+
+        for (auto &nb : neighbours) {
+                LOG_DEBUG(TAG, "Processing neighbour {x: %d, y: %d}", nb.x, nb.y);
+                if (visited_or_inaccessible[nb.y][nb.x]) {
+                        continue;
+                }
+                auto maybe_path = find_path(nb, end, visited_or_inaccessible);
+                if (maybe_path.empty()) {
+                        continue;
+                }
+
+                maybe_path.push_back(start);
+                return maybe_path;
+        };
+        return {};
 }

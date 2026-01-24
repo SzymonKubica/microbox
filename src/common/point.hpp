@@ -1,5 +1,6 @@
 #pragma once
 #include "platform/interface/input.hpp"
+#include <optional>
 #include <vector>
 typedef struct Point {
         int x;
@@ -8,6 +9,14 @@ typedef struct Point {
 } Point;
 
 void translate(Point *p, Direction dir);
+/**
+ * Given two points that are adjacent (horizontally or vertically, not
+ * diagonally), returns the direction that we need to take to go from the
+ * reference point to the target. Note that if two points are not adjacent, an
+ * empty optional will be returned.
+ */
+std::optional<Direction> determine_displacement_direction(Point &reference,
+                                                          Point &target);
 Point translate_pure(const Point &p, Direction dir);
 void translate_within_bounds(Point *p, Direction dir, int rows, int cols);
 void translate_toroidal_array(Point *p, Direction dir, int rows, int cols);

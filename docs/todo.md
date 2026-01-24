@@ -24,9 +24,11 @@
   each square separately.
 
 # TODO
-- [_] Add 'AI' functionality to snake duel.
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
+- [_] add snake duel config option to enable/disable AI
+- [_] ensure that the AI snake can still avoid walls even if it is not able to
+      find a path
 - [_] add high score saving to 2048.
 - [_] remove hacky pixel-level overrides in the snake code (most likely inaccurate logic)
 
@@ -34,6 +36,8 @@
 # In Progress
 
 # Done
+- [x] Add 'AI' functionality to snake duel.
+- [x] Add 'AI' functionality prototype.
 - [x] final clean-up of snake duel game loop
 - [x] remove all duplication between snake and snake duel
 - [x] remove wifi game from the minima build

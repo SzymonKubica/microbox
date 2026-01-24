@@ -1,6 +1,5 @@
 #include <cassert>
 #include <optional>
-#include <algorithm>
 #include "snake_common.hpp"
 #include "snake.hpp"
 #include "2048.hpp"
@@ -109,99 +108,7 @@ void SnakeGame::game_loop(Platform *p,
 void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score);
 
-/**
- * Given the current position of the snake, and the
- * grid with all currently occupied cells and apple location, it finds a path to
- * the apple and directs the snake to follow that path.
- */
-std::vector<Point>
-find_path(Point &start, Point &end,
-          std::vector<std::vector<bool>> &visited_or_inaccessible)
-{
 
-        if (start.x == end.x && start.y == end.y) {
-                return {end, start};
-        }
-
-        auto neighbours = get_adjacent_neighbours_inside_grid(
-            &start, visited_or_inaccessible.size(),
-            visited_or_inaccessible[0].size());
-        visited_or_inaccessible[start.y][start.x] = true;
-        auto distance_to_end = [end](Point &p) {
-                return abs(end.x - p.x) + abs(end.y - p.y);
-        };
-
-        std::sort(neighbours.begin(), neighbours.end(),
-                  [&distance_to_end](Point &p1, Point &p2) {
-                          return distance_to_end(p1) < distance_to_end(p2);
-                  });
-        for (auto &nb : neighbours) {
-                if (visited_or_inaccessible[nb.y][nb.x]) {
-                        continue;
-                }
-                // LOG_DEBUG(TAG, "Processing neighbour {x: %d, y: %d}", nb.x,
-                // nb.y);
-                auto maybe_path = find_path(nb, end, visited_or_inaccessible);
-                if (maybe_path.empty()) {
-                        continue;
-                }
-
-                maybe_path.push_back(start);
-                return maybe_path;
-        };
-        return {};
-}
-
-Direction determine_next_ai_direction(Snake &snake,
-                                      std::vector<std::vector<Cell>> &grid)
-{
-
-        Point apple;
-
-        std::vector<std::vector<bool>> inaccessible(
-            grid.size(), std::vector<bool>(grid[0].size(), false));
-
-        // Find the apple
-        for (int y = 0; y < grid.size(); ++y) {
-                for (int x = 0; x < grid[0].size(); ++x) {
-                        if (grid[y][x] == Cell::Apple) {
-                                apple = {x, y};
-                        } else if (grid[y][x] != Cell::Empty) {
-                                inaccessible[y][x] = true;
-                        }
-                }
-        }
-
-        LOG_DEBUG(TAG, "Apple found {x: %d, y: %d}", apple.x, apple.y);
-
-        Point curr = snake.head;
-        auto path = find_path(curr, apple, inaccessible);
-
-        for (auto &p : path) {
-                LOG_DEBUG(TAG, "{x: %d, y: %d}", p.x, p.y);
-        }
-
-        auto next_position = *(path.end() - 2);
-        LOG_DEBUG(TAG, "Next location: {x: %d, y: %d}", next_position.x,
-                  next_position.y);
-        LOG_DEBUG(TAG, "Head: {x: %d, y: %d}", snake.head.x, snake.head.y);
-
-        if (next_position.x == snake.head.x &&
-            next_position.y == snake.head.y + 1) {
-                return Direction::DOWN;
-        } else if (next_position.x == snake.head.x &&
-                   next_position.y == snake.head.y - 1) {
-                return Direction::UP;
-        } else if (next_position.x + 1 == snake.head.x &&
-                   next_position.y == snake.head.y) {
-                return Direction::LEFT;
-        } else if (next_position.x - 1 == snake.head.x &&
-                   next_position.y == snake.head.y) {
-                return Direction::RIGHT;
-        }
-
-        return Direction::LEFT;
-}
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
@@ -337,11 +244,6 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 if (state.is_paused || state.is_waiting()) {
                         increment_iteration_and_wait();
                         continue;
-                }
-
-                auto ai_direction = determine_next_ai_direction(snake, grid);
-                if (!is_opposite(ai_direction, snake.direction)) {
-                        chosen_snake_direction = ai_direction;
                 }
 
                 Cell next;
