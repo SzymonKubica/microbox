@@ -24,7 +24,6 @@
   each square separately.
 
 # TODO
-- [_] final clean-up of snake duel game loop
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] add high score saving to 2048.
@@ -34,6 +33,7 @@
 # In Progress
 
 # Done
+- [x] final clean-up of snake duel game loop
 - [x] remove all duplication between snake and snake duel
 - [x] remove wifi game from the minima build
 - [x] move the pixel-precision overrides away from the rectangle rendering library code.

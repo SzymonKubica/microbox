@@ -7,6 +7,7 @@ typedef struct Point {
 } Point;
 
 void translate(Point *p, Direction dir);
+Point translate_pure(const Point &p, Direction dir);
 void translate_within_bounds(Point *p, Direction dir, int rows, int cols);
 void translate_toroidal_array(Point *p, Direction dir, int rows, int cols);
 std::vector<Point> get_neighbours_inside_grid(Point *point, int rows, int cols);

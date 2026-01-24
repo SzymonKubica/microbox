@@ -86,7 +86,8 @@ UserAction random_seed_picker_loop(Platform *p,
                 LOG_DEBUG(TAG, "Spin option selected");
                 int new_seed = rand();
                 srand(new_seed);
-                int offset = get_settings_storage_offset(Game::RandomSeedPicker);
+                int offset =
+                    get_settings_storage_offset(Game::RandomSeedPicker);
                 config.seed = new_seed;
                 p->persistent_storage->put(offset, config);
 
@@ -125,7 +126,8 @@ UserAction random_seed_picker_loop(Platform *p,
                 srand(seed);
                 new_seed = seed;
 
-                int offset = get_settings_storage_offset(Game::RandomSeedPicker);
+                int offset =
+                    get_settings_storage_offset(Game::RandomSeedPicker);
                 config.seed = new_seed;
                 p->persistent_storage->put(offset, config);
 
@@ -151,7 +153,8 @@ UserAction random_seed_picker_loop(Platform *p,
                 int new_seed = atoi(maybe_input.value());
 
                 srand(new_seed);
-                int offset = get_settings_storage_offset(Game::RandomSeedPicker);
+                int offset =
+                    get_settings_storage_offset(Game::RandomSeedPicker);
                 config.seed = new_seed;
                 p->persistent_storage->put(offset, config);
 
@@ -172,7 +175,8 @@ RandomSeedPickerConfiguration *
 load_initial_seed_picker_config(PersistentStorage *storage)
 {
 
-        int storage_offset = get_settings_storage_offset(Game::RandomSeedPicker);
+        int storage_offset =
+            get_settings_storage_offset(Game::RandomSeedPicker);
 
         RandomSeedPickerConfiguration config;
         LOG_DEBUG(TAG,

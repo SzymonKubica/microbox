@@ -353,7 +353,6 @@ void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                                               start_position, true);
 }
 
-
 /**
  * Forward declarations of functions related to configuration manipulation.
  */

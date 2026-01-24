@@ -25,6 +25,22 @@ void translate(Point *p, Direction dir)
         }
 }
 
+Point translate_pure(const Point &p, Direction dir) {
+        switch (dir) {
+        case Direction::UP:
+                return {p.x, p.y - 1};
+        case Direction::DOWN:
+                return {p.x, p.y + 1};
+        case Direction::LEFT:
+                return {p.x - 1, p.y};
+        case Direction::RIGHT:
+                return {p.x + 1, p.y};
+        default:
+                // No translation for unknown direction
+                return p;
+        }
+}
+
 void translate_within_bounds(Point *p, Direction dir, int rows, int cols)
 {
         switch (dir) {

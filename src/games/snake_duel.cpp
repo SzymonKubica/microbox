@@ -4,6 +4,7 @@
 #include "game_of_life.hpp"
 #include "settings.hpp"
 #include <cassert>
+#include <functional>
 #include <optional>
 #include "game_menu.hpp"
 
@@ -23,6 +24,71 @@ SnakeDuelConfiguration DEFAULT_SNAKE_DUEL_CONFIG = {.speed = 6,
                                                         Blue};
 
 using namespace SnakeDefinitions;
+
+struct ColoredSnake : Snake {
+        Color color;
+
+        ColoredSnake(Point head_position, Direction initial_direction,
+                     Color snake_color)
+            : Snake(head_position, initial_direction), color(snake_color)
+        {
+        }
+};
+
+/**
+ * Structure bundling up all flags / counters that are required to manage the
+ * state of an ongoing game loop.
+ */
+struct SnakeDuelLoopState {
+        int move_period;
+        int iteration;
+        // To avoid button debounce issues, we only process action input if
+        // it wasn't processed on the last iteration. This is to avoid
+        // situations where the user holds the 'pause' button for too long and
+        // the game stutters instead of being properly paused.
+        bool action_input_on_last_iteration;
+        // To make the UX more forgiving, if the user is about to bump into a
+        // wall we allow for a 'grace' period. This means that instead of
+        // failing the game immediately, we wait for an additonal snake movement
+        // tick and let the user change the direction. This requires rolling
+        // back the changes that we have already applied on the head of the
+        // snake and its segment body.
+        bool grace_used;
+        bool second_snake_grace_used;
+        bool is_paused;
+
+        bool is_snake_one_dead;
+        bool is_snake_two_dead;
+
+        int snake_one_score;
+        int snake_two_score;
+
+      public:
+        SnakeDuelLoopState(int moves_per_second)
+            : iteration(0), action_input_on_last_iteration(false),
+              is_snake_two_dead(false), is_snake_one_dead(false),
+              grace_used(false), second_snake_grace_used(false),
+              is_paused(false), snake_one_score(0), snake_two_score(0)
+        {
+                this->move_period = (1000 / moves_per_second) / GAME_LOOP_DELAY;
+        }
+
+        void increment_iteration()
+        {
+                iteration += 1;
+                iteration %= move_period;
+        }
+        void toggle_pause() { is_paused = !is_paused; }
+
+        /*
+         * Informs us whether a sufficient number of waiting iterations has
+         * passed to take a game loop step (e.g. advance the snake by one unit
+         * forward).
+         */
+        bool is_waiting() { return iteration != move_period - 1; }
+
+        bool is_game_over() { return is_snake_one_dead && is_snake_two_dead; }
+};
 
 UserAction snake_duel_loop(Platform *p,
                            UserInterfaceCustomization *customization);
@@ -67,13 +133,13 @@ void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
                        int score_text_end_location, int score,
                        bool is_secondary = false);
 
-void take_snake_step(Snake &snake, Direction chosen_snake_direction,
-                     bool *grace_used, bool *is_game_over, int *game_score,
-                     SnakeDuelConfiguration &config,
-                     SquareCellGridDimensions *gd,
-                     std::vector<std::vector<Cell>> &grid,
-                     UserInterfaceCustomization *customization, Platform *p,
-                     int score_end, bool is_secondary);
+void take_snake_step(
+    Platform *p, UserInterfaceCustomization *customization,
+    SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
+    int score_text_end_x, std::vector<std::vector<Cell>> &grid,
+    std::function<void(ColoredSnake &snake)> &render_head,
+    std::function<void(Point &point, Color color)> &render_cell,
+    SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary);
 
 UserAction snake_duel_loop(Platform *p,
                            UserInterfaceCustomization *customization)
@@ -136,10 +202,20 @@ UserAction snake_duel_loop(Platform *p,
         };
         // After the value of a given cell in the grid is changed, this
         // re-renders that single cell in the display.
-        auto render_cell = [p, gd, &grid, customization](Point &location) {
-                refresh_grid_cell(p->display, customization->accent_color, gd,
-                                  &grid, location);
-        };
+        std::function<void(Point & location, Color color)> render_cell =
+            [p, gd, &grid, customization](Point &location, Color color) {
+                    refresh_grid_cell(p->display, color, gd, &grid, location);
+            };
+        // Renders the snake's head including the neck (2nd segment right behind
+        // the head).
+        std::function<void(ColoredSnake & snake)> render_head =
+            [p, gd, &grid, customization](ColoredSnake &snake) {
+                    auto neck = snake.get_neck();
+                    render_segment_connection(p->display, snake.color, gd,
+                                              &grid, neck, snake.head);
+                    render_snake_head(p->display, snake.color, gd, &grid,
+                                      snake);
+            };
 
         LOG_DEBUG(TAG, "Snake game area border drawn.");
 
@@ -148,66 +224,47 @@ UserAction snake_duel_loop(Platform *p,
 
         p->display->refresh();
 
-        // The first snake starts in the middle of the game area pointing to the
-        // right.
-        Point snake_head = {.x = cols / 2, .y = rows / 2};
-        Point snake_tail = {.x = snake_head.x - 1, .y = snake_head.y};
-        Snake snake = {snake_head, Direction::RIGHT};
-        set_cell(snake.head, Cell::Snake);
-        set_cell(snake.tail, Cell::Snake);
-
-        // The first snake starts one cell below the first one going in the
-        // opposite direction
-        Point secondary_snake_head = {.x = cols / 2, .y = rows / 2 + 1};
-        Snake secondary_snake = {secondary_snake_head, Direction::LEFT};
-
-        set_cell(secondary_snake.head, Cell::Snake);
-        set_cell(secondary_snake.tail, Cell::Snake);
-
-        // Those helper lambdas avoid passing the grid and display parameters
-        // around each time we want to re-render a cell or draw a snake segment.
-        auto update_display_cell = [p, gd, &grid, customization,
-                                    &config](Point &location, Color color) {
-                refresh_grid_cell(p->display, color, gd, &grid, location);
-        };
-        auto draw_neck_and_head = [p, gd, &grid](Point first_segment,
-                                                 Point second_segment,
-                                                 Snake &snake, Color color) {
-                render_segment_connection(p->display, color, gd, &grid,
-                                          first_segment, second_segment);
-                render_snake_head(p->display, color, gd, &grid, snake);
-        };
-
         auto primary_color = customization->accent_color;
         auto secondary_color = config.secondary_player_color;
+
+        int mid_x = cols / 2;
+        int mid_y = rows / 2;
+        Point midpoint = {mid_x, mid_y};
+
+        // The first snake starts in the middle pointing to the right.
+        // The second snake is one cell below in the opposite direction.
+        ColoredSnake snake = {midpoint, Direction::RIGHT, primary_color};
+        ColoredSnake second_snake = {translate_pure(midpoint, Direction::DOWN),
+                                     Direction::LEFT, secondary_color};
+
+        set_cell(snake.head, Cell::Snake);
+        set_cell(snake.tail, Cell::Snake);
+        set_cell(second_snake.head, Cell::Snake);
+        set_cell(second_snake.tail, Cell::Snake);
+
         // First render of the first snake
-        update_display_cell(snake_tail, primary_color);
-        draw_neck_and_head(snake_tail, snake_head, snake, primary_color);
-        update_display_cell(snake_head, primary_color);
+        render_cell(snake.tail, snake.color);
+        render_head(snake);
+        render_cell(snake.head, snake.color);
 
         // First render of the second snake
-        update_display_cell(secondary_snake.tail, secondary_color);
-        draw_neck_and_head(secondary_snake.tail, secondary_snake.head,
-                           secondary_snake, secondary_color);
-        update_display_cell(secondary_snake_head, secondary_color);
+        render_cell(second_snake.tail, second_snake.color);
+        render_head(second_snake);
+        render_cell(second_snake.head, second_snake.color);
 
         Point apple_location = spawn_apple(&grid);
         // Here the color doesn't matter as apples are always red.
-        update_display_cell(apple_location, primary_color);
+        render_cell(apple_location, primary_color);
 
-        int move_period = (1000 / config.speed) / GAME_LOOP_DELAY;
-        int iteration = 0;
+        SnakeDuelLoopState state{config.speed};
 
-        bool is_snake_one_dead = false;
-        bool is_snake_two_dead = false;
-        // To make the UX more forgiving, if the user is about to bump into a
-        // wall we allow for a 'grace' period. This means that instead of
-        // failing the game immediately, we wait for an additonal snake movement
-        // tick and let the user change the direction. This requires rolling
-        // back the changes that we have already applied on the head of the
-        // snake and its segment body.
-        bool grace_used = false;
-        bool secondary_snake_grace_used = false;
+        // Convenience funtion to ensure each short-circuit exit of the
+        // loop iteration actually increments the counter and waits a bit.
+        auto increment_iteration_and_wait = [p, &state]() {
+                state.increment_iteration();
+                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
+                p->display->refresh();
+        };
 
         // We let the user change the new snake direction at any point during
         // the frame but it gets applied on the snake only at the end of the
@@ -216,9 +273,8 @@ UserAction snake_duel_loop(Platform *p,
         // could make the snake go opposite (turn on the spot) and fail the
         // game.
         Direction chosen_snake_direction = snake.direction;
-        Direction chosen_secondary_snake_direction = secondary_snake.direction;
-        int game_score = 0;
-        while (!is_snake_one_dead || !is_snake_two_dead) {
+        Direction chosen_second_snake_direction = second_snake.direction;
+        while (!state.is_game_over()) {
                 Direction dir;
                 Action act;
                 if (poll_directional_input(p->directional_controllers, &dir)) {
@@ -231,157 +287,146 @@ UserAction snake_duel_loop(Platform *p,
                 }
                 if (poll_action_input(p->action_controllers, &act)) {
 
-                        Direction secondary_dir = action_to_direction(act);
+                        Direction second_dir = action_to_direction(act);
                         // We prevent instant game-over when user presses the
                         // direction that is opposite to the current direction
                         // of the snake.
-                        if (!is_opposite(secondary_dir,
-                                         secondary_snake.direction)) {
-                                chosen_secondary_snake_direction =
-                                    secondary_dir;
+                        if (!is_opposite(second_dir, second_snake.direction)) {
+                                chosen_second_snake_direction = second_dir;
                         }
                 }
 
-                if (iteration == move_period - 1) {
-                        // Process the first snake
-                        if (!is_snake_one_dead)
-                                take_snake_step(
-                                    snake, chosen_snake_direction, &grace_used,
-                                    &is_snake_one_dead, &game_score, config, gd,
-                                    grid, customization, p, score_end, false);
-                        if (!is_snake_two_dead)
-                                take_snake_step(
-                                    secondary_snake,
-                                    chosen_secondary_snake_direction,
-                                    &secondary_snake_grace_used,
-                                    &is_snake_two_dead, &game_score, config, gd,
-                                    grid, customization, p, score_end, true);
+                if (state.is_waiting()) {
+                        increment_iteration_and_wait();
+                        continue;
                 }
 
-                iteration += 1;
-                iteration %= move_period;
-                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
-                p->display->refresh();
+                // Process the first snake
+                if (!state.is_snake_one_dead)
+                        snake.direction = chosen_snake_direction;
+                take_snake_step(p, customization, config, gd, score_end, grid,
+                                render_head, render_cell, state, snake, false);
+                if (!state.is_snake_two_dead)
+                        second_snake.direction = chosen_second_snake_direction;
+                take_snake_step(p, customization, config, gd, score_end, grid,
+                                render_head, render_cell, state, second_snake,
+                                true);
+
+                increment_iteration_and_wait();
         }
 
         p->display->refresh();
         return UserAction::PlayAgain;
 }
 
-void take_snake_step(Snake &snake, Direction chosen_snake_direction,
-                     bool *grace_used, bool *is_game_over, int *game_score,
-                     SnakeDuelConfiguration &config,
-                     SquareCellGridDimensions *gd,
-                     std::vector<std::vector<Cell>> &grid,
-                     UserInterfaceCustomization *customization, Platform *p,
-                     int score_end, bool is_secondary)
+void take_snake_step(
+    Platform *p, UserInterfaceCustomization *customization,
+    SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
+    int score_text_end_x, std::vector<std::vector<Cell>> &grid,
+    std::function<void(ColoredSnake &snake)> &render_head,
+    std::function<void(Point &point, Color color)> &render_cell,
+    SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary)
 {
-        // TODO: helper lambdas were copied from above ->  move to proper
-        // functions
-        // TODO: clean up function signature to give a more logical parameter
-        // order. Those helper lambdas avoid passing the grid and display
-        // parameters around each time we want to re-render a cell or draw a
-        // snake segment.
-        auto color = is_secondary ? config.secondary_player_color
-                                  : customization->accent_color;
-        auto update_display_cell = [p, gd, &grid, customization, &config,
-                                    color](Point &location) {
-                refresh_grid_cell(p->display, color, gd, &grid, location);
-        };
-        auto draw_neck_and_head = [p, gd, &grid, color](Point first_segment,
-                                                        Point second_segment,
-                                                        const Snake &snake) {
-                render_segment_connection(p->display, color, gd, &grid,
-                                          first_segment, second_segment);
-                render_snake_head(p->display, color, gd, &grid, snake);
+
+        // Performs a lookup of the grid value without explicit array indexing.
+        auto get_cell = [&grid](const Point &location) {
+                return grid[location.y][location.x];
         };
 
-        snake.direction = chosen_snake_direction;
+        // We resolve which properties of the state are owned by this snake.
+        bool *grace_used;
+        int *game_score;
+        bool *is_game_over;
+        int snake_number;
+        if (is_secondary) {
+                grace_used = &state.second_snake_grace_used;
+                game_score = &state.snake_two_score;
+                is_game_over = &state.is_snake_two_dead;
+                snake_number = 2;
+        } else {
+                grace_used = &state.grace_used;
+                game_score = &state.snake_one_score;
+                is_game_over = &state.is_snake_one_dead;
+                snake_number = 1;
+        }
 
         // This modifies the snake.head in place.
         translate(&snake.head, snake.direction);
 
-        bool hit_a_wall = is_out_of_bounds(&(snake.head), gd);
+        bool wall_hit = is_out_of_bounds(&(snake.head), gd);
         Cell next;
 
-        if (!hit_a_wall) {
-                next = grid[snake.head.y][snake.head.x];
+        if (!wall_hit) {
+                next = get_cell(snake.head);
         }
-        bool tail_bitten = next == Cell::Snake || next == Cell::AppleSnake;
-        bool failure = hit_a_wall || tail_bitten;
+        bool tail_hit = next == Cell::Snake || next == Cell::AppleSnake;
+        bool failure = wall_hit || tail_hit;
 
-        if (!failure) {
-                // If we got here, it means that the next cell
-                // is within bounds and is not occupied by the
-                // snake body. This means that we can safely
-                // clear grace.
-                *grace_used = false;
-
-                // The snake has entered the next location, if
-                // the next location is an apple, we mark it
-                // as 'segment of snake with an apple in its
-                // stomach' and render differently
-                grid[snake.head.y][snake.head.x] =
-                    next == Cell::Apple ? Cell::AppleSnake : Cell::Snake;
-
-                // We need to draw the small rectangle that
-                // connects the new snake head to the rest of
-                // its body.
-                Point *neck = (snake.body.end() - 1).base();
-                // First time a cell is drawn it happens inside
-                // `draw_neck_and_head`.
-                // This is needed as Snake's head needs to have
-                // a different shape from all other segments.
-                // Because of this, we need to update the neck
-                // here to actually render it's proper contents
-                // (i.e. whether it is a regular snake segment
-                // or a segment that contains an apple).
-                update_display_cell(*neck);
-                draw_neck_and_head(*neck, snake.head, snake);
-                snake.body.push_back(snake.head);
-
-                if (next == Cell::Apple) {
-                        // Eating an apple is handled by simply
-                        // skipping the step where we erase the
-                        // last segment of the snake (the else
-                        // branch). We then spawn a new apple.
-                        Point apple_location = spawn_apple(&grid);
-                        refresh_grid_cell(p->display, color, gd, &grid,
-                                          apple_location);
-                        (*game_score)++;
-                        update_duel_score(p, gd, score_end, *game_score,
-                                          is_secondary);
-                } else {
-                        assert(next == Cell::Empty || next == Cell::Poop);
-
-                        // When no apple is consumed we move
-                        // the snake forward by erasing its last
-                        // segment. If poop functionality is
-                        // enabled we leave it behind.
-                        auto tail = snake.body.begin();
-                        auto previous = grid[tail->y][tail->x];
-                        auto updated =
-                            previous == Cell::AppleSnake && config.enable_poop
-                                ? Cell::Poop
-                                : Cell::Empty;
-                        grid[tail->y][tail->x] = updated;
-                        update_display_cell(*tail.base());
-                        snake.body.erase(tail);
-                }
-
-        } else {
+        if (failure) {
                 if (grace_used || !config.allow_grace) {
+                        LOG_INFO(TAG, "Snake %d is dead.", snake_number);
                         *is_game_over = true;
                 }
 
-                // We allow the user to change the
-                // direction for an additional tick by
-                // rolling back the head position.
+                // We allow the user to change the direction for an additional
+                // tick by rolling back the head position.
                 Point previous_head = *(snake.body.end() - 1);
                 snake.head = {previous_head.x, previous_head.y};
 
                 *grace_used = true;
+                return;
         }
+
+        // If we got here, the next cell is within bounds and is not occupied by
+        // the snake body. This means that we can safely clear grace.
+        *grace_used = false;
+
+        // The snake has entered the next location, if the next location is an
+        // apple, we mark it as 'segment of snake with an apple in its stomach'
+        // and that gets rendered differently
+        grid[snake.head.y][snake.head.x] =
+            next == Cell::Apple ? Cell::AppleSnake : Cell::Snake;
+
+        // We need to draw the small rectangle that connects the new snake head
+        // to the rest of its body. This is needed as Snake's head needs to
+        // have a different shape from all other segments. Because of this, we
+        // need to update the neck here to actually render it's proper contents
+        // (i.e. whether it is a regular snake segment or a segment that
+        // contains an apple).
+        snake.body.push_back(snake.head);
+        auto neck = snake.get_neck();
+        render_cell(neck, snake.color);
+        render_head(snake);
+
+        if (next == Cell::Apple) {
+                // Eating an apple is handled by simply skipping the step where
+                // we erase the last segment of the snake (the else branch). We
+                // then spawn a new apple.
+                Point apple_location = spawn_apple(&grid);
+                // Here the color doesn't matter as apples are always red.
+                render_cell(apple_location, snake.color);
+                (*game_score)++;
+                update_duel_score(p, gd, score_text_end_x, *game_score,
+                                  is_secondary);
+                return;
+        }
+
+        assert(next == Cell::Empty || next == Cell::Poop);
+
+        // When no apple is consumed we move the snake forward by erasing its
+        // last segment. If poop functionality is enabled we leave it behind.
+        auto tail_iter = snake.body.begin();
+        auto tail = *tail_iter;
+
+        Cell updated = Cell::Empty;
+        // If the last segment contains an apple and poop visuals are enabled,
+        // we leave poop behind the snake.
+        if (config.enable_poop && get_cell(tail) == Cell::AppleSnake) {
+                updated = Cell::Poop;
+        }
+        grid[tail_iter->y][tail_iter->x] = updated;
+        render_cell(tail, snake.color);
+        snake.body.erase(tail_iter);
 }
 
 /**
