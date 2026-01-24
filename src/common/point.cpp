@@ -25,7 +25,8 @@ void translate(Point *p, Direction dir)
         }
 }
 
-Point translate_pure(const Point &p, Direction dir) {
+Point translate_pure(const Point &p, Direction dir)
+{
         switch (dir) {
         case Direction::UP:
                 return {p.x, p.y - 1};
@@ -112,6 +113,25 @@ std::vector<Point> get_neighbours_inside_grid(Point *point, int rows, int cols)
                 neighbours.push_back({.x = p.x - 1, .y = p.y + 1});
         if (p.x < cols - 1 && p.y > 0)
                 neighbours.push_back({.x = p.x + 1, .y = p.y - 1});
+
+        return neighbours;
+}
+
+std::vector<Point> get_adjacent_neighbours_inside_grid(Point *point, int rows, int cols)
+{
+        std::vector<Point> neighbours;
+        // Dereference for readability;
+        Point p = *point;
+
+        // We add adjacent neighbours if within grid
+        if (p.y > 0)
+                neighbours.push_back({.x = p.x, .y = p.y - 1});
+        if (p.y < rows - 1)
+                neighbours.push_back({.x = p.x, .y = p.y + 1});
+        if (p.x > 0)
+                neighbours.push_back({.x = p.x - 1, .y = p.y});
+        if (p.x < cols - 1)
+                neighbours.push_back({.x = p.x + 1, .y = p.y});
 
         return neighbours;
 }

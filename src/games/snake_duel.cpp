@@ -331,7 +331,7 @@ void take_snake_step(
                 return grid[location.y][location.x];
         };
 
-        // We resolve which properties of the state are owned by this snake.
+        // We neeed to resolve state properties owned by this snake.
         bool *grace_used;
         int *game_score;
         bool *is_game_over;

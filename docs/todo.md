@@ -24,6 +24,7 @@
   each square separately.
 
 # TODO
+- [_] Add 'AI' functionality to snake duel.
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] add high score saving to 2048.
