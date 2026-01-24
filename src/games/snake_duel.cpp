@@ -272,27 +272,23 @@ UserAction snake_duel_loop(Platform *p,
         // is registered led to issues where quick changes to the direction
         // could make the snake go opposite (turn on the spot) and fail the
         // game.
-        Direction chosen_snake_direction = snake.direction;
-        Direction chosen_second_snake_direction = second_snake.direction;
+        Direction new_snake_direction = snake.direction;
+        Direction new_second_snake_direction = second_snake.direction;
         while (!state.is_game_over()) {
                 Direction dir;
                 Action act;
+                // The `!is_opposite` check prevents instant game-over when user
+                // presses the direction that is opposite to the current
+                // direction of the snake.
                 if (poll_directional_input(p->directional_controllers, &dir)) {
-                        // We prevent instant game-over when user presses the
-                        // direction that is opposite to the current direction
-                        // of the snake.
                         if (!is_opposite(dir, snake.direction)) {
-                                chosen_snake_direction = dir;
+                                new_snake_direction = dir;
                         }
                 }
                 if (poll_action_input(p->action_controllers, &act)) {
-
                         Direction second_dir = action_to_direction(act);
-                        // We prevent instant game-over when user presses the
-                        // direction that is opposite to the current direction
-                        // of the snake.
                         if (!is_opposite(second_dir, second_snake.direction)) {
-                                chosen_second_snake_direction = second_dir;
+                                new_second_snake_direction = second_dir;
                         }
                 }
 
@@ -301,16 +297,18 @@ UserAction snake_duel_loop(Platform *p,
                         continue;
                 }
 
-                // Process the first snake
-                if (!state.is_snake_one_dead)
-                        snake.direction = chosen_snake_direction;
-                take_snake_step(p, customization, config, gd, score_end, grid,
-                                render_head, render_cell, state, snake, false);
-                if (!state.is_snake_two_dead)
-                        second_snake.direction = chosen_second_snake_direction;
-                take_snake_step(p, customization, config, gd, score_end, grid,
-                                render_head, render_cell, state, second_snake,
-                                true);
+                if (!state.is_snake_one_dead) {
+                        snake.direction = new_snake_direction;
+                        take_snake_step(p, customization, config, gd, score_end,
+                                        grid, render_head, render_cell, state,
+                                        snake, false);
+                }
+                if (!state.is_snake_two_dead) {
+                        second_snake.direction = new_second_snake_direction;
+                        take_snake_step(p, customization, config, gd, score_end,
+                                        grid, render_head, render_cell, state,
+                                        second_snake, true);
+                }
 
                 increment_iteration_and_wait();
         }
