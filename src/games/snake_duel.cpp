@@ -723,8 +723,10 @@ find_path(Point &start, Point &end,
                         continue;
                 }
 
-                maybe_path.push_back(start);
-                return maybe_path;
+                // We are only interest in the first next location from the
+                // snake's head, hence we truncate the path as it wouldn't fit
+                // into memory on the target device.
+                return {*(maybe_path.end() - 1), start};
         };
         return {};
 }
