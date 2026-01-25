@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <variant>
 
 #define GRID_BG_COLOR White
 #define TAG "user_interface"
@@ -835,7 +836,7 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
  * this array once done processing the data. If the user cancels the input
  * process, an empty optional is returned.
  */
-std::optional<char *>
+std::variant<char *, UserAction>
 collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                      const char *input_prompt)
 {
@@ -1064,7 +1065,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                         free(output);
                                         free(output_line_1);
                                         free(output_line_2);
-                                        return std::nullopt;
+                                        return UserAction::Exit;
                                 }
                                 if (output_idx < max_input_len) {
                                         char selection =
@@ -1090,7 +1091,10 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
-                p->display->refresh();
+                if (!p->display->refresh()) {
+                        // TODO: clean up all allocations from above here.
+                        return UserAction::CloseWindow;
+                }
         }
 
         free(output_line_2);
@@ -1107,7 +1111,7 @@ void render_logo(Display *display, UserInterfaceCustomization *customization,
         draw_mu_letter(display, position, size, customization->accent_color);
 }
 
-void wait_until_green_pressed(Platform *p)
+std::optional<UserAction> wait_until_green_pressed(Platform *p)
 {
         while (true) {
                 Action act;
@@ -1116,15 +1120,18 @@ void wait_until_green_pressed(Platform *p)
                                 LOG_DEBUG(TAG, "User confirmed 'OK'");
                                 p->delay_provider->delay_ms(
                                     MOVE_REGISTERED_DELAY);
-                                return;
+                                return std::nullopt;
                         }
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
-                p->display->refresh();
+
+                if (!p->display->refresh()) {
+                        return UserAction::CloseWindow;
+                }
         }
 }
 
-Action wait_until_action_input(Platform *p)
+std::variant<Action, UserAction> wait_until_action_input(Platform *p)
 {
         while (true) {
                 Action act;
@@ -1133,6 +1140,8 @@ Action wait_until_action_input(Platform *p)
                         return act;
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
-                p->display->refresh();
+                if (!p->display->refresh()) {
+                        return UserAction::CloseWindow;
+                }
         }
 }

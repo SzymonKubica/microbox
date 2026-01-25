@@ -99,7 +99,16 @@ class Display
          * For displays that require redrawing every frame, we need to provide
          * ability to refresh their contents. Note that on the arduino LCD
          * display this will be a no-op as that display does not require
-         * refreshing.
+         * refreshing. On the emulator, this is required so that SFML can
+         * inspect the state of the window. If the window is closed, the refresh
+         * 'has failed' and this function returns false. Note that on the
+         * physical LCD display false willl never be returned.
+         *
+         * The reason this window close exception handling is implemented with
+         * a boolean flag instead of proper exceptions is that Arduino does
+         * not support exceptions, hence we would need to gate the
+         * emulator-specific exception handling code behind conditional
+         * compilation which would make the code ugly and cluttered.
          */
-        virtual void refresh() = 0;
+        virtual bool refresh() = 0;
 };

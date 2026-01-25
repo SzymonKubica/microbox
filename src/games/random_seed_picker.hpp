@@ -30,7 +30,7 @@ std::optional<UserAction> collect_random_seed_picker_config(
 class RandomSeedPicker : public GameExecutor
 {
       public:
-        virtual void
+        virtual std::optional<UserAction>
         game_loop(Platform *p,
                   UserInterfaceCustomization *customization) override;
 

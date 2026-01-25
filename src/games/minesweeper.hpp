@@ -21,7 +21,7 @@ collect_minesweeper_config(Platform *p, MinesweeperConfiguration *game_config,
 class Minesweeper : public GameExecutor
 {
       public:
-        virtual void
+        virtual std::optional<UserAction>
         game_loop(Platform *p,
                   UserInterfaceCustomization *customization) override;
 

@@ -77,7 +77,7 @@ void display_game_won(Display *display,
         display_input_clafification(display);
 }
 
-void pause_until_any_directional_input(
+std::optional<UserAction> pause_until_any_directional_input(
     std::vector<DirectionalController *> *controllers,
     DelayProvider *delay_provider, Display *display)
 {
@@ -88,14 +88,18 @@ void pause_until_any_directional_input(
                 // this ensures that we poll for events while waiting for input
                 // and so if the user tries to close the window, it will get
                 // closed properly.
-                display->refresh();
+                if (!display->refresh()) {
+                        return UserAction::CloseWindow;
+                }
         };
+        return std::nullopt;
 }
 
-void pause_until_input(std::vector<DirectionalController *> *controllers,
-                       std::vector<ActionController *> *action_controllers,
-                       Direction *direction, Action *action,
-                       DelayProvider *delay_provider, Display *display)
+std::optional<UserAction>
+pause_until_input(std::vector<DirectionalController *> *controllers,
+                  std::vector<ActionController *> *action_controllers,
+                  Direction *direction, Action *action,
+                  DelayProvider *delay_provider, Display *display)
 {
         while (!poll_directional_input(controllers, direction) &&
                !poll_action_input(action_controllers, action)) {
@@ -104,6 +108,9 @@ void pause_until_input(std::vector<DirectionalController *> *controllers,
                 // this ensures that we poll for events while waiting for input
                 // and so if the user tries to close the window, it will get
                 // closed properly.
-                display->refresh();
+                if (!display->refresh()) {
+                        return UserAction::CloseWindow;
+                }
         };
+        return std::nullopt;
 }

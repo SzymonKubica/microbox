@@ -121,7 +121,7 @@ void extract_game_config(GameMenuConfiguration *menu_configuration,
             extract_yes_or_no_option(show_help_text.get_current_str_value());
 }
 
-void select_game(Platform *p)
+std::optional<UserAction> select_game(Platform *p)
 {
         GameMenuConfiguration config;
 
@@ -143,8 +143,7 @@ void select_game(Platform *p)
         if (maybe_interrupt.has_value() &&
             maybe_interrupt.value() == UserAction::ShowHelp) {
                 render_wrapped_help_text(p, &customization, help_text);
-                wait_until_green_pressed(p);
-                return;
+                return wait_until_green_pressed(p);
         }
 
         LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
@@ -176,10 +175,10 @@ void select_game(Platform *p)
         if (!executor) {
                 LOG_DEBUG(TAG, "Selected game: %d. Game not implemented yet.",
                           config.game);
-                return;
+                return std::nullopt;
         }
 
-        executor->game_loop(p, &customization);
+        return executor->game_loop(p, &customization);
 }
 
 std::optional<UserAction>
@@ -200,13 +199,15 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
 
         auto maybe_interrupt =
             collect_configuration(p, config, &customization, false, true);
+
         if (maybe_interrupt) {
+                delete config;
+                delete initial_config;
                 return maybe_interrupt;
         }
-
         extract_game_config(configuration, config);
 
-        free_configuration(config);
+        delete config;
         delete initial_config;
         return std::nullopt;
 }

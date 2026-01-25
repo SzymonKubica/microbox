@@ -88,15 +88,17 @@ int main(int argc, char *argv[])
                 // We need to loop forever here as the game loop exits when the
                 // game is over.
                 while (true) {
-                        try {
-                                select_game(&platform);
-                        } catch (std::runtime_error &e) {
-                                LOG_DEBUG(TAG, "Game loop exited: %s",
-                                          e.what());
+                        auto maybe_action = select_game(&platform);
+                        if (maybe_action.has_value() &&
+                            maybe_action.value() == UserAction::CloseWindow) {
+                                LOG_DEBUG(TAG, "User requested to close the "
+                                               "window. Exiting...");
                                 break;
                         }
                 }
         }
+        delete (EmulatedWifiProvider *)wifi_provider;
+        delete (EmulatorHttpClient *)client;
 }
 
 void print_version(char *argv[])

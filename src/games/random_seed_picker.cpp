@@ -1,4 +1,6 @@
 #include <cstring>
+#include <variant>
+#include <cassert>
 
 #include "../common/logging.hpp"
 #include "../common/maths_utils.hpp"
@@ -42,7 +44,7 @@ RandomSeedSelectorAction selector_action_from_str(char *name)
 
 UserAction random_seed_picker_loop(Platform *p,
                                    UserInterfaceCustomization *customization);
-void RandomSeedPicker::game_loop(Platform *p,
+std::optional<UserAction> RandomSeedPicker::game_loop(Platform *p,
                                  UserInterfaceCustomization *customization)
 {
         const char *help_text =
@@ -66,8 +68,11 @@ void RandomSeedPicker::game_loop(Platform *p,
                         render_wrapped_help_text(p, customization, help_text);
                         wait_until_green_pressed(p);
                         break;
+                case UserAction::CloseWindow:
+                        return UserAction::CloseWindow;
                 }
         }
+        return std::nullopt;
 }
 
 UserAction random_seed_picker_loop(Platform *p,
@@ -145,12 +150,22 @@ UserAction random_seed_picker_loop(Platform *p,
                 auto maybe_input = collect_string_input(p, customization,
                                                         "Enter new seed value");
 
-                if (!maybe_input.has_value()) {
-                        LOG_DEBUG(TAG,
-                                  "User cancelled seed modification input.");
-                        break;
+                if (std::holds_alternative<UserAction>(maybe_input)) {
+                        UserAction action = std::get<UserAction>(maybe_input);
+                        assert(action == UserAction::Exit ||
+                               action == UserAction::CloseWindow);
+                        if (action == UserAction::Exit) {
+                                LOG_DEBUG(
+                                    TAG,
+                                    "User cancelled seed modification input.");
+                                break;
+                        }
+                        if (action == UserAction::CloseWindow) {
+                                LOG_DEBUG(TAG, "User closed the window.");
+                                return action;
+                        }
                 }
-                int new_seed = atoi(maybe_input.value());
+                int new_seed = atoi(std::get<char *>(maybe_input));
 
                 srand(new_seed);
                 int offset =

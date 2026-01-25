@@ -90,8 +90,8 @@ void place_bombs(std::vector<std::vector<MinesweeperGridCell>> *grid,
 UserAction minesweeper_loop(Platform *platform,
                             UserInterfaceCustomization *customization);
 
-void Minesweeper::game_loop(Platform *p,
-                            UserInterfaceCustomization *customization)
+std::optional<UserAction>
+Minesweeper::game_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         const char *help_text =
             "Use the joystick to move the caret around the grid. Press green "
@@ -124,8 +124,11 @@ void Minesweeper::game_loop(Platform *p,
                         render_wrapped_help_text(p, customization, help_text);
                         wait_until_green_pressed(p);
                         break;
+                case UserAction::CloseWindow:
+                        return UserAction::CloseWindow;
                 }
         }
+        return std::nullopt;
 }
 UserAction minesweeper_loop(Platform *p,
                             UserInterfaceCustomization *customization)
@@ -149,7 +152,10 @@ UserAction minesweeper_loop(Platform *p,
         draw_game_canvas(p, gd, customization);
         LOG_DEBUG(TAG, "Minesweeper game canvas drawn.");
 
-        p->display->refresh();
+        if (!p->display->refresh()) {
+                delete gd;
+                return UserAction::CloseWindow;
+        }
 
         std::vector<std::vector<MinesweeperGridCell>> grid(
             rows, std::vector<MinesweeperGridCell>(cols));
@@ -176,8 +182,7 @@ UserAction minesweeper_loop(Platform *p,
                !(total_uncovered == cols * rows - config.mines_num)) {
                 Direction dir;
                 Action act;
-                if (poll_directional_input(p->directional_controllers,
-                                                 &dir)) {
+                if (poll_directional_input(p->directional_controllers, &dir)) {
                         LOG_DEBUG(TAG, "Directional input received: %s",
                                   direction_to_str(dir));
 
@@ -315,7 +320,10 @@ UserAction minesweeper_loop(Platform *p,
                 display_game_won(p->display, customization);
                 p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
-        p->display->refresh();
+        if (!p->display->refresh()) {
+                delete gd;
+                return UserAction::CloseWindow;
+        }
         return UserAction::PlayAgain;
 }
 
@@ -532,7 +540,7 @@ collect_minesweeper_config(Platform *p, MinesweeperConfiguration *game_config,
         }
 
         extract_game_config(game_config, config);
-        free_configuration(config);
+        delete config;
         return std::nullopt;
 }
 

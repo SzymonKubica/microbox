@@ -26,6 +26,7 @@ typedef struct SnakeDuelConfiguration {
          * Color of the snake that the keypad player owns.
          */
         Color secondary_player_color;
+        bool enable_ai = true;
 } SnakeDuelConfiguration;
 
 std::optional<UserAction>
@@ -35,7 +36,7 @@ collect_snake_duel_config(Platform *p, SnakeDuelConfiguration *game_config,
 class SnakeDuel : public GameExecutor
 {
       public:
-        virtual void
+        virtual std::optional<UserAction>
         game_loop(Platform *p,
                   UserInterfaceCustomization *customization) override;
 

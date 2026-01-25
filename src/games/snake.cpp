@@ -69,7 +69,7 @@ struct GameLoopState {
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization);
 
-void SnakeGame::game_loop(Platform *p,
+std::optional<UserAction> SnakeGame::game_loop(Platform *p,
                           UserInterfaceCustomization *customization)
 {
         const char *help_text =
@@ -101,13 +101,15 @@ void SnakeGame::game_loop(Platform *p,
                         render_wrapped_help_text(p, customization, help_text);
                         wait_until_green_pressed(p);
                         break;
+                case UserAction::CloseWindow:
+                        return UserAction::CloseWindow;
                 }
         }
+        return std::nullopt;
 }
 
 void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score);
-
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 {
@@ -180,7 +182,10 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // Initial score rendering to complete the game grid first, before the
         // snake gets rendered.
         render_score(0);
-        p->display->refresh();
+        if (!p->display->refresh()) {
+                delete gd;
+                return UserAction::CloseWindow;
+        }
 
         // Initialize game entities
         // The snake starts in the middle of the area pointing to the right.
@@ -198,10 +203,15 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
 
         // Convenience funtion to ensure each short-circuit exit of the
         // loop iteration actually increments the counter and waits a bit.
-        auto increment_iteration_and_wait = [p, &state]() {
+        auto increment_iteration_and_wait =
+            [p, &state, gd]() -> std::optional<UserAction> {
                 state.increment_iteration();
                 p->delay_provider->delay_ms(GAME_LOOP_DELAY);
-                p->display->refresh();
+                if (!p->display->refresh()) {
+                        delete gd;
+                        return UserAction::CloseWindow;
+                }
+                return std::nullopt;
         };
 
         // We let the user change the new snake direction at any point during
@@ -242,7 +252,9 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 // If we are paused or it is not the time to move yet, we finish
                 // processing early.
                 if (state.is_paused || state.is_waiting()) {
-                        increment_iteration_and_wait();
+                        if (increment_iteration_and_wait().has_value()) {
+                                return UserAction::CloseWindow;
+                        };
                         continue;
                 }
 
@@ -269,7 +281,10 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         Point previous_head = *(snake.body.end() - 1);
                         snake.head = previous_head;
                         state.grace_used = true;
-                        increment_iteration_and_wait();
+                        if (increment_iteration_and_wait().has_value()) {
+                                // TODO: deallocate here
+                                return UserAction::CloseWindow;
+                        }
                         continue;
                 }
 
@@ -304,7 +319,10 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         game_score++;
                         render_cell(apple_loc);
                         render_score(game_score);
-                        increment_iteration_and_wait();
+                        if (increment_iteration_and_wait().has_value()) {
+                                // TODO: deallocate here
+                                return UserAction::CloseWindow;
+                        }
                         continue;
                 }
 
@@ -324,10 +342,15 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 set_cell(tail, updated);
                 render_cell(tail);
                 snake.body.erase(tail_iter);
-                increment_iteration_and_wait();
+                if (increment_iteration_and_wait().has_value()) {
+                        // TODO: deallocate here
+                        return UserAction::CloseWindow;
+                }
         }
 
-        p->display->refresh();
+        if (!p->display->refresh()) {
+                return UserAction::CloseWindow;
+        }
         return UserAction::PlayAgain;
 }
 
@@ -375,7 +398,7 @@ collect_snake_config(Platform *p, SnakeConfiguration *game_config,
         }
 
         extract_game_config(game_config, config);
-        free_configuration(config);
+        delete config;
         return std::nullopt;
 }
 

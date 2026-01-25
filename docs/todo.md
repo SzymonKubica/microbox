@@ -24,9 +24,9 @@
   each square separately.
 
 # TODO
+- [_] add resource cleanup logic for 'window closed' exceptions raised by the display
 - [_] optimize memory usage of the path finding to prevent crashes on arduino
 - [_] fix asan memory leaks on quit
-- [_] add ability to kill a snake duel game against AI
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] add snake duel config option to enable/disable AI
@@ -39,6 +39,7 @@
 # In Progress
 
 # Done
+- [x] add ability to kill a snake duel game against AI
 - [x] fix all ASAN issues in the debug build.
 - [x] Add 'AI' functionality to snake duel.
 - [x] Add 'AI' functionality prototype.

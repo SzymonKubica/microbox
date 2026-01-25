@@ -205,7 +205,8 @@ int LcdDisplay::get_width() { return LCD_HEIGHT; };
 
 int LcdDisplay::get_display_corner_radius() { return DISPLAY_CORNER_RADIUS; }
 
-void LcdDisplay::refresh()
+bool LcdDisplay::refresh()
 {
         // This is a no-op as the display does not require refreshing
+        return true;
 }

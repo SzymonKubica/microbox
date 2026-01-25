@@ -15,6 +15,17 @@ enum class UserAction {
         PlayAgain,
         Exit,
         ShowHelp,
+        /**
+         * This action is only meaningful on the emulator. When the user
+         * requests to close the window, it is returned from the display refresh
+         * function. Callers of the refresh are responsible for handling this
+         * case and propagating it upwards. The reason for this is to ensure
+         * that all resources are properly deallocated when the window is
+         * closed. This is to ensure that when running the debug build with
+         * ASAN, it doesn't spit out a wall of errors when the window is closed
+         * saying that a bunch of memory leaks was found.
+         */
+        CloseWindow,
 };
 
 typedef struct ConfigurationOption {
@@ -157,6 +168,29 @@ struct Configuration {
                 this->options = new ConfigurationOption *[this->options_len];
                 populate_options(this, options, 0);
         }
+
+        ~Configuration()
+        {
+                for (int i = 0; i < this->options_len; i++) {
+                        ConfigurationOption *option = this->options[i];
+                        // We use 'new' to allocate arrays of available values,
+                        // hence we need to use the corresponding array delete[]
+                        // to deallocate. Otherwise ASAN complains about it.
+                        switch (option->type) {
+                        case INT:
+                                delete[] (int *)option->available_values;
+                                break;
+                        case STRING:
+                                delete[] (char *)option->available_values;
+                                break;
+                        case COLOR:
+                                delete[] (Color *)option->available_values;
+                                break;
+                        }
+                        delete this->options[i];
+                }
+                delete[] this->options;
+        }
 };
 
 /**
@@ -230,8 +264,6 @@ void populate_color_option_values(ConfigurationOption *value,
 void populate_options(Configuration *config,
                       std::vector<ConfigurationOption *> options,
                       int currently_selected);
-
-void free_configuration(Configuration *config);
 
 /**
  * Maps from 'Yes', 'No' config option values to boolean.

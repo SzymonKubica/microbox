@@ -3,6 +3,7 @@
 #include <string.h>
 #include <cstring>
 #include <algorithm>
+#include <variant>
 #include "wifi.hpp"
 
 #include "../common/logging.hpp"
@@ -47,7 +48,8 @@ WifiAppConfiguration DEFAULT_WIFI_APP_CONFIG;
 UserAction wifi_app_loop(Platform *platform,
                          UserInterfaceCustomization *customization);
 
-void WifiApp::game_loop(Platform *p, UserInterfaceCustomization *customization)
+std::optional<UserAction>
+WifiApp::game_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         const char *help_text =
             "Select 'Modify' action and press next (red) to enter the new "
@@ -67,10 +69,13 @@ void WifiApp::game_loop(Platform *p, UserInterfaceCustomization *customization)
                         LOG_INFO(TAG,
                                  "User requsted help screen for wifi app.");
                         render_wrapped_help_text(p, customization, help_text);
-                        wait_until_green_pressed(p);
-                        break;
+                        return wait_until_green_pressed(p);
+                case UserAction::CloseWindow:
+                        LOG_INFO(TAG, "User closed the window");
+                        return UserAction::CloseWindow;
                 }
         }
+        return std::nullopt;
 }
 
 /**
@@ -79,16 +84,19 @@ void WifiApp::game_loop(Platform *p, UserInterfaceCustomization *customization)
  * responsible for deallocating the char buffers once they are saved in the
  * destination EEPROM location.
  */
-std::optional<std::pair<char *, char *>>
+std::variant<std::pair<char *, char *>, UserAction>
 get_ssid_and_password_input(Platform *p,
                             UserInterfaceCustomization *customization);
 
-void handle_add_new(WifiAppConfiguration &config, Platform *p,
-                    UserInterfaceCustomization *customization);
-void handle_modify(WifiAppConfiguration &config, Platform *p,
-                   UserInterfaceCustomization *customization);
-void handle_connect(WifiAppConfiguration &config, Platform *p,
-                    UserInterfaceCustomization *customization);
+std::optional<UserAction>
+handle_add_new(WifiAppConfiguration &config, Platform *p,
+               UserInterfaceCustomization *customization);
+std::optional<UserAction>
+handle_modify(WifiAppConfiguration &config, Platform *p,
+              UserInterfaceCustomization *customization);
+std::optional<UserAction>
+handle_connect(WifiAppConfiguration &config, Platform *p,
+               UserInterfaceCustomization *customization);
 
 UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
 {
@@ -121,8 +129,9 @@ void save_wifi_app_config(WifiAppConfiguration &config, Platform *p)
         p->persistent_storage->put(offset, config);
 }
 
-void handle_add_new(WifiAppConfiguration &config, Platform *p,
-                    UserInterfaceCustomization *customization)
+std::optional<UserAction>
+handle_add_new(WifiAppConfiguration &config, Platform *p,
+               UserInterfaceCustomization *customization)
 {
         if (config.occupied_config_slots == AVAILABLE_CONFIGURATION_SLOTS) {
                 const char *help_text =
@@ -131,16 +140,25 @@ void handle_add_new(WifiAppConfiguration &config, Platform *p,
                     "existing configurations instead of creating a new "
                     "one.";
                 render_wrapped_help_text(p, customization, help_text);
-                wait_until_green_pressed(p);
-                return;
+                return wait_until_green_pressed(p);
         }
 
         auto maybe_input = get_ssid_and_password_input(p, customization);
-        if (!maybe_input.has_value()) {
-                LOG_DEBUG(TAG, "User cancelled adding new wifi configuration.");
-                return;
+        if (std::holds_alternative<UserAction>(maybe_input)) {
+                UserAction action = std::get<UserAction>(maybe_input);
+                if (action == UserAction::Exit) {
+                        LOG_DEBUG(
+                            TAG,
+                            "User cancelled adding new wifi configuration.");
+                        return std::nullopt;
+                } else if (action == UserAction::CloseWindow) {
+                        // We propoagate close window action upwards so that all
+                        // resources can be freed.
+                        return action;
+                }
         }
-        auto [ssid, password] = maybe_input.value();
+        auto [ssid, password] =
+            std::get<std::pair<char *, char *>>(maybe_input);
 
         int new_idx = config.occupied_config_slots;
         config.occupied_config_slots += 1;
@@ -152,17 +170,28 @@ void handle_add_new(WifiAppConfiguration &config, Platform *p,
         save_wifi_app_config(config, p);
         free(ssid);
         free(password);
+        return std::nullopt;
 }
-void handle_modify(WifiAppConfiguration &config, Platform *p,
-                   UserInterfaceCustomization *customization)
+std::optional<UserAction>
+handle_modify(WifiAppConfiguration &config, Platform *p,
+              UserInterfaceCustomization *customization)
 {
         auto input = get_ssid_and_password_input(p, customization);
 
-        if (!input.has_value()) {
-                LOG_DEBUG(TAG, "User cancelled modifying the configuration.");
-                return;
+        if (std::holds_alternative<UserAction>(input)) {
+                UserAction action = std::get<UserAction>(input);
+                if (action == UserAction::Exit) {
+                        LOG_DEBUG(
+                            TAG,
+                            "User cancelled adding new wifi configuration.");
+                        return std::nullopt;
+                } else if (action == UserAction::CloseWindow) {
+                        // We propoagate close window action upwards so that all
+                        // resources can be freed.
+                        return action;
+                }
         }
-        auto [ssid, password] = input.value();
+        auto [ssid, password] = std::get<std::pair<char *, char *>>(input);
 
         auto &selected_config =
             config.saved_configurations[config.curr_config_idx];
@@ -174,9 +203,11 @@ void handle_modify(WifiAppConfiguration &config, Platform *p,
         save_wifi_app_config(config, p);
         free(ssid);
         free(password);
+        return std::nullopt;
 }
-void handle_connect(WifiAppConfiguration &config, Platform *p,
-                    UserInterfaceCustomization *customization)
+std::optional<UserAction>
+handle_connect(WifiAppConfiguration &config, Platform *p,
+               UserInterfaceCustomization *customization)
 {
 
         const char *connecting_text = "Connecting to Wi-Fi network...";
@@ -203,31 +234,32 @@ void handle_connect(WifiAppConfiguration &config, Platform *p,
                 sprintf(display_text_buffer, "Unable to connect to Wi-Fi!");
         }
         render_wrapped_help_text(p, customization, display_text_buffer);
-        wait_until_green_pressed(p);
+        return wait_until_green_pressed(p);
 }
 
-std::optional<std::pair<char *, char *>>
+std::variant<std::pair<char *, char *>, UserAction>
 get_ssid_and_password_input(Platform *p,
                             UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Getting user input for SSID...");
         auto ssid = collect_string_input(p, customization, "Enter SSID");
-        if (!ssid.has_value()) {
-                LOG_DEBUG(TAG, "User cancelled SSID/password input operation.");
-                return std::nullopt;
+        if (std::holds_alternative<UserAction>(ssid)) {
+                return std::get<UserAction>(ssid);
         }
 
         LOG_DEBUG(TAG, "Getting user input for password...");
         auto password =
             collect_string_input(p, customization, "Enter password");
-        if (!password.has_value()) {
-                LOG_DEBUG(TAG, "User cancelled SSID/password input operation.");
-                return std::nullopt;
+        if (std::holds_alternative<UserAction>(password)) {
+                return std::get<UserAction>(password);
         }
 
-        LOG_DEBUG(TAG, "User entered SSID: %s", ssid.value());
-        LOG_DEBUG(TAG, "User entered password: %s", password.value());
-        return {{ssid.value(), password.value()}};
+        char *ssid_str = std::get<char *>(ssid);
+        char *password_str = std::get<char *>(password);
+        LOG_DEBUG(TAG, "User entered SSID: %s", ssid_str);
+        LOG_DEBUG(TAG, "User entered password: %s", password_str);
+        std::pair<char *, char *> result = {ssid_str, password_str};
+        return result;
 }
 
 WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)

@@ -67,7 +67,7 @@ collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
 class WifiApp : public GameExecutor
 {
       public:
-        virtual void
+        virtual std::optional<UserAction>
         game_loop(Platform *p,
                   UserInterfaceCustomization *customization) override;
 

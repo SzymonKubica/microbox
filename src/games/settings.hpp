@@ -19,7 +19,7 @@ int get_settings_storage_offset(Game game);
 class Settings : public GameExecutor
 {
       public:
-        virtual void
+        virtual std::optional<UserAction>
         game_loop(Platform *p,
                   UserInterfaceCustomization *customization) override;
 };

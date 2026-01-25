@@ -38,7 +38,7 @@ collect_game_of_life_config(Platform *p, GameOfLifeConfiguration *game_config,
 class GameOfLife : public GameExecutor
 {
       public:
-        virtual void
+        virtual std::optional<UserAction>
         game_loop(Platform *p,
                   UserInterfaceCustomization *customization) override;
 

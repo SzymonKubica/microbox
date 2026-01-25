@@ -36,7 +36,7 @@ collect_snake_config(Platform *p, SnakeConfiguration *game_config,
 class SnakeGame : public GameExecutor
 {
       public:
-        virtual void
+        virtual std::optional<UserAction>
         game_loop(Platform *p,
                   UserInterfaceCustomization *customization) override;
 

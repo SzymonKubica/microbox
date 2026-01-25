@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
-#include <memory>
 #include <optional>
 
 #include "snake_common.hpp"
@@ -96,8 +95,8 @@ struct SnakeDuelLoopState {
 UserAction snake_duel_loop(Platform *p,
                            UserInterfaceCustomization *customization);
 
-void SnakeDuel::game_loop(Platform *p,
-                          UserInterfaceCustomization *customization)
+std::optional<UserAction>
+SnakeDuel::game_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         const char *help_text =
             "Use the joystick to control where the snake goes."
@@ -126,10 +125,13 @@ void SnakeDuel::game_loop(Platform *p,
                 case UserAction::ShowHelp:
                         LOG_DEBUG(TAG, "User requested snake help screen");
                         render_wrapped_help_text(p, customization, help_text);
-                        wait_until_green_pressed(p);
-                        break;
+                        return wait_until_green_pressed(p);
+                case UserAction::CloseWindow:
+                        LOG_DEBUG(TAG, "User closed the window");
+                        return UserAction::CloseWindow;
                 }
         }
+        return std::nullopt;
 }
 
 void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
@@ -240,7 +242,10 @@ UserAction snake_duel_loop(Platform *p,
         render_player_1_score(0);
         render_player_2_score(0);
 
-        p->display->refresh();
+        if (!p->display->refresh()) {
+                delete gd;
+                return UserAction::CloseWindow;
+        }
 
         auto primary_color = customization->accent_color;
         auto secondary_color = config.secondary_player_color;
@@ -279,10 +284,15 @@ UserAction snake_duel_loop(Platform *p,
 
         // Convenience funtion to ensure each short-circuit exit of the
         // loop iteration actually increments the counter and waits a bit.
-        auto increment_iteration_and_wait = [p, &state]() {
+        auto increment_iteration_and_wait =
+            [p, &state, gd]() -> std::optional<UserAction> {
                 state.increment_iteration();
                 p->delay_provider->delay_ms(GAME_LOOP_DELAY);
-                p->display->refresh();
+                if (!p->display->refresh()) {
+                        delete gd;
+                        return UserAction::CloseWindow;
+                }
+                return std::nullopt;
         };
 
         // We let the user change the new snake direction at any point during
@@ -309,10 +319,18 @@ UserAction snake_duel_loop(Platform *p,
                         if (!is_opposite(second_dir, second_snake.direction)) {
                                 new_second_snake_direction = second_dir;
                         }
+                        // If the player 1 is dead and we are running in the AI
+                        // mode, we let the player quit early by pressing blue.
+                        if (config.enable_ai && state.is_snake_one_dead &&
+                            act == Action::BLUE) {
+                                return UserAction::PlayAgain;
+                        }
                 }
 
                 if (state.is_waiting()) {
-                        increment_iteration_and_wait();
+                        if (increment_iteration_and_wait().has_value()) {
+                                return UserAction::CloseWindow;
+                        };
                         continue;
                 }
 
@@ -337,10 +355,14 @@ UserAction snake_duel_loop(Platform *p,
                                         second_snake, true);
                 }
 
-                increment_iteration_and_wait();
+                if (increment_iteration_and_wait().has_value()) {
+                        return UserAction::CloseWindow;
+                };
         }
 
-        p->display->refresh();
+        if (!p->display->refresh()) {
+                return UserAction::CloseWindow;
+        }
         return UserAction::PlayAgain;
 }
 
@@ -501,14 +523,22 @@ collect_snake_duel_config(Platform *p, SnakeDuelConfiguration *game_config,
         Configuration *config =
             assemble_snake_duel_configuration(p->persistent_storage);
 
-        auto maybe_interrupt = collect_configuration(p, config, customization);
-        if (maybe_interrupt) {
-                return maybe_interrupt;
-        }
+        try {
+                auto maybe_interrupt =
+                    collect_configuration(p, config, customization);
+                if (maybe_interrupt) {
+                        delete config;
+                        return maybe_interrupt;
+                }
 
-        extract_game_config(game_config, config);
-        free_configuration(config);
-        return std::nullopt;
+                extract_game_config(game_config, config);
+                delete config;
+                return std::nullopt;
+
+        } catch (std::runtime_error e) {
+                delete config;
+                throw e;
+        }
 }
 
 Configuration *assemble_snake_duel_configuration(PersistentStorage *storage)
@@ -533,6 +563,7 @@ Configuration *assemble_snake_duel_configuration(PersistentStorage *storage)
         std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
                                                       secondary_player_color};
 
+        delete initial_config;
         return new Configuration("Snake Duel", options);
 }
 

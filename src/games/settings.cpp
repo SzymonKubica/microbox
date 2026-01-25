@@ -15,14 +15,15 @@
 Configuration *assemble_settings_menu_configuration();
 void extract_menu_setting(Game *selected_game, Configuration *config);
 
-void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
+std::optional<UserAction>
+Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
 {
         // We loop until the user presses the blue button on any of the
         // configuration screens.
         while (true) {
                 Configuration *config = assemble_settings_menu_configuration();
                 if (collect_configuration(p, config, custom))
-                        return;
+                        return std::nullopt;
 
                 Game selected_game;
                 extract_menu_setting(&selected_game, config);
@@ -39,16 +40,18 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                 case Game::MainMenu: {
                         GameMenuConfiguration config;
                         auto action = collect_game_menu_config(p, &config);
-                        if (action && action.value() == UserAction::Exit) {
-                                return;
+                        if (action && action.value() == UserAction::Exit ||
+                            action.value() == UserAction::CloseWindow) {
+                                return action;
                         }
                         storage.put(offset, config);
                 } break;
                 case Game::Clean2048: {
                         Game2048Configuration config;
                         auto action = collect_2048_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit) {
-                                return;
+                        if (action && action.value() == UserAction::Exit ||
+                            action.value() == UserAction::CloseWindow) {
+                                return action;
                         }
                         storage.put(offset, config);
                 } break;
@@ -56,8 +59,9 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         MinesweeperConfiguration config;
                         auto action =
                             collect_minesweeper_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit) {
-                                return;
+                        if (action && action.value() == UserAction::Exit ||
+                            action.value() == UserAction::CloseWindow) {
+                                return action;
                         }
                         storage.put(offset, config);
                 } break;
@@ -65,16 +69,18 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         GameOfLifeConfiguration config;
                         auto action =
                             collect_game_of_life_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit) {
-                                return;
+                        if (action && action.value() == UserAction::Exit ||
+                            action.value() == UserAction::CloseWindow) {
+                                return action;
                         }
                         storage.put(offset, config);
                 } break;
                 case Game::Snake: {
                         SnakeConfiguration config;
                         auto action = collect_snake_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit) {
-                                return;
+                        if (action && action.value() == UserAction::Exit ||
+                            action.value() == UserAction::CloseWindow) {
+                                return action;
                         }
                         storage.put(offset, config);
                 } break;
@@ -82,8 +88,9 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         SnakeDuelConfiguration config;
                         auto action =
                             collect_snake_duel_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit) {
-                                return;
+                        if (action && action.value() == UserAction::Exit ||
+                            action.value() == UserAction::CloseWindow) {
+                                return action;
                         }
                         storage.put(offset, config);
                 } break;
@@ -91,8 +98,9 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         WifiAppConfiguration config;
                         auto action =
                             collect_wifi_app_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit) {
-                                return;
+                        if (action && action.value() == UserAction::Exit ||
+                            action.value() == UserAction::CloseWindow) {
+                                return action;
                         }
                         storage.put(offset, config);
                 } break;
@@ -100,13 +108,14 @@ void Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         RandomSeedPickerConfiguration config;
                         auto action = collect_random_seed_picker_config(
                             p, &config, custom);
-                        if (action && action.value() == UserAction::Exit) {
-                                return;
+                        if (action && action.value() == UserAction::Exit ||
+                            action.value() == UserAction::CloseWindow) {
+                                return action;
                         }
                         storage.put(offset, config);
                 } break;
                 default:
-                        return;
+                        return std::nullopt;
                 }
                 LOG_DEBUG(TAG, "Re-entering the settings collecting loop.");
         }

@@ -150,7 +150,7 @@ load_initial_game_of_life_config(PersistentStorage *storage)
 UserAction game_of_life_loop(Platform *platform,
                              UserInterfaceCustomization *customization);
 
-void GameOfLife::game_loop(Platform *p,
+std::optional<UserAction> GameOfLife::game_loop(Platform *p,
                            UserInterfaceCustomization *customization)
 {
         const char *help_text =
@@ -174,8 +174,11 @@ void GameOfLife::game_loop(Platform *p,
                         render_wrapped_help_text(p, customization, help_text);
                         wait_until_green_pressed(p);
                         break;
+                case UserAction::CloseWindow:
+                        return UserAction::CloseWindow;
                 }
         }
+        return std::nullopt;
 }
 
 void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
@@ -268,8 +271,7 @@ UserAction game_of_life_loop(Platform *p,
                 Action act;
                 GameOfLifeCell curr =
                     get_cell(caret_pos.x, caret_pos.y, gd->cols, grid);
-                if (poll_directional_input(p->directional_controllers,
-                                                 &dir)) {
+                if (poll_directional_input(p->directional_controllers, &dir)) {
                         if (mode == REWIND) {
                                 grid = handle_rewind(
                                     dir, &rewind_buffer, rewind_initial_idx,
@@ -368,7 +370,10 @@ UserAction game_of_life_loop(Platform *p,
                 iteration += 1;
                 iteration %= evolution_period;
                 p->delay_provider->delay_ms(GAME_LOOP_DELAY);
-                p->display->refresh();
+                if (!p->display->refresh()) {
+                        // TODO: deallocate the grid here.
+                        return UserAction::CloseWindow;
+                }
         }
         return UserAction::PlayAgain;
 }
@@ -385,7 +390,7 @@ collect_game_of_life_config(Platform *p, GameOfLifeConfiguration *game_config,
         }
 
         extract_game_config(game_config, config);
-        free_configuration(config);
+        delete config;
         return std::nullopt;
 }
 

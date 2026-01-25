@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <map>
+#include <variant>
 #include "user_interface_customization.hpp"
 #include "configuration.hpp"
 #include "platform/interface/display.hpp"
@@ -13,7 +14,7 @@ void render_config_menu(Display *display, Configuration *config,
                         UserInterfaceCustomization *customization,
                         bool should_render_logo = false);
 
-std::optional<char *>
+std::variant<char *, UserAction>
 collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                      const char *input_prompt);
 void render_logo(Display *display, UserInterfaceCustomization *customization,
@@ -27,7 +28,7 @@ void render_wrapped_help_text(Platform *p,
                               const char *help_text);
 void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
                          const char *text);
-void wait_until_green_pressed(Platform *p);
-Action wait_until_action_input(Platform *p);
+std::optional<UserAction> wait_until_green_pressed(Platform *p);
+std::variant<Action, UserAction> wait_until_action_input(Platform *p);
 
 ConfigurationDiff *empty_diff();

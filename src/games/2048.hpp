@@ -64,7 +64,7 @@ void take_turn(GameState *gs, int direction);
 class Clean2048 : public GameExecutor
 {
       public:
-        virtual void
+        virtual std::optional<UserAction>
         game_loop(Platform *p,
                   UserInterfaceCustomization *customization) override;
 

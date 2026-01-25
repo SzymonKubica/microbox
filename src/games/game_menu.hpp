@@ -29,7 +29,7 @@ extern Game game_from_string(const char *name);
 
 extern const char *game_to_string(Game game);
 
-void select_game(Platform *p);
+std::optional<UserAction> select_game(Platform *p);
 
 /**
  * Similar to `collect_configuration` from `configuration.hpp`, it returns true

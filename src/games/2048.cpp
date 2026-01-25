@@ -1,3 +1,4 @@
+#include <optional>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -70,7 +71,7 @@ void free_game_state(GameState *gs);
 UserAction enter_2048_loop(Platform *platform,
                            UserInterfaceCustomization *customization);
 
-void Clean2048::game_loop(Platform *p,
+std::optional<UserAction> Clean2048::game_loop(Platform *p,
                           UserInterfaceCustomization *customization)
 {
         const char *help_text =
@@ -92,8 +93,11 @@ void Clean2048::game_loop(Platform *p,
                         render_wrapped_help_text(p, customization, help_text);
                         wait_until_green_pressed(p);
                         break;
+                case UserAction::CloseWindow:
+                        return UserAction::CloseWindow;
                 }
         }
+        return std::nullopt;
 }
 
 GameState *load_saved_game_state(Game2048Configuration config)
@@ -149,7 +153,12 @@ UserAction enter_2048_loop(Platform *p,
                     "new game.";
                 render_wrapped_text(p, customization, help_text);
                 auto action = wait_until_action_input(p);
-                if (action == Action::GREEN) {
+                if (std::holds_alternative<UserAction>(action)) {
+                        assert(std::get<UserAction>(action) ==
+                               UserAction::CloseWindow);
+                        return UserAction::CloseWindow;
+                }
+                if (std::get<Action>(action) == Action::GREEN) {
                         state = load_saved_game_state(config);
                 } else {
                         state = initialize_game_state(config.grid_size,
@@ -162,7 +171,10 @@ UserAction enter_2048_loop(Platform *p,
 
         draw_game_canvas(p->display, state, customization);
         update_game_grid(p->display, state, customization);
-        p->display->refresh();
+
+        if (!p->display->refresh()) {
+                return UserAction::CloseWindow;
+        }
 
         while (!(is_game_over(state) || is_game_finished(state))) {
                 Direction dir;
@@ -184,7 +196,13 @@ UserAction enter_2048_loop(Platform *p,
                                 render_wrapped_text(p, customization,
                                                     help_text);
                                 auto action = wait_until_action_input(p);
-                                if (action == Action::GREEN) {
+                                if (std::holds_alternative<UserAction>(
+                                        action)) {
+                                        assert(std::get<UserAction>(action) ==
+                                               UserAction::CloseWindow);
+                                        return UserAction::CloseWindow;
+                                }
+                                if (std::get<Action>(action) == Action::GREEN) {
                                         save_game_state(p, config, state);
                                 }
                                 free_game_state(state);
@@ -194,7 +212,10 @@ UserAction enter_2048_loop(Platform *p,
                         }
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
-                p->display->refresh();
+                if (!p->display->refresh()) {
+                        free_game_state(state);
+                        return UserAction::CloseWindow;
+                }
         }
 
         if (is_game_over(state)) {
