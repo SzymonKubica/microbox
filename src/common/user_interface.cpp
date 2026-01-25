@@ -187,15 +187,18 @@ void render_config_bar_centered(Display *display, int y_start,
 
                 } else {
 
-#ifdef EMULATOR
                         // We need to clear the background in black so that it
-                        // is the previous text is erased. Note that this is
-                        // only required on the emulator as the actual LCD
-                        // display always clears the background of the text.
+                        // is the previous text is erased. Note that on the
+                        // emulator the border needs to be 0 else it will overflow
+                        // the config bar border.
+#ifdef EMULATOR
+                        int border = 0;
+#else
+                        int border = 1;
+#endif
                         display->draw_rectangle(bar_name_str_start,
                                                 option_text_max_len * fw,
-                                                fh + v_padding, Black, 0, true);
-#endif
+                                                fh + v_padding, Black, border, true);
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
                         display->draw_string(bar_name_str_start,
@@ -483,14 +486,13 @@ void render_config_menu(Display *display, Configuration *config,
         // ensure that both the option names and their values are always re-
         // rendered.
         bool update_option_names = false;
-        bool update_option_values = false;
         // Tells us for each 'physically rendered' bar which config option
         // is supposed to go there. Note that if there is less than 5 bars,
         // this is an identity map.
         std::map<int, int> bar_idx_to_option_idx;
         if (config->options_len > MAX_RENDERED_OPTION_NUM) {
-                update_option_names = true;
-                update_option_values = true;
+                update_option_names = diff->currently_edited_option !=
+                                      diff->previously_edited_option;
                 // We iterate and wrap
                 int curr = config->curr_selected_option;
                 int prev = mathematical_modulo(curr - 1, config->options_len);
@@ -513,7 +515,8 @@ void render_config_menu(Display *display, Configuration *config,
                 int bar_y = bar_positions[i];
                 char option_value_buff[max_option_value_length + 1];
 
-                ConfigurationOption *value = config->options[bar_idx_to_option_idx[i]];
+                ConfigurationOption *value =
+                    config->options[bar_idx_to_option_idx[i]];
                 const char *option_text = value->name;
 
                 switch (value->type) {
@@ -568,10 +571,10 @@ void render_config_menu(Display *display, Configuration *config,
                     display, bar_y, max_option_name_length,
                     max_option_value_length, option_text, option_value_buff,
                     text_update_only,
-                    update_option_values ||
+                    update_option_names ||
                         std::find(diff->modified_options.begin(),
                                   diff->modified_options.end(),
-                                  i) != diff->modified_options.end(),
+                                 bar_idx_to_option_idx[i]) != diff->modified_options.end(),
                     update_option_names, customization);
                 LOG_DEBUG(TAG,
                           "Rendered config bar %d with option text '%s' and "

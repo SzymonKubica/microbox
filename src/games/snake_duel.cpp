@@ -324,6 +324,8 @@ UserAction snake_duel_loop(Platform *p,
                         if (config.enable_ai && state.is_snake_one_dead &&
                             act == Action::BLUE) {
                                 delete gd;
+                                p->delay_provider->delay_ms(
+                                    MOVE_REGISTERED_DELAY);
                                 return UserAction::PlayAgain;
                         }
                 }
@@ -343,12 +345,15 @@ UserAction snake_duel_loop(Platform *p,
                                         snake, false);
                 }
                 if (!state.is_snake_two_dead) {
-                        auto direction =
-                            find_next_step_towards_apple(second_snake, grid);
-                        if (direction.has_value() &&
-                            !is_opposite(direction.value(),
-                                         second_snake.direction)) {
-                                new_second_snake_direction = direction.value();
+                        if (config.enable_ai) {
+                                auto direction = find_next_step_towards_apple(
+                                    second_snake, grid);
+                                if (direction.has_value() &&
+                                    !is_opposite(direction.value(),
+                                                 second_snake.direction)) {
+                                        new_second_snake_direction =
+                                            direction.value();
+                                }
                         }
 
                         second_snake.direction = new_second_snake_direction;
