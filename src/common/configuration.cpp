@@ -270,7 +270,20 @@ void free_configuration(Configuration *config)
 {
         for (int i = 0; i < config->options_len; i++) {
                 ConfigurationOption *option = config->options[i];
-                free(option->available_values);
+                // We use 'new' to allocate arrays of available values,
+                // hence we need to use the corresponding array delete[] to
+                // deallocate. Otherwise ASAN complains about it.
+                switch (option->type) {
+                case INT:
+                        delete[] (int *)option->available_values;
+                        break;
+                case STRING:
+                        delete[] (char *)option->available_values;
+                        break;
+                case COLOR:
+                        delete[] (Color *)option->available_values;
+                        break;
+                }
                 delete config->options[i];
         }
         delete config;
@@ -344,8 +357,7 @@ collect_configuration(Platform *p, Configuration *config,
                                 break;
                         }
                 }
-                if (poll_directional_input(p->directional_controllers,
-                                                 &dir)) {
+                if (poll_directional_input(p->directional_controllers, &dir)) {
                         switch (dir) {
                         case DOWN:
                                 switch_edited_config_option_down(config, diff);
@@ -368,7 +380,7 @@ collect_configuration(Platform *p, Configuration *config,
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
                 p->display->refresh();
-                free(diff);
+                delete diff;
         }
         return std::nullopt;
 }

@@ -40,8 +40,8 @@ void render_text_bar_centered(Display *display, int y_start,
                               int font_width = FONT_WIDTH,
                               FontSize font_size = Size16);
 void render_circle_selector(Display *display, bool already_rendered, int x_axis,
-                            int *y_positions, int y_positions_len,
-                            int prev_pos_idx, int curr_pos_idx, int radius,
+                            std::vector<int> y_positions, int prev_pos_idx,
+                            int curr_pos_idx, int radius,
                             Color bg_color = Black,
                             Color circle_color = DarkBlue);
 int calculate_section_spacing(int display_height, int config_bar_num,
@@ -313,13 +313,13 @@ void render_text_bar_centered(Display *display, int y_start,
  * error with invalid array access.
  */
 void render_circle_selector(Display *display, bool already_rendered, int x_axis,
-                            int *y_positions, int y_positions_len,
-                            int prev_pos_idx, int curr_pos_idx, int radius,
-                            Color bg_color, Color circle_color)
+                            std::vector<int> y_positions, int prev_pos_idx,
+                            int curr_pos_idx, int radius, Color bg_color,
+                            Color circle_color)
 {
         // We ignore the array overflow.
-        if (prev_pos_idx >= y_positions_len ||
-            curr_pos_idx >= y_positions_len) {
+        if (prev_pos_idx >= y_positions.size() ||
+            curr_pos_idx >= y_positions.size()) {
                 return;
         }
         if (!already_rendered || prev_pos_idx != curr_pos_idx) {
@@ -460,7 +460,10 @@ void render_config_menu(Display *display, Configuration *config,
                 case INT: {
                         int selected_value = static_cast<int *>(
                             value.available_values)[value.currently_selected];
-                        char format_string[4];
+                        // We need to make the format string buffer a bit larger
+                        // in case the max_option_value_length has more than 1
+                        // digit.
+                        char format_string[5];
                         sprintf(format_string, "%%%dd",
                                 max_option_value_length);
                         sprintf(option_value_buff, format_string,
@@ -527,13 +530,13 @@ void render_config_menu(Display *display, Configuration *config,
         int circle_x = left_margin + bar_width + right_margin / 2;
         int v_padding = fh / 2;
         int circle_ys_len = bars_num;
-        int circle_ys[circle_ys_len];
+        std::vector<int> circle_ys;
         for (int i = 0; i < circle_ys_len; i++) {
-                circle_ys[i] = bar_positions[i] + v_padding;
+                circle_ys.push_back(bar_positions[i] + v_padding);
         }
 
         render_circle_selector(
-            display, text_update_only, circle_x, circle_ys, circle_ys_len,
+            display, text_update_only, circle_x, circle_ys,
             diff->previously_edited_option, diff->currently_edited_option,
             SELECTOR_CIRCLE_RADIUS, Black, customization->accent_color);
 
@@ -1029,8 +1032,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
         while (!input_confirmed) {
                 Direction dir;
                 Action act;
-                if (poll_directional_input(p->directional_controllers,
-                                                 &dir)) {
+                if (poll_directional_input(p->directional_controllers, &dir)) {
                         render_character_at_location(cursor, White,
                                                      curr_char_map);
                         translate_toroidal_array(&cursor, dir,

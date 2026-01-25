@@ -207,7 +207,7 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
         extract_game_config(configuration, config);
 
         free_configuration(config);
-        free(initial_config);
+        delete initial_config;
         return std::nullopt;
 }
 

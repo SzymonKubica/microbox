@@ -136,17 +136,28 @@ void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
                        int score_text_end_location, int score,
                        bool is_secondary = false);
 
+/**
+ * Given the snake (its current head location) and the current state of the
+ * grid it finds the direction where the snake needs to turn in this moment
+ * to get too the apple.
+ *
+ * This works by finding the path to the apple and then looking at the
+ * displacement vector between the current location and the next step on the
+ * path towards the apple.
+ *
+ * Uses DFS with a heuristic to traverse nodes that are closer to the apple with
+ * respect to manhattan distance.
+ */
 std::optional<Direction>
-find_next_direction_on_path_to_apple(Snake &snake, Point &apple,
-                                     std::vector<std::vector<Cell>> &grid);
+find_next_step_towards_apple(Snake &snake,
+                             std::vector<std::vector<Cell>> &grid);
 void take_snake_step(
     Platform *p, UserInterfaceCustomization *customization,
     SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
     std::function<void(Point &point, Color color)> &render_cell,
-    SnakeDuelLoopState &state, ColoredSnake &snake,
-    std::shared_ptr<Point> apple_location, bool is_secondary);
+    SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary);
 
 UserAction snake_duel_loop(Platform *p,
                            UserInterfaceCustomization *customization)
@@ -261,12 +272,6 @@ UserAction snake_duel_loop(Platform *p,
 
         Point apple_location = spawn_apple(&grid);
 
-        // We initialize this pointer to the current apple location to
-        // track where the apple is at every iteration of the game. This is
-        // needed for the 'AI' mode where the second snake picks the shortest
-        // path to the apple.
-        std::shared_ptr<Point> current_apple_location =
-            std::shared_ptr<Point>(new Point{apple_location.x, apple_location.y});
         // Here the color doesn't matter as apples are always red.
         render_cell(apple_location, primary_color);
 
@@ -315,11 +320,11 @@ UserAction snake_duel_loop(Platform *p,
                         snake.direction = new_snake_direction;
                         take_snake_step(p, customization, config, gd, score_end,
                                         grid, render_head, render_cell, state,
-                                        snake, current_apple_location, false);
+                                        snake, false);
                 }
                 if (!state.is_snake_two_dead) {
-                        auto direction = find_next_direction_on_path_to_apple(
-                            second_snake, *current_apple_location, grid);
+                        auto direction =
+                            find_next_step_towards_apple(second_snake, grid);
                         if (direction.has_value() &&
                             !is_opposite(direction.value(),
                                          second_snake.direction)) {
@@ -329,8 +334,7 @@ UserAction snake_duel_loop(Platform *p,
                         second_snake.direction = new_second_snake_direction;
                         take_snake_step(p, customization, config, gd, score_end,
                                         grid, render_head, render_cell, state,
-                                        second_snake, current_apple_location,
-                                        true);
+                                        second_snake, true);
                 }
 
                 increment_iteration_and_wait();
@@ -346,8 +350,7 @@ void take_snake_step(
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
     std::function<void(Point &point, Color color)> &render_cell,
-    SnakeDuelLoopState &state, ColoredSnake &snake,
-    std::shared_ptr<Point> current_apple_location, bool is_secondary)
+    SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary)
 {
 
         // Performs a lookup of the grid value without explicit array indexing.
@@ -425,10 +428,6 @@ void take_snake_step(
                 // we erase the last segment of the snake (the else branch). We
                 // then spawn a new apple.
                 Point apple_location = spawn_apple(&grid);
-                // Update the apple location after it was consumed so that
-                // the 'AI' snake knows where to go.
-                current_apple_location->x = apple_location.x;
-                current_apple_location->y = apple_location.y;
                 // Here the color doesn't matter as apples are always red.
                 render_cell(apple_location, snake.color);
                 (*game_score)++;
@@ -608,16 +607,15 @@ find_path(Point &start, Point &end,
           std::vector<std::vector<bool>> &visited_or_inaccessible);
 
 std::optional<Direction>
-find_next_direction_on_path_to_apple(Snake &snake, Point &apple,
-                                     std::vector<std::vector<Cell>> &grid)
+find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
 {
 
         std::vector<std::vector<bool>> inaccessible(
             grid.size(), std::vector<bool>(grid[0].size(), false));
 
-        LOG_DEBUG(TAG, "Apple {x: %d, y: %d}", apple.x, apple.y);
+        Point apple;
 
-        // Mark all cells where we cannot go.
+        // Mark all cells where we cannot go and find the apple.
         for (int y = 0; y < grid.size(); ++y) {
                 for (int x = 0; x < grid[0].size(); ++x) {
                         if (grid[y][x] == Cell::Apple) {
@@ -627,6 +625,8 @@ find_next_direction_on_path_to_apple(Snake &snake, Point &apple,
                         }
                 }
         }
+
+        LOG_DEBUG(TAG, "Apple {x: %d, y: %d}", apple.x, apple.y);
 
         Point curr = snake.head;
         auto path = find_path(curr, apple, inaccessible);
