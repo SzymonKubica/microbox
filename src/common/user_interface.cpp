@@ -454,13 +454,13 @@ void render_config_menu(Display *display, Configuration *config,
                 int bar_y = bar_positions[i];
                 char option_value_buff[max_option_value_length + 1];
 
-                ConfigurationOption value = *config->options[i];
-                const char *option_text = value.name;
+                ConfigurationOption *value = config->options[i];
+                const char *option_text = value->name;
 
-                switch (value.type) {
+                switch (value->type) {
                 case INT: {
                         int selected_value = static_cast<int *>(
-                            value.available_values)[value.currently_selected];
+                            value->available_values)[value->currently_selected];
                         // We need to make the format string buffer a bit larger
                         // in case the max_option_value_length has more than 1
                         // digit.
@@ -473,7 +473,7 @@ void render_config_menu(Display *display, Configuration *config,
                 }
                 case STRING: {
                         char *selected_value = static_cast<char **>(
-                            value.available_values)[value.currently_selected];
+                            value->available_values)[value->currently_selected];
                         if (strlen(selected_value) > max_option_value_length) {
                                 // We need to truncate the string to fit
                                 // in the value cell.
@@ -496,7 +496,7 @@ void render_config_menu(Display *display, Configuration *config,
                 }
                 case COLOR: {
                         Color selected_value = static_cast<Color *>(
-                            value.available_values)[value.currently_selected];
+                            value->available_values)[value->currently_selected];
                         char format_string[10];
                         sprintf(format_string, "%%%ds",
                                 max_option_value_length);

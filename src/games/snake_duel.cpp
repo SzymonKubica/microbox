@@ -523,22 +523,15 @@ collect_snake_duel_config(Platform *p, SnakeDuelConfiguration *game_config,
         Configuration *config =
             assemble_snake_duel_configuration(p->persistent_storage);
 
-        try {
-                auto maybe_interrupt =
-                    collect_configuration(p, config, customization);
-                if (maybe_interrupt) {
-                        delete config;
-                        return maybe_interrupt;
-                }
-
-                extract_game_config(game_config, config);
+        auto maybe_interrupt = collect_configuration(p, config, customization);
+        if (maybe_interrupt) {
                 delete config;
-                return std::nullopt;
-
-        } catch (std::runtime_error e) {
-                delete config;
-                throw e;
+                return maybe_interrupt;
         }
+
+        extract_game_config(game_config, config);
+        delete config;
+        return std::nullopt;
 }
 
 Configuration *assemble_snake_duel_configuration(PersistentStorage *storage)
@@ -610,20 +603,24 @@ load_initial_snake_duel_config(PersistentStorage *storage)
 void extract_game_config(SnakeDuelConfiguration *game_config,
                          Configuration *config)
 {
-        ConfigurationOption speed = *config->options[0];
-        ConfigurationOption enable_poop = *config->options[1];
-        ConfigurationOption allow_grace = *config->options[2];
-        ConfigurationOption secondary_player_color = *config->options[3];
+        // It is important that we don't copy any of the ConfigurationOption as
+        // they internally contain pointers to their option values and running
+        // destructor at the end would result in a double-free.
+        ConfigurationOption *speed = config->options[0];
+        ConfigurationOption *enable_poop = config->options[1];
+        ConfigurationOption *allow_grace = config->options[2];
+        ConfigurationOption *secondary_player_color = config->options[3];
 
-        auto yes_or_no_option_to_bool = [](ConfigurationOption option) {
-                return extract_yes_or_no_option(option.get_current_str_value());
+        auto yes_or_no_option_to_bool = [](ConfigurationOption *option) {
+                return extract_yes_or_no_option(
+                    option->get_current_str_value());
         };
 
-        game_config->speed = speed.get_curr_int_value();
+        game_config->speed = speed->get_curr_int_value();
         game_config->enable_poop = yes_or_no_option_to_bool(enable_poop);
         game_config->allow_grace = yes_or_no_option_to_bool(allow_grace);
         game_config->secondary_player_color =
-            secondary_player_color.get_current_color_value();
+            secondary_player_color->get_current_color_value();
 }
 
 /* Functions responsible for 'AI' snake steering follow below */

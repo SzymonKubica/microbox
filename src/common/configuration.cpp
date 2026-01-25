@@ -296,7 +296,7 @@ collect_configuration(Platform *p, Configuration *config,
                 Direction dir;
                 // We get a fresh, empty diff during each iteration to avoid
                 // option value text rerendering when they are not modified.
-                ConfigurationDiff *diff = new ConfigurationDiff;
+                ConfigurationDiff diff = ConfigurationDiff{};
                 bool confirmation_bar_selected =
                     config->curr_selected_option == config->options_len;
 
@@ -315,12 +315,11 @@ collect_configuration(Platform *p, Configuration *config,
                                  move_registered_delay to ensure that the UI is
                                  snappy.
                                  */
-                                increment_current_option_value(config, diff);
-                                render_config_menu(p->display, config, diff,
+                                increment_current_option_value(config, &diff);
+                                render_config_menu(p->display, config, &diff,
                                                    true, customization,
                                                    should_render_logo);
                                 move_registered_delay();
-                                delete diff;
                                 continue;
                         }
                         move_registered_delay();
@@ -337,31 +336,28 @@ collect_configuration(Platform *p, Configuration *config,
                 if (poll_directional_input(p->directional_controllers, &dir)) {
                         switch (dir) {
                         case DOWN:
-                                switch_edited_config_option_down(config, diff);
+                                switch_edited_config_option_down(config, &diff);
                                 break;
                         case UP:
-                                switch_edited_config_option_up(config, diff);
+                                switch_edited_config_option_up(config, &diff);
                                 break;
                         case LEFT:
-                                decrement_current_option_value(config, diff);
+                                decrement_current_option_value(config, &diff);
                                 break;
                         case RIGHT:
-                                increment_current_option_value(config, diff);
+                                increment_current_option_value(config, &diff);
                                 break;
                         }
 
-                        render_config_menu(p->display, config, diff, true,
+                        render_config_menu(p->display, config, &diff, true,
                                            customization, should_render_logo);
 
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
                 if (!p->display->refresh()) {
-                        delete config;
-                        delete diff;
                         return UserAction::CloseWindow;
                 }
-                delete diff;
         }
         return std::nullopt;
 }
@@ -377,4 +373,16 @@ bool extract_yes_or_no_option(const char *value)
 const char *map_boolean_to_yes_or_no(bool value)
 {
         return value ? "Yes" : "No";
+}
+
+Configuration::~Configuration()
+{
+        // We need to free each of the options individually and then free the
+        // entire container. This is because the container stores pointers,
+        // hence the destructor is not automatically invoked on each of the
+        // options pointed to by the pointers.
+        for (int i = 0; i < options_len; i++) {
+                delete options[i];
+        }
+        delete[] options;
 }

@@ -8,4 +8,5 @@ class GameExecutor
       public:
         virtual std::optional<UserAction>
         game_loop(Platform *p, UserInterfaceCustomization *customization) = 0;
+        virtual ~GameExecutor() {}
 };

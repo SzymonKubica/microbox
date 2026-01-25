@@ -106,19 +106,19 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
 void extract_game_config(GameMenuConfiguration *menu_configuration,
                          Configuration *config)
 {
-        ConfigurationOption game_option = *config->options[0];
-        ConfigurationOption accent_color = *config->options[1];
-        ConfigurationOption rendering_mode = *config->options[2];
-        ConfigurationOption show_help_text = *config->options[3];
+        ConfigurationOption *game_option = config->options[0];
+        ConfigurationOption *accent_color = config->options[1];
+        ConfigurationOption *rendering_mode = config->options[2];
+        ConfigurationOption *show_help_text = config->options[3];
 
         menu_configuration->game =
-            game_from_string(game_option.get_current_str_value());
+            game_from_string(game_option->get_current_str_value());
         menu_configuration->accent_color =
-            accent_color.get_current_color_value();
+            accent_color->get_current_color_value();
         menu_configuration->rendering_mode =
-            rendering_mode_from_str(rendering_mode.get_current_str_value());
+            rendering_mode_from_str(rendering_mode->get_current_str_value());
         menu_configuration->show_help_text =
-            extract_yes_or_no_option(show_help_text.get_current_str_value());
+            extract_yes_or_no_option(show_help_text->get_current_str_value());
 }
 
 std::optional<UserAction> select_game(Platform *p)
@@ -144,6 +144,11 @@ std::optional<UserAction> select_game(Platform *p)
             maybe_interrupt.value() == UserAction::ShowHelp) {
                 render_wrapped_help_text(p, &customization, help_text);
                 return wait_until_green_pressed(p);
+        }
+
+        // This is needed to handle the 'close window' action.
+        if (maybe_interrupt.has_value()) {
+                return maybe_interrupt;
         }
 
         LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
@@ -178,7 +183,14 @@ std::optional<UserAction> select_game(Platform *p)
                 return std::nullopt;
         }
 
-        return executor->game_loop(p, &customization);
+        auto maybe_action = executor->game_loop(p, &customization);
+
+        if (maybe_action.has_value() &&
+            maybe_action.value() == UserAction::CloseWindow) {
+                delete executor;
+                return UserAction::CloseWindow;
+        }
+        return std::nullopt;
 }
 
 std::optional<UserAction>
@@ -206,7 +218,6 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
                 return maybe_interrupt;
         }
         extract_game_config(configuration, config);
-
         delete config;
         delete initial_config;
         return std::nullopt;

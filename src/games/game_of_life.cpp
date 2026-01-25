@@ -150,8 +150,8 @@ load_initial_game_of_life_config(PersistentStorage *storage)
 UserAction game_of_life_loop(Platform *platform,
                              UserInterfaceCustomization *customization);
 
-std::optional<UserAction> GameOfLife::game_loop(Platform *p,
-                           UserInterfaceCustomization *customization)
+std::optional<UserAction>
+GameOfLife::game_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         const char *help_text =
             "Use the joystick to move the caret around the grid. Press green "
