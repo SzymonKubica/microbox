@@ -179,6 +179,18 @@ void render_config_bar_centered(Display *display, int y_start,
                 Point bar_name_str_start = {.x = left_margin, .y = y_start};
 
                 if (customization->rendering_mode == Detailed) {
+
+                        if (update_option_name) {
+#ifdef EMULATOR
+                                int border = 0;
+#else
+                                int border = 1;
+#endif
+                                display->draw_rectangle(
+                                    bar_name_str_start,
+                                    option_text_max_len * fw, fh + v_padding / 2 - 1,
+                                    accent_color, border, true);
+                        }
                         // Draw the actual name of the config bar.
                         display->draw_string(
                             bar_name_str_start, (char *)option_text, Size16,
@@ -189,16 +201,16 @@ void render_config_bar_centered(Display *display, int y_start,
 
                         // We need to clear the background in black so that it
                         // is the previous text is erased. Note that on the
-                        // emulator the border needs to be 0 else it will overflow
-                        // the config bar border.
+                        // emulator the border needs to be 0 else it will
+                        // overflow the config bar border.
 #ifdef EMULATOR
                         int border = 0;
 #else
                         int border = 1;
 #endif
-                        display->draw_rectangle(bar_name_str_start,
-                                                option_text_max_len * fw,
-                                                fh + v_padding, Black, border, true);
+                        display->draw_rectangle(
+                            bar_name_str_start, option_text_max_len * fw,
+                            fh + v_padding, Black, border, true);
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
                         display->draw_string(bar_name_str_start,
@@ -574,7 +586,8 @@ void render_config_menu(Display *display, Configuration *config,
                     update_option_names ||
                         std::find(diff->modified_options.begin(),
                                   diff->modified_options.end(),
-                                 bar_idx_to_option_idx[i]) != diff->modified_options.end(),
+                                  bar_idx_to_option_idx[i]) !=
+                            diff->modified_options.end(),
                     update_option_names, customization);
                 LOG_DEBUG(TAG,
                           "Rendered config bar %d with option text '%s' and "
