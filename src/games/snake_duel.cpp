@@ -323,12 +323,14 @@ UserAction snake_duel_loop(Platform *p,
                         // mode, we let the player quit early by pressing blue.
                         if (config.enable_ai && state.is_snake_one_dead &&
                             act == Action::BLUE) {
+                                delete gd;
                                 return UserAction::PlayAgain;
                         }
                 }
 
                 if (state.is_waiting()) {
                         if (increment_iteration_and_wait().has_value()) {
+                                delete gd;
                                 return UserAction::CloseWindow;
                         };
                         continue;
@@ -356,11 +358,13 @@ UserAction snake_duel_loop(Platform *p,
                 }
 
                 if (increment_iteration_and_wait().has_value()) {
+                        delete gd;
                         return UserAction::CloseWindow;
                 };
         }
 
         if (!p->display->refresh()) {
+                delete gd;
                 return UserAction::CloseWindow;
         }
         return UserAction::PlayAgain;
