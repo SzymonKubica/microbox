@@ -71,8 +71,8 @@ void free_game_state(GameState *gs);
 UserAction enter_2048_loop(Platform *platform,
                            UserInterfaceCustomization *customization);
 
-std::optional<UserAction> Clean2048::game_loop(Platform *p,
-                          UserInterfaceCustomization *customization)
+std::optional<UserAction>
+Clean2048::game_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         const char *help_text =
             "Use the joystick to shift the tiles around the grid. The "
@@ -173,6 +173,7 @@ UserAction enter_2048_loop(Platform *p,
         update_game_grid(p->display, state, customization);
 
         if (!p->display->refresh()) {
+                free_game_state(state);
                 return UserAction::CloseWindow;
         }
 
@@ -283,9 +284,6 @@ Configuration *
 assemble_2048_configuration(PersistentStorage *storage,
                             Game2048Configuration *initial_config)
 {
-        if (initial_config == nullptr) {
-                initial_config = load_initial_config(storage);
-        }
         // Initialize the first config option: game gridsize
         auto *grid_size = ConfigurationOption::of_integers(
             "Grid size", {3, 4, 5}, initial_config->grid_size);
@@ -330,10 +328,14 @@ collect_2048_config(Platform *p, Game2048Configuration *game_config,
         auto maybe_interrupt_action =
             collect_configuration(p, config, customization);
         if (maybe_interrupt_action) {
+                delete config;
+                delete initial_config;
                 return maybe_interrupt_action;
         }
 
         extract_game_config(game_config, initial_config, config);
+        delete config;
+        delete initial_config;
         return std::nullopt;
 }
 
@@ -356,7 +358,8 @@ void free_game_grid(int **grid, int size);
 void free_game_state(GameState *gs)
 {
         free_game_grid(gs->grid, gs->grid_size);
-        free(gs);
+        free_game_grid(gs->old_grid, gs->grid_size);
+        delete gs;
 }
 
 // Allocates a new game grid as a two-dimensional array
@@ -461,6 +464,7 @@ static void merge_row(GameState *gs, int i, int direction)
 
         if (curr == size) {
                 // All tiles are empty.
+                free(merged_row);
                 return;
         }
 
@@ -769,6 +773,7 @@ static void draw_game_grid(Display *display, int grid_size,
                         cell_renderer(start, gd->cell_width, gd->cell_height);
                 }
         }
+        delete gd;
 }
 
 static void str_replace(char *str, const char *oldWord, const char *newWord);
@@ -859,7 +864,7 @@ void update_game_grid(Display *display, GameState *gs,
                         }
                 }
         }
-        free(gd);
+        delete gd;
 }
 
 static int number_string_length(int number)

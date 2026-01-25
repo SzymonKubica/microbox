@@ -69,8 +69,8 @@ struct GameLoopState {
 
 UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization);
 
-std::optional<UserAction> SnakeGame::game_loop(Platform *p,
-                          UserInterfaceCustomization *customization)
+std::optional<UserAction>
+SnakeGame::game_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         const char *help_text =
             "Use the joystick to control where the snake goes."
@@ -343,14 +343,16 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 render_cell(tail);
                 snake.body.erase(tail_iter);
                 if (increment_iteration_and_wait().has_value()) {
-                        // TODO: deallocate here
+                        delete gd;
                         return UserAction::CloseWindow;
                 }
         }
 
         if (!p->display->refresh()) {
+                delete gd;
                 return UserAction::CloseWindow;
         }
+        delete gd;
         return UserAction::PlayAgain;
 }
 
@@ -394,6 +396,7 @@ collect_snake_config(Platform *p, SnakeConfiguration *game_config,
 
         auto maybe_interrupt = collect_configuration(p, config, customization);
         if (maybe_interrupt) {
+                delete config;
                 return maybe_interrupt;
         }
 
@@ -424,6 +427,7 @@ Configuration *assemble_snake_configuration(PersistentStorage *storage)
         std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
                                                       allow_pause};
 
+        delete initial_config;
         return new Configuration("Snake", options);
 }
 

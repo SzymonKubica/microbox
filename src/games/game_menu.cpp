@@ -190,6 +190,7 @@ std::optional<UserAction> select_game(Platform *p)
                 delete executor;
                 return UserAction::CloseWindow;
         }
+        delete executor;
         return std::nullopt;
 }
 

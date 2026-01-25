@@ -86,66 +86,9 @@ typedef struct ConfigurationOption {
                     available_values)[currently_selected];
         }
 
-        ~ConfigurationOption()
-        {
-                LOG_DEBUG("ConfigurationOption",
-                          "Deallocating configuration option '%s'", name);
-                // We use 'new' to allocate arrays of available values,
-                // hence we need to use the corresponding array delete[]
-                // to deallocate. Otherwise ASAN complains about it.
-                switch (type) {
-                case INT:
-                        delete[] (int *)available_values;
-                        break;
-                case STRING:
-                        delete[] (char *)available_values;
-                        break;
-                case COLOR:
-                        delete[] (Color *)available_values;
-                        break;
-                }
-        }
+        ~ConfigurationOption();
 
-        ConfigurationOption(const ConfigurationOption &other)
-        {
-                type = other.type;
-                available_values_len = other.available_values_len;
-                currently_selected = other.currently_selected;
-                name = other.name;
-                max_config_value_len = other.max_config_value_len;
-
-                // Deep copy of the available values array.
-                switch (type) {
-                case INT: {
-                        int *values = new int[available_values_len];
-                        for (int i = 0; i < available_values_len; i++) {
-                                values[i] = static_cast<int *>(
-                                    other.available_values)[i];
-                        }
-                        available_values = values;
-                        break;
-                }
-                case STRING: {
-                        const char **values =
-                            new const char *[available_values_len];
-                        for (int i = 0; i < available_values_len; i++) {
-                                values[i] = static_cast<const char **>(
-                                    other.available_values)[i];
-                        }
-                        available_values = values;
-                        break;
-                }
-                case COLOR: {
-                        Color *values = new Color[available_values_len];
-                        for (int i = 0; i < available_values_len; i++) {
-                                values[i] = static_cast<Color *>(
-                                    other.available_values)[i];
-                        }
-                        available_values = values;
-                        break;
-                }
-                }
-        }
+        ConfigurationOption(const ConfigurationOption &other);
 
 } ConfigurationOption;
 
