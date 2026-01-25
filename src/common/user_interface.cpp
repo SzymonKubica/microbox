@@ -188,8 +188,9 @@ void render_config_bar_centered(Display *display, int y_start,
 #endif
                                 display->draw_rectangle(
                                     bar_name_str_start,
-                                    option_text_max_len * fw, fh + v_padding / 2 - 1,
-                                    accent_color, border, true);
+                                    option_text_max_len * fw,
+                                    fh + v_padding / 2 - 1, accent_color,
+                                    border, true);
                         }
                         // Draw the actual name of the config bar.
                         display->draw_string(
@@ -199,6 +200,7 @@ void render_config_bar_centered(Display *display, int y_start,
 
                 } else {
 
+                        if (update_option_name) {
                         // We need to clear the background in black so that it
                         // is the previous text is erased. Note that on the
                         // emulator the border needs to be 0 else it will
@@ -211,6 +213,7 @@ void render_config_bar_centered(Display *display, int y_start,
                         display->draw_rectangle(
                             bar_name_str_start, option_text_max_len * fw,
                             fh + v_padding, Black, border, true);
+                        }
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
                         display->draw_string(bar_name_str_start,
