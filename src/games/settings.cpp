@@ -21,12 +21,18 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
         // We loop until the user presses the blue button on any of the
         // configuration screens.
         while (true) {
-                Configuration *config = assemble_settings_menu_configuration();
-                if (collect_configuration(p, config, custom))
-                        return std::nullopt;
+                Configuration *settings_config =
+                    assemble_settings_menu_configuration();
+                auto maybe_interrupt =
+                    collect_configuration(p, settings_config, custom);
+                if (maybe_interrupt) {
+                        delete settings_config;
+                        return maybe_interrupt;
+                }
 
                 Game selected_game;
-                extract_menu_setting(&selected_game, config);
+                extract_menu_setting(&selected_game, settings_config);
+                delete settings_config;
 
                 int offset = get_settings_storage_offset(selected_game);
                 LOG_DEBUG(
@@ -40,8 +46,10 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                 case Game::MainMenu: {
                         GameMenuConfiguration config;
                         auto action = collect_game_menu_config(p, &config);
-                        if (action && action.value() == UserAction::Exit ||
-                            action.value() == UserAction::CloseWindow) {
+                        if (action &&
+                            (action.value() == UserAction::Exit ||
+                             action.value() == UserAction::CloseWindow)) {
+                                delete settings_config;
                                 return action;
                         }
                         storage.put(offset, config);
@@ -49,8 +57,10 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                 case Game::Clean2048: {
                         Game2048Configuration config;
                         auto action = collect_2048_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit ||
-                            action.value() == UserAction::CloseWindow) {
+                        if (action &&
+                            (action.value() == UserAction::Exit ||
+                             action.value() == UserAction::CloseWindow)) {
+                                delete settings_config;
                                 return action;
                         }
                         storage.put(offset, config);
@@ -59,8 +69,10 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         MinesweeperConfiguration config;
                         auto action =
                             collect_minesweeper_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit ||
-                            action.value() == UserAction::CloseWindow) {
+                        if (action &&
+                            (action.value() == UserAction::Exit ||
+                             action.value() == UserAction::CloseWindow)) {
+                                delete settings_config;
                                 return action;
                         }
                         storage.put(offset, config);
@@ -69,8 +81,10 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         GameOfLifeConfiguration config;
                         auto action =
                             collect_game_of_life_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit ||
-                            action.value() == UserAction::CloseWindow) {
+                        if (action &&
+                            (action.value() == UserAction::Exit ||
+                             action.value() == UserAction::CloseWindow)) {
+                                delete settings_config;
                                 return action;
                         }
                         storage.put(offset, config);
@@ -78,8 +92,10 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                 case Game::Snake: {
                         SnakeConfiguration config;
                         auto action = collect_snake_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit ||
-                            action.value() == UserAction::CloseWindow) {
+                        if (action &&
+                            (action.value() == UserAction::Exit ||
+                             action.value() == UserAction::CloseWindow)) {
+                                delete settings_config;
                                 return action;
                         }
                         storage.put(offset, config);
@@ -88,8 +104,10 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         SnakeDuelConfiguration config;
                         auto action =
                             collect_snake_duel_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit ||
-                            action.value() == UserAction::CloseWindow) {
+                        if (action &&
+                            (action.value() == UserAction::Exit ||
+                             action.value() == UserAction::CloseWindow)) {
+                                delete settings_config;
                                 return action;
                         }
                         storage.put(offset, config);
@@ -98,8 +116,10 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         WifiAppConfiguration config;
                         auto action =
                             collect_wifi_app_config(p, &config, custom);
-                        if (action && action.value() == UserAction::Exit ||
-                            action.value() == UserAction::CloseWindow) {
+                        if (action &&
+                            (action.value() == UserAction::Exit ||
+                             action.value() == UserAction::CloseWindow)) {
+                                delete settings_config;
                                 return action;
                         }
                         storage.put(offset, config);
@@ -108,8 +128,10 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         RandomSeedPickerConfiguration config;
                         auto action = collect_random_seed_picker_config(
                             p, &config, custom);
-                        if (action && action.value() == UserAction::Exit ||
-                            action.value() == UserAction::CloseWindow) {
+                        if (action &&
+                            (action.value() == UserAction::Exit ||
+                             action.value() == UserAction::CloseWindow)) {
+                                delete settings_config;
                                 return action;
                         }
                         storage.put(offset, config);

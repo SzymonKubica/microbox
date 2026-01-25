@@ -24,9 +24,7 @@
   each square separately.
 
 # TODO
-- [_] fix memory leaks in settings page
 - [_] optimize memory usage of the path finding to prevent crashes on arduino
-- [_] fix asan memory leaks on quit
 - [_] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
 - [_] add snake duel config option to enable/disable AI
@@ -39,6 +37,8 @@
 # In Progress
 
 # Done
+- [x] fix asan memory leaks on quit
+- [x] fix memory leaks in settings page
 - [x] fix memory leaks in seed config
 - [x] fix memory leaks in Wifi config
 - [x] fix memory leaks in Snake
