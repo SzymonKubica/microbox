@@ -367,6 +367,7 @@ UserAction snake_duel_loop(Platform *p,
                 delete gd;
                 return UserAction::CloseWindow;
         }
+        delete gd;
         return UserAction::PlayAgain;
 }
 
@@ -554,11 +555,15 @@ Configuration *assemble_snake_duel_configuration(PersistentStorage *storage)
             "Grace", {"Yes", "No"},
             map_boolean_to_yes_or_no(initial_config->allow_grace));
 
+        auto *ai_mode = ConfigurationOption::of_strings(
+            "AI", {"Yes", "No"},
+            map_boolean_to_yes_or_no(initial_config->enable_ai));
+
         auto *secondary_player_color = ConfigurationOption::of_colors(
             "Color", AVAILABLE_COLORS, initial_config->secondary_player_color);
 
-        std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
-                                                      secondary_player_color};
+        std::vector<ConfigurationOption *> options = {
+            speed, poop, allow_grace, ai_mode, secondary_player_color};
 
         delete initial_config;
         return new Configuration("Snake Duel", options);
@@ -575,7 +580,8 @@ load_initial_snake_duel_config(PersistentStorage *storage)
         SnakeDuelConfiguration config = {.speed = 0,
                                          .allow_grace = 0,
                                          .enable_poop = false,
-                                         .secondary_player_color = Blue};
+                                         .secondary_player_color = Blue,
+                                         .enable_ai = false};
 
         LOG_DEBUG(TAG, "Trying to load settings from the persistent storage");
         storage->get(storage_offset, config);
@@ -613,7 +619,8 @@ void extract_game_config(SnakeDuelConfiguration *game_config,
         ConfigurationOption *speed = config->options[0];
         ConfigurationOption *enable_poop = config->options[1];
         ConfigurationOption *allow_grace = config->options[2];
-        ConfigurationOption *secondary_player_color = config->options[3];
+        ConfigurationOption *enable_ai = config->options[3];
+        ConfigurationOption *secondary_player_color = config->options[4];
 
         auto yes_or_no_option_to_bool = [](ConfigurationOption *option) {
                 return extract_yes_or_no_option(
@@ -623,6 +630,7 @@ void extract_game_config(SnakeDuelConfiguration *game_config,
         game_config->speed = speed->get_curr_int_value();
         game_config->enable_poop = yes_or_no_option_to_bool(enable_poop);
         game_config->allow_grace = yes_or_no_option_to_bool(allow_grace);
+        game_config->enable_ai = yes_or_no_option_to_bool(enable_ai);
         game_config->secondary_player_color =
             secondary_player_color->get_current_color_value();
 }
@@ -644,6 +652,10 @@ find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
 
         std::vector<std::vector<bool>> inaccessible(
             grid.size(), std::vector<bool>(grid[0].size(), false));
+        // If there is no path to the apple that does not touch snake poop,
+        // we try again treating poop cells as accessible.
+        std::vector<std::vector<bool>> inaccessible_lenient(
+            grid.size(), std::vector<bool>(grid[0].size(), false));
 
         Point apple;
 
@@ -652,8 +664,14 @@ find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
                 for (int x = 0; x < grid[0].size(); ++x) {
                         if (grid[y][x] == Cell::Apple) {
                                 apple = {x, y};
-                        } else if (grid[y][x] != Cell::Empty) {
+                                continue;
+                        }
+                        Cell curr = grid[y][x];
+                        if (curr != Cell::Empty) {
                                 inaccessible[y][x] = true;
+                        }
+                        if (curr == Cell::Snake || curr == Cell::AppleSnake) {
+                                inaccessible_lenient[y][x] = true;
                         }
                 }
         }
@@ -661,11 +679,17 @@ find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
         LOG_DEBUG(TAG, "Apple {x: %d, y: %d}", apple.x, apple.y);
 
         Point curr = snake.head;
-        auto path = find_path(curr, apple, inaccessible);
+        std::vector<Point> path;
+        path = find_path(curr, apple, inaccessible);
 
         if (path.empty()) {
-                LOG_DEBUG(TAG, "Path is empty.");
-                return std::nullopt;
+                LOG_DEBUG(TAG, "Path is empty. Trying lenient search.");
+                path = find_path(curr, apple, inaccessible_lenient);
+                if (path.empty()) {
+                        LOG_DEBUG(TAG, "Lenient path is also empty. No path "
+                                       "to apple found.");
+                        return std::nullopt;
+                }
         }
 
         for (auto &p : path) {
@@ -723,7 +747,7 @@ find_path(Point &start, Point &end,
                         continue;
                 }
 
-                // We are only interest in the first next location from the
+                // We are only interested in the first next location from the
                 // snake's head, hence we truncate the path as it wouldn't fit
                 // into memory on the target device.
                 return {*(maybe_path.end() - 1), start};

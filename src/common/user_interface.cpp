@@ -1,15 +1,18 @@
-#include "user_interface.hpp"
-#include "configuration.hpp"
-#include "platform/interface/color.hpp"
-#include "platform/interface/display.hpp"
-#include "../common/logging.hpp"
-#include "constants.hpp"
-#include "point.hpp"
 #include <cassert>
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <variant>
+#include <map>
+
+#include "user_interface.hpp"
+#include "configuration.hpp"
+#include "platform/interface/color.hpp"
+#include "platform/interface/display.hpp"
+#include "../common/logging.hpp"
+#include "../common/maths_utils.hpp"
+#include "constants.hpp"
+#include "point.hpp"
 
 #define GRID_BG_COLOR White
 #define TAG "user_interface"
@@ -19,6 +22,7 @@
 // Maximum length of config option value text in characters.
 // This is needed to ensure that the config bars don't overflow the display.
 #define MAX_CONFIG_OPTION_VALUE_LENGTH 13
+#define MAX_RENDERED_OPTION_NUM 4
 
 /* User Interface */
 
@@ -30,7 +34,7 @@ void render_config_bar_centered(Display *display, int y_start,
                                 int option_text_max_len, int value_text_max_len,
                                 const char *option_text, const char *value_text,
                                 bool is_already_rendered,
-                                bool update_value_cell,
+                                bool update_value_cell, bool update_option_name,
                                 UserInterfaceCustomization *customization);
 void render_text_bar_centered(Display *display, int y_start,
                               int option_text_max_len, int value_text_max_len,
@@ -94,6 +98,9 @@ int *calculate_config_bar_positions(int y_spacing, FontSize heading_font_size,
  * supposed to render everything or just redraw the value cell.
  * @param `update_value_cell` If set, the function will only redraw the value
  * cell, the entire config bar will not be rerendered
+ * @param `update_option_name` If set, the function will redraw the name of the
+ * config value, this is needed when dealing with option lists that have more
+ * than 4 elements and the user scrolls through them.
  * @param `customzation` Controls the look and feel of the UI. If customization
  * specifies that we should be using the Minimalistic rendering mode, this
  * will use regular rectangles with no fill instead of the default filled
@@ -103,7 +110,7 @@ void render_config_bar_centered(Display *display, int y_start,
                                 int option_text_max_len, int value_text_max_len,
                                 const char *option_text, const char *value_text,
                                 bool is_already_rendered,
-                                bool update_value_cell,
+                                bool update_value_cell, bool update_option_name,
                                 UserInterfaceCustomization *customization)
 {
 
@@ -160,17 +167,37 @@ void render_config_bar_centered(Display *display, int y_start,
                         // Draw the background for the two configuration cells.
                         display->draw_rounded_rectangle(
                             bar_start, bar_width, fh * 2, fh, accent_color);
-                        // Draw the actual name of the config bar.
-                        display->draw_string(
-                            bar_name_str_start, (char *)option_text, Size16,
-                            accent_color,
-                            get_good_contrast_text_color(accent_color));
                 } else {
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
                         display->draw_rectangle(bar_start, bar_width, fh * 2,
                                                 accent_color, 1, false);
+                }
+        }
+
+        if (!is_already_rendered || update_option_name) {
+                Point bar_name_str_start = {.x = left_margin, .y = y_start};
+
+                if (customization->rendering_mode == Detailed) {
                         // Draw the actual name of the config bar.
+                        display->draw_string(
+                            bar_name_str_start, (char *)option_text, Size16,
+                            accent_color,
+                            get_good_contrast_text_color(accent_color));
+
+                } else {
+
+#ifdef EMULATOR
+                        // We need to clear the background in black so that it
+                        // is the previous text is erased. Note that this is
+                        // only required on the emulator as the actual LCD
+                        // display always clears the background of the text.
+                        display->draw_rectangle(bar_name_str_start,
+                                                option_text_max_len * fw,
+                                                fh + v_padding, Black, 0, true);
+#endif
+                        // The only other option supported right now is the
+                        // `Minimalistic` rendering mode, we render it below
                         display->draw_string(bar_name_str_start,
                                              (char *)option_text, Size16, Black,
                                              White);
@@ -425,7 +452,7 @@ void render_config_menu(Display *display, Configuration *config,
         int fh = FONT_SIZE;
         int left_margin = get_centering_margin(w, fw, text_max_length);
 
-        int bars_num = config->options_len;
+        int bars_num = std::min(config->options_len, MAX_RENDERED_OPTION_NUM);
 
         int bar_height = 2 * fh;
         int bar_gap_height = fh * 3 / 4;
@@ -450,11 +477,43 @@ void render_config_menu(Display *display, Configuration *config,
                 render_logo(display, customization, {.x = 12, .y = y_spacing});
         }
 
-        for (int i = 0; i < config->options_len; i++) {
+        int start_option_idx = 0;
+        int end_option_idx = config->options_len - 1;
+        // If we are in the scrolling mode we set those overrides to true to
+        // ensure that both the option names and their values are always re-
+        // rendered.
+        bool update_option_names = false;
+        bool update_option_values = false;
+        // Tells us for each 'physically rendered' bar which config option
+        // is supposed to go there. Note that if there is less than 5 bars,
+        // this is an identity map.
+        std::map<int, int> bar_idx_to_option_idx;
+        if (config->options_len > MAX_RENDERED_OPTION_NUM) {
+                update_option_names = true;
+                update_option_values = true;
+                // We iterate and wrap
+                int curr = config->curr_selected_option;
+                int prev = mathematical_modulo(curr - 1, config->options_len);
+                bar_idx_to_option_idx[0] = prev;
+                bar_idx_to_option_idx[1] = curr;
+                bar_idx_to_option_idx[2] =
+                    mathematical_modulo(curr + 1, config->options_len);
+                bar_idx_to_option_idx[3] =
+                    mathematical_modulo(curr + 2, config->options_len);
+
+        } else {
+                for (int i = 0; i < bars_num; i++) {
+                        bar_idx_to_option_idx[i] = i;
+                }
+        }
+
+        for (int i = 0; i < bars_num; i++) {
+                // Index of the bar rendered on the screen (starts at 0 no
+                // matter the actual index of the config option).
                 int bar_y = bar_positions[i];
                 char option_value_buff[max_option_value_length + 1];
 
-                ConfigurationOption *value = config->options[i];
+                ConfigurationOption *value = config->options[bar_idx_to_option_idx[i]];
                 const char *option_text = value->name;
 
                 switch (value->type) {
@@ -509,10 +568,11 @@ void render_config_menu(Display *display, Configuration *config,
                     display, bar_y, max_option_name_length,
                     max_option_value_length, option_text, option_value_buff,
                     text_update_only,
-                    std::find(diff->modified_options.begin(),
-                              diff->modified_options.end(),
-                              i) != diff->modified_options.end(),
-                    customization);
+                    update_option_values ||
+                        std::find(diff->modified_options.begin(),
+                                  diff->modified_options.end(),
+                                  i) != diff->modified_options.end(),
+                    update_option_names, customization);
                 LOG_DEBUG(TAG,
                           "Rendered config bar %d with option text '%s' and "
                           "value '%s'",
@@ -536,10 +596,21 @@ void render_config_menu(Display *display, Configuration *config,
                 circle_ys.push_back(bar_positions[i] + v_padding);
         }
 
-        render_circle_selector(
-            display, text_update_only, circle_x, circle_ys,
-            diff->previously_edited_option, diff->currently_edited_option,
-            SELECTOR_CIRCLE_RADIUS, Black, customization->accent_color);
+        // If there are too many options to render, the UI enters 'scrolling'
+        // mode. In this case the option names and values toggle and get
+        // rerendered in the config bars but the circle selector stays at the
+        // top and this is the option that gets edited.
+        if (config->options_len > MAX_RENDERED_OPTION_NUM) {
+                render_circle_selector(display, text_update_only, circle_x,
+                                       circle_ys, 1, 1, SELECTOR_CIRCLE_RADIUS,
+                                       Black, customization->accent_color);
+        } else {
+                render_circle_selector(
+                    display, text_update_only, circle_x, circle_ys,
+                    diff->previously_edited_option,
+                    diff->currently_edited_option, SELECTOR_CIRCLE_RADIUS,
+                    Black, customization->accent_color);
+        }
 
         free(bar_positions);
 }

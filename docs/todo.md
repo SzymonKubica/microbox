@@ -24,9 +24,6 @@
   each square separately.
 
 # TODO
-- [_] add ability to scroll through the config menu for games that require more
-      than 3 config options (only if a game requires this, currently not needed)
-- [_] add snake duel config option to enable/disable AI
 - [_] ensure that the AI snake can still avoid walls even if it is not able to
       find a path
 - [_] add high score saving to 2048.
@@ -36,6 +33,10 @@
 # In Progress
 
 # Done
+- [x] add snake duel config option to enable/disable AI
+- [x] add ability to scroll through the config menu for games that require more
+      than 3 config options (only if a game requires this, currently not needed)
+- [x] fix snake 2 death handling for snake duel
 - [x] optimize memory usage of the path finding to prevent crashes on arduino
 - [x] fix asan memory leaks on quit
 - [x] fix memory leaks in settings page
