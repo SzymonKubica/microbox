@@ -319,6 +319,9 @@ collect_configuration(Platform *p, Configuration *config,
                                 render_config_menu(p->display, config, &diff,
                                                    true, customization,
                                                    should_render_logo);
+                                if (!p->display->refresh()) {
+                                        return UserAction::CloseWindow;
+                                }
                                 move_registered_delay();
                                 continue;
                         }
@@ -351,13 +354,16 @@ collect_configuration(Platform *p, Configuration *config,
 
                         render_config_menu(p->display, config, &diff, true,
                                            customization, should_render_logo);
+                        if (!p->display->refresh()) {
+                                return UserAction::CloseWindow;
+                        }
 
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
-                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
                 if (!p->display->refresh()) {
                         return UserAction::CloseWindow;
                 }
+                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
         }
         return std::nullopt;
 }

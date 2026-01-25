@@ -15,7 +15,6 @@ void SfmlDisplay::clear(Color color)
 {
         texture->clear(map_to_sf_color(color));
         texture->display();
-        refresh();
 };
 
 /**
@@ -145,7 +144,6 @@ void SfmlDisplay::draw_circle(Point center, int radius, Color color,
         circle.setOutlineThickness(border_width);
         texture->draw(circle);
         texture->display();
-        refresh();
 };
 
 void SfmlDisplay::draw_rectangle(Point start, int width, int height,
@@ -162,7 +160,6 @@ void SfmlDisplay::draw_rectangle(Point start, int width, int height,
         rectangle.setOutlineThickness(border_width);
         texture->draw(rectangle);
         texture->display();
-        refresh();
 };
 void SfmlDisplay::draw_rounded_rectangle(Point start, int width, int height,
                                          int radius, Color color)
@@ -204,7 +201,6 @@ void SfmlDisplay::draw_line(Point start, Point end, Color color)
 
         texture->draw(line, 2, sf::PrimitiveType::Lines);
         texture->display();
-        refresh();
 }
 void SfmlDisplay::draw_string(Point start, char *string_buffer,
                               FontSize font_size, Color bg_color,
@@ -217,7 +213,6 @@ void SfmlDisplay::draw_string(Point start, char *string_buffer,
         text.setPosition({(float)start.x, (float)start.y});
         texture->draw(text);
         texture->display();
-        refresh();
 };
 void SfmlDisplay::clear_region(Point top_left, Point bottom_right,
                                Color clear_color)

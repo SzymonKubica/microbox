@@ -24,7 +24,10 @@
   each square separately.
 
 # TODO
-- [_] add resource cleanup logic for 'window closed' exceptions raised by the display
+- [_] fix memory leaks in 2048
+- [_] fix memory leaks in Snake
+- [_] fix memory leaks in Wifi config
+- [_] fix memory leaks in seed config
 - [_] optimize memory usage of the path finding to prevent crashes on arduino
 - [_] fix asan memory leaks on quit
 - [_] add ability to scroll through the config menu for games that require more
@@ -39,6 +42,9 @@
 # In Progress
 
 # Done
+- [x] fix memory leaks in Minesweeper
+- [x] fix memory leaks in Game of Life
+- [x] add resource cleanup logic for 'window closed' exceptions raised by the display
 - [x] add ability to kill a snake duel game against AI
 - [x] fix all ASAN issues in the debug build.
 - [x] Add 'AI' functionality to snake duel.

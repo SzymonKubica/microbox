@@ -313,6 +313,11 @@ UserAction game_of_life_loop(Platform *p,
                                 break;
                         case RED:
                                 exit_requested = true;
+                                delete[] grid;
+                                delete gd;
+                                for (auto state : rewind_buffer) {
+                                        delete[] state;
+                                }
                                 break;
                         case BLUE:
                                 if (mode == REWIND) {
@@ -369,11 +374,15 @@ UserAction game_of_life_loop(Platform *p,
                 }
                 iteration += 1;
                 iteration %= evolution_period;
-                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
                 if (!p->display->refresh()) {
-                        // TODO: deallocate the grid here.
+                        delete[] grid;
+                        delete gd;
+                        for (auto state : rewind_buffer) {
+                                delete[] state;
+                        }
                         return UserAction::CloseWindow;
                 }
+                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
         }
         return UserAction::PlayAgain;
 }
@@ -386,6 +395,7 @@ collect_game_of_life_config(Platform *p, GameOfLifeConfiguration *game_config,
             assemble_game_of_life_configuration(p->persistent_storage);
         auto maybe_interrupt = collect_configuration(p, config, customization);
         if (maybe_interrupt) {
+                delete config;
                 return maybe_interrupt;
         }
 
@@ -412,7 +422,7 @@ Configuration *assemble_game_of_life_configuration(PersistentStorage *storage)
             "Toroidal array", {"Yes", "No"},
             map_boolean_to_yes_or_no(initial_config->use_toroidal_array));
 
-        free(initial_config);
+        delete initial_config;
 
         auto options = {spawn_randomly, simulation_speed, toroidal_array};
 

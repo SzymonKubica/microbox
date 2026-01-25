@@ -1,5 +1,4 @@
 #include "../common/platform/interface/platform.hpp"
-#include "game_executor.hpp"
 #include "game_menu.hpp"
 
 #include "../common/configuration.hpp"
@@ -60,7 +59,7 @@ static void draw_caret(Display *display, Point *grid_position,
  * Performs a recursive uncovering waterfall: tries to uncover the current
  * cell, if the cell has 0 adjacent mines it uncovers all of its neighbours.
  */
-static void uncover_grid_cells_starting_from(
+static std::optional<UserAction> uncover_grid_cells_starting_from(
     Display *display, Point *grid_position,
     MinesweeperGridDimensions *dimensions,
     std::vector<std::vector<MinesweeperGridCell>> *grid, int *total_uncovered);
@@ -226,6 +225,14 @@ UserAction minesweeper_loop(Platform *p,
                                                 gd->cols);
                         draw_caret(p->display, &caret_position, gd);
 
+                        // We need to manually refresh each time we draw
+                        // something. This is required because if the window is
+                        // closed, we need to handle this accordingly and free
+                        // all resources.
+                        if (!p->display->refresh()) {
+                                delete gd;
+                                return UserAction::CloseWindow;
+                        }
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         /* We continue here to skip the additional input
                            polling delay at the end of the loop and make
@@ -275,15 +282,25 @@ UserAction minesweeper_loop(Platform *p,
                                         is_game_over = true;
                                 }
                                 if (!cell.is_flagged) {
-                                        uncover_grid_cells_starting_from(
-                                            p->display, &caret_position, gd,
-                                            &grid, &total_uncovered);
+                                        auto maybe_interrupt =
+                                            uncover_grid_cells_starting_from(
+                                                p->display, &caret_position, gd,
+                                                &grid, &total_uncovered);
+
+                                        if (maybe_interrupt) {
+                                                delete gd;
+                                                return maybe_interrupt.value();
+                                        }
+                                        break;
                                 }
-                                break;
                         default:
                                 LOG_DEBUG(TAG, "Irrelevant action input: %s",
                                           action_to_str(act));
                                 break;
+                        }
+                        if (!p->display->refresh()) {
+                                delete gd;
+                                return UserAction::CloseWindow;
                         }
                         p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         /* We continue here to skip the additional input
@@ -292,6 +309,11 @@ UserAction minesweeper_loop(Platform *p,
                         continue;
                 } else {
                         action_input_on_last_iteration = false;
+                }
+
+                if (!p->display->refresh()) {
+                        delete gd;
+                        return UserAction::CloseWindow;
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
         }
@@ -324,6 +346,7 @@ UserAction minesweeper_loop(Platform *p,
                 delete gd;
                 return UserAction::CloseWindow;
         }
+        delete gd;
         return UserAction::PlayAgain;
 }
 
@@ -363,8 +386,8 @@ void erase_caret(Display *display, Point *grid_position,
 {
         // We need to ensure that the caret is rendered INSIDE the text
         // cell and its border doesn't overlap the neighbouring cells.
-        // Otherwise, we'll get weird rendering artifacts where the border get
-        // clipped.
+        // Otherwise, we'll get weird rendering artifacts where the
+        // border get clipped.
         int border_offset = 1;
         Point actual_position = {
             .x = dimensions->left_horizontal_margin +
@@ -446,7 +469,7 @@ void uncover_grid_cell(Display *display, Point *grid_position,
                              text_color);
 }
 
-void uncover_grid_cells_starting_from(
+std::optional<UserAction> uncover_grid_cells_starting_from(
     Display *display, Point *grid_position,
     MinesweeperGridDimensions *dimensions,
     std::vector<std::vector<MinesweeperGridCell>> *grid, int *total_uncovered)
@@ -454,6 +477,13 @@ void uncover_grid_cells_starting_from(
 
         uncover_grid_cell(display, grid_position, dimensions, grid,
                           total_uncovered);
+
+        // We need to react to the window close even if it happens when
+        // the recursive uncovering is happening. Else we are risking
+        // leaking resources.
+        if (!display->refresh()) {
+                return UserAction::CloseWindow;
+        }
 
         int rows = grid->size();
         int cols = (*grid->begin().base()).size();
@@ -475,6 +505,7 @@ void uncover_grid_cells_starting_from(
                         }
                 }
         }
+        return std::nullopt;
 }
 
 void flag_grid_cell(Display *display, Point *grid_position,
@@ -536,6 +567,7 @@ collect_minesweeper_config(Platform *p, MinesweeperConfiguration *game_config,
 
         auto maybe_interrupt = collect_configuration(p, config, customization);
         if (maybe_interrupt) {
+                delete config;
                 return maybe_interrupt;
         }
 
@@ -553,8 +585,8 @@ load_initial_minesweeper_config(PersistentStorage *storage)
 
         MinesweeperConfiguration config = {.mines_num = 0};
 
-        LOG_DEBUG(
-            TAG, "Trying to load initial settings from the persistent storage");
+        LOG_DEBUG(TAG, "Trying to load initial settings from the "
+                       "persistent storage");
         storage->get(storage_offset, config);
 
         MinesweeperConfiguration *output = new MinesweeperConfiguration();
@@ -588,6 +620,7 @@ Configuration *assemble_minesweeper_configuration(PersistentStorage *storage)
 
         std::vector<ConfigurationOption *> options = {mines_count};
 
+        delete initial_config;
         return new Configuration("Minesweeper", options);
 }
 
