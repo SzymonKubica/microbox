@@ -24,8 +24,6 @@
   each square separately.
 
 # TODO
-- [_] fix memory leaks in Wifi config
-- [_] fix memory leaks in seed config
 - [_] fix memory leaks in settings page
 - [_] optimize memory usage of the path finding to prevent crashes on arduino
 - [_] fix asan memory leaks on quit
@@ -41,6 +39,8 @@
 # In Progress
 
 # Done
+- [x] fix memory leaks in seed config
+- [x] fix memory leaks in Wifi config
 - [x] fix memory leaks in Snake
 - [x] fix memory leaks in 2048
 - [x] fix memory leaks in Minesweeper

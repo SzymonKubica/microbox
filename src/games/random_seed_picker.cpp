@@ -44,8 +44,9 @@ RandomSeedSelectorAction selector_action_from_str(char *name)
 
 UserAction random_seed_picker_loop(Platform *p,
                                    UserInterfaceCustomization *customization);
-std::optional<UserAction> RandomSeedPicker::game_loop(Platform *p,
-                                 UserInterfaceCustomization *customization)
+std::optional<UserAction>
+RandomSeedPicker::game_loop(Platform *p,
+                            UserInterfaceCustomization *customization)
 {
         const char *help_text =
             "Select 'Modify' action and press next (red) to change the seed"
@@ -179,8 +180,10 @@ UserAction random_seed_picker_loop(Platform *p,
                         "Saved the new, manually-entered randomness seed: %d",
                         new_seed);
                 render_wrapped_help_text(p, customization, display_text_buffer);
+                free(std::get<char *>(maybe_input));
                 wait_until_green_pressed(p);
                 break;
+
         }
 
         return UserAction::PlayAgain;
@@ -243,11 +246,14 @@ collect_random_seed_picker_config(Platform *p,
         auto maybe_interrupt_action =
             collect_configuration(p, config, customization);
         if (maybe_interrupt_action) {
+                delete config;
+                delete initial_config;
                 return maybe_interrupt_action;
         }
 
         extract_seed_picker_config(game_config, config);
-        free(initial_config);
+        delete config;
+        delete initial_config;
         return std::nullopt;
 }
 
