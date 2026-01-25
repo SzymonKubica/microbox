@@ -230,6 +230,9 @@ handle_connect(WifiAppConfiguration &config, Platform *p,
                 LOG_DEBUG("%s\n", data_string);
                 sprintf(display_text_buffer,
                         "Successfully connected to Wi-Fi!  %s", data_string);
+                delete data;
+                delete wifi_data.value();
+
         } else {
                 sprintf(display_text_buffer, "Unable to connect to Wi-Fi!");
         }
@@ -418,11 +421,14 @@ collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
         auto maybe_interrupt_action =
             collect_configuration(p, config, customization);
         if (maybe_interrupt_action) {
+                delete config;
+                delete initial_config;
                 return maybe_interrupt_action;
         }
 
         extract_game_config(game_config, initial_config, config);
-        free(initial_config);
+        delete config;
+        delete initial_config;
         return std::nullopt;
 }
 

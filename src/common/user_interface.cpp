@@ -1098,6 +1098,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
         }
 
         free(output_line_2);
+        free(output_line_1);
         return output;
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <cstdlib>
 #include <optional>
 
 /**
@@ -29,6 +30,8 @@ typedef struct WifiData {
          * Encryption type used by the WiFi network.
          */
         uint8_t encryption_type;
+
+        ~WifiData() { free((char *)ssid); }
 } WifiData;
 
 /**
