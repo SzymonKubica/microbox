@@ -24,6 +24,8 @@
   each square separately.
 
 # TODO
+- [_] add memory efficient point encoding to reduce the global variables size (56%)
+      memory is currently occupied
 - [_] ensure that the AI snake can still avoid walls even if it is not able to
       find a path
 - [_] add high score saving to 2048.
