@@ -643,13 +643,16 @@ void extract_game_config(SnakeDuelConfiguration *game_config,
 /* Functions responsible for 'AI' snake steering follow below */
 
 /**
- * Given the current position of the snake, and the
- * grid with all currently occupied cells and apple location, it finds a path to
- * the apple and directs the snake to follow that path.
+ * Given the current position of the snake, and the grid with all currently
+ * occupied cells and apple location, it finds a path to the apple using DFS and
+ * then sets the next step along that path in the &next output parameter.
+ *
+ * The reason we are doing this in such an 'impure' way is that returning the
+ * entire path works on a powerful desktop machine, however on an arduino we
+ * would get crashes which I suspect were memory related.
  */
-std::vector<Point>
-find_path(Point &start, Point &end,
-          std::vector<std::vector<bool>> &visited_or_inaccessible);
+bool find_next_step(const Point &start, const Point &end, Point &next,
+                    std::vector<std::vector<bool>> &visited_or_inaccessible);
 
 std::optional<Direction>
 find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
@@ -684,41 +687,31 @@ find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
         LOG_DEBUG(TAG, "Apple {x: %d, y: %d}", apple.x, apple.y);
 
         Point curr = snake.head;
-        std::vector<Point> path;
-        path = find_path(curr, apple, inaccessible);
-
-        if (path.empty()) {
+        Point next;
+        if (!find_next_step(curr, apple, next, inaccessible)) {
                 LOG_DEBUG(TAG, "Path is empty. Trying lenient search.");
-                path = find_path(curr, apple, inaccessible_lenient);
-                if (path.empty()) {
+                if (!find_next_step(curr, apple, next, inaccessible_lenient)) {
                         LOG_DEBUG(TAG, "Lenient path is also empty. No path "
                                        "to apple found.");
                         return std::nullopt;
                 }
         }
 
-        for (auto &p : path) {
-                LOG_DEBUG(TAG, "{x: %d, y: %d}", p.x, p.y);
-        }
-
-        auto next_position = *(path.end() - 2);
-        LOG_DEBUG(TAG, "Next location: {x: %d, y: %d}", next_position.x,
-                  next_position.y);
+        LOG_DEBUG(TAG, "Next location: {x: %d, y: %d}", next.x, next.y);
         LOG_DEBUG(TAG, "Head: {x: %d, y: %d}", snake.head.x, snake.head.y);
 
-        return determine_displacement_direction(snake.head, next_position);
+        return determine_displacement_direction(snake.head, next);
 }
 
-std::vector<Point>
-find_path(Point &start, Point &end,
-          std::vector<std::vector<bool>> &visited_or_inaccessible)
+bool find_next_step(const Point &start, const Point &end, Point &next,
+                    std::vector<std::vector<bool>> &visited_or_inaccessible)
 {
         LOG_DEBUG(TAG, "Start {x: %d, y: %d}", start.x, start.y);
         LOG_DEBUG(TAG, "End {x: %d, y: %d}", end.x, end.y);
         // If we are already at the end we return a path with just the end.
         // This is the base case of the recursion.
         if (start.x == end.x && start.y == end.y) {
-                return {end};
+                return true;
         }
 
         // Indicate that we already visited start before we do any other
@@ -729,7 +722,7 @@ find_path(Point &start, Point &end,
         int cols = visited_or_inaccessible[0].size();
 
         auto neighbours =
-            get_adjacent_neighbours_inside_grid(&start, rows, cols);
+            get_adjacent_neighbours_inside_grid((Point *)&start, rows, cols);
 
         // We sort the neighbours based on which one is the closest to the
         // target. This is required to avoid the snake taking 'stupid' paths.
@@ -744,18 +737,15 @@ find_path(Point &start, Point &end,
         for (auto &nb : neighbours) {
                 LOG_DEBUG(TAG, "Processing neighbour {x: %d, y: %d}", nb.x,
                           nb.y);
-                if (visited_or_inaccessible[nb.y][nb.x]) {
+                if (visited_or_inaccessible[nb.y][nb.x])
                         continue;
-                }
-                auto maybe_path = find_path(nb, end, visited_or_inaccessible);
-                if (maybe_path.empty()) {
-                        continue;
-                }
 
-                // We are only interested in the first next location from the
-                // snake's head, hence we truncate the path as it wouldn't fit
-                // into memory on the target device.
-                return {*(maybe_path.end() - 1), start};
+                if (find_next_step(nb, end, next, visited_or_inaccessible)) {
+                        // Once we exit out of the recursion, nb will be the
+                        // next location that we need to go to on our path.
+                        next = nb;
+                        return true;
+                }
         };
-        return {};
+        return false;
 }

@@ -33,6 +33,7 @@
 # In Progress
 
 # Done
+- [x] fix memory errors when running on arduino
 - [x] add snake duel config option to enable/disable AI
 - [x] add ability to scroll through the config menu for games that require more
       than 3 config options (only if a game requires this, currently not needed)
