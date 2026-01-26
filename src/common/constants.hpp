@@ -25,7 +25,6 @@
 #endif
 
 #define SCREEN_BORDER_WIDTH 3
-#define DISPLAY_CORNER_RADIUS 40
 
 /* Constants below control time intervals between input polling */
 #define INPUT_POLLING_DELAY 50
@@ -40,7 +39,8 @@
 #define MOVE_REGISTERED_DELAY 150
 #endif
 
-#define DISPLAY_HEIGHT 240
-#define DISPLAY_WIDTH 280
+constexpr int DISPLAY_HEIGHT = 240;
+constexpr int DISPLAY_WIDTH = 280;
+constexpr int DISPLAY_CORNER_RADIUS = 40;
 
 extern const std::vector<Color> AVAILABLE_COLORS;

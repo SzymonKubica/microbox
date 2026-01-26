@@ -2,6 +2,7 @@
 #include <cassert>
 #include <functional>
 #include <optional>
+#include <deque>
 
 #include "snake_common.hpp"
 #include "snake_duel.hpp"
@@ -16,8 +17,9 @@
 #include "../common/logging.hpp"
 
 #define GAME_LOOP_DELAY 50
-
 #define TAG "snake"
+
+constexpr int GAME_CELL_WIDTH = 10;
 
 SnakeDuelConfiguration DEFAULT_SNAKE_DUEL_CONFIG = {.speed = 6,
                                                     .allow_grace = false,
@@ -285,11 +287,10 @@ UserAction snake_duel_loop(Platform *p,
         // Convenience funtion to ensure each short-circuit exit of the
         // loop iteration actually increments the counter and waits a bit.
         auto increment_iteration_and_wait =
-            [p, &state, gd]() -> std::optional<UserAction> {
+            [p, &state]() -> std::optional<UserAction> {
                 state.increment_iteration();
                 p->delay_provider->delay_ms(GAME_LOOP_DELAY);
                 if (!p->display->refresh()) {
-                        delete gd;
                         return UserAction::CloseWindow;
                 }
                 return std::nullopt;
@@ -644,58 +645,24 @@ void extract_game_config(SnakeDuelConfiguration *game_config,
 
 /**
  * Given the current position of the snake, and the grid with all currently
- * occupied cells and apple location, it finds a path to the apple using DFS and
+ * occupied cells and apple location, it finds a path to the apple using BFS and
  * then sets the next step along that path in the &next output parameter.
  *
  * The reason we are doing this in such an 'impure' way is that returning the
  * entire path works on a powerful desktop machine, however on an arduino we
  * would get crashes which I suspect were memory related.
  */
-bool find_next_step(const Point &start, const Point &end, Point &next,
-                    std::vector<std::vector<bool>> &visited_or_inaccessible);
+bool find_next_step(const Point &start,
+                    const std::vector<std::vector<Cell>> &grid,
+                    Point &next_step);
 
 std::optional<Direction>
 find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
 {
 
-        std::vector<std::vector<bool>> inaccessible(
-            grid.size(), std::vector<bool>(grid[0].size(), false));
-        // If there is no path to the apple that does not touch snake poop,
-        // we try again treating poop cells as accessible.
-        std::vector<std::vector<bool>> inaccessible_lenient(
-            grid.size(), std::vector<bool>(grid[0].size(), false));
-
-        Point apple;
-
-        // Mark all cells where we cannot go and find the apple.
-        for (int y = 0; y < grid.size(); ++y) {
-                for (int x = 0; x < grid[0].size(); ++x) {
-                        if (grid[y][x] == Cell::Apple) {
-                                apple = {x, y};
-                                continue;
-                        }
-                        Cell curr = grid[y][x];
-                        if (curr != Cell::Empty) {
-                                inaccessible[y][x] = true;
-                        }
-                        if (curr == Cell::Snake || curr == Cell::AppleSnake) {
-                                inaccessible_lenient[y][x] = true;
-                        }
-                }
-        }
-
-        LOG_DEBUG(TAG, "Apple {x: %d, y: %d}", apple.x, apple.y);
-
         Point curr = snake.head;
         Point next;
-        if (!find_next_step(curr, apple, next, inaccessible)) {
-                LOG_DEBUG(TAG, "Path is empty. Trying lenient search.");
-                if (!find_next_step(curr, apple, next, inaccessible_lenient)) {
-                        LOG_DEBUG(TAG, "Lenient path is also empty. No path "
-                                       "to apple found.");
-                        return std::nullopt;
-                }
-        }
+        find_next_step(curr, grid, next);
 
         LOG_DEBUG(TAG, "Next location: {x: %d, y: %d}", next.x, next.y);
         LOG_DEBUG(TAG, "Head: {x: %d, y: %d}", snake.head.x, snake.head.y);
@@ -747,5 +714,131 @@ bool find_next_step(const Point &start, const Point &end, Point &next,
                         return true;
                 }
         };
+        return false;
+}
+
+/*
+ * To optimize memory usage and avoid fragmentation we statically preallocate
+ * all arrays that are used for tracking the state of the traversal.
+ */
+
+constexpr int MAX_COLS =
+    grid_max_cols(DISPLAY_WIDTH, DISPLAY_CORNER_RADIUS, GAME_CELL_WIDTH);
+constexpr int MAX_ROWS =
+    grid_max_rows(DISPLAY_HEIGHT, DISPLAY_CORNER_RADIUS, GAME_CELL_WIDTH);
+static bool visited[MAX_ROWS][MAX_COLS];
+// This one allows stepping on snake poop
+static bool visited_lenient[MAX_ROWS][MAX_COLS];
+static Point parent[MAX_ROWS][MAX_COLS];
+static Point queue[MAX_ROWS * MAX_COLS];
+
+bool find_next_step(const Point &start,
+                    const std::vector<std::vector<Cell>> &grid,
+                    Point &next_step)
+{
+        int rows = grid.size();
+        int cols = grid[0].size();
+        Point apple;
+        // Mark all cells where we cannot go and find the apple.
+        for (int y = 0; y < rows; ++y) {
+                for (int x = 0; x < cols; ++x) {
+                        // Clear the parent map
+                        parent[y][x] = {-1, -1};
+
+                        // Clear the previous state of visited maps
+                        visited[y][x] = false;
+                        visited_lenient[y][x] = false;
+
+                        // Assign initial state depending on the grid
+                        if (grid[y][x] == Cell::Apple) {
+                                apple = {x, y};
+                                continue;
+                        }
+                        Cell curr = grid[y][x];
+                        if (curr != Cell::Empty) {
+                                visited[y][x] = true;
+                        }
+                        if (curr == Cell::Snake || curr == Cell::AppleSnake) {
+                                visited_lenient[y][x] = true;
+                        }
+                }
+        }
+
+        int queue_head_idx = 0;
+        int queue_tail_idx = 0;
+        auto enqueue = [&queue_tail_idx](Point next) {
+                queue[queue_tail_idx++] = next;
+        };
+        auto dequeue = [&queue_head_idx]() -> Point {
+                return queue[queue_head_idx++];
+        };
+
+        enqueue(start);
+        visited[start.y][start.x] = true;
+
+        while (queue_head_idx != queue_tail_idx) {
+                Point cur = dequeue();
+
+                if (cur.x == apple.x && cur.y == apple.y) {
+                        // Traverse back the parent map to only get the next
+                        // step.
+                        Point p = apple;
+                        while (!(parent[p.y][p.x].x == start.x &&
+                                 parent[p.y][p.x].y == start.y)) {
+                                p = parent[p.y][p.x];
+                        }
+                        next_step = p;
+                        return true;
+                }
+
+                auto neighbours =
+                    get_adjacent_neighbours_inside_grid(&cur, rows, cols);
+
+                for (auto &nb : neighbours) {
+                        if (visited[nb.y][nb.x])
+                                continue;
+
+                        visited[nb.y][nb.x] = true;
+                        parent[nb.y][nb.x] = cur;
+                        enqueue(nb);
+                }
+        }
+
+        // If we didn't find a path without stepping on the snake poop, we
+        // try again but now with the lenient map that allows for stepping on
+        // it.
+        queue_head_idx = 0;
+        queue_tail_idx = 0;
+        enqueue(start);
+        visited_lenient[start.y][start.x] = true;
+
+        while (queue_head_idx != queue_tail_idx) {
+                Point cur = dequeue();
+
+                if (cur.x == apple.x && cur.y == apple.y) {
+                        // Traverse back the parent map to only get the next
+                        // step.
+                        Point p = apple;
+                        while (!(parent[p.y][p.x].x == start.x &&
+                                 parent[p.y][p.x].y == start.y)) {
+                                p = parent[p.y][p.x];
+                        }
+                        next_step = p;
+                        return true;
+                }
+
+                auto neighbours =
+                    get_adjacent_neighbours_inside_grid(&cur, rows, cols);
+
+                for (auto &nb : neighbours) {
+                        if (visited_lenient[nb.y][nb.x])
+                                continue;
+
+                        visited_lenient[nb.y][nb.x] = true;
+                        parent[nb.y][nb.x] = cur;
+                        enqueue(nb);
+                }
+        }
+
         return false;
 }

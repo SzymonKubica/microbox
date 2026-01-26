@@ -22,8 +22,8 @@ calculate_grid_dimensions(int display_width, int display_height,
         int usable_width = w - r;
         int usable_height = h - r;
 
-        int max_cols = usable_width / cell_width;
-        int max_rows = usable_height / cell_width;
+        int max_cols = grid_max_cols(display_width, r, cell_width);
+        int max_rows = grid_max_rows(display_height, r, cell_width);
 
         int actual_width = max_cols * cell_width;
         int actual_height = max_rows * cell_width;
@@ -74,8 +74,8 @@ void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
 }
 
 int render_centered_above_frame(Platform *p,
-                                     SquareCellGridDimensions *dimensions,
-                                     std::string text)
+                                SquareCellGridDimensions *dimensions,
+                                std::string text)
 {
 
         int y_margin = dimensions->top_vertical_margin;

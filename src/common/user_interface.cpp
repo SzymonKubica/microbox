@@ -201,18 +201,19 @@ void render_config_bar_centered(Display *display, int y_start,
                 } else {
 
                         if (update_option_name) {
-                        // We need to clear the background in black so that it
-                        // is the previous text is erased. Note that on the
-                        // emulator the border needs to be 0 else it will
-                        // overflow the config bar border.
+                                // We need to clear the background in black so
+                                // that it is the previous text is erased. Note
+                                // that on the emulator the border needs to be 0
+                                // else it will overflow the config bar border.
 #ifdef EMULATOR
-                        int border = 0;
+                                int border = 0;
 #else
-                        int border = 1;
+                                int border = 1;
 #endif
-                        display->draw_rectangle(
-                            bar_name_str_start, option_text_max_len * fw,
-                            fh + v_padding, Black, border, true);
+                                display->draw_rectangle(
+                                    bar_name_str_start,
+                                    option_text_max_len * fw, fh + v_padding,
+                                    Black, border, true);
                         }
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below

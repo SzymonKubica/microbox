@@ -21,6 +21,18 @@ typedef struct SquareCellGridDimensions {
         }
 } SquareCellGridDimensions;
 
+constexpr int grid_max_cols(int display_width,
+                            int display_rounded_corner_radius, int cell_width)
+{
+        return (display_width - display_rounded_corner_radius) / cell_width;
+}
+
+constexpr int grid_max_rows(int display_height,
+                            int display_rounded_corner_radius, int cell_width)
+{
+        return (display_height - display_rounded_corner_radius) / cell_width;
+}
+
 SquareCellGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
                           int display_rounded_corner_radius,
@@ -36,8 +48,8 @@ void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
  * things behind the centered text (e.g. incrementable score count).
  */
 int render_centered_above_frame(Platform *p,
-                                     SquareCellGridDimensions *dimensions,
-                                     std::string text);
+                                SquareCellGridDimensions *dimensions,
+                                std::string text);
 /**
  * Renders text above the grid frame starting from the supplied pixel position
  */
