@@ -194,12 +194,28 @@ std::optional<UserAction> select_game(Platform *p)
         return std::nullopt;
 }
 
+/**
+ * As a quality of life improvement, when the game console starts up, it will
+ * load the default game from the memory, however when you change the game
+ * and then play it, going back to the main menu will select this game by
+ * default this is accomplished using this static global variable.
+ */
+static std::optional<Game> last_selected_game = std::nullopt;
+
 std::optional<UserAction>
 collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
 {
 
         GameMenuConfiguration *initial_config =
             load_initial_menu_configuration(p->persistent_storage);
+
+        // As explained above, if the user changes the game, going back to the
+        // main menu will result in the menu having this game selected and
+        // not the initial config game. This is to avoid users having to change
+        // the selected game multiple times if they want to play the same thing.
+        if (last_selected_game.has_value()) {
+                initial_config->game = last_selected_game.value();
+        }
 
         Configuration *config =
             assemble_menu_selection_configuration(initial_config);
@@ -219,6 +235,8 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
                 return maybe_interrupt;
         }
         extract_game_config(configuration, config);
+        last_selected_game = configuration->game;
+
         delete config;
         delete initial_config;
         return std::nullopt;
