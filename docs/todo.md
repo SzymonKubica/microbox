@@ -18,9 +18,12 @@
 # TODO
 
 
+
 # In Progress
 
 # Done
+- [x] fix logo rendering
+- [x] fix game of life rendering artifacts.
 - [x] optimize performance of the snake duel bot to reduce lag
 - [x] ensure each frame of snake duel takes the same amount of time.
 - [x] fix weird snake head rendering on the target device ('flat forehead')
@@ -96,7 +99,7 @@
 - [x] explore using network stack to get true randomness.
 - [x] add dummy emulator implementation that would 'connect' to whatever wifi
       the laptop is connected and display that in the network stats.
-- [_] add ability to save wifi passwords
+- [x] add ability to save wifi passwords
 - [x] add a 'game' allowing to specify wifi settings and choose if wifi connection
       should be made at startup.
 - [x] add platform interface for initializing wifi
@@ -139,8 +142,8 @@
 - [x] add a 'fast-rendering' mode that will skip rendering of the costly UI elements
       (e.g. filled rounded rectangles can be replaced with their borders only)
 - [x] clean up color enums to ensure consistent names and remove duplicte enum variants
-    - [_] figure out how the LCD display encodes colors to create exactly matchign color
-          configs for the emulator (this requires access to online documentation).
+- [x] figure out how the LCD display encodes colors to create exactly matchign color
+      configs for the emulator (this requires access to online documentation).
 - [x] fix exception handling functionality (looks like the exception traps the entire
       microcontroller and it freezes)
 - [x] test EEPROM saving feature on target device

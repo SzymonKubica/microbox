@@ -924,7 +924,7 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
         // letter only.
 
         display->clear_region(
-            letter_leg_start,
+            {letter_leg_start.x + adj, letter_leg_start.y},
             {letter_front_end.x - 1, letter_front_end.y - letter_front_gap},
             Black);
 }

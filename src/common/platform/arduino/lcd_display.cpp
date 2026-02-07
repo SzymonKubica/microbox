@@ -180,12 +180,12 @@ void LcdDisplay::draw_line(Point start, Point end, Color color)
          * We need to add the adjustment because of the pixel-precision
          * inconsistency between the sfml emulator and the lcd display. The
          * Paint_DrawRectangle starts drawing one unit too far to the right and
-         * ends one unit too high, we need to add a simlar adjustment to the lines
-         * to ensure consistency
+         * ends one unit too high, we need to add a simlar adjustment to the
+         * lines to ensure consistency
          */
         int adj = 1;
-        Paint_DrawLine(start.x, start.y - adj, end.x, end.y - adj, color, DOT_PIXEL_1X1,
-                       LINE_STYLE_SOLID);
+        Paint_DrawLine(start.x, start.y - adj, end.x, end.y - adj, color,
+                       DOT_PIXEL_1X1, LINE_STYLE_SOLID);
 }
 
 sFONT *map_font_size(FontSize font_size);
@@ -198,9 +198,19 @@ void LcdDisplay::draw_string(Point start, char *string_buffer,
 
 void LcdDisplay::clear_region(Point top_left, Point bottom_right,
                               Color clear_color)
+
 {
-        Paint_ClearWindows(top_left.x, top_left.y, bottom_right.x,
-                           bottom_right.y, clear_color);
+        /*
+         * We need to add the adjustment because of the pixel-precision
+         * inconsistency between the sfml emulator and the lcd display. The
+         * Paint_DrawRectangle starts drawing one unit too far to the right and
+         * ends one unit too high, we need to add a simlar adjustment to the
+         * region clearing function to ensure consistency.
+         */
+        int adj = 1;
+        Paint_ClearWindows(top_left.x - adj, top_left.y - adj,
+                           bottom_right.x - adj, bottom_right.y - adj,
+                           clear_color);
 };
 
 sFONT *map_font_size(FontSize font_size)
