@@ -2,6 +2,10 @@
 #include "../common/logging.hpp"
 
 #define TAG "snake_common"
+#define DEFAULT_PADDING 2
+// We put a slightly larger padding around the snake segments to make them
+// smaller and make rendering faster on the target device.
+#define SNAKE_SEGMENT_PADDING 3
 
 namespace SnakeDefinitions
 {
@@ -31,7 +35,11 @@ void render_snake_head(Display *display, Color snake_color,
         // `re_render_grid_cell` and could be refactored into some other
         // function or merged into grid dimensions struct if it becomes useful
         // somewhere else.
-        int padding = 2;
+        int snake_padding = SNAKE_SEGMENT_PADDING;
+        // The padding between cells is slightly smaller than the padding around
+        // the snake, this is to ensure that apples and poop are easier to see
+        // and the snake doesn't feel too bulky.
+        int padding = DEFAULT_PADDING;
         // rectangle border width needs to be non-zero, else the physical LCD
         // display will not render rectangles.
         int border_width = 1;
@@ -48,8 +56,8 @@ void render_snake_head(Display *display, Color snake_color,
                        .y = top_margin + snake.head.y * height};
 
         // We draw a 'half-cell' to connect snake head to the neck.
-        int snake_w = width - 2 * padding;
-        int snake_h = height - 2 * padding;
+        int snake_w = width - 2 * snake_padding;
+        int snake_h = height - 2 * snake_padding;
         int rectangle_w, rectangle_h;
 
         switch (snake.direction) {
@@ -67,11 +75,11 @@ void render_snake_head(Display *display, Color snake_color,
         Point offset, eye_offset;
         switch (snake.direction) {
         case UP:
-                offset = {.x = 0, .y = snake_h / 2};
+                offset = {.x = 0, .y = rectangle_h};
                 eye_offset = {.x = -rectangle_w / 4, .y = 0};
                 break;
         case LEFT:
-                offset = {.x = snake_w / 2, .y = 0};
+                offset = {.x = rectangle_w, .y = 0};
                 eye_offset = {.x = 0, .y = rectangle_h / 4};
                 break;
         case DOWN:
@@ -84,16 +92,17 @@ void render_snake_head(Display *display, Color snake_color,
                 break;
         }
 
-        display->draw_rectangle({.x = start.x + offset.x + padding,
-                                 .y = start.y + offset.y + padding},
+        display->draw_rectangle({.x = start.x + offset.x + snake_padding,
+                                 .y = start.y + offset.y + snake_padding},
                                 rectangle_w, rectangle_h, snake_color,
                                 border_width, true);
         Point cell_center = {.x = start.x + width / 2,
                              .y = start.y + height / 2};
-        Point eye_center = {
-            .x = start.x + offset.x + padding + rectangle_w / 2 + eye_offset.x,
-            .y = start.y + offset.y + padding + rectangle_h / 2 + eye_offset.y};
-        display->draw_circle(cell_center, (width - 2 * padding) / 2,
+        Point eye_center = {.x = start.x + offset.x + snake_padding +
+                                 rectangle_w / 2 + eye_offset.x,
+                            .y = start.y + offset.y + snake_padding +
+                                 rectangle_h / 2 + eye_offset.y};
+        display->draw_circle(cell_center, (width - 2 * snake_padding) / 2,
                              snake_color, border_width, true);
         display->draw_circle(eye_center, 1, Black, 0, true);
 }
@@ -117,7 +126,8 @@ void render_segment_connection(Display *display, Color snake_color,
         // `re_render_grid_cell` and could be refactored into some other
         // function or merged into grid dimensions struct if it becomes useful
         // somewhere else.
-        int padding = 2;
+        int padding = SNAKE_SEGMENT_PADDING;
+        int cell_padding = DEFAULT_PADDING;
         // Rectangle border width needs to be non-zero, else the physical LCD
         // display will not render rectangles.
         int border_width = 1;
@@ -146,22 +156,24 @@ void render_segment_connection(Display *display, Color snake_color,
                 // add `width - padding below to get to that point` also note
                 // that we need to start drawing from the padded vertical start
                 // hence we add the padding in the y coordinate
-                start = {.x = left_margin + (left_point.x + 1) * width,
+                start = {.x =
+                             left_margin + (left_point.x + 1) * width - cell_padding,
                          .y = top_margin + left_point.y * height + padding};
-                segment_width = padding - border_width;
+                segment_width = 2 * cell_padding;
                 segment_height = height - 2 * padding;
 
         } else {
-                Point &top_point = first_location.y < second_location.y
-                                       ? first_location
-                                       : second_location;
+                Point top_point = first_location.y < second_location.y
+                                      ? first_location
+                                      : second_location;
                 // We start drawing from the end of the padded square (bottom
                 // left corner), hence we add `height - padding below to get to
                 // that point`
                 start = {.x = left_margin + top_point.x * width + padding,
-                         .y = top_margin + (top_point.y + 1) * height};
+                         .y =
+                             top_margin + (top_point.y + 1) * height - cell_padding};
                 segment_width = width - 2 * padding;
-                segment_height = padding - border_width;
+                segment_height = 2 * cell_padding;
         }
 
         display->draw_rectangle(start, segment_width, segment_height,
@@ -172,7 +184,8 @@ void refresh_grid_cell(Display *display, Color snake_color,
                        SquareCellGridDimensions *dimensions,
                        std::vector<std::vector<Cell>> *grid, Point &location)
 {
-        int padding = 2;
+        int padding = DEFAULT_PADDING;
+        int snake_padding = SNAKE_SEGMENT_PADDING;
         int height = dimensions->actual_height / dimensions->rows;
         int width = dimensions->actual_width / dimensions->cols;
         int left_margin = dimensions->left_horizontal_margin;
@@ -189,7 +202,11 @@ void refresh_grid_cell(Display *display, Color snake_color,
         int radius_offset = 1;
 
         // Represents the top left corner of the snake segment
-        Point padded_start = {.x = start.x + padding, .y = start.y + padding};
+        Point padded_start = {.x = start.x + snake_padding,
+                              .y = start.y + snake_padding};
+        // We render a large snake segment when the apple is inside of it.
+        Point large_segment_start = {.x = start.x + padding,
+                                     .y = start.y + padding};
         Point apple_center = {.x = start.x + width / 2,
                               .y = start.y + width / 2};
 
@@ -201,29 +218,33 @@ void refresh_grid_cell(Display *display, Color snake_color,
                 break;
         }
         case Cell::Snake: {
-                display->draw_rectangle(padded_start, width - 2 * padding,
-                                        height - 2 * padding, snake_color, 1,
-                                        true);
+                display->draw_rectangle(padded_start, width - 2 * snake_padding,
+                                        height - 2 * snake_padding, snake_color,
+                                        1, true);
                 break;
         }
         case Cell::Empty: {
-                display->draw_rectangle(start, width, height, Color::Black, 1,
-                                        true);
+                // We shrink the erased area to account for the border. This
+                // prevents the snake from clipping its tail segment that
+                // contains a consumed apple.
+                display->draw_rectangle(start, width - 1, height - 1,
+                                        Color::Black, 1, true);
                 break;
         }
         case Cell::AppleSnake: {
-                // Here we render a normal snake segment that has a hole inside
+                // Here we render a rounded snake segment that has a hole inside
                 // of it with an apple sitting there. This is to indicate
                 // segments of the snake that have 'consumed an apple'
-                display->draw_rectangle(padded_start, width - 2 * padding,
-                                        height - 2 * padding, snake_color, 1,
-                                        true);
+                display->draw_circle(apple_center, width / 2 - 1, snake_color,
+                                     0, true);
                 display->draw_circle(apple_center,
-                                     (width - 2 * padding) / 2 - radius_offset,
+                                     (width - 2 * snake_padding) / 2 -
+                                         radius_offset,
                                      Color::Black, 0, true);
-                display->draw_circle(
-                    apple_center, (width - 2 * padding) / 2 - 2 * radius_offset,
-                    Color::Red, 0, true);
+                display->draw_circle(apple_center,
+                                     (width - 2 * snake_padding) / 2 -
+                                         2 * radius_offset,
+                                     Color::Red, 0, true);
                 break;
         }
         case Cell::Poop: {
@@ -236,9 +257,10 @@ void refresh_grid_cell(Display *display, Color snake_color,
                     {.x = apple_center.x + 2, .y = apple_center.y},
                     {.x = apple_center.x + 1, .y = apple_center.y - 2}};
                 for (Point loc : locations) {
-                        display->draw_circle(
-                            loc, (width - 2 * padding) / 2 - radius_offset,
-                            Color::Brown, 0, true);
+                        display->draw_circle(loc,
+                                             (width - 2 * snake_padding) / 2 -
+                                                 radius_offset,
+                                             Color::Brown, 0, true);
                 }
                 break;
         }

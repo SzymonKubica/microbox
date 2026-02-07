@@ -179,9 +179,11 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         // the head).
         auto render_head = [p, gd, &grid, customization](Snake &snake) {
                 auto neck = snake.get_neck();
-                render_segment_connection(p->display,
-                                          customization->accent_color, gd,
-                                          &grid, neck, snake.head);
+                if (true) {
+                        render_segment_connection(p->display,
+                                                  customization->accent_color,
+                                                  gd, &grid, neck, snake.head);
+                }
                 render_snake_head(p->display, customization->accent_color, gd,
                                   &grid, snake);
         };
