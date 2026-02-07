@@ -17,15 +17,8 @@
   - you can pause the evolution and plant a seed whenever you want
   - the fewer evolution generations and seeds you use the better
 
-- test whether drawing a single large rectangle is faster than drawing multiple
-  small squares. If that is the case, we can optimize game of life rendering by
-  looking at contiguous regions of blocks that need to be painted black / white
-  and do those using a small number of draw_rectangle commands instead of drawing
-  each square separately.
 
 # TODO
-- [_] add memory efficient point encoding to reduce the global variables size (56%)
-      memory is currently occupied
 - [_] ensure that the AI snake can still avoid walls even if it is not able to
       find a path
 - [_] add high score saving to 2048.
@@ -35,6 +28,13 @@
 # In Progress
 
 # Done
+- [x] add memory efficient point encoding to reduce the global variables size (56%)
+      memory is currently occupied
+- [x] test whether drawing a single large rectangle is faster than drawing multiple
+      small squares. If that is the case, we can optimize game of life rendering by
+      looking at contiguous regions of blocks that need to be painted black / white
+      and do those using a small number of draw_rectangle commands instead of drawing
+      each square separately.
 - [x] add transient state where the last selected game stays selected in the game
       menu.
 - [x] fix memory errors when running on arduino

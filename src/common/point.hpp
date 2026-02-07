@@ -8,6 +8,7 @@ typedef struct Point {
 
 } Point;
 
+
 void translate(Point *p, Direction dir);
 /**
  * Given two points that are adjacent (horizontally or vertically, not

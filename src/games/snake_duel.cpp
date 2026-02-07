@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <functional>
 #include <optional>
-#include <deque>
 
 #include "snake_common.hpp"
 #include "snake_duel.hpp"
@@ -717,37 +717,68 @@ bool find_next_step(const Point &start, const Point &end, Point &next,
         return false;
 }
 
+/**
+ * For large statically-allocated arrays of points we want to minimize the
+ * global variable footprint. We use this 'compact' point that is optimized
+ * based on the assumption that the x coordinate is within the [0, 23] range
+ * and y is within [0,19], because of this we need 5 bits to encode each of the
+ * coordinates.
+ */
+typedef struct CompactPoint {
+        uint8_t x;
+        uint8_t y;
+
+      public:
+        Point into_point() { return {x, y}; }
+        static CompactPoint from_point(const Point &point)
+        {
+                return {static_cast<uint8_t>(point.x),
+                        static_cast<uint8_t>(point.y)};
+        }
+
+} CompactPoint;
+
 /*
  * To optimize memory usage and avoid fragmentation we statically preallocate
  * all arrays that are used for tracking the state of the traversal.
  */
 
+// Compile-time calculation of the number of grid columns.
 constexpr int MAX_COLS =
     grid_max_cols(DISPLAY_WIDTH, DISPLAY_CORNER_RADIUS, GAME_CELL_WIDTH);
+// Compile-time calculation of the number of grid rows.
 constexpr int MAX_ROWS =
     grid_max_rows(DISPLAY_HEIGHT, DISPLAY_CORNER_RADIUS, GAME_CELL_WIDTH);
-static bool visited[MAX_ROWS][MAX_COLS];
-// This one allows stepping on snake poop
-static bool visited_lenient[MAX_ROWS][MAX_COLS];
-static Point parent[MAX_ROWS][MAX_COLS];
-static Point queue[MAX_ROWS * MAX_COLS];
+// Each row is up to 24 cells long, hence we can represent whether a cell was
+// visited by setting bits.
+static uint32_t visited[MAX_ROWS];
+
+static CompactPoint parent[MAX_ROWS][MAX_COLS];
+static CompactPoint queue[MAX_ROWS * MAX_COLS];
 
 bool find_next_step(const Point &start,
                     const std::vector<std::vector<Cell>> &grid,
                     Point &next_step)
 {
+
+        auto is_visited = [](Point point) {
+                return static_cast<bool>(
+                    visited[point.y] & (1u << static_cast<uint32_t>(point.x)));
+        };
+        auto set_visited = [](Point point) {
+                visited[point.y] |= (1u << static_cast<uint32_t>(point.x));
+        };
+
         int rows = grid.size();
         int cols = grid[0].size();
         Point apple;
         // Mark all cells where we cannot go and find the apple.
         for (int y = 0; y < rows; ++y) {
+                // Clear the previous state of visited cells
+                visited[y] = 0;
                 for (int x = 0; x < cols; ++x) {
                         // Clear the parent map
-                        parent[y][x] = {-1, -1};
-
-                        // Clear the previous state of visited maps
-                        visited[y][x] = false;
-                        visited_lenient[y][x] = false;
+                        parent[y][x] = {0, 0};
 
                         // Assign initial state depending on the grid
                         if (grid[y][x] == Cell::Apple) {
@@ -756,10 +787,7 @@ bool find_next_step(const Point &start,
                         }
                         Cell curr = grid[y][x];
                         if (curr != Cell::Empty) {
-                                visited[y][x] = true;
-                        }
-                        if (curr == Cell::Snake || curr == Cell::AppleSnake) {
-                                visited_lenient[y][x] = true;
+                                set_visited({x, y});
                         }
                 }
         }
@@ -767,14 +795,14 @@ bool find_next_step(const Point &start,
         int queue_head_idx = 0;
         int queue_tail_idx = 0;
         auto enqueue = [&queue_tail_idx](Point next) {
-                queue[queue_tail_idx++] = next;
+                queue[queue_tail_idx++] = CompactPoint::from_point(next);
         };
         auto dequeue = [&queue_head_idx]() -> Point {
-                return queue[queue_head_idx++];
+                return queue[queue_head_idx++].into_point();
         };
 
         enqueue(start);
-        visited[start.y][start.x] = true;
+        set_visited(start);
 
         while (queue_head_idx != queue_tail_idx) {
                 Point cur = dequeue();
@@ -785,7 +813,7 @@ bool find_next_step(const Point &start,
                         Point p = apple;
                         while (!(parent[p.y][p.x].x == start.x &&
                                  parent[p.y][p.x].y == start.y)) {
-                                p = parent[p.y][p.x];
+                                p = parent[p.y][p.x].into_point();
                         }
                         next_step = p;
                         return true;
@@ -795,12 +823,31 @@ bool find_next_step(const Point &start,
                     get_adjacent_neighbours_inside_grid(&cur, rows, cols);
 
                 for (auto &nb : neighbours) {
-                        if (visited[nb.y][nb.x])
+                        if (is_visited(nb))
                                 continue;
 
-                        visited[nb.y][nb.x] = true;
-                        parent[nb.y][nb.x] = cur;
+                        set_visited(nb);
+                        parent[nb.y][nb.x] = CompactPoint::from_point(cur);
                         enqueue(nb);
+                }
+        }
+        // Disable the lenient search for now
+        return false;
+
+        // If we didn't find the path that does not touch snake poop, we
+        // try again but now we allow for stepping on it. The distinction here
+        // is made that we only mark Snake/AppleSnake cells as inaccessible.
+        for (int y = 0; y < rows; ++y) {
+                // Clear the previous state of visited cells
+                visited[y] = 0;
+                for (int x = 0; x < cols; ++x) {
+                        // Clear the parent map
+                        parent[y][x] = {0, 0};
+
+                        Cell curr = grid[y][x];
+                        if (curr == Cell::Snake || curr == Cell::AppleSnake) {
+                                set_visited({x, y});
+                        }
                 }
         }
 
@@ -810,7 +857,6 @@ bool find_next_step(const Point &start,
         queue_head_idx = 0;
         queue_tail_idx = 0;
         enqueue(start);
-        visited_lenient[start.y][start.x] = true;
 
         while (queue_head_idx != queue_tail_idx) {
                 Point cur = dequeue();
@@ -821,7 +867,7 @@ bool find_next_step(const Point &start,
                         Point p = apple;
                         while (!(parent[p.y][p.x].x == start.x &&
                                  parent[p.y][p.x].y == start.y)) {
-                                p = parent[p.y][p.x];
+                                p = parent[p.y][p.x].into_point();
                         }
                         next_step = p;
                         return true;
@@ -831,11 +877,11 @@ bool find_next_step(const Point &start,
                     get_adjacent_neighbours_inside_grid(&cur, rows, cols);
 
                 for (auto &nb : neighbours) {
-                        if (visited_lenient[nb.y][nb.x])
+                        if (is_visited(nb))
                                 continue;
 
-                        visited_lenient[nb.y][nb.x] = true;
-                        parent[nb.y][nb.x] = cur;
+                        set_visited(nb);
+                        parent[nb.y][nb.x] = CompactPoint::from_point(cur);
                         enqueue(nb);
                 }
         }
