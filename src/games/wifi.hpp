@@ -9,10 +9,8 @@
 #define AVAILABLE_CONFIGURATION_SLOTS 5
 
 typedef enum WifiAppAction {
-        // This is currently not available as we can only save one wifi config.
-        // TODO: implement this
         AddNew = 0,
-        // ShowPassword, future ide
+        // ShowPassword, future idea
         Modify = 1,
         Connect = 2,
 } WifiAppAction;

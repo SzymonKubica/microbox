@@ -31,8 +31,6 @@ class ArduinoWifiProvider : public WifiProvider
                 data->ssid = new char[ssid_length + 1];
                 strcpy((char *)data->ssid, WiFi.SSID());
 
-                // TODO: IPAddress ip = WiFi.localIP(); (not sure what this IP
-                // address structure is)
                 return data;
 #endif
         }

@@ -1183,7 +1183,6 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                 }
                 p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
                 if (!p->display->refresh()) {
-                        // TODO: clean up all allocations from above here.
                         return UserAction::CloseWindow;
                 }
         }

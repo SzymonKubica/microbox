@@ -64,16 +64,14 @@ void render_snake_head(Display *display, Color snake_color,
                 rectangle_h = snake_h;
         }
 
+        LOG_DEBUG(TAG, "rectangle_w: %d", rectangle_w);
+        LOG_DEBUG(TAG, "rectangle_h: %d", rectangle_h);
+
         Point offset, eye_offset;
-        // When going down we need to make the rectangle a bit larger.
-        // TODO: clean up
-        int vertical_extension = 0;
-        int height_adj = 0;
         switch (snake.direction) {
         case UP:
                 offset = {.x = 0, .y = snake_h / 2};
                 eye_offset = {.x = -rectangle_w / 4, .y = 0};
-                height_adj = 1;
                 break;
         case LEFT:
                 offset = {.x = snake_w / 2, .y = 0};
@@ -82,7 +80,6 @@ void render_snake_head(Display *display, Color snake_color,
         case DOWN:
                 offset = {.x = 0, .y = 0};
                 eye_offset = {.x = rectangle_w / 4, .y = 0};
-                vertical_extension = 3;
                 break;
         case RIGHT:
                 offset = {.x = 0, .y = 0};
@@ -90,11 +87,10 @@ void render_snake_head(Display *display, Color snake_color,
                 break;
         }
 
-        display->draw_rectangle(
-            {.x = start.x + offset.x + padding,
-             .y = start.y + offset.y + padding - vertical_extension},
-            rectangle_w, rectangle_h + vertical_extension + height_adj,
-            snake_color, border_width, true);
+        display->draw_rectangle({.x = start.x + offset.x + padding,
+                                 .y = start.y + offset.y + padding},
+                                rectangle_w, rectangle_h, snake_color,
+                                border_width, true);
         Point cell_center = {.x = start.x + width / 2,
                              .y = start.y + height / 2};
         Point eye_center = {

@@ -4,11 +4,7 @@
 
 #define TAG "grid"
 
-#ifdef EMULATOR
-#define EXPLANATION_ABOVE_GRID_OFFEST 4
-#else
-#define EXPLANATION_ABOVE_GRID_OFFEST 1
-#endif
+#define EXPLANATION_ABOVE_GRID_OFFEST 3
 
 SquareCellGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,

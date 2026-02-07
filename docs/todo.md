@@ -1,13 +1,10 @@
 # Ideas
 - games that can be implemented with the limited display:
-  - snake
   - sudoku (assuming we can fit 9x9 grid)
   - some fun animations
-  into my desk at home / control the game via ssh.
 - [_] figure out how to generate sudoku
 - [_] design the input model for sudoku
 - [_] think about the sudoku game logic
-- we can add compatibility layer for raspberry pi and make a controller that will be embedded
 
 - game of life based puzzle game:
   - you have a limited number of seeds
@@ -19,12 +16,14 @@
 
 
 # TODO
-- [_] remove hacky pixel-level overrides in the snake code (most likely inaccurate logic)
+- [_] ensure closing the window actually kills the emulator
+- [_] reproduce & fix missing apple bug
 
 
 # In Progress
 
 # Done
+- [x] remove hacky pixel-level overrides in the snake code (most likely inaccurate logic)
 - [x] ensure that the AI snake can still avoid walls even if it is not able to
       find a path
 - [x] add memory efficient point encoding to reduce the global variables size (56%)

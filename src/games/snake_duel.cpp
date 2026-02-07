@@ -18,7 +18,7 @@
 #define GAME_LOOP_DELAY 50
 #define TAG "snake"
 
-constexpr int GAME_CELL_WIDTH = 10;
+constexpr int GAME_CELL_WIDTH = DEFAULT_SNAKE_GAME_CELL_WIDTH;
 
 SnakeDuelConfiguration DEFAULT_SNAKE_DUEL_CONFIG = {.speed = 6,
                                                     .allow_grace = false,
@@ -179,7 +179,7 @@ UserAction snake_duel_loop(Platform *p,
                 return maybe_interrupt.value();
         }
 
-        int game_cell_width = 10;
+        int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
             p->display->get_display_corner_radius(), game_cell_width);
@@ -621,7 +621,7 @@ load_initial_snake_duel_config(PersistentStorage *storage)
 
         LOG_DEBUG(TAG,
                   "Loaded snake configuration: speed=%d, enable_poop=%d, "
-                  "allow_grace=%d"
+                  "allow_grace=%d, "
                   "secondary_player_color=%d",
                   output->speed, output->enable_poop, output->allow_grace,
                   output->secondary_player_color);

@@ -122,7 +122,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 return maybe_interrupt.value();
         }
 
-        int game_cell_width = 10;
+        int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
             p->display->get_display_corner_radius(), game_cell_width);
@@ -282,7 +282,6 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         snake.head = previous_head;
                         state.grace_used = true;
                         if (increment_iteration_and_wait().has_value()) {
-                                // TODO: deallocate here
                                 return UserAction::CloseWindow;
                         }
                         continue;
@@ -320,7 +319,6 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                         render_cell(apple_loc);
                         render_score(game_score);
                         if (increment_iteration_and_wait().has_value()) {
-                                // TODO: deallocate here
                                 return UserAction::CloseWindow;
                         }
                         continue;
@@ -461,7 +459,7 @@ SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
 
         LOG_DEBUG(TAG,
                   "Loaded snake configuration: speed=%d, enable_poop=%d, "
-                  "allow_grace=%d"
+                  "allow_grace=%d, "
                   "allow_pause=%d",
                   output->speed, output->enable_poop, output->allow_grace,
                   output->allow_pause);

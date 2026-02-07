@@ -118,14 +118,15 @@ void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
 
         /*
-         * We need to add the adjustment because of the pixel-precision inconsistency
-         * between the sfml emulator and the lcd display. The Paint_DrawRectangle
-         * starts drawing one unit too far to the right and ends one unit too high,
-         * so we need to add the adjustment
+         * We need to add the adjustment because of the pixel-precision
+         * inconsistency between the sfml emulator and the lcd display. The
+         * Paint_DrawRectangle starts drawing one unit too far to the right and
+         * ends one unit too high, so we need to add the adjustment
+         * Note that the width works as expected, so we do not adjust anything.
          */
         int adj = 1;
-        Paint_DrawRectangle(start.x -1, start.y, start.x + width,
-                            start.y + height +1, color,
+        Paint_DrawRectangle(start.x - adj, start.y - adj, start.x + width,
+                            start.y + height + adj, color,
                             static_cast<DOT_PIXEL>(border_width),
                             static_cast<DRAW_FILL>(filled_repr));
 };
@@ -166,7 +167,15 @@ void LcdDisplay::draw_rounded_rectangle(Point start, int width, int height,
 
 void LcdDisplay::draw_line(Point start, Point end, Color color)
 {
-        Paint_DrawLine(start.x, start.y, end.x, end.y, color, DOT_PIXEL_1X1,
+        /*
+         * We need to add the adjustment because of the pixel-precision
+         * inconsistency between the sfml emulator and the lcd display. The
+         * Paint_DrawRectangle starts drawing one unit too far to the right and
+         * ends one unit too high, we need to add a simlar adjustment to the lines
+         * to ensure consistency
+         */
+        int adj = 1;
+        Paint_DrawLine(start.x, start.y - adj, end.x, end.y - adj, color, DOT_PIXEL_1X1,
                        LINE_STYLE_SOLID);
 }
 

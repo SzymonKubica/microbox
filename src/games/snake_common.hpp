@@ -1,6 +1,8 @@
 #pragma once
 #include "../common/grid.hpp"
 
+#define DEFAULT_SNAKE_GAME_CELL_WIDTH 12
+
 namespace SnakeDefinitions
 {
 enum class Cell : uint8_t {
