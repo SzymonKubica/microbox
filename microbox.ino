@@ -6,7 +6,7 @@
 #include "src/common/platform/arduino/keypad_controller.hpp"
 #include "src/common/platform/arduino/lcd_display.hpp"
 #include "src/common/platform/arduino/arduino_secrets.hpp"
-#include "src/common/platform/arduino/arduino_delay.cpp"
+#include "src/common/platform/arduino/arduino_time_provider.cpp"
 #include "src/common/platform/interface/persistent_storage.hpp"
 
 #include "src/games/game_menu.hpp"
@@ -77,14 +77,14 @@ void loop(void)
         std::vector<ActionController *> action_controllers(1);
         action_controllers[0] = keypad_controller;
 
-        DelayProvider *delay_provider = new ArduinoDelay((void (*)(int))&delay);
+        TimeProvider *time_provider = new ArduinoTimeProvider((void (*)(int))&delay);
         WifiProvider *wifi_provider = new ArduinoWifiProvider{};
         ArduinoHttpClient *client = new ArduinoHttpClient();
 
         Platform platform = {.display = &display,
                              .directional_controllers = &controllers,
                              .action_controllers = &action_controllers,
-                             .delay_provider = delay_provider,
+                             .time_provider = time_provider,
                              .persistent_storage = &persistent_storage,
                              .wifi_provider = wifi_provider,
                              .client = client};

@@ -1141,7 +1141,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                                  strlen(base_char_map[0]));
                         render_character_at_location(
                             cursor, customization->accent_color, curr_char_map);
-                        p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
+                        p->time_provider->delay_ms(INPUT_POLLING_DELAY);
                 }
                 if (poll_action_input(p->action_controllers, &act)) {
                         switch (act) {
@@ -1188,9 +1188,9 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                 }
                                 break;
                         }
-                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
-                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
+                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
                 if (!p->display->refresh()) {
                         return UserAction::CloseWindow;
                 }
@@ -1218,12 +1218,12 @@ std::optional<UserAction> wait_until_green_pressed(Platform *p)
                 if (poll_action_input(p->action_controllers, &act)) {
                         if (act == Action::GREEN) {
                                 LOG_DEBUG(TAG, "User confirmed 'OK'");
-                                p->delay_provider->delay_ms(
+                                p->time_provider->delay_ms(
                                     MOVE_REGISTERED_DELAY);
                                 return std::nullopt;
                         }
                 }
-                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
+                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
 
                 if (!p->display->refresh()) {
                         return UserAction::CloseWindow;
@@ -1236,10 +1236,10 @@ std::variant<Action, UserAction> wait_until_action_input(Platform *p)
         while (true) {
                 Action act;
                 if (poll_action_input(p->action_controllers, &act)) {
-                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         return act;
                 }
-                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
+                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
                 if (!p->display->refresh()) {
                         return UserAction::CloseWindow;
                 }

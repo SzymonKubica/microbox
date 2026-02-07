@@ -87,7 +87,7 @@ SnakeGame::game_loop(Platform *p, UserInterfaceCustomization *customization)
                         Action act;
                         auto maybe_event = pause_until_input(
                             p->directional_controllers, p->action_controllers,
-                            &dir, &act, p->delay_provider, p->display);
+                            &dir, &act, p->time_provider, p->display);
 
                         // We propagate the 'close window' action here.
                         if (maybe_event.has_value() &&
@@ -215,7 +215,7 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
         auto increment_iteration_and_wait =
             [p, &state, gd]() -> std::optional<UserAction> {
                 state.increment_iteration();
-                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
+                p->time_provider->delay_ms(GAME_LOOP_DELAY);
                 if (!p->display->refresh()) {
                         delete gd;
                         return UserAction::CloseWindow;

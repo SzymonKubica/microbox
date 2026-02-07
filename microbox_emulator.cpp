@@ -6,7 +6,7 @@
 #include "src/common/platform/emulator/sfml_display.hpp"
 #include "src/common/platform/emulator/emulated_wifi_provider.cpp"
 #include "src/common/platform/emulator/emulator_http_client.hpp"
-#include "src/common/platform/emulator/emulator_delay.cpp"
+#include "src/common/platform/emulator/emulator_time_provider.cpp"
 #include "src/common/platform/emulator/sfml_controller.hpp"
 #include "src/common/platform/emulator/sfml_awsd_controller.hpp"
 #include "src/common/platform/emulator/sfml_hjkl_controller.hpp"
@@ -20,7 +20,7 @@
 #define TAG "emulator_entrypoint"
 
 SfmlDisplay *display;
-EmulatorDelay delay;
+EmulatorTimeProvider time_provider;
 SfmlInputController controller;
 SfmlAwsdInputController awsd_controller;
 SfmlHjklInputController hjkl_controller;
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         Platform platform = {.display = display,
                              .directional_controllers = &controllers,
                              .action_controllers = &action_controllers,
-                             .delay_provider = &delay,
+                             .time_provider = &time_provider,
                              .persistent_storage = &persistent_storage,
                              .wifi_provider = wifi_provider,
                              .client = client};

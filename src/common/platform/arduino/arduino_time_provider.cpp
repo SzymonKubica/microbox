@@ -1,7 +1,10 @@
-#include "../interface/delay.hpp"
-class ArduinoDelay : public DelayProvider
+#ifndef EMULATOR
+#include "../interface/time_provider.hpp"
+#include "Arduino.h"
+class ArduinoTimeProvider : public TimeProvider
 {
         void delay_ms(int ms) override { delay(ms); }
+        long milliseconds() override { return millis(); }
 
       public:
         /**
@@ -9,7 +12,7 @@ class ArduinoDelay : public DelayProvider
          * .ino file. The reason is that those functions cannot be imported
          * in C++ sources directly.
          */
-        ArduinoDelay(void (*delay_)(int)) : delay(delay_) {}
+        ArduinoTimeProvider(void (*delay_)(int)) : delay(delay_) {}
 
       private:
         /**
@@ -17,3 +20,4 @@ class ArduinoDelay : public DelayProvider
          */
         void (*delay)(int);
 };
+#endif

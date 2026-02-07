@@ -382,7 +382,7 @@ UserAction game_of_life_loop(Platform *p,
                         }
                         return UserAction::CloseWindow;
                 }
-                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
+                p->time_provider->delay_ms(GAME_LOOP_DELAY);
         }
         return UserAction::PlayAgain;
 }

@@ -156,8 +156,8 @@ void render_segment_connection(Display *display, Color snake_color,
                 // add `width - padding below to get to that point` also note
                 // that we need to start drawing from the padded vertical start
                 // hence we add the padding in the y coordinate
-                start = {.x =
-                             left_margin + (left_point.x + 1) * width - cell_padding,
+                start = {.x = left_margin + (left_point.x + 1) * width -
+                              cell_padding,
                          .y = top_margin + left_point.y * height + padding};
                 segment_width = 2 * cell_padding;
                 segment_height = height - 2 * padding;
@@ -170,8 +170,8 @@ void render_segment_connection(Display *display, Color snake_color,
                 // left corner), hence we add `height - padding below to get to
                 // that point`
                 start = {.x = left_margin + top_point.x * width + padding,
-                         .y =
-                             top_margin + (top_point.y + 1) * height - cell_padding};
+                         .y = top_margin + (top_point.y + 1) * height -
+                              cell_padding};
                 segment_width = width - 2 * padding;
                 segment_height = 2 * cell_padding;
         }
@@ -276,7 +276,7 @@ Point spawn_apple(std::vector<std::vector<Cell>> *grid)
                 int y = rand() % rows;
 
                 Cell selected = (*grid)[y][x];
-                if (selected != Cell::Snake) {
+                if (selected != Cell::Snake && selected != Cell::AppleSnake) {
                         (*grid)[y][x] = Cell::Apple;
                         return {x, y};
                         break;

@@ -17,11 +17,12 @@
 
 # TODO
 
-- [_] optimize performance of the snake duel bot to reduce lag.
 
 # In Progress
 
 # Done
+- [x] optimize performance of the snake duel bot to reduce lag
+- [x] ensure each frame of snake duel takes the same amount of time.
 - [x] fix weird snake head rendering on the target device ('flat forehead')
 - [x] ensure closing the window actually kills the emulator
 - [x] reproduce & fix missing apple bug

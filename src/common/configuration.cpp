@@ -302,7 +302,7 @@ collect_configuration(Platform *p, Configuration *config,
 
                 // Abstract out the repeatable delay functionality.
                 auto move_registered_delay = [&] {
-                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 };
 
                 if (poll_action_input(p->action_controllers, &act)) {
@@ -358,12 +358,12 @@ collect_configuration(Platform *p, Configuration *config,
                                 return UserAction::CloseWindow;
                         }
 
-                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
                 if (!p->display->refresh()) {
                         return UserAction::CloseWindow;
                 }
-                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
+                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
         }
         return std::nullopt;
 }

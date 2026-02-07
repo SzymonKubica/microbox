@@ -43,8 +43,7 @@ struct ColoredSnake : Snake {
  * state of an ongoing game loop.
  */
 struct SnakeDuelLoopState {
-        int move_period;
-        int iteration;
+        int frame_duration;
         // To avoid button debounce issues, we only process action input if
         // it wasn't processed on the last iteration. This is to avoid
         // situations where the user holds the 'pause' button for too long and
@@ -68,27 +67,15 @@ struct SnakeDuelLoopState {
 
       public:
         SnakeDuelLoopState(int moves_per_second)
-            : iteration(0), action_input_on_last_iteration(false),
-              is_snake_two_dead(false), is_snake_one_dead(false),
-              grace_used(false), second_snake_grace_used(false),
-              is_paused(false), snake_one_score(0), snake_two_score(0)
+            : action_input_on_last_iteration(false), is_snake_two_dead(false),
+              is_snake_one_dead(false), grace_used(false),
+              second_snake_grace_used(false), is_paused(false),
+              snake_one_score(0), snake_two_score(0)
         {
-                this->move_period = (1000 / moves_per_second) / GAME_LOOP_DELAY;
+                this->frame_duration = (1000 / moves_per_second);
         }
 
-        void increment_iteration()
-        {
-                iteration += 1;
-                iteration %= move_period;
-        }
         void toggle_pause() { is_paused = !is_paused; }
-
-        /*
-         * Informs us whether a sufficient number of waiting iterations has
-         * passed to take a game loop step (e.g. advance the snake by one unit
-         * forward).
-         */
-        bool is_waiting() { return iteration != move_period - 1; }
 
         bool is_game_over() { return is_snake_one_dead && is_snake_two_dead; }
 };
@@ -114,7 +101,7 @@ SnakeDuel::game_loop(Platform *p, UserInterfaceCustomization *customization)
                         Action act;
                         auto maybe_event = pause_until_input(
                             p->directional_controllers, p->action_controllers,
-                            &dir, &act, p->delay_provider, p->display);
+                            &dir, &act, p->time_provider, p->display);
 
                         // We propagate the 'close window' action here.
                         if (maybe_event.has_value() &&
@@ -295,11 +282,16 @@ UserAction snake_duel_loop(Platform *p,
         SnakeDuelLoopState state{config.speed};
 
         // Convenience funtion to ensure each short-circuit exit of the
-        // loop iteration actually increments the counter and waits a bit.
-        auto increment_iteration_and_wait =
-            [p, &state]() -> std::optional<UserAction> {
-                state.increment_iteration();
-                p->delay_provider->delay_ms(GAME_LOOP_DELAY);
+        // loop iteration waits until the next move.
+        auto wait_for_next_move =
+            [p, &state](long frame_start_millis) -> std::optional<UserAction> {
+                long elapsed =
+                    p->time_provider->milliseconds() - frame_start_millis;
+
+                if (state.frame_duration > elapsed) {
+                        p->time_provider->delay_ms(state.frame_duration -
+                                                   elapsed);
+                }
                 if (!p->display->refresh()) {
                         return UserAction::CloseWindow;
                 }
@@ -315,6 +307,7 @@ UserAction snake_duel_loop(Platform *p,
         Direction new_snake_direction = snake.direction;
         Direction new_second_snake_direction = second_snake.direction;
         while (!state.is_game_over()) {
+                long frame_start = p->time_provider->milliseconds();
                 Direction dir;
                 Action act;
                 // The `!is_opposite` check prevents instant game-over when user
@@ -335,26 +328,23 @@ UserAction snake_duel_loop(Platform *p,
                         if (config.enable_ai && state.is_snake_one_dead &&
                             act == Action::BLUE) {
                                 delete gd;
-                                p->delay_provider->delay_ms(
+                                p->time_provider->delay_ms(
                                     MOVE_REGISTERED_DELAY);
                                 return UserAction::PlayAgain;
                         }
                 }
 
-                if (state.is_waiting()) {
-                        if (increment_iteration_and_wait().has_value()) {
-                                delete gd;
-                                return UserAction::CloseWindow;
-                        };
-                        continue;
-                }
-
+                long start = p->time_provider->milliseconds();
                 if (!state.is_snake_one_dead) {
                         snake.direction = new_snake_direction;
                         take_snake_step(p, customization, config, gd, score_end,
                                         grid, render_head, render_cell, state,
                                         snake, false);
                 }
+                long end = p->time_provider->milliseconds();
+                LOG_DEBUG(TAG, "Snake 1 took a step in %d milliseconds.",
+                          end - start);
+                start = p->time_provider->milliseconds();
                 if (!state.is_snake_two_dead) {
                         if (config.enable_ai) {
                                 auto direction = find_next_step_towards_apple(
@@ -381,11 +371,16 @@ UserAction snake_duel_loop(Platform *p,
                                         grid, render_head, render_cell, state,
                                         second_snake, true);
                 }
+                end = p->time_provider->milliseconds();
+                LOG_DEBUG(TAG, "Snake 2 took a step in %d milliseconds.",
+                          end - start);
 
-                if (increment_iteration_and_wait().has_value()) {
+                if (wait_for_next_move(frame_start).has_value()) {
                         delete gd;
                         return UserAction::CloseWindow;
                 };
+                LOG_DEBUG(TAG, "Game loop iteration took %d milliseconds.",
+                          p->time_provider->milliseconds() - frame_start);
         }
 
         if (!p->display->refresh()) {

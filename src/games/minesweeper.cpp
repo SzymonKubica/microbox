@@ -108,7 +108,7 @@ Minesweeper::game_loop(Platform *p, UserInterfaceCustomization *customization)
                         Action act;
                         pause_until_input(p->directional_controllers,
                                           p->action_controllers, &dir, &act,
-                                          p->delay_provider, p->display);
+                                          p->time_provider, p->display);
 
                         if (act == Action::BLUE) {
                                 exit_requested = true;
@@ -233,7 +233,7 @@ UserAction minesweeper_loop(Platform *p,
                                 delete gd;
                                 return UserAction::CloseWindow;
                         }
-                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         /* We continue here to skip the additional input
                            polling delay at the end of the loop and make
                            the input snappy. */
@@ -302,7 +302,7 @@ UserAction minesweeper_loop(Platform *p,
                                 delete gd;
                                 return UserAction::CloseWindow;
                         }
-                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         /* We continue here to skip the additional input
                            polling delay at the end of the loop and make
                            the input snappy. */
@@ -315,7 +315,7 @@ UserAction minesweeper_loop(Platform *p,
                         delete gd;
                         return UserAction::CloseWindow;
                 }
-                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
+                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
         }
 
         // When the game is lost, we make all bombs explode.
@@ -333,14 +333,14 @@ UserAction minesweeper_loop(Platform *p,
                 }
 
                 pause_until_any_directional_input(
-                    p->directional_controllers, p->delay_provider, p->display);
+                    p->directional_controllers, p->time_provider, p->display);
                 display_game_over(p->display, customization);
-                p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
         } else {
                 pause_until_any_directional_input(
-                    p->directional_controllers, p->delay_provider, p->display);
+                    p->directional_controllers, p->time_provider, p->display);
                 display_game_won(p->display, customization);
-                p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
         if (!p->display->refresh()) {
                 delete gd;

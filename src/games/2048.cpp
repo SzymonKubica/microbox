@@ -185,7 +185,7 @@ UserAction enter_2048_loop(Platform *p,
                                   direction_to_str(dir));
                         take_turn(state, (int)dir);
                         update_game_grid(p->display, state, customization);
-                        p->delay_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 } else if (poll_action_input(p->action_controllers, &act)) {
                         if (act == Action::BLUE) {
                                 LOG_DEBUG(TAG, "User requested to exit game.");
@@ -207,12 +207,12 @@ UserAction enter_2048_loop(Platform *p,
                                         save_game_state(p, config, state);
                                 }
                                 free_game_state(state);
-                                p->delay_provider->delay_ms(
+                                p->time_provider->delay_ms(
                                     MOVE_REGISTERED_DELAY);
                                 return UserAction::Exit;
                         }
                 }
-                p->delay_provider->delay_ms(INPUT_POLLING_DELAY);
+                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
                 if (!p->display->refresh()) {
                         free_game_state(state);
                         return UserAction::CloseWindow;
@@ -227,7 +227,7 @@ UserAction enter_2048_loop(Platform *p,
         }
 
         pause_until_any_directional_input(p->directional_controllers,
-                                          p->delay_provider, p->display);
+                                          p->time_provider, p->display);
         return UserAction::PlayAgain;
 }
 

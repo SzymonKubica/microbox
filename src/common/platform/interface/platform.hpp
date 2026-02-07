@@ -1,6 +1,6 @@
 #pragma once
 #include "controller.hpp"
-#include "delay.hpp"
+#include "time_provider.hpp"
 #include "display.hpp"
 #include "http_client.hpp"
 #include "persistent_storage.hpp"
@@ -15,7 +15,7 @@ struct Platform {
         Display *display;
         std::vector<DirectionalController*> *directional_controllers;
         std::vector<ActionController*> *action_controllers;
-        DelayProvider *delay_provider;
+        TimeProvider *time_provider;
         PersistentStorage *persistent_storage;
         WifiProvider *wifi_provider;
         HttpClient *client;
