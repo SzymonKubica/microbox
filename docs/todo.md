@@ -16,13 +16,13 @@
 
 
 # TODO
-- [_] ensure closing the window actually kills the emulator
-- [_] reproduce & fix missing apple bug
 
 
 # In Progress
 
 # Done
+- [x] ensure closing the window actually kills the emulator
+- [x] reproduce & fix missing apple bug
 - [x] remove hacky pixel-level overrides in the snake code (most likely inaccurate logic)
 - [x] ensure that the AI snake can still avoid walls even if it is not able to
       find a path

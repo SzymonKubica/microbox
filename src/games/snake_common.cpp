@@ -64,9 +64,6 @@ void render_snake_head(Display *display, Color snake_color,
                 rectangle_h = snake_h;
         }
 
-        LOG_DEBUG(TAG, "rectangle_w: %d", rectangle_w);
-        LOG_DEBUG(TAG, "rectangle_h: %d", rectangle_h);
-
         Point offset, eye_offset;
         switch (snake.direction) {
         case UP:

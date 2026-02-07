@@ -107,19 +107,26 @@ SnakeDuel::game_loop(Platform *p, UserInterfaceCustomization *customization)
         bool exit_requested = false;
         while (!exit_requested) {
                 switch (snake_duel_loop(p, customization)) {
-                case UserAction::PlayAgain:
+                case UserAction::PlayAgain: {
                         LOG_DEBUG(TAG, "Snake duel game loop finished. "
                                        "Pausing for input ");
                         Direction dir;
                         Action act;
-                        pause_until_input(p->directional_controllers,
-                                          p->action_controllers, &dir, &act,
-                                          p->delay_provider, p->display);
+                        auto maybe_event = pause_until_input(
+                            p->directional_controllers, p->action_controllers,
+                            &dir, &act, p->delay_provider, p->display);
+
+                        // We propagate the 'close window' action here.
+                        if (maybe_event.has_value() &&
+                            maybe_event.value() == UserAction::CloseWindow) {
+                                return maybe_event;
+                        }
 
                         if (act == Action::BLUE) {
                                 exit_requested = true;
                         }
                         break;
+                }
                 case UserAction::Exit:
                         exit_requested = true;
                         break;
