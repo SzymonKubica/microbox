@@ -433,13 +433,14 @@ void take_snake_step(
         bool failure = wall_hit || tail_hit;
 
         if (failure) {
-                if (grace_used || !config.allow_grace) {
+                if (*grace_used || !config.allow_grace) {
                         LOG_INFO(TAG, "Snake %d is dead.", snake_number);
                         *is_game_over = true;
                 }
 
                 // We allow the user to change the direction for an additional
                 // tick by rolling back the head position.
+                LOG_INFO(TAG, "Snake %d used grace.", snake_number);
                 Point previous_head = *(snake.body.end() - 1);
                 snake.head = {previous_head.x, previous_head.y};
 
