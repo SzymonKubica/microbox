@@ -19,15 +19,14 @@
 
 
 # TODO
-- [_] ensure that the AI snake can still avoid walls even if it is not able to
-      find a path
-- [_] add high score saving to 2048.
 - [_] remove hacky pixel-level overrides in the snake code (most likely inaccurate logic)
 
 
 # In Progress
 
 # Done
+- [x] ensure that the AI snake can still avoid walls even if it is not able to
+      find a path
 - [x] add memory efficient point encoding to reduce the global variables size (56%)
       memory is currently occupied
 - [x] test whether drawing a single large rectangle is faster than drawing multiple

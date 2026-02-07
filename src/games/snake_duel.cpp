@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <functional>
@@ -155,6 +154,10 @@ void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
 std::optional<Direction>
 find_next_step_towards_apple(Snake &snake,
                              std::vector<std::vector<Cell>> &grid);
+
+std::optional<Direction>
+find_fallback_next_safe_step(Snake &snake, std::vector<std::vector<Cell>> &grid,
+                             SquareCellGridDimensions *gd);
 void take_snake_step(
     Platform *p, UserInterfaceCustomization *customization,
     SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
@@ -354,6 +357,15 @@ UserAction snake_duel_loop(Platform *p,
                                                  second_snake.direction)) {
                                         new_second_snake_direction =
                                             direction.value();
+                                } else {
+                                        auto fallback =
+                                            find_fallback_next_safe_step(
+                                                second_snake, grid, gd);
+                                        // Fallback will never to turn in place.
+                                        if (fallback.has_value()) {
+                                                new_second_snake_direction =
+                                                    fallback.value();
+                                        }
                                 }
                         }
 
@@ -662,7 +674,9 @@ find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
 
         Point curr = snake.head;
         Point next;
-        find_next_step(curr, grid, next);
+        if (!find_next_step(curr, grid, next)) {
+                return std::nullopt;
+        };
 
         LOG_DEBUG(TAG, "Next location: {x: %d, y: %d}", next.x, next.y);
         LOG_DEBUG(TAG, "Head: {x: %d, y: %d}", snake.head.x, snake.head.y);
@@ -670,51 +684,45 @@ find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
         return determine_displacement_direction(snake.head, next);
 }
 
-bool find_next_step(const Point &start, const Point &end, Point &next,
-                    std::vector<std::vector<bool>> &visited_or_inaccessible)
+/**
+ * If it is not possible to find the next step towards apple (e.g. the path does
+ * not exist at the moment as the snake tail blocks it), we don't want the AI
+ * snake to crash into the wall. Instead we need to find the next direction that
+ * is safe to take. This is determined by looking at the neighbours of the
+ * current location and picking the direction where the next cell is accessible.
+ */
+std::optional<Direction>
+find_fallback_next_safe_step(Snake &snake, std::vector<std::vector<Cell>> &grid,
+                             SquareCellGridDimensions *gd)
 {
-        LOG_DEBUG(TAG, "Start {x: %d, y: %d}", start.x, start.y);
-        LOG_DEBUG(TAG, "End {x: %d, y: %d}", end.x, end.y);
-        // If we are already at the end we return a path with just the end.
-        // This is the base case of the recursion.
-        if (start.x == end.x && start.y == end.y) {
-                return true;
+
+        int rows = grid.size();
+        int cols = grid[0].size();
+
+        Point curr = snake.head;
+        Point next = translate_pure(curr, snake.direction);
+
+        auto is_accessible = [&grid](Point p) {
+                return grid[p.y][p.x] != Cell::Snake &&
+                       grid[p.y][p.x] != Cell::AppleSnake;
+        };
+
+        // Simple case: the cell ahead is accessible
+        if (!is_out_of_bounds(&next, gd) && is_accessible(next)) {
+                return snake.direction;
         }
 
-        // Indicate that we already visited start before we do any other
-        // processing.
-        visited_or_inaccessible[start.y][start.x] = true;
-
-        int rows = visited_or_inaccessible.size();
-        int cols = visited_or_inaccessible[0].size();
-
         auto neighbours =
-            get_adjacent_neighbours_inside_grid((Point *)&start, rows, cols);
+            get_adjacent_neighbours_inside_grid(&curr, rows, cols);
 
-        // We sort the neighbours based on which one is the closest to the
-        // target. This is required to avoid the snake taking 'stupid' paths.
-        auto distance_to_end = [end](Point &p) {
-                return abs(end.x - p.x) + abs(end.y - p.y);
-        };
-        std::sort(neighbours.begin(), neighbours.end(),
-                  [&distance_to_end](Point &p1, Point &p2) {
-                          return distance_to_end(p1) < distance_to_end(p2);
-                  });
-
-        for (auto &nb : neighbours) {
-                LOG_DEBUG(TAG, "Processing neighbour {x: %d, y: %d}", nb.x,
-                          nb.y);
-                if (visited_or_inaccessible[nb.y][nb.x])
-                        continue;
-
-                if (find_next_step(nb, end, next, visited_or_inaccessible)) {
-                        // Once we exit out of the recursion, nb will be the
-                        // next location that we need to go to on our path.
+        for (const auto &nb : neighbours) {
+                if (is_accessible(nb)) {
                         next = nb;
-                        return true;
+                        break;
                 }
-        };
-        return false;
+        }
+
+        return determine_displacement_direction(snake.head, next);
 }
 
 /**
@@ -761,7 +769,7 @@ bool find_next_step(const Point &start,
                     Point &next_step)
 {
 
-        auto is_visited = [](Point point) {
+        auto is_visited = [](Point point) -> bool {
                 return static_cast<bool>(
                     visited[point.y] & (1u << static_cast<uint32_t>(point.x)));
         };
@@ -831,8 +839,6 @@ bool find_next_step(const Point &start,
                         enqueue(nb);
                 }
         }
-        // Disable the lenient search for now
-        return false;
 
         // If we didn't find the path that does not touch snake poop, we
         // try again but now we allow for stepping on it. The distinction here
@@ -851,9 +857,6 @@ bool find_next_step(const Point &start,
                 }
         }
 
-        // If we didn't find a path without stepping on the snake poop, we
-        // try again but now with the lenient map that allows for stepping on
-        // it.
         queue_head_idx = 0;
         queue_tail_idx = 0;
         enqueue(start);
