@@ -106,7 +106,16 @@ void LcdDisplay::draw_circle(Point center, int radius, Color color,
                              int border_width, bool filled)
 {
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
-        Paint_DrawCircle(center.x, center.y, radius, color,
+
+        /*
+         * We need to add the adjustment because of the pixel-precision
+         * inconsistency between the sfml emulator and the lcd display. The
+         * Paint_DrawRectangle starts drawing one unit too far to the right and
+         * ends one unit too high, so we need to add the adjustment
+         * To achieve consistency, we need to adjust the circle as well
+         */
+        int adj = 1;
+        Paint_DrawCircle(center.x - 1, center.y - 1, radius, color,
                          static_cast<DOT_PIXEL>(border_width),
                          static_cast<DRAW_FILL>(filled_repr));
 };
@@ -126,7 +135,7 @@ void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
          */
         int adj = 1;
         Paint_DrawRectangle(start.x - adj, start.y - adj, start.x + width,
-                            start.y + height + adj, color,
+                            start.y + height, color,
                             static_cast<DOT_PIXEL>(border_width),
                             static_cast<DRAW_FILL>(filled_repr));
 };

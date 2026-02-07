@@ -905,7 +905,16 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
 
         // Now we connect the two parts with a semi-circle
         int radius = width / 2 - 1;
-        Point center = {letter_leg_start.x + radius,
+#ifdef EMULATOR
+        int adj = 0;
+#else
+        // In the target device the circle does not lign up nicely with the
+        // vertical lines, this is because of differences in how those shapes
+        // are rendered in SFML vs waveshare LCD display driver. We override
+        // here to make the logo look good on both platforms.
+        int adj = 1;
+#endif
+        Point center = {letter_leg_start.x + radius + adj,
                         letter_front_end.y - letter_front_gap};
         // For pixel accuracy we decrease the diameter by 1 as the circle
         // also has some thickness to it.
