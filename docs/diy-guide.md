@@ -74,7 +74,13 @@
    button section of the input shield to ensure that the buttons don't sink
    into the case during use.
 
-
 <p align="center">
 <img src="/assets/images/two-boxes-slanted-main-view.jpg"alt="assembled-case" width="800px"/>
 </p>
+
+## Side Notes
+
+If you are using Arduino UNO R4 Minima, then its power draw might not be high
+enough to keep the power bank awake. If this happens, you can add a resistor between
+the GND and 5V pins of the board (simply slot it into the empty holes on the
+input shield). This will fix the issue.

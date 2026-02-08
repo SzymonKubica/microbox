@@ -21,16 +21,16 @@
 
 # In Progress
 
-- [ ] update repo
-  - [x] revamp main readme
-  - [x] archive the old case & powerbank instructions
-  - [ ] add new case stl files
-  - [ ] add pictures of the DIY soldering process.
-  - [x] add link to the better power bank
-  - [ ] explain the minima hack with power bank turning off
-  - [x] add instructions to install cmake
 
 # Done
+- [x] update repo
+  - [x] revamp main readme
+  - [x] archive the old case & powerbank instructions
+  - [x] add new case stl files
+  - [x] add pictures of the DIY soldering process.
+  - [x] add link to the better power bank
+  - [x] explain the minima hack with power bank turning off
+  - [x] add instructions to install cmake
 - [x] fix logo rendering
 - [x] fix game of life rendering artifacts.
 - [x] optimize performance of the snake duel bot to reduce lag
