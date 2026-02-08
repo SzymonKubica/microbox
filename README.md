@@ -36,7 +36,7 @@ You can see more screenshots from the games [here](docs/gameplay-overview.md).
 <img src="/assets/images/back-view.jpg"alt="Two MicroBox consoles shown from the back." width="400px"/>
 </p>
 
-Check out more pictures of the Microbox case [here](docs/travel-case.md).
+Check out more pictures of the MicroBox case [here](docs/travel-case.md).
 
 ## :rocket: Future Plans
 

@@ -138,7 +138,7 @@
 
 1. Attach the LCD display to the input shield
 2. Solder the LCD wires to the bottom pins of the input shield
-3. Print out the parts of the Microbox case.
+3. Print out the parts of the MicroBox case.
 4. Glue magnets into the top part of the inner case.
 5. Insert magnets into the bottom part of the inner case (the fit is quite snug
    so you might need to use a screwdriver to push them in.)

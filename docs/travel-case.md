@@ -1,4 +1,4 @@
-# Microbox Case
+# MicroBox Case
 
 <p align="center">
 <img src="/assets/images/black-console-facing-front.jpg"alt="assembled-case" width="400px"/>
@@ -7,7 +7,7 @@
 <img src="/assets/images/back-view.jpg"alt="Two MicroBox consoles shown from the back." width="400px"/>
 </p>
 
-The enclosure for the Microbox game console was designed to protect the display
+The enclosure for the MicroBox game console was designed to protect the display
 and joystick when travelling. To enter the 'travel mode' simply unplug the power
 cable, store it at the bottom of the case and flip the inner case like so:
 

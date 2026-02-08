@@ -77,3 +77,10 @@ the emulator. Ensure that you are inside the `emulator-build-debug` directory.
 cmake --build .
 ```
 
+## Controlling the emulator
+
+- use  `hjkl` to simulate the joystick (i.e. vim-like arrows)
+- use  `y` to press the yellow button
+- use  `g` to press the green button
+- use  `b` to press the blue button
+- use  `r` to press the red button
