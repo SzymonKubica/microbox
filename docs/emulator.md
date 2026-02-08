@@ -9,8 +9,11 @@
 
 To set up CMake and build the emulator, clone the MicroBox repo:
 ```bash
-git clone git@github.com:SzymonKubica/microbox.git
+git clone https://github.com/SzymonKubica/microbox.git
 ```
+
+Before you begin installation, please ensure that you have the following installed:
+- `cmake`
 
 Then you need to run the following script:
 ```

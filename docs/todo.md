@@ -17,9 +17,17 @@
 
 # TODO
 
-
+- [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
 # In Progress
+
+- [ ] update repo
+  - [x] revamp main readme
+  - [x] archive the old case & powerbank instructions
+  - [ ] add new case stl files
+  - [ ] add link to the better power bank
+  - [ ] explain the minima hack with power bank turning off
+  - [ ] add instructions to install cmake
 
 # Done
 - [x] fix logo rendering

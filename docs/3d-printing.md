@@ -1,4 +1,4 @@
-# MicroBox Case 1.0
+# MicroBox Case Prototype
 <p align="center">
 <img src="/assets/images/assembled-case.png"alt="assembled-case" width="800"/>
 </p>
