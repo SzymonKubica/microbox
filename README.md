@@ -20,9 +20,9 @@ using an intuitive UI.
 
 Currently, MicroBox features the following games:
 
-- :abacus: **2048** — Merge the tiles to reach the 2048.
-- :boom: **Minesweeper** — Avoid hidden mines using logical reasoning.
-- :seedling: **Game of Life** — Watch and interact with a cellular automata evolving based on Conway’s rules.
+- :abacus: **2048** - Merge the tiles to reach the 2048.
+- :boom: **Minesweeper** - Avoid hidden mines using logical reasoning.
+- :seedling: **Game of Life** - Watch and interact with a cellular automata evolving based on Conway’s rules.
 - :snake: **Snake** - the most iconic retro game.
 - :snake: :snake: **Snake Duel** - two snakes compete against each other.
 
