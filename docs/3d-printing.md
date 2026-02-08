@@ -1,96 +1,46 @@
-# MicroBox Case Prototype
+# MicroBox CAD Files
 <p align="center">
-<img src="/assets/images/assembled-case.png"alt="assembled-case" width="800"/>
+<img src="/assets/images/fully-assembled-case.png"alt="assembled-case" height="400"/>
 </p>
 
-CAD file: [microbox-case-1.0.FCStd](/assets/stl-objects/case-1.0/microbox-case-1.0.FCStd)
+Full CAD file (FreeCAD): [microbox-case-2.0.FCStd](/assets/stl-objects/microbox-case-2.0.FCStd)
 
-The case consists of three components:
+The case consists of two components:
 - inner case enclosing the Arduino with its input shield and display,
-- outer case allowing for attaching the batter pack and storing the power cable,
-- 'battery pack' that connects to the outer case using magnets.
+- travel case allowing for storing the power cable, and protecting the joystick
+  and the display that are exposed in the inner case.
 
 ## Inner Case
 <p align="center">
-<img src="/assets/images/front-plate.png"alt="front-plate" width="800"/>
+<img src="/assets/images/inner-front-plate.png"alt="Front Plate" height="400"/>
 </p>
 
-STL file: [front-plate.stl](/assets/stl-objects/case-1.0/front-plate.stl)
+STL file: [front-plate-2.1.stl](/assets/stl-objects/front-plate-2.1.stl)
 
 <p align="center">
-<img src="/assets/images/back-plate.png"alt="back-plate" width="800"/>
+<img src="/assets/images/reset-button.png"alt="Reset Button" height="200"/>
 </p>
 
-STL file: [back-plate.stl](/assets/stl-objects/case-1.0/back-plate.stl)
+STL file: [reset-button-1.0.stl](/assets/stl-objects/reset-button-1.0.stl)
 
 <p align="center">
-<img src="/assets/images/reset-button.png"alt="reset-button" height="200"/>
+<img src="/assets/images/inner-back-plate.png"alt="Back Plate" height="400"/>
 </p>
 
-STL file: [reset-button.stl](/assets/stl-objects/case-1.0/reset-button.stl)
+STL file: [back-plate-2.2.stl](/assets/stl-objects/back-plate-2.2.stl)
 
-Steps to assemble the inner case:
-- get 4 screws with thread diameter of ~ 3mm and head size no larger than 5mm,
-- put the reset button part into the hole in the front plate,
-- press the arduino and its input shield against the bottom part of the front plate,
-- cover the back of the arduino with the back plate,
-  - if you want to make button bounce a bit better / prevent them from getting
-  stuck you can put some foam / paper between the button section of the input shield
-  and the back plate,
-- screw in the screws to connect the two parts.
-
-## Outer Case
-<p align="center">
-<img src="/assets/images/outer-case.png"alt="outer-case" width="800"/>
-</p>
-
-STL file: [outer-case.stl](/assets/stl-objects/case-1.0/outer-case.stl)
-
-## Battery Pack
-<p align="center">
-<img src="/assets/images/battery-pack.png"alt="battery-pack" width="800"/>
-</p>
-
-STL file: [battery-pack.stl](/assets/stl-objects/case-1.0/battery-pack.stl)
-
-## Installing Magnets to connect Outer Case and Battery Pack
-
-1. Take the outer case and battery pack and put them together so that the
-   magnet holes roughly line up.
-2. Insert magnets into the holes on either side so that they attract each other
-3. Ensure that the magnet polarities are aligned in a consistent way (i.e. all
-   magnets applied on the battery pack attract all magnets on the outer case).
-4. Once magnets are securely in place:
-    1. Apply some super glue on the outer case holes to hold the magnets in place.
-    2. Insert the power bank into the battery pack so that it presses against the magnets.
-    In case of the battery pack the tolerances are so tight that it is not necessary
-    to glue the magnets in. You can do this if you want to make it extra secure.
-
-
-## :jigsaw: Putting Everything Together
+## Travel Case
 
 <p align="center">
-<img src="/assets/images/all-case-components-disassembled.jpg" alt="full-case-disassembled"/>
+<img src="/assets/images/travel-case.png"alt="Travel Case" height="400"/>
 </p>
 
-When using the console ensure that the inner case sits in the outer one in a way
-that they holes on their sides line up and USB-C port of the Arduino is close
-to the port on the power bank. Connect the two with the cable and the console
-is ready to use.
+STL file: [travel-case-2.1.stl](/assets/stl-objects/travel-case-2.1.stl)
+
+## Display Stand
 
 <p align="center">
-<img src="/assets/images/assembled-case-game-mode.jpg" alt="assembled-case-game-mode"/>
+<img src="/assets/images/stand.png" alt="Stand" height="200"/>
 </p>
 
-When travelling, place the cable at the bottom of the outer case, then slide the
-inner case 'upside down' in a way that the hole exposing Arduino USB-C port is
-shielded by the shorter side of the outer case that has no hole in it.
-
-This means that, in order to go from the **game mode** to **travel mode** you
-need to flip the inner case 180 degrees along its **shorter** edge.
-<p align="center">
-<img src="/assets/images/assembled-case-travel-mode.jpg" alt="assembled-case-travel-mode"/>
-</p>
-
-
-
+STL file: [stand.stl](/assets/stl-objects/stand.stl)

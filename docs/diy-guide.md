@@ -69,7 +69,10 @@
    <p align="center">
    <img src="/assets/images/inner-case-bottom-part.jpg"alt="" height="299px"/>
    </p>
-9. Put everything together and you should have a new MicroBox.
+9. Put everything together and you should have a new MicroBox. When assembling the
+   inner case, it is recommended to put a piece of styrofoam / sponge behing the
+   button section of the input shield to ensure that the buttons don't sink
+   into the case during use.
 
 
 <p align="center">

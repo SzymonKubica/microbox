@@ -1,9 +1,9 @@
 # MicroBox Case Prototype
 <p align="center">
-<img src="/assets/images/assembled-case.png"alt="assembled-case" width="800"/>
+<img src="/assets/images/archive/assembled-case.png"alt="assembled-case" width="800"/>
 </p>
 
-CAD file: [microbox-case-1.0.FCStd](/assets/stl-objects/case-1.0/microbox-case-1.0.FCStd)
+CAD file: [microbox-case-prototype.FCStd](/assets/stl-objects/case-prototype/microbox-case-prototype.FCStd)
 
 The case consists of three components:
 - inner case enclosing the Arduino with its input shield and display,
@@ -12,22 +12,22 @@ The case consists of three components:
 
 ## Inner Case
 <p align="center">
-<img src="/assets/images/front-plate.png"alt="front-plate" width="800"/>
+<img src="/assets/images/archive/front-plate.png"alt="front-plate" width="800"/>
 </p>
 
-STL file: [front-plate.stl](/assets/stl-objects/case-1.0/front-plate.stl)
+STL file: [front-plate.stl](/assets/stl-objects/case-prototype/front-plate.stl)
 
 <p align="center">
-<img src="/assets/images/back-plate.png"alt="back-plate" width="800"/>
+<img src="/assets/images/archive/back-plate.png"alt="back-plate" width="800"/>
 </p>
 
-STL file: [back-plate.stl](/assets/stl-objects/case-1.0/back-plate.stl)
+STL file: [back-plate.stl](/assets/stl-objects/case-prototype/back-plate.stl)
 
 <p align="center">
 <img src="/assets/images/reset-button.png"alt="reset-button" height="200"/>
 </p>
 
-STL file: [reset-button.stl](/assets/stl-objects/case-1.0/reset-button.stl)
+STL file: [reset-button.stl](/assets/stl-objects/case-prototype/reset-button.stl)
 
 Steps to assemble the inner case:
 - get 4 screws with thread diameter of ~ 3mm and head size no larger than 5mm,
@@ -41,17 +41,17 @@ Steps to assemble the inner case:
 
 ## Outer Case
 <p align="center">
-<img src="/assets/images/outer-case.png"alt="outer-case" width="800"/>
+<img src="/assets/images/archive/outer-case.png"alt="outer-case" width="800"/>
 </p>
 
-STL file: [outer-case.stl](/assets/stl-objects/case-1.0/outer-case.stl)
+STL file: [outer-case.stl](/assets/stl-objects/case-prototype/outer-case.stl)
 
 ## Battery Pack
 <p align="center">
-<img src="/assets/images/battery-pack.png"alt="battery-pack" width="800"/>
+<img src="/assets/images/archive/battery-pack.png"alt="battery-pack" width="800"/>
 </p>
 
-STL file: [battery-pack.stl](/assets/stl-objects/case-1.0/battery-pack.stl)
+STL file: [battery-pack.stl](/assets/stl-objects/case-prototype/battery-pack.stl)
 
 ## Installing Magnets to connect Outer Case and Battery Pack
 
@@ -70,7 +70,7 @@ STL file: [battery-pack.stl](/assets/stl-objects/case-1.0/battery-pack.stl)
 ## :jigsaw: Putting Everything Together
 
 <p align="center">
-<img src="/assets/images/all-case-components-disassembled.jpg" alt="full-case-disassembled"/>
+<img src="/assets/images/archive/all-case-components-disassembled.jpg" alt="full-case-disassembled"/>
 </p>
 
 When using the console ensure that the inner case sits in the outer one in a way
@@ -79,7 +79,7 @@ to the port on the power bank. Connect the two with the cable and the console
 is ready to use.
 
 <p align="center">
-<img src="/assets/images/assembled-case-game-mode.jpg" alt="assembled-case-game-mode"/>
+<img src="/assets/images/archive/assembled-case-game-mode.jpg" alt="assembled-case-game-mode"/>
 </p>
 
 When travelling, place the cable at the bottom of the outer case, then slide the
@@ -89,7 +89,7 @@ shielded by the shorter side of the outer case that has no hole in it.
 This means that, in order to go from the **game mode** to **travel mode** you
 need to flip the inner case 180 degrees along its **shorter** edge.
 <p align="center">
-<img src="/assets/images/assembled-case-travel-mode.jpg" alt="assembled-case-travel-mode"/>
+<img src="/assets/images/archive/assembled-case-travel-mode.jpg" alt="assembled-case-travel-mode"/>
 </p>
 
 
