@@ -25,9 +25,10 @@
   - [x] revamp main readme
   - [x] archive the old case & powerbank instructions
   - [ ] add new case stl files
-  - [ ] add link to the better power bank
+  - [ ] add pictures of the DIY soldering process.
+  - [x] add link to the better power bank
   - [ ] explain the minima hack with power bank turning off
-  - [ ] add instructions to install cmake
+  - [x] add instructions to install cmake
 
 # Done
 - [x] fix logo rendering

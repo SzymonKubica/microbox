@@ -14,132 +14,64 @@
 
 ## Steps
 
-## For travel case
+0. Ensure you have some space to work with.
+   <p align="center">
+   <img src="/assets/images/soldering-process.jpg"alt="" height="300px"/>
+   </p>
+1. Attach the LCD display to the input shield. For this you will need some screws and washers. See reference pictures below, the washers between the display and the input shield should be about 2mm thick to work with the case. For the ones at the back, use whatever is required to match your screws.
+   <p align="center">
+   <img src="/assets/images/washers.jpg"alt="" height="200px"/>
+   <img src="/assets/images/bottom-washer-placement.jpg"alt="" height="200px"/>
+   <img src="/assets/images/washer-placement-angled-view.jpg"alt="" height="200px"/>
+   <img src="/assets/images/washer-placement-side-view-2.jpg"alt="" height="200px"/>
+   <img src="/assets/images/washer-placement-side-view.jpg"alt="" height="200px"/>
+   </p>
 
-
-## For DIY
-<p align="center">
-<img src="/assets/images/bottom-washer-placement.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/bottom-wires-soldered.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/cable-threading-2.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/cable-threading-3.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/cable-threading.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/cutting-jumper-wire-metal-tip.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/cyan-case-disassembled-side-view.jpg"alt="assembled-case" width="800"/>
-</p>
-
-
-<p align="center">
-<img src="/assets/images/game-of-life.png"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/inner-case-bottom-part.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/inner-case-disassembled.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/inner-case-top-part.jpg"alt="assembled-case" width="800"/>
-</p>
-
-
-<p align="center">
-<img src="/assets/images/jumper-wire-before-tip-removal.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/jumper-wire-during-tip-removal.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/jumper-with-its-tip-half-removed.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/jumper-with-plastic-tip-removed.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/microbox-home-screen.png"alt="assembled-case" width="800"/>
-</p>
-
-
-<p align="center">
-<img src="/assets/images/soldering-process.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/tape-over-soldered-wires.jpg"alt="assembled-case" width="800"/>
-</p>
-
-
-<p align="center">
-<img src="/assets/images/top-wires-soldered.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/travel-case-disassembled.jpg"alt="assembled-case" width="800"/>
-</p>
-
-
-
-<p align="center">
-<img src="/assets/images/washer-placement-angled-view.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/washer-placement-side-view-2.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/washer-placement-side-view.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/washers.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/wire-contact-after-soldering.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/wire-contact-before-soldering.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/wire-groups-with-tape-bottom-view.jpg"alt="assembled-case" width="800"/>
-</p>
-
-<p align="center">
-<img src="/assets/images/wires-wrapped-in-groups-bottom-view.jpg"alt="assembled-case" width="800"/>
-</p>
-
-1. Attach the LCD display to the input shield
-2. Solder the LCD wires to the bottom pins of the input shield
-3. Print out the parts of the MicroBox case.
-4. Glue magnets into the top part of the inner case.
-5. Insert magnets into the bottom part of the inner case (the fit is quite snug
+2. Before soldering, you will need to remove tips of the jumper wires. See pictures below on how to do this. Note that this is a permanent operation and it will be difficult to attach those back to your display.
+   <p align="center">
+   <img src="/assets/images/jumper-wire-before-tip-removal.jpg"alt="" height="200px"/>
+   <img src="/assets/images/jumper-wire-during-tip-removal.jpg"alt="" height="200px"/>
+   <img src="/assets/images/jumper-with-its-tip-half-removed.jpg"alt="" height="200px"/>
+   <img src="/assets/images/jumper-with-plastic-tip-removed.jpg"alt="" height="200px"/>
+   <img src="/assets/images/cutting-jumper-wire-metal-tip.jpg"alt="" height="200px"/>
+   </p>
+3. After the tips are removed, you need to thread the wires through the holes in the input shield like so:
+   <p align="center">
+   <img src="/assets/images/cable-threading.jpg"alt="" height="200px"/>
+   <img src="/assets/images/cable-threading-2.jpg"alt="" height="200px"/>
+   <img src="/assets/images/cable-threading-3.jpg"alt="" height="200px"/>
+   <img src="/assets/images/wires-wrapped-in-groups-bottom-view.jpg"alt="" height="200px"/>
+   </p>
+4. Solder the LCD wires to the bottom pins of the input shield. This requires peeling off some of the rubber around each wire and tying the wire to the pin of the input shield. For the exact pin wiring, please refer to the code & pictures below (I know it is not ideal, a pinout guide is coming soon).
+   <p align="center">
+   <img src="/assets/images/bottom-wires-soldered.jpg"alt="" height="200px"/>
+   <img src="/assets/images/wire-contact-before-soldering.jpg"alt="" height="200px"/>
+   <img src="/assets/images/top-wires-soldered.jpg"alt="" height="200px"/>
+   <img src="/assets/images/wire-contact-after-soldering.jpg"alt="" height="200px"/>
+   </p>
+5. After soldering the wires, you can put some tape over them to secure them in place.
+   <p align="center">
+   <img src="/assets/images/tape-over-soldered-wires.jpg"alt="" height="300px"/>
+   <img src="/assets/images/wire-groups-with-tape-bottom-view.jpg"alt="" height="300px"/>
+   </p>
+6. Print out the parts of the MicroBox case.
+   <p align="center">
+   <img src="/assets/images/travel-case-disassembled.jpg"alt="" height="200px"/>
+   <img src="/assets/images/inner-case-disassembled.jpg"alt="" height="200px"/>
+   <img src="/assets/images/cyan-case-disassembled-side-view.jpg"alt="" height="200px"/>
+   </p>
+7. Glue magnets into the top part of the inner case.
+   <p align="center">
+   <img src="/assets/images/inner-case-top-part.jpg"alt="" height="300px"/>
+   </p>
+8. Insert magnets into the bottom part of the inner case (the fit is quite snug
    so you might need to use a screwdriver to push them in.)
+   <p align="center">
+   <img src="/assets/images/inner-case-bottom-part.jpg"alt="" height="299px"/>
+   </p>
+9. Put everything together and you should have a new MicroBox.
 
+
+<p align="center">
+<img src="/assets/images/two-boxes-slanted-main-view.jpg"alt="assembled-case" width="800px"/>
+</p>
