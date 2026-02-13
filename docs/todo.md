@@ -18,11 +18,15 @@
 # TODO
 
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
+- [ ] implement sudoku grid rendering
+- [ ] design sudoku input model
+- [ ] implement sudoku correctness checking
 
 # In Progress
 
 
 # Done
+- [x] add game app wiring for the sudoku
 - [x] debug weird insensitivity to user input in snake duel
 - [x] update repo
   - [x] revamp main readme

@@ -14,6 +14,7 @@ enum class Game : int {
         Snake = 7,
         SnakeDuel = 8,
         WifiApp = 9,
+        Sudoku = 10,
 };
 
 typedef struct GameMenuConfiguration {

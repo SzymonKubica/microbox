@@ -145,7 +145,7 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
 
 std::vector<int> get_settings_storage_offsets()
 {
-        std::vector<int> offsets(10);
+        std::vector<int> offsets(11);
         offsets[static_cast<int>(Game::MainMenu)] = 0;
         offsets[static_cast<int>(Game::Clean2048)] =
             offsets[static_cast<int>(Game::MainMenu)] +
@@ -167,6 +167,9 @@ std::vector<int> get_settings_storage_offsets()
         offsets[static_cast<int>(Game::WifiApp)] =
             offsets[static_cast<int>(Game::SnakeDuel)] +
             sizeof(SnakeDuelConfiguration);
+        offsets[static_cast<int>(Game::Sudoku)] =
+            offsets[static_cast<int>(Game::WifiApp)] +
+            sizeof(WifiAppConfiguration);
         return offsets;
 }
 

@@ -9,6 +9,7 @@
 #include "game_executor.hpp"
 #include "minesweeper.hpp"
 #include "settings.hpp"
+#include "sudoku.hpp"
 #include "wifi.hpp"
 #include "game_of_life.hpp"
 #include "random_seed_picker.hpp"
@@ -74,7 +75,7 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
             "Game",
             {game_to_string(Game::Minesweeper), game_to_string(Game::Clean2048),
              game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
-             game_to_string(Game::SnakeDuel),
+             game_to_string(Game::SnakeDuel), game_to_string(Game::Sudoku),
         // Disable the WiFi app on the Uno R4 Minima
 #if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
              game_to_string(Game::WifiApp),
@@ -172,6 +173,8 @@ std::optional<UserAction> select_game(Platform *p)
                         return new class WifiApp();
                 case Game::RandomSeedPicker:
                         return new class RandomSeedPicker();
+                case Game::Sudoku:
+                        return new class SudokuGame();
                 default:
                         return NULL;
                 }
@@ -262,6 +265,8 @@ Game game_from_string(const char *name)
                 return Game::WifiApp;
         if (strcmp(name, game_to_string(Game::RandomSeedPicker)) == 0)
                 return Game::RandomSeedPicker;
+        if (strcmp(name, game_to_string(Game::Sudoku)) == 0)
+                return Game::Sudoku;
         return Game::Unknown;
 }
 
@@ -277,6 +282,7 @@ bool is_valid_game(Game game)
         case Game::SnakeDuel:
         case Game::WifiApp:
         case Game::RandomSeedPicker:
+        case Game::Sudoku:
                 return true;
         default:
                 return false;
@@ -302,6 +308,8 @@ const char *game_to_string(Game game)
                 return "Snake Duel";
         case Game::WifiApp:
                 return "Wi-Fi";
+        case Game::Sudoku:
+                return "Sudoku";
         case Game::RandomSeedPicker:
                 return "Randomness";
         default:
