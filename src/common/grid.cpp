@@ -40,6 +40,46 @@ calculate_grid_dimensions(int display_width, int display_height,
             actual_width, actual_height);
 }
 
+SquareCellGridDimensions *
+calculate_grid_dimensions(int display_width, int display_height,
+                          int display_rounded_corner_radius, int rows, int cols, bool square_cells)
+{
+        // Bind input params to short names for improved readability.
+        int w = display_width;
+        int h = display_height;
+        int r = display_rounded_corner_radius;
+
+        int usable_width = w - r;
+        int usable_height = h - r;
+
+
+        int cell_width = usable_width / cols;
+        int cell_height = usable_height / rows;
+
+        if (square_cells) {
+          cell_width = std::min(cell_height, cell_width);
+          cell_height = cell_width;
+        }
+
+        int actual_width = cols * cell_width;
+        int actual_height = rows * cell_width;
+
+        // Margins are required for centering.
+        int left_horizontal_margin = (w - actual_width) / 2;
+        int top_vertical_margin = (h - actual_height) / 2;
+
+        LOG_DEBUG(TAG,
+                  "Calculated grid dimensions: %d rows, %d cols, "
+                  "left margin: %d, top margin: %d, actual width: %d, "
+                  "actual height: %d",
+                  rows, cols, left_horizontal_margin,
+                  top_vertical_margin, actual_width, actual_height);
+
+        return new SquareCellGridDimensions(
+            rows, cols, top_vertical_margin, left_horizontal_margin,
+            actual_width, actual_height);
+}
+
 void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
                      SquareCellGridDimensions *dimensions)
 

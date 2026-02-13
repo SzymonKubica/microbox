@@ -63,6 +63,10 @@ SudokuGame::game_loop(Platform *p, UserInterfaceCustomization *customization)
         return std::nullopt;
 }
 
+void draw_sudoku_grid_frame(Platform *p,
+                            UserInterfaceCustomization *customization,
+                            SquareCellGridDimensions *dimensions);
+
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
@@ -74,10 +78,44 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                 return maybe_interrupt.value();
         }
 
+        SquareCellGridDimensions *gd = calculate_grid_dimensions(
+            p->display->get_width(), p->display->get_height(),
+            p->display->get_display_corner_radius(), 9, 9, true);
+
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
-        // draw_grid_frame(p, customization, gd);
+        draw_grid_frame(p, customization, gd);
 
         return UserAction::PlayAgain;
+}
+
+void draw_sudoku_grid_frame(Platform *p,
+                            UserInterfaceCustomization *customization,
+                            SquareCellGridDimensions *dimensions)
+
+{
+        p->display->initialize();
+        p->display->clear(Black);
+
+        int x_margin = dimensions->left_horizontal_margin;
+        int y_margin = dimensions->top_vertical_margin;
+
+        int actual_width = dimensions->actual_width;
+        int actual_height = dimensions->actual_height;
+
+        int border_width = 1;
+        // We need to make the border rectangle and the canvas slightly
+        // bigger to ensure that it does not overlap with the game area.
+        // Otherwise the caret rendering erases parts of the border as
+        // it moves around (as the caret intersects with the border
+        // partially)
+        int border_offset = 2;
+
+        // We draw the border at the end to ensure that it doesn't get cropped
+        // by draw string operations above.
+        p->display->draw_rectangle(
+            {.x = x_margin - border_offset, .y = y_margin - border_offset},
+            actual_width + 2 * border_offset, actual_height + 2 * border_offset,
+            customization->accent_color, border_width, false);
 }
 
 /**
@@ -137,7 +175,8 @@ SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage)
         if (config.difficulty == 0) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "sudoku configuration, using default values.");
-                memcpy(output, &DEFAULT_SUDOKU_CONFIG, sizeof(SudokuConfiguration));
+                memcpy(output, &DEFAULT_SUDOKU_CONFIG,
+                       sizeof(SudokuConfiguration));
                 storage->put(storage_offset, DEFAULT_SUDOKU_CONFIG);
 
         } else {
