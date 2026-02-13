@@ -65,6 +65,8 @@ struct SnakeDuelLoopState {
         int snake_one_score;
         int snake_two_score;
 
+        long last_step_timestamp;
+
       public:
         SnakeDuelLoopState(int moves_per_second)
             : action_input_on_last_iteration(false), is_snake_two_dead(false),
@@ -73,11 +75,21 @@ struct SnakeDuelLoopState {
               snake_one_score(0), snake_two_score(0)
         {
                 this->frame_duration = (1000 / moves_per_second);
+                this->last_step_timestamp = 0;
         }
 
-        void toggle_pause() { is_paused = !is_paused; }
-
         bool is_game_over() { return is_snake_one_dead && is_snake_two_dead; }
+
+        /*
+         * Informs us whether a sufficient number of waiting iterations has
+         * passed to take a game loop step (e.g. advance the snake by one unit
+         * forward).
+         */
+        bool is_waiting(TimeProvider *time)
+        {
+                return time->milliseconds() - last_step_timestamp <
+                       frame_duration;
+        }
 };
 
 UserAction snake_duel_loop(Platform *p,
@@ -288,9 +300,8 @@ UserAction snake_duel_loop(Platform *p,
                 long elapsed =
                     p->time_provider->milliseconds() - frame_start_millis;
 
-                if (state.frame_duration > elapsed) {
-                        p->time_provider->delay_ms(state.frame_duration -
-                                                   elapsed);
+                if (GAME_LOOP_DELAY > elapsed) {
+                        p->time_provider->delay_ms(GAME_LOOP_DELAY - elapsed);
                 }
                 if (!p->display->refresh()) {
                         return UserAction::CloseWindow;
@@ -333,6 +344,16 @@ UserAction snake_duel_loop(Platform *p,
                                 return UserAction::PlayAgain;
                         }
                 }
+
+                // If we are paused or it is not the time to move yet, we finish
+                // processing early.
+                if (state.is_waiting(p->time_provider)) {
+                        if (wait_for_next_move(frame_start).has_value()) {
+                                return UserAction::CloseWindow;
+                        };
+                        continue;
+                }
+                state.last_step_timestamp = p->time_provider->milliseconds();
 
                 long start = p->time_provider->milliseconds();
                 if (!state.is_snake_one_dead) {

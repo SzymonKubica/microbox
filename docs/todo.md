@@ -23,6 +23,7 @@
 
 
 # Done
+- [x] debug weird insensitivity to user input in snake duel
 - [x] update repo
   - [x] revamp main readme
   - [x] archive the old case & powerbank instructions
