@@ -83,7 +83,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
             p->display->get_display_corner_radius(), 9, 9, true);
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
-        draw_grid_frame(p, customization, gd);
+        draw_sudoku_grid_frame(p, customization, gd);
 
         return UserAction::PlayAgain;
 }
@@ -102,20 +102,37 @@ void draw_sudoku_grid_frame(Platform *p,
         int actual_width = dimensions->actual_width;
         int actual_height = dimensions->actual_height;
 
-        int border_width = 1;
-        // We need to make the border rectangle and the canvas slightly
-        // bigger to ensure that it does not overlap with the game area.
-        // Otherwise the caret rendering erases parts of the border as
-        // it moves around (as the caret intersects with the border
-        // partially)
-        int border_offset = 2;
+        int cell_size = dimensions->actual_height / 9;
 
-        // We draw the border at the end to ensure that it doesn't get cropped
-        // by draw string operations above.
-        p->display->draw_rectangle(
-            {.x = x_margin - border_offset, .y = y_margin - border_offset},
-            actual_width + 2 * border_offset, actual_height + 2 * border_offset,
-            customization->accent_color, border_width, false);
+        // We only render borders between cells for a minimalistic look
+        for (int i = 1; i < 9; i++) {
+                int offset = i * cell_size;
+                auto draw_vertical_line = [&](int offset) {
+                        Point start = {.x = x_margin + offset, .y = y_margin};
+                        Point end = {.x = x_margin + offset,
+                                     .y = y_margin + actual_width};
+                        p->display->draw_line(start, end,
+                                              customization->accent_color);
+                };
+                auto draw_horizontal_line = [&](int offset) {
+                        Point start = {.x = x_margin, .y = y_margin + offset};
+                        Point end = {.x = x_margin + actual_width,
+                                     .y = y_margin + offset};
+                        p->display->draw_line(start, end,
+                                              customization->accent_color);
+                };
+
+                draw_vertical_line(offset);
+                draw_horizontal_line(offset);
+
+                // We make the lines between big squares thicker
+                if (i % 3 == 0) {
+                        draw_vertical_line(offset - 1);
+                        draw_horizontal_line(offset - 1);
+                        draw_vertical_line(offset + 1);
+                        draw_horizontal_line(offset + 1);
+                }
+        }
 }
 
 /**
