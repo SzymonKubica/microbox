@@ -4,6 +4,8 @@
 #include "settings.hpp"
 #include "game_menu.hpp"
 
+#include "../lib/ArduinoJson-v7.4.2.h"
+#include "../common/configuration.hpp"
 #include "../common/configuration.hpp"
 #include "../common/constants.hpp"
 #include "../common/grid.hpp"
@@ -11,14 +13,23 @@
 
 #define GAME_LOOP_DELAY 50
 
+#define SUDOKU_GRID_SIZE 9
+
 #define TAG "sudoku"
 
 SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {.difficulty = 1};
 
-typedef struct SudokuCell {
+class SudokuCell
+{
+      public:
         std::optional<int> value;
         bool is_user_defined = false;
-} SudokuCell;
+
+        SudokuCell(std::optional<int> value, bool is_user_defined)
+            : value(value), is_user_defined(is_user_defined)
+        {
+        }
+};
 
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization);
 
@@ -74,7 +85,7 @@ void draw_sudoku_grid_frame(Platform *p,
 
 void draw_number(Platform *p, UserInterfaceCustomization *customization,
                  SquareCellGridDimensions *dimensions, Point location,
-                 int value);
+                 SudokuCell value);
 
 std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
 {
@@ -83,11 +94,32 @@ std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
         std::optional<std::string> response =
             p->client->get(config, "https://sudoku-api.vercel.app/api/dosuku");
 
-        if (response.has_value()) {
-                const char *response_value = response.value().c_str();
-                LOG_DEBUG(TAG, "%s", response_value);
+        if (!response.has_value()) {
+                return {};
         }
-        return {};
+
+        const char *response_value = response.value().c_str();
+
+        JsonDocument doc;
+        deserializeJson(doc, response_value);
+
+        auto sudoku_grid = doc["newboard"]["grids"][0]["value"];
+
+        std::vector<std::vector<SudokuCell>> output;
+        for (int i = 0; i < SUDOKU_GRID_SIZE; i++) {
+                std::vector<SudokuCell> row;
+                for (int j = 0; j < SUDOKU_GRID_SIZE; j++) {
+                        int value = sudoku_grid[i][j];
+                        if (value != 0) {
+                                row.emplace_back(value, false);
+                        } else {
+                                row.emplace_back(std::nullopt, false);
+                        }
+                }
+                output.push_back(row);
+        }
+
+        return output;
 }
 
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
@@ -103,24 +135,37 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius(), 9, 9, true);
+            p->display->get_display_corner_radius(), SUDOKU_GRID_SIZE,
+            SUDOKU_GRID_SIZE, true);
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
         draw_sudoku_grid_frame(p, customization, gd);
-        draw_number(p, customization, gd, {2, 3}, 5);
-        fetch_sudoku_grid(p);
+        auto grid = fetch_sudoku_grid(p);
+
+        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
+                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+                        const auto &cell = grid[y][x];
+                        if (cell.value.has_value()) {
+                                draw_number(p, customization, gd, {x, y}, cell);
+                        }
+                }
+        }
 
         return UserAction::PlayAgain;
 }
 
 void draw_number(Platform *p, UserInterfaceCustomization *customization,
                  SquareCellGridDimensions *dimensions, Point location,
-                 int value)
+                 SudokuCell cell)
 {
+
+        assert(cell.value.has_value() &&
+               "Only cells with values should be rendered");
+
         int x_margin = dimensions->left_horizontal_margin;
         int y_margin = dimensions->top_vertical_margin;
 
-        int cell_size = dimensions->actual_height / 9;
+        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
         int x_offset = location.x * cell_size;
         int y_offset = location.y * cell_size;
 
@@ -137,11 +182,15 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
         int y_padding = (cell_size - fh) / 2 - border_adjustment_offset;
 
         char buffer[2];
-        sprintf(buffer, "%d", value);
+        sprintf(buffer, "%d", cell.value.value());
 
         int x = x_margin + x_offset + x_padding;
         int y = y_margin + y_offset + y_padding;
-        p->display->draw_string({x, y}, buffer, FontSize::Size16, Black, White);
+
+        Color render_color =
+            cell.is_user_defined ? White : customization->accent_color;
+        p->display->draw_string({x, y}, buffer, FontSize::Size16, Black,
+                                render_color);
 }
 
 void draw_sudoku_grid_frame(Platform *p,
@@ -158,10 +207,10 @@ void draw_sudoku_grid_frame(Platform *p,
         int actual_width = dimensions->actual_width;
         int actual_height = dimensions->actual_height;
 
-        int cell_size = dimensions->actual_height / 9;
+        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
 
         // We only render borders between cells for a minimalistic look
-        for (int i = 1; i < 9; i++) {
+        for (int i = 1; i < SUDOKU_GRID_SIZE; i++) {
                 int offset = i * cell_size;
                 auto draw_vertical_line = [&](int offset) {
                         Point start = {.x = x_margin + offset, .y = y_margin};

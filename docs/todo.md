@@ -23,11 +23,11 @@
 # In Progress
 
 - [ ] design sudoku input model
-- [ ] add sudoku fetching from an API
-- [ ] add caret rendering for sudoku
+- [ ] add caret rendering & moves for sudoku
 
 
 # Done
+- [x] add sudoku fetching from an API
 - [x] add ability to render sudoku cell digits
 - [x] implement sudoku grid rendering
 - [x] add game app wiring for the sudoku
