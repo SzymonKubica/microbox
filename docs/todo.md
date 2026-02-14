@@ -22,11 +22,14 @@
 
 # In Progress
 
-- [ ] implement sudoku grid rendering
 - [ ] design sudoku input model
+- [ ] add sudoku fetching from an API
+- [ ] add caret rendering for sudoku
 
 
 # Done
+- [x] add ability to render sudoku cell digits
+- [x] implement sudoku grid rendering
 - [x] add game app wiring for the sudoku
 - [x] debug weird insensitivity to user input in snake duel
 - [x] update repo

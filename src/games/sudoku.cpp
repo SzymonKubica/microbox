@@ -15,6 +15,11 @@
 
 SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {.difficulty = 1};
 
+typedef struct SudokuCell {
+        std::optional<int> value;
+        bool is_user_defined = false;
+} SudokuCell;
+
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization);
 
 std::optional<UserAction>
@@ -67,6 +72,24 @@ void draw_sudoku_grid_frame(Platform *p,
                             UserInterfaceCustomization *customization,
                             SquareCellGridDimensions *dimensions);
 
+void draw_number(Platform *p, UserInterfaceCustomization *customization,
+                 SquareCellGridDimensions *dimensions, Point location,
+                 int value);
+
+std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
+{
+        ConnectionConfig config = {
+            .host = "https://sudoku-api.vercel.app/api/dosuku", .port = 443};
+        std::optional<std::string> response =
+            p->client->get(config, "https://sudoku-api.vercel.app/api/dosuku");
+
+        if (response.has_value()) {
+                const char *response_value = response.value().c_str();
+                LOG_DEBUG(TAG, "%s", response_value);
+        }
+        return {};
+}
+
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
@@ -84,8 +107,41 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
         draw_sudoku_grid_frame(p, customization, gd);
+        draw_number(p, customization, gd, {2, 3}, 5);
+        fetch_sudoku_grid(p);
 
         return UserAction::PlayAgain;
+}
+
+void draw_number(Platform *p, UserInterfaceCustomization *customization,
+                 SquareCellGridDimensions *dimensions, Point location,
+                 int value)
+{
+        int x_margin = dimensions->left_horizontal_margin;
+        int y_margin = dimensions->top_vertical_margin;
+
+        int cell_size = dimensions->actual_height / 9;
+        int x_offset = location.x * cell_size;
+        int y_offset = location.y * cell_size;
+
+        // To ensure that the characters are centered inside of each cell,
+        // we need to calculate the 'padding' around each character. This is
+        // defined by the font height and width. Note that we are subtracting
+        // one to take the cell border into account and make it visually
+        // centered.
+        int border_adjustment_offset = 1;
+        int fh = FONT_SIZE;
+        int fw = FONT_WIDTH;
+
+        int x_padding = (cell_size - fw) / 2 - border_adjustment_offset;
+        int y_padding = (cell_size - fh) / 2 - border_adjustment_offset;
+
+        char buffer[2];
+        sprintf(buffer, "%d", value);
+
+        int x = x_margin + x_offset + x_padding;
+        int y = y_margin + y_offset + y_padding;
+        p->display->draw_string({x, y}, buffer, FontSize::Size16, Black, White);
 }
 
 void draw_sudoku_grid_frame(Platform *p,
