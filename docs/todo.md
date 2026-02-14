@@ -19,6 +19,7 @@
 
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] implement sudoku correctness checking
+- [ ] debug sending https requests on arduino (might require changing the web client API)
 
 # In Progress
 
