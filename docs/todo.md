@@ -23,11 +23,11 @@
 
 # In Progress
 
-- [ ] design sudoku input model
-- [ ] add caret rendering & moves for sudoku
 
 
 # Done
+- [x] design sudoku input model
+- [x] add caret rendering & moves for sudoku
 - [x] add sudoku fetching from an API
 - [x] add ability to render sudoku cell digits
 - [x] implement sudoku grid rendering

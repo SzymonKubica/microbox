@@ -10,8 +10,10 @@
 #include "../common/constants.hpp"
 #include "../common/grid.hpp"
 #include "../common/logging.hpp"
+#include "../common/maths_utils.hpp"
 
 #define GAME_LOOP_DELAY 50
+#define CONTROL_POLLING_DELAY 10
 
 #define SUDOKU_GRID_SIZE 9
 
@@ -23,7 +25,7 @@ class SudokuCell
 {
       public:
         std::optional<int> value;
-        bool is_user_defined = false;
+        bool is_user_defined = true;
 
         SudokuCell(std::optional<int> value, bool is_user_defined)
             : value(value), is_user_defined(is_user_defined)
@@ -85,7 +87,10 @@ void draw_sudoku_grid_frame(Platform *p,
 
 void draw_number(Platform *p, UserInterfaceCustomization *customization,
                  SquareCellGridDimensions *dimensions, Point location,
-                 SudokuCell value);
+                 const SudokuCell &value);
+
+void erase_number(Platform *p, UserInterfaceCustomization *customization,
+                  SquareCellGridDimensions *dimensions, Point location);
 
 std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
 {
@@ -113,13 +118,104 @@ std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
                         if (value != 0) {
                                 row.emplace_back(value, false);
                         } else {
-                                row.emplace_back(std::nullopt, false);
+                                row.emplace_back(std::nullopt, true);
                         }
                 }
                 output.push_back(row);
         }
 
         return output;
+}
+
+void draw_grid_numbers(Platform *p, UserInterfaceCustomization *customization,
+                       SquareCellGridDimensions *dimensions,
+                       const std::vector<std::vector<SudokuCell>> &grid)
+{
+        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
+                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+                        const auto &cell = grid[y][x];
+                        if (cell.value.has_value()) {
+                                draw_number(p, customization, dimensions,
+                                            {x, y}, cell);
+                        }
+                }
+        }
+}
+
+/**
+ * Here we repurpose the number drawing functionatlity to render the list of
+ * available numbers to the left of the grid.
+ */
+void draw_available_numbers(Platform *p,
+                            UserInterfaceCustomization *customization,
+                            SquareCellGridDimensions *dimensions,
+                            const std::vector<std::vector<SudokuCell>> &grid)
+{
+        for (int i = 0; i < SUDOKU_GRID_SIZE; i++) {
+                SudokuCell cell(i + 1, true);
+                draw_number(p, customization, dimensions, {-1, i}, cell);
+        }
+}
+
+void draw_circle_selector(Platform *p, SquareCellGridDimensions *dimensions,
+                          int selected_number, Color color)
+{
+        int x_margin = dimensions->left_horizontal_margin;
+        int y_margin = dimensions->top_vertical_margin;
+
+        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
+        int x_offset = -1.5 * cell_size;
+        int y_offset = (selected_number - 1) * cell_size;
+        int circle_radius = 3;
+
+        int padding = (cell_size - circle_radius) / 2;
+        // Need this to make the selector visually balanced and centered.
+        int y_adjustment = 3;
+
+        int x = x_margin + x_offset + padding;
+        int y = y_margin + y_offset + padding + y_adjustment;
+
+        p->display->draw_circle({x, y}, circle_radius, color, 1, true);
+}
+
+void erase_circle_selector(Platform *p, SquareCellGridDimensions *dimensions,
+                           int selected_number)
+{
+        draw_circle_selector(p, dimensions, selected_number, Black);
+}
+
+void draw_caret(Platform *p, SquareCellGridDimensions *dimensions,
+                const Point &caret, Color caret_color)
+{
+
+        int x_margin = dimensions->left_horizontal_margin;
+        int y_margin = dimensions->top_vertical_margin;
+
+        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
+        // The caret needs to be drawn inside of the cell and avoid touching its
+        // borders. Because of this we need to shift the caret inside
+        // the grid and make its sides appropriately shorter.
+        int offset = 3;
+
+        int start_x = x_margin + cell_size * caret.x + offset;
+        int start_y = y_margin + cell_size * caret.y + offset;
+
+        int caret_width = cell_size - 2 * offset;
+
+        p->display->draw_rectangle({start_x, start_y}, caret_width, caret_width,
+                                   caret_color, 1, false);
+}
+
+void draw_caret(Platform *p, UserInterfaceCustomization *customization,
+                SquareCellGridDimensions *dimensions, const Point &caret)
+{
+        draw_caret(p, dimensions, caret, White);
+}
+
+void erase_caret(Platform *p, SquareCellGridDimensions *dimensions,
+                 const Point &caret)
+{
+        draw_caret(p, dimensions, caret, Black);
 }
 
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
@@ -142,21 +238,84 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
         draw_sudoku_grid_frame(p, customization, gd);
         auto grid = fetch_sudoku_grid(p);
 
-        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
-                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
-                        const auto &cell = grid[y][x];
-                        if (cell.value.has_value()) {
-                                draw_number(p, customization, gd, {x, y}, cell);
-                        }
-                }
-        }
+        draw_grid_numbers(p, customization, gd, grid);
+        draw_available_numbers(p, customization, gd, grid);
 
+        Point caret = {0, 0};
+        bool is_game_over = false;
+        int selected_digit = 1;
+        draw_circle_selector(p, gd, selected_digit,
+                             customization->accent_color);
+
+        while (!is_game_over) {
+                Direction dir;
+                Action act;
+                if (poll_directional_input(p->directional_controllers, &dir)) {
+                        erase_caret(p, gd, caret);
+                        translate_toroidal_array(&caret, dir, SUDOKU_GRID_SIZE,
+                                                 SUDOKU_GRID_SIZE);
+                        draw_caret(p, customization, gd, caret);
+                        // The delay below was hand-tweaked to feel good.
+                        p->time_provider->delay_ms(GAME_LOOP_DELAY * 5 / 4);
+                }
+                if (poll_action_input(p->action_controllers, &act)) {
+                        switch (act) {
+                        case GREEN: {
+                                erase_circle_selector(p, gd, selected_digit);
+                                selected_digit =
+                                    selected_digit % SUDOKU_GRID_SIZE + 1;
+                                draw_circle_selector(
+                                    p, gd, selected_digit,
+                                    customization->accent_color);
+                                break;
+                        }
+                        case YELLOW: {
+                                erase_circle_selector(p, gd, selected_digit);
+                                selected_digit =
+                                    mathematical_modulo(selected_digit - 2,
+                                                        SUDOKU_GRID_SIZE) +
+                                    1;
+                                draw_circle_selector(
+                                    p, gd, selected_digit,
+                                    customization->accent_color);
+                                break;
+                        }
+                        case RED: {
+                                // We populate / erase the selected grid
+                                // location using the currently selected digit.
+                                auto &cell = grid[caret.y][caret.x];
+                                if (cell.is_user_defined) {
+                                        if (cell.value.has_value()) {
+                                                cell.value = std::nullopt;
+                                                erase_number(p, customization,
+                                                             gd, caret);
+                                                draw_caret(p, customization, gd,
+                                                           caret);
+                                        } else {
+                                                cell.value = selected_digit,
+                                                draw_number(p, customization,
+                                                            gd, caret, cell);
+                                        }
+                                }
+                                break;
+                        }
+
+                        case BLUE:
+                                return UserAction::Exit;
+                                break;
+                        }
+                        // We wait slightly longer after an action is selected.
+                        p->time_provider->delay_ms(2 * GAME_LOOP_DELAY);
+                }
+                p->time_provider->delay_ms(CONTROL_POLLING_DELAY);
+                p->display->refresh();
+        }
         return UserAction::PlayAgain;
 }
 
 void draw_number(Platform *p, UserInterfaceCustomization *customization,
                  SquareCellGridDimensions *dimensions, Point location,
-                 SudokuCell cell)
+                 const SudokuCell &cell)
 {
 
         assert(cell.value.has_value() &&
@@ -169,11 +328,11 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
         int x_offset = location.x * cell_size;
         int y_offset = location.y * cell_size;
 
-        // To ensure that the characters are centered inside of each cell,
-        // we need to calculate the 'padding' around each character. This is
-        // defined by the font height and width. Note that we are subtracting
-        // one to take the cell border into account and make it visually
-        // centered.
+        // To ensure that the characters are centered inside of each
+        // cell, we need to calculate the 'padding' around each
+        // character. This is defined by the font height and width. Note
+        // that we are subtracting one to take the cell border into
+        // account and make it visually centered.
         int border_adjustment_offset = 1;
         int fh = FONT_SIZE;
         int fw = FONT_WIDTH;
@@ -188,9 +347,38 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
         int y = y_margin + y_offset + y_padding;
 
         Color render_color =
-            cell.is_user_defined ? White : customization->accent_color;
+            cell.is_user_defined ? Gray : customization->accent_color;
         p->display->draw_string({x, y}, buffer, FontSize::Size16, Black,
                                 render_color);
+}
+
+void erase_number(Platform *p, UserInterfaceCustomization *customization,
+                  SquareCellGridDimensions *dimensions, Point location)
+{
+
+        int x_margin = dimensions->left_horizontal_margin;
+        int y_margin = dimensions->top_vertical_margin;
+
+        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
+        int x_offset = location.x * cell_size;
+        int y_offset = location.y * cell_size;
+
+        // To ensure that the characters are centered inside of each
+        // cell, we need to calculate the 'padding' around each
+        // character. This is defined by the font height and width. Note
+        // that we are subtracting one to take the cell border into
+        // account and make it visually centered.
+        int border_adjustment_offset = 1;
+        int fh = FONT_SIZE;
+        int fw = FONT_WIDTH;
+
+        int x_padding = (cell_size - fw) / 2 - border_adjustment_offset;
+        int y_padding = (cell_size - fh) / 2 - border_adjustment_offset;
+
+        int x = x_margin + x_offset + x_padding;
+        int y = y_margin + y_offset + y_padding;
+
+        p->display->clear_region({x, y}, {x + fw, y + fh}, Black);
 }
 
 void draw_sudoku_grid_frame(Platform *p,
@@ -241,7 +429,8 @@ void draw_sudoku_grid_frame(Platform *p,
 }
 
 /**
- * Forward declarations of functions related to configuration manipulation.
+ * Forward declarations of functions related to configuration
+ * manipulation.
  */
 SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage);
 Configuration *assemble_sudoku_configuration(PersistentStorage *storage);
@@ -285,8 +474,8 @@ SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage)
         int storage_offset = get_settings_storage_offset(Game::Sudoku);
         LOG_DEBUG(TAG, "Loading config from offset %d", storage_offset);
 
-        // We initialize empty config to detect corrupted memory and fallback
-        // to defaults if needed.
+        // We initialize empty config to detect corrupted memory and
+        // fallback to defaults if needed.
         SudokuConfiguration config = {.difficulty = 0};
 
         LOG_DEBUG(TAG, "Trying to load settings from the persistent storage");
