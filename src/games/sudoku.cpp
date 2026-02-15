@@ -209,7 +209,7 @@ void draw_caret(Platform *p, SquareCellGridDimensions *dimensions,
 void draw_caret(Platform *p, UserInterfaceCustomization *customization,
                 SquareCellGridDimensions *dimensions, const Point &caret)
 {
-        draw_caret(p, dimensions, caret, White);
+        draw_caret(p, dimensions, caret, Gray);
 }
 
 void erase_caret(Platform *p, SquareCellGridDimensions *dimensions,
