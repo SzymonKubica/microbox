@@ -100,7 +100,9 @@ std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
             p->client->get(config, "https://sudoku-api.vercel.app/api/dosuku");
 
         if (!response.has_value()) {
-                return {};
+                std::vector<std::vector<SudokuCell>> output(
+                    9, std::vector(9, SudokuCell(0, true)));
+                return output;
         }
 
         const char *response_value = response.value().c_str();
