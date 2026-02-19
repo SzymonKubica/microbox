@@ -2,7 +2,6 @@
 #include <memory>
 #include <optional>
 #include <algorithm>
-#include <random>
 #include "sudoku.hpp"
 #include "settings.hpp"
 #include "game_menu.hpp"
@@ -18,23 +17,10 @@
 #define GAME_LOOP_DELAY 50
 #define CONTROL_POLLING_DELAY 10
 
-#define SUDOKU_GRID_SIZE 9
-
 #define TAG "sudoku"
 
-SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {.difficulty = 1};
-
-class SudokuCell
-{
-      public:
-        std::optional<int> value;
-        bool is_user_defined = true;
-
-        SudokuCell(std::optional<int> value, bool is_user_defined)
-            : value(value), is_user_defined(is_user_defined)
-        {
-        }
-};
+SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {.difficulty = 1,
+                                             .is_game_in_progress = false};
 
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization);
 
@@ -82,6 +68,38 @@ SudokuGame::game_loop(Platform *p, UserInterfaceCustomization *customization)
                 }
         }
         return std::nullopt;
+}
+
+std::vector<std::vector<SudokuCell>>
+load_game_state(SudokuConfiguration &config)
+{
+        std::vector<std::vector<SudokuCell>> grid(
+            SUDOKU_GRID_SIZE, std::vector(SUDOKU_GRID_SIZE, SudokuCell{}));
+        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
+                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+                        grid[y][x] = config.saved_game[y][x];
+                }
+        }
+        return grid;
+}
+
+void save_game_state(Platform *p, SudokuConfiguration &config,
+                     std::vector<std::vector<SudokuCell>> &grid)
+{
+        config.is_game_in_progress = true;
+
+        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
+                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+                        config.saved_game[y][x] = grid[y][x];
+                }
+        }
+
+        int storage_offset = get_settings_storage_offset(Game::Sudoku);
+        LOG_DEBUG(TAG,
+                  "Saving current Sudoku game state to persistent storage at "
+                  "offset %d",
+                  storage_offset);
+        p->persistent_storage->put(storage_offset, config);
 }
 
 void draw_sudoku_grid_frame(Platform *p,
@@ -226,12 +244,18 @@ std::vector<std::vector<SudokuCell>> generate_solved_grid()
 bool test_for_unique_solution(std::vector<std::vector<SudokuCell>> &grid,
                               std::unique_ptr<int> &solution_count);
 
-std::vector<std::vector<SudokuCell>> generate_solvable_grid()
+std::vector<std::vector<SudokuCell>>
+generate_solvable_grid(SudokuConfiguration &config)
 {
         auto solvable = generate_solved_grid();
 
-        // TODO: tweak this depending on the difficulty level.
-        int to_remove = 40;
+        // According to the online wisdom, a sudoku with ~40 cells left
+        // tends to be easy. If you leave ~30 it becomes medium and if only
+        // ~20 cells are left it turns out to be hard. Because of this, we
+        // calculate the number of digits to remove as:
+        // 30 + 10 * x where x is the difficulty level (1, 2, or 3).
+        // This gives us: 1 -> 40, 2 -> 50 and 3 -> 60 which is what we want.
+        int to_remove = 30 + 10 * config.difficulty;
 
         std::vector<Point> locations_to_remove;
 
@@ -572,10 +596,30 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
             p->display->get_display_corner_radius(), SUDOKU_GRID_SIZE,
             SUDOKU_GRID_SIZE, true);
 
+        std::vector<std::vector<SudokuCell>> grid;
+        if (config.is_game_in_progress) {
+                const char *help_text =
+                    "A game in progress was found. Press green to "
+                    "continue the previous game or red to start a "
+                    "new game.";
+                render_wrapped_text(p, customization, help_text);
+                auto action = wait_until_action_input(p);
+                if (std::holds_alternative<UserAction>(action)) {
+                        assert(std::get<UserAction>(action) ==
+                               UserAction::CloseWindow);
+                        return UserAction::CloseWindow;
+                }
+                if (std::get<Action>(action) == Action::GREEN) {
+                        grid = load_game_state(config);
+                } else {
+                        grid = generate_solvable_grid(config);
+                }
+        } else {
+                grid = generate_solvable_grid(config);
+        }
+
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
         draw_sudoku_grid_frame(p, customization, gd);
-        auto grid = generate_solvable_grid();
-
         draw_grid_numbers(p, customization, gd, grid);
         draw_available_numbers(p, customization, gd, grid);
 
@@ -671,8 +715,30 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                 break;
                         }
 
-                        case BLUE:
+                        case BLUE: {
+                                LOG_DEBUG(TAG, "User requested to exit game.");
+                                const char *help_text =
+                                    "Would you like to save your current game "
+                                    "state and resume it later? Press green to "
+                                    "save and exit, or blue to exit without "
+                                    "saving.";
+                                render_wrapped_text(p, customization,
+                                                    help_text);
+                                auto action = wait_until_action_input(p);
+                                if (std::holds_alternative<UserAction>(
+                                        action)) {
+                                        assert(std::get<UserAction>(action) ==
+                                               UserAction::CloseWindow);
+                                        return UserAction::CloseWindow;
+                                }
+                                if (std::get<Action>(action) == Action::GREEN) {
+                                        save_game_state(p, config, grid);
+                                }
+                                p->time_provider->delay_ms(
+                                    MOVE_REGISTERED_DELAY);
+                                delete gd;
                                 return UserAction::Exit;
+                        }
                         }
                         // We wait slightly longer after an action is
                         // selected.
@@ -805,39 +871,43 @@ void draw_sudoku_grid_frame(Platform *p,
  * manipulation.
  */
 SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage);
-Configuration *assemble_sudoku_configuration(PersistentStorage *storage);
+Configuration *
+assemble_sudoku_configuration(SudokuConfiguration *initial_config);
 void extract_game_config(SudokuConfiguration *game_config,
-                         Configuration *config);
+                         Configuration *config,
+                         SudokuConfiguration *initial_config);
 
 std::optional<UserAction>
 collect_sudoku_config(Platform *p, SudokuConfiguration *game_config,
                       UserInterfaceCustomization *customization)
 {
-        Configuration *config =
-            assemble_sudoku_configuration(p->persistent_storage);
+        SudokuConfiguration *initial_config =
+            load_initial_sudoku_config(p->persistent_storage);
+
+        Configuration *config = assemble_sudoku_configuration(initial_config);
 
         auto maybe_interrupt = collect_configuration(p, config, customization);
         if (maybe_interrupt) {
+                delete initial_config;
                 delete config;
                 return maybe_interrupt;
         }
 
-        extract_game_config(game_config, config);
+        extract_game_config(game_config, config, initial_config);
+        delete initial_config;
         delete config;
         return std::nullopt;
 }
 
-Configuration *assemble_sudoku_configuration(PersistentStorage *storage)
+Configuration *
+assemble_sudoku_configuration(SudokuConfiguration *initial_config)
 {
-        SudokuConfiguration *initial_config =
-            load_initial_sudoku_config(storage);
 
         ConfigurationOption *difficulty = ConfigurationOption::of_integers(
             "Difficulty", {1, 2, 3}, initial_config->difficulty);
 
         std::vector<ConfigurationOption *> options = {difficulty};
 
-        delete initial_config;
         return new Configuration("Sudoku", options);
 }
 
@@ -867,16 +937,26 @@ SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage)
                 memcpy(output, &config, sizeof(SudokuConfiguration));
         }
 
-        LOG_DEBUG(TAG, "Loaded sudoku configuration: difficulty=%d",
-                  output->difficulty);
+        LOG_DEBUG(TAG,
+                  "Loaded sudoku configuration: difficulty=%d, "
+                  "is_game_in_progress=%d",
+                  output->difficulty, output->is_game_in_progress);
 
         return output;
 }
 
 void extract_game_config(SudokuConfiguration *game_config,
-                         Configuration *config)
+                         Configuration *config,
+                         SudokuConfiguration *initial_config)
 {
         ConfigurationOption difficulty = *config->options[0];
 
         game_config->difficulty = difficulty.get_curr_int_value();
+        game_config->is_game_in_progress = initial_config->is_game_in_progress;
+        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
+                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+                        game_config->saved_game[y][x] =
+                            initial_config->saved_game[y][x];
+                }
+        }
 }
