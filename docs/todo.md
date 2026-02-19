@@ -20,13 +20,14 @@
 - [ ] understand the random device stuff (mt19937 etc.)
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
-- [ ] implement sudoku randomization given a 'seed' sudoku
+- [ ] ensure that the sudoku generation algorithm doesn't OOM on arduino.
 
 # In Progress
 
 
 
 # Done
+- [x] implement sudoku randomization given a 'seed' sudoku
 - [x] implement sudoku correctness checking
 - [x] implement sudoku backtracking solver
 - [x] design sudoku input model
