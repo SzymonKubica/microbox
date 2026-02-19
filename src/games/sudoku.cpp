@@ -1,6 +1,7 @@
 #include <cassert>
 #include <optional>
 #include <algorithm>
+#include <random>
 #include "sudoku.hpp"
 #include "settings.hpp"
 #include "game_menu.hpp"
@@ -151,7 +152,7 @@ std::vector<int> find_valid_numbers(std::vector<std::vector<SudokuCell>> &grid,
                 }
         }
 
-        // Check square
+        // Check big square
         Point square_top_left_corner = {3 * (location.x / 3),
                                         3 * (location.y / 3)};
 
@@ -172,6 +173,44 @@ std::vector<int> find_valid_numbers(std::vector<std::vector<SudokuCell>> &grid,
         return candidates;
 }
 
+bool populate_solved_grid(std::vector<std::vector<SudokuCell>> &grid)
+{
+        std::optional<Point> maybe_empty = find_empty_cell(grid);
+        if (!maybe_empty.has_value()) {
+                return true;
+        }
+
+        Point empty = maybe_empty.value();
+        LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
+        std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
+
+        // We shuffle the candidate numbers here to ensure that the grid
+        // is at least somewhat random.
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(valid_numbers.begin(), valid_numbers.end(), g);
+
+        for (int candidate : valid_numbers) {
+                grid[empty.y][empty.x].value = candidate;
+                if (populate_solved_grid(grid)) {
+                        return true;
+                }
+                grid[empty.y][empty.x].value = std::nullopt;
+        }
+
+        return false;
+}
+
+std::vector<std::vector<SudokuCell>> generate_solved_grid()
+{
+        std::vector<std::vector<SudokuCell>> grid(
+            SUDOKU_GRID_SIZE,
+            std::vector(SUDOKU_GRID_SIZE, SudokuCell(std::nullopt, true)));
+
+        populate_solved_grid(grid);
+        return grid;
+}
+
 bool solve(std::vector<std::vector<SudokuCell>> &grid)
 {
         std::optional<Point> maybe_empty = find_empty_cell(grid);
@@ -182,6 +221,11 @@ bool solve(std::vector<std::vector<SudokuCell>> &grid)
         Point empty = maybe_empty.value();
         LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
         std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
+
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(valid_numbers.begin(), valid_numbers.end(), g);
+
         LOG_DEBUG(TAG, "Found valid numbers: ", "");
         for (int v : valid_numbers) {
                 LOG_DEBUG(TAG, "%d ", v);
@@ -207,7 +251,7 @@ std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
 
         if (!response.has_value()) {
                 std::vector<std::vector<SudokuCell>> output(
-                    9, std::vector(9, SudokuCell(0, true)));
+                    9, std::vector(9, SudokuCell(std::nullopt, true)));
                 return output;
         }
 
@@ -344,7 +388,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
         draw_sudoku_grid_frame(p, customization, gd);
-        auto grid = fetch_sudoku_grid(p);
+        auto grid = generate_solved_grid();
 
         draw_grid_numbers(p, customization, gd, grid);
         draw_available_numbers(p, customization, gd, grid);
@@ -354,10 +398,6 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
         int selected_digit = 1;
         draw_circle_selector(p, gd, selected_digit,
                              customization->accent_color);
-
-        // testing the backtracking solver here.
-        solve(grid);
-        draw_grid_numbers(p, customization, gd, grid);
 
         while (!is_game_over) {
                 Direction dir;
