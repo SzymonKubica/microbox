@@ -1,4 +1,5 @@
 #include <cassert>
+#include <memory>
 #include <optional>
 #include <algorithm>
 #include <random>
@@ -210,6 +211,86 @@ std::vector<std::vector<SudokuCell>> generate_solved_grid()
         populate_solved_grid(grid);
         return grid;
 }
+bool test_for_unique_solution(std::vector<std::vector<SudokuCell>> &grid,
+                              std::unique_ptr<int> &solution_count);
+
+std::vector<std::vector<SudokuCell>> generate_solvable_grid()
+{
+        auto solvable = generate_solved_grid();
+
+        // TODO: tweak this depending on the difficulty level.
+        int to_remove = 40;
+
+        std::vector<Point> locations_to_remove;
+
+        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
+                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+                        locations_to_remove.emplace_back(x, y);
+                }
+        }
+
+        // We shuffle the candidate numbers positions to ensure that the
+        // generated empty number pattern is random.
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(locations_to_remove.begin(), locations_to_remove.end(), g);
+
+        int candidate_idx = 0;
+        int removed = 0;
+
+        while (removed < to_remove) {
+                auto &[x, y] = locations_to_remove[candidate_idx];
+
+                int previous_value = solvable[y][x].value.value();
+                solvable[y][x].value = std::nullopt;
+                solvable[y][x].is_user_defined = true;
+                std::vector<std::vector<SudokuCell>> clone = solvable;
+
+                std::unique_ptr<int> solution_count = std::make_unique<int>(0);
+
+                test_for_unique_solution(clone, solution_count);
+
+                if (*solution_count.get() > 1) {
+                        solvable[y][x].value = previous_value;
+                        solvable[y][x].is_user_defined = false;
+                } else {
+                        removed++;
+                }
+                candidate_idx++;
+        }
+
+        return solvable;
+}
+
+bool test_for_unique_solution(std::vector<std::vector<SudokuCell>> &grid,
+                              std::unique_ptr<int> &solution_count)
+{
+
+        // Prune the search space to return true immediately once more than 1
+        // solution is found.
+        if (*solution_count.get() > 1) {
+                return true;
+        }
+
+        std::optional<Point> maybe_empty = find_empty_cell(grid);
+        if (!maybe_empty.has_value()) {
+                (*solution_count.get())++;
+                return true;
+        }
+
+        Point empty = maybe_empty.value();
+        std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
+
+        for (int candidate : valid_numbers) {
+                grid[empty.y][empty.x].value = candidate;
+                if (test_for_unique_solution(grid, solution_count)) {
+                        return true;
+                }
+                grid[empty.y][empty.x].value = std::nullopt;
+        }
+
+        return false;
+}
 
 bool solve(std::vector<std::vector<SudokuCell>> &grid)
 {
@@ -221,10 +302,6 @@ bool solve(std::vector<std::vector<SudokuCell>> &grid)
         Point empty = maybe_empty.value();
         LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
         std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
-
-        std::random_device rd;
-        std::mt19937 g(rd());
-        std::shuffle(valid_numbers.begin(), valid_numbers.end(), g);
 
         LOG_DEBUG(TAG, "Found valid numbers: ", "");
         for (int v : valid_numbers) {
@@ -388,7 +465,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
         draw_sudoku_grid_frame(p, customization, gd);
-        auto grid = generate_solved_grid();
+        auto grid = generate_solvable_grid();
 
         draw_grid_numbers(p, customization, gd, grid);
         draw_available_numbers(p, customization, gd, grid);
