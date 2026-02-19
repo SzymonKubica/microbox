@@ -3,7 +3,6 @@
 #include "../../logging.hpp"
 #if defined(ARDUINO_UNOR4_WIFI)
 #include <WiFiS3.h>
-#include "WiFiSSLClient.h"
 #endif
 #include <cstdint>
 
@@ -11,7 +10,7 @@ std::optional<std::string>
 ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
 {
 #if defined(ARDUINO_UNOR4_WIFI)
-        WiFiSSLClient client;
+        WiFiClient client;
         if (client.connect(config.host.c_str(), (uint16_t)config.port)) {
                 std::string get_request = "GET " + url + " HTTP/1.1";
                 std::string host = "Host: " + config.host;

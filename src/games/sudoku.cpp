@@ -225,7 +225,7 @@ std::vector<std::vector<SudokuCell>> generate_solvable_grid()
 
         for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
                 for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
-                        locations_to_remove.emplace_back(x, y);
+                        locations_to_remove.push_back({x, y});
                 }
         }
 
@@ -239,7 +239,9 @@ std::vector<std::vector<SudokuCell>> generate_solvable_grid()
         int removed = 0;
 
         while (removed < to_remove) {
-                auto &[x, y] = locations_to_remove[candidate_idx];
+                Point loc = locations_to_remove[candidate_idx];
+                int x = loc.x;
+                int y = loc.y;
 
                 int previous_value = solvable[y][x].value.value();
                 solvable[y][x].value = std::nullopt;
@@ -345,9 +347,10 @@ std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
                 for (int j = 0; j < SUDOKU_GRID_SIZE; j++) {
                         int value = sudoku_grid[i][j];
                         if (value != 0) {
-                                row.emplace_back(value, false);
+                                std::optional<int> value_opt = value;
+                                row.push_back({value_opt, false});
                         } else {
-                                row.emplace_back(std::nullopt, true);
+                                row.push_back({std::nullopt, true});
                         }
                 }
                 output.push_back(row);
