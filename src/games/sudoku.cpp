@@ -174,6 +174,21 @@ std::vector<int> find_valid_numbers(std::vector<std::vector<SudokuCell>> &grid,
         return candidates;
 }
 
+/**
+ * Implements uniform random number generator (URBG) 'interface'
+ */
+class RandomGenerator
+{
+      public:
+        using result_type = uint32_t;
+        result_type operator()() { return rand(); }
+        static constexpr result_type min() { return 0; }
+        static constexpr result_type max()
+        {
+                return static_cast<uint32_t>(RAND_MAX);
+        }
+};
+
 bool populate_solved_grid(std::vector<std::vector<SudokuCell>> &grid)
 {
         std::optional<Point> maybe_empty = find_empty_cell(grid);
@@ -185,11 +200,8 @@ bool populate_solved_grid(std::vector<std::vector<SudokuCell>> &grid)
         LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
         std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
 
-        // We shuffle the candidate numbers here to ensure that the grid
-        // is at least somewhat random.
-        std::random_device rd;
-        std::mt19937 g(rd());
-        std::shuffle(valid_numbers.begin(), valid_numbers.end(), g);
+        std::shuffle(valid_numbers.begin(), valid_numbers.end(),
+                     RandomGenerator{});
 
         for (int candidate : valid_numbers) {
                 grid[empty.y][empty.x].value = candidate;
@@ -231,9 +243,8 @@ std::vector<std::vector<SudokuCell>> generate_solvable_grid()
 
         // We shuffle the candidate numbers positions to ensure that the
         // generated empty number pattern is random.
-        std::random_device rd;
-        std::mt19937 g(rd());
-        std::shuffle(locations_to_remove.begin(), locations_to_remove.end(), g);
+        std::shuffle(locations_to_remove.begin(), locations_to_remove.end(),
+                     RandomGenerator{});
 
         int candidate_idx = 0;
         int removed = 0;
@@ -259,6 +270,16 @@ std::vector<std::vector<SudokuCell>> generate_solvable_grid()
                         removed++;
                 }
                 candidate_idx++;
+        }
+
+        // When the grid is generated, we need to make all cells
+        // non-user-defined.
+        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
+                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+                        if (solvable[y][x].value.has_value()) {
+                                solvable[y][x].is_user_defined = false;
+                        }
+                }
         }
 
         return solvable;
@@ -401,7 +422,8 @@ void draw_circle_selector(Platform *p, SquareCellGridDimensions *dimensions,
         int circle_radius = 3;
 
         int padding = (cell_size - circle_radius) / 2;
-        // Need this to make the selector visually balanced and centered.
+        // Need this to make the selector visually balanced and
+        // centered.
         int y_adjustment = 3;
 
         int x = x_margin + x_offset + padding;
@@ -424,9 +446,10 @@ void draw_caret(Platform *p, SquareCellGridDimensions *dimensions,
         int y_margin = dimensions->top_vertical_margin;
 
         int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
-        // The caret needs to be drawn inside of the cell and avoid touching its
-        // borders. Because of this we need to shift the caret inside
-        // the grid and make its sides appropriately shorter.
+        // The caret needs to be drawn inside of the cell and avoid
+        // touching its borders. Because of this we need to shift the
+        // caret inside the grid and make its sides appropriately
+        // shorter.
         int offset = 3;
 
         int start_x = x_margin + cell_size * caret.x + offset;
@@ -441,7 +464,7 @@ void draw_caret(Platform *p, SquareCellGridDimensions *dimensions,
 void draw_caret(Platform *p, UserInterfaceCustomization *customization,
                 SquareCellGridDimensions *dimensions, const Point &caret)
 {
-        draw_caret(p, dimensions, caret, Gray);
+        draw_caret(p, dimensions, caret, White);
 }
 
 void erase_caret(Platform *p, SquareCellGridDimensions *dimensions,
@@ -475,6 +498,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
         Point caret = {0, 0};
         bool is_game_over = false;
+        bool input_registered_last_iteration = false;
         int selected_digit = 1;
         draw_circle_selector(p, gd, selected_digit,
                              customization->accent_color);
@@ -487,10 +511,15 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                         translate_toroidal_array(&caret, dir, SUDOKU_GRID_SIZE,
                                                  SUDOKU_GRID_SIZE);
                         draw_caret(p, customization, gd, caret);
-                        // The delay below was hand-tweaked to feel good.
-                        p->time_provider->delay_ms(GAME_LOOP_DELAY * 5 / 4);
+                        // The delay below was hand-tweaked to feel
+                        // good.
+                        p->time_provider->delay_ms(GAME_LOOP_DELAY * 3 / 2);
                 }
                 if (poll_action_input(p->action_controllers, &act)) {
+                        if (input_registered_last_iteration) {
+                                continue;
+                        }
+                        input_registered_last_iteration = true;
                         switch (act) {
                         case GREEN: {
                                 erase_circle_selector(p, gd, selected_digit);
@@ -514,7 +543,8 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                         }
                         case RED: {
                                 // We populate / erase the selected grid
-                                // location using the currently selected digit.
+                                // location using the currently selected
+                                // digit.
                                 auto &cell = grid[caret.y][caret.x];
                                 if (cell.is_user_defined) {
                                         if (cell.value.has_value()) {
@@ -534,10 +564,12 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
                         case BLUE:
                                 return UserAction::Exit;
-                                break;
                         }
-                        // We wait slightly longer after an action is selected.
+                        // We wait slightly longer after an action is
+                        // selected.
                         p->time_provider->delay_ms(2 * GAME_LOOP_DELAY);
+                } else {
+                        input_registered_last_iteration = false;
                 }
                 p->time_provider->delay_ms(CONTROL_POLLING_DELAY);
                 p->display->refresh();
@@ -578,8 +610,7 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
         int x = x_margin + x_offset + x_padding;
         int y = y_margin + y_offset + y_padding;
 
-        Color render_color =
-            cell.is_user_defined ? Gray : customization->accent_color;
+        Color render_color = cell.is_user_defined ? White : Gray;
         p->display->draw_string({x, y}, buffer, FontSize::Size16, Black,
                                 render_color);
 }

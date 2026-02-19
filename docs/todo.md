@@ -20,13 +20,16 @@
 - [ ] understand the random device stuff (mt19937 etc.)
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
-- [ ] ensure that the sudoku generation algorithm doesn't OOM on arduino.
+- [ ] add support for selecting sudoku difficulty level.
+- [ ] add checking for correctly solved sudoku grids.
+- [ ] add ability for saving down the sudoku grid similar to 2048.
 
 # In Progress
 
 
 
 # Done
+- [x] ensure that the sudoku generation algorithm doesn't OOM on arduino.
 - [x] implement sudoku randomization given a 'seed' sudoku
 - [x] implement sudoku correctness checking
 - [x] implement sudoku backtracking solver
