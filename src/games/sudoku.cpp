@@ -406,7 +406,10 @@ void draw_available_numbers(Platform *p,
 {
         for (int i = 0; i < SUDOKU_GRID_SIZE; i++) {
                 SudokuCell cell(i + 1, true);
-                draw_number(p, customization, dimensions, {-1, i}, cell);
+                // Here we repurpose the number drawing functionality to
+                // render available numbers two cells to the left of the main
+                // grid.
+                draw_number(p, customization, dimensions, {-2, i}, cell);
         }
 }
 
@@ -424,7 +427,11 @@ void draw_circle_selector(Platform *p, SquareCellGridDimensions *dimensions,
         int padding = (cell_size - circle_radius) / 2;
         // Need this to make the selector visually balanced and
         // centered.
+#ifdef EMULATOR
         int y_adjustment = 3;
+#else
+        int y_adjustment = 1;
+#endif
 
         int x = x_margin + x_offset + padding;
         int y = y_margin + y_offset + padding + y_adjustment;
@@ -473,6 +480,82 @@ void erase_caret(Platform *p, SquareCellGridDimensions *dimensions,
         draw_caret(p, dimensions, caret, Black);
 }
 
+bool validate_grid(std::vector<std::vector<SudokuCell>> &grid)
+{
+
+        // Check rows
+        for (int y = 0; y < 9; y++) {
+                int digit_counts[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+                LOG_DEBUG(TAG, "Validating row %d", y);
+                for (int x = 0; x < 9; x++) {
+                        auto &cell = grid[y][x];
+                        if (!cell.value.has_value())
+                                return false;
+                        int value = cell.value.value();
+                        digit_counts[value - 1]++;
+                }
+                for (int i = 0; i < 9; i++) {
+                        int digit = i + 1;
+                        int count = digit_counts[i];
+                        if (count != 1) {
+                                LOG_DEBUG(TAG,
+                                          "Digit %d was found %d times. This "
+                                          "is incorrect",
+                                          digit, count);
+                                return false;
+                        }
+                }
+        }
+        LOG_DEBUG(TAG, "Rows validated successfully!");
+
+        // Check columns
+        for (int x = 0; x < 9; x++) {
+                int digit_counts[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+                for (int y = 0; y < 9; y++) {
+                        auto &cell = grid[y][x];
+                        if (!cell.value.has_value())
+                                return false;
+                        int value = cell.value.value();
+                        digit_counts[value - 1]++;
+                }
+                for (int count : digit_counts) {
+                        if (count != 1) {
+                                return false;
+                        }
+                }
+        }
+        LOG_DEBUG(TAG, "Columns validated successfully!");
+
+        for (int y = 0; y < 9; y += 3) {
+                for (int x = 0; x < 9; x += 3) {
+                        // Check big square
+                        Point square_top_left = {x, y};
+
+                        int digit_counts[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+                        for (int y = square_top_left.y;
+                             y < square_top_left.y + 3; y++) {
+                                for (int x = square_top_left.x;
+                                     x < square_top_left.x + 3; x++) {
+
+                                        auto &cell = grid[y][x];
+                                        if (!cell.value.has_value())
+                                                return false;
+                                        int value = cell.value.value();
+                                        digit_counts[value - 1]++;
+                                }
+                        }
+
+                        for (int count : digit_counts) {
+                                if (count != 1) {
+                                        return false;
+                                }
+                        }
+                }
+        }
+        LOG_DEBUG(TAG, "Squares validated successfully!");
+        return true;
+}
+
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
@@ -503,7 +586,31 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
         draw_circle_selector(p, gd, selected_digit,
                              customization->accent_color);
 
+        int numbers_placed = 0;
+
+        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
+                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+                        if (!grid[y][x].is_user_defined) {
+                                numbers_placed++;
+                        }
+                }
+        }
+
         while (!is_game_over) {
+                if (numbers_placed == SUDOKU_GRID_SIZE * SUDOKU_GRID_SIZE) {
+                        if (validate_grid(grid)) {
+                                auto help_text = "Congratulations, you solved "
+                                                 "the sudoku successfully!";
+                                render_wrapped_help_text(p, customization,
+                                                         help_text);
+                                maybe_interrupt = wait_until_green_pressed(p);
+
+                                if (maybe_interrupt.has_value()) {
+                                        return maybe_interrupt.value();
+                                }
+                                return UserAction::Exit;
+                        }
+                }
                 Direction dir;
                 Action act;
                 if (poll_directional_input(p->directional_controllers, &dir)) {
@@ -553,10 +660,12 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                                              gd, caret);
                                                 draw_caret(p, customization, gd,
                                                            caret);
+                                                numbers_placed--;
                                         } else {
                                                 cell.value = selected_digit,
                                                 draw_number(p, customization,
                                                             gd, caret, cell);
+                                                numbers_placed++;
                                         }
                                 }
                                 break;
