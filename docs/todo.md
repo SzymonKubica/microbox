@@ -20,12 +20,14 @@
 - [ ] understand the random device stuff (mt19937 etc.)
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
+- [ ] add skip functionality to the number selector.
 
 # In Progress
 
 
 
 # Done
+- [x] add visual cues to highlight numbers that are currently selected
 - [x] add ability for saving down the sudoku grid similar to 2048.
 - [x] add support for selecting sudoku difficulty level.
 - [x] add checking for correctly solved sudoku grids.
