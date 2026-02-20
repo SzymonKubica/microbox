@@ -660,7 +660,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
         for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
                 for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
-                        if (!grid[y][x].is_user_defined) {
+                        if (grid[y][x].value.has_value()) {
                                 numbers_placed++;
                         }
                 }

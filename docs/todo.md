@@ -27,6 +27,7 @@
 
 
 # Done
+- [x] fix placed cells counting for saved grids.
 - [x] add visual cues to highlight numbers that are currently selected
 - [x] add ability for saving down the sudoku grid similar to 2048.
 - [x] add support for selecting sudoku difficulty level.
