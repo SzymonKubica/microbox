@@ -192,7 +192,15 @@ sFONT *map_font_size(FontSize font_size);
 void LcdDisplay::draw_string(Point start, char *string_buffer,
                              FontSize font_size, Color bg_color, Color fg_color)
 {
-        Paint_DrawString_EN(start.x, start.y, string_buffer,
+        /*
+         * We need to add the adjustment because of the pixel-precision
+         * inconsistency between the sfml emulator and the lcd display. The
+         * Paint_DrawRectangle starts drawing one unit too far to the right and
+         * ends one unit too high, we need to add a simlar adjustment to the
+         * text rendering function to achieve consistency
+         */
+        int adj = 1;
+        Paint_DrawString_EN(start.x - 1, start.y - 1, string_buffer,
                             map_font_size(font_size), bg_color, fg_color);
 };
 

@@ -332,13 +332,13 @@ UserAction minesweeper_loop(Platform *p,
                         }
                 }
 
-                pause_until_any_directional_input(
-                    p->directional_controllers, p->time_provider, p->display);
+                pause_until_any_directional_input(p->directional_controllers,
+                                                  p->time_provider, p->display);
                 display_game_over(p->display, customization);
                 p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
         } else {
-                pause_until_any_directional_input(
-                    p->directional_controllers, p->time_provider, p->display);
+                pause_until_any_directional_input(p->directional_controllers,
+                                                  p->time_provider, p->display);
                 display_game_won(p->display, customization);
                 p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
@@ -423,11 +423,6 @@ void uncover_grid_cell(Display *display, Point *grid_position,
                        int *total_uncovered)
 {
 
-        Point actual_position = {.x = dimensions->left_horizontal_margin +
-                                      grid_position->x * FONT_WIDTH,
-                                 .y = dimensions->top_vertical_margin +
-                                      grid_position->y * FONT_SIZE};
-
         char text[2];
 
         MinesweeperGridCell cell = (*grid)[grid_position->y][grid_position->x];
@@ -462,8 +457,15 @@ void uncover_grid_cell(Display *display, Point *grid_position,
                         break;
                 }
         }
-        display->draw_rectangle(actual_position, FONT_WIDTH, FONT_SIZE, Black,
-                                0, true);
+        Point actual_position = {.x = dimensions->left_horizontal_margin +
+                                      grid_position->x * FONT_WIDTH,
+                                 .y = dimensions->top_vertical_margin +
+                                      grid_position->y * FONT_SIZE};
+        int border_offset = 1;
+        display->draw_rectangle({actual_position.x + border_offset,
+                                 actual_position.y + border_offset},
+                                FONT_WIDTH - 2 * border_offset,
+                                FONT_SIZE - 2 * border_offset, Black, 1, true);
 
         display->draw_string(actual_position, text, FontSize::Size16, Black,
                              text_color);

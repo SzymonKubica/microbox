@@ -838,8 +838,15 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
         char buffer[2];
         sprintf(buffer, "%d", cell.value.value());
 
-        int x = x_margin + x_offset + x_padding;
-        int y = y_margin + y_offset + y_padding;
+        // Because of pixel-precision inaccuracies we need to adjust the
+        // placement of the numbers in the grid.
+#ifdef EMULATOR
+        int adj = 0;
+#else
+        int adj = 1;
+#endif
+        int x = x_margin + x_offset + x_padding + adj;
+        int y = y_margin + y_offset + y_padding + adj;
 
         Color render_color = cell.is_user_defined ? White : Gray;
 
@@ -877,14 +884,21 @@ void erase_number(Platform *p, UserInterfaceCustomization *customization,
         int x_padding = (cell_size - fw) / 2 - border_adjustment_offset;
         int y_padding = (cell_size - fh) / 2 - border_adjustment_offset;
 
-        int x = x_margin + x_offset + x_padding;
-        int y = y_margin + y_offset + y_padding;
+        // Because of pixel-precision inaccuracies we need to adjust the
+        // placement of the numbers in the grid.
+#ifdef EMULATOR
+        int adj = 0;
+#else
+        int adj = 1;
+#endif
+        int x = x_margin + x_offset + x_padding + adj;
+        int y = y_margin + y_offset + y_padding + adj;
 
         // For active numbers that were underlined we need to erase a bit
         // further down to remove the underline.
         int underline_adj = 1;
 
-        p->display->clear_region({x, y}, {x + fw, y + fh + underline_adj},
+        p->display->clear_region({x, y}, {x + fw + adj, y + fh + underline_adj},
                                  Black);
 }
 

@@ -1,10 +1,4 @@
 # Ideas
-- games that can be implemented with the limited display:
-  - sudoku (assuming we can fit 9x9 grid)
-  - some fun animations
-- [_] figure out how to generate sudoku
-- [_] design the input model for sudoku
-- [_] think about the sudoku game logic
 
 - game of life based puzzle game:
   - you have a limited number of seeds
@@ -14,19 +8,32 @@
   - you can pause the evolution and plant a seed whenever you want
   - the fewer evolution generations and seeds you use the better
 
+- android 'emulator':
+  - top view of the console
+  - actual animated joystick
+  - animated buttons
+  - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
+
 
 # TODO
 
 - [ ] understand the random device stuff (mt19937 etc.)
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
-- [ ] add skip functionality to the number selector.
+- [ ] add highlighting of sudoku digits that are already completely placed in
+      the digit selector.
 
 # In Progress
 
 
 
 # Done
+- [x] fix minesweeper rendering artifacts
+- [x] from 'Ideas'
+    - [x] sudoku (assuming we can fit 9x9 grid)
+    - [x] figure out how to generate sudoku
+    - [x] design the input model for sudoku
+    - [x] think about the sudoku game logic
 - [x] fix placed cells counting for saved grids.
 - [x] add visual cues to highlight numbers that are currently selected
 - [x] add ability for saving down the sudoku grid similar to 2048.
