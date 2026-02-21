@@ -20,14 +20,15 @@
 - [ ] understand the random device stuff (mt19937 etc.)
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
-- [ ] add highlighting of sudoku digits that are already completely placed in
-      the digit selector.
 
 # In Progress
 
 
 
+
 # Done
+- [x] add highlighting of sudoku digits that are already completely placed in
+      the digit selector.
 - [x] fix minesweeper rendering artifacts
 - [x] from 'Ideas'
     - [x] sudoku (assuming we can fit 9x9 grid)

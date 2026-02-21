@@ -108,7 +108,8 @@ void draw_sudoku_grid_frame(Platform *p,
 
 void draw_number(Platform *p, UserInterfaceCustomization *customization,
                  SquareCellGridDimensions *dimensions, Point location,
-                 const SudokuCell &value, int active_number);
+                 const SudokuCell &value, int active_number,
+                 std::optional<Color> color_override = std::nullopt);
 
 void erase_number(Platform *p, UserInterfaceCustomization *customization,
                   SquareCellGridDimensions *dimensions, Point location);
@@ -463,6 +464,45 @@ void draw_available_numbers(Platform *p,
         }
 }
 
+/**
+ * When the user places 9 occurences of a given digit we mark it as 'done' in
+ * the selector list to the left of the sudoku grid. This is important to make
+ * eliminating possible numbers easier.
+ */
+void mark_number_as_done(Platform *p, UserInterfaceCustomization *customization,
+                         SquareCellGridDimensions *dimensions, int digit)
+{
+        int digit_idx = digit - 1;
+        SudokuCell cell(digit, true);
+        // Here we repurpose the number drawing functionality to
+        // render available numbers two cells to the left of the main
+        // grid. We set the active number to 0 to ensure that the
+        // indicator does not get rendered.
+        Point location = {-2, digit_idx};
+        erase_number(p, customization, dimensions, location);
+        draw_number(p, customization, dimensions, location, cell, 0,
+                    customization->accent_color);
+}
+
+/**
+ * This function reverses the highlight on the given digit in the selector if
+ * there are no longer 9 occurences of this digit present on the grid.
+ */
+void unmark_number_as_done(Platform *p,
+                           UserInterfaceCustomization *customization,
+                           SquareCellGridDimensions *dimensions, int digit)
+{
+        int digit_idx = digit - 1;
+        SudokuCell cell(digit, true);
+        // Here we repurpose the number drawing functionality to
+        // render available numbers two cells to the left of the main
+        // grid. We set the active number to 0 to ensure that the
+        // indicator does not get rendered.
+        Point location = {-2, digit_idx};
+        erase_number(p, customization, dimensions, location);
+        draw_number(p, customization, dimensions, location, cell, 0);
+}
+
 void draw_circle_selector(Platform *p, SquareCellGridDimensions *dimensions,
                           int selected_number, Color color)
 {
@@ -646,22 +686,25 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
         draw_sudoku_grid_frame(p, customization, gd);
-        int selected_digit = 1;
-        draw_circle_selector(p, gd, selected_digit,
-                             customization->accent_color);
+        int current_digit = 1;
+        draw_circle_selector(p, gd, current_digit, customization->accent_color);
         draw_available_numbers(p, customization, gd, grid);
-        draw_grid_numbers(p, customization, gd, grid, selected_digit);
+        draw_grid_numbers(p, customization, gd, grid, current_digit);
 
         Point caret = {0, 0};
         bool is_game_over = false;
         bool input_registered_last_iteration = false;
 
         int numbers_placed = 0;
+        int number_counts[SUDOKU_GRID_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
         for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
                 for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
-                        if (grid[y][x].value.has_value()) {
+                        auto &cell = grid[y][x];
+                        if (cell.value.has_value()) {
                                 numbers_placed++;
+                                int digit_idx = cell.value.value() - 1;
+                                number_counts[digit_idx]++;
                         }
                 }
         }
@@ -700,20 +743,20 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                         switch (act) {
                         case GREEN: {
 
-                                int old_selected = selected_digit;
-                                erase_circle_selector(p, gd, selected_digit);
-                                selected_digit =
-                                    selected_digit % SUDOKU_GRID_SIZE + 1;
+                                int old_selected = current_digit;
+                                erase_circle_selector(p, gd, current_digit);
+                                current_digit =
+                                    current_digit % SUDOKU_GRID_SIZE + 1;
                                 draw_circle_selector(
-                                    p, gd, selected_digit,
+                                    p, gd, current_digit,
                                     customization->accent_color);
 
                                 update_single_digit(p, customization, gd, grid,
-                                                    selected_digit,
+                                                    current_digit,
                                                     old_selected);
                                 update_single_digit(p, customization, gd, grid,
-                                                    selected_digit,
-                                                    selected_digit);
+                                                    current_digit,
+                                                    current_digit);
 
                                 // If the caret was placed on any of the updated
                                 // digits, it will get clipped, so we need to
@@ -723,22 +766,22 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                 break;
                         }
                         case YELLOW: {
-                                int old_selected = selected_digit;
-                                erase_circle_selector(p, gd, selected_digit);
-                                selected_digit =
-                                    mathematical_modulo(selected_digit - 2,
+                                int old_selected = current_digit;
+                                erase_circle_selector(p, gd, current_digit);
+                                current_digit =
+                                    mathematical_modulo(current_digit - 2,
                                                         SUDOKU_GRID_SIZE) +
                                     1;
                                 draw_circle_selector(
-                                    p, gd, selected_digit,
+                                    p, gd, current_digit,
                                     customization->accent_color);
 
                                 update_single_digit(p, customization, gd, grid,
-                                                    selected_digit,
+                                                    current_digit,
                                                     old_selected);
                                 update_single_digit(p, customization, gd, grid,
-                                                    selected_digit,
-                                                    selected_digit);
+                                                    current_digit,
+                                                    current_digit);
 
                                 // If the caret was placed on any of the updated
                                 // digits, it will get clipped, so we need to
@@ -752,6 +795,8 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                 // location using the currently selected
                                 // digit.
                                 auto &cell = grid[caret.y][caret.x];
+                                int digit_idx = current_digit - 1;
+                                int previous_count = number_counts[digit_idx];
                                 if (cell.is_user_defined) {
                                         if (cell.value.has_value()) {
                                                 cell.value = std::nullopt;
@@ -759,14 +804,31 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                                              gd, caret);
                                                 draw_caret(p, customization, gd,
                                                            caret);
+                                                number_counts[digit_idx]--;
                                                 numbers_placed--;
                                         } else {
-                                                cell.value = selected_digit,
+                                                cell.value = current_digit,
                                                 draw_number(p, customization,
                                                             gd, caret, cell,
-                                                            selected_digit);
+                                                            current_digit);
+                                                number_counts[digit_idx]++;
                                                 numbers_placed++;
                                         }
+                                }
+                                // If the user added/removed the ninth occurence
+                                // of a given number, we need to update the
+                                // color of its digit in the selector list to
+                                // indicate that it is 'done'
+                                if (number_counts[digit_idx] == 9) {
+                                        LOG_DEBUG(TAG,
+                                                  "Marking number as done.");
+                                        mark_number_as_done(p, customization,
+                                                            gd, current_digit);
+                                } else if (previous_count == 9 &&
+                                           number_counts[digit_idx] < 9) {
+                                        unmark_number_as_done(p, customization,
+                                                              gd,
+                                                              current_digit);
                                 }
                                 break;
                         }
@@ -810,7 +872,8 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
 void draw_number(Platform *p, UserInterfaceCustomization *customization,
                  SquareCellGridDimensions *dimensions, Point location,
-                 const SudokuCell &cell, int active_number)
+                 const SudokuCell &cell, int active_number,
+                 std::optional<Color> color_override)
 {
 
         assert(cell.value.has_value() &&
@@ -849,6 +912,10 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
         int y = y_margin + y_offset + y_padding + adj;
 
         Color render_color = cell.is_user_defined ? White : Gray;
+
+        if (color_override.has_value()) {
+                render_color = color_override.value();
+        }
 
         p->display->draw_string({x, y}, buffer, FontSize::Size16, Black,
                                 render_color);
