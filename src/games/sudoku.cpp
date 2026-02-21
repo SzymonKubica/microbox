@@ -13,6 +13,7 @@
 #include "../common/grid.hpp"
 #include "../common/logging.hpp"
 #include "../common/maths_utils.hpp"
+#include "sudoku_engine.hpp"
 
 #define GAME_LOOP_DELAY 50
 #define CONTROL_POLLING_DELAY 10
@@ -114,84 +115,6 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
 void erase_number(Platform *p, UserInterfaceCustomization *customization,
                   SquareCellGridDimensions *dimensions, Point location);
 
-std::optional<Point>
-find_empty_cell(const std::vector<std::vector<SudokuCell>> &grid)
-{
-        int x = 0;
-        int y = 0;
-        for (auto &row : grid) {
-                x = 0;
-                for (auto &cell : row) {
-                        if (cell.is_user_defined && !cell.value.has_value()) {
-                                Point location = {x, y};
-                                return location;
-                        }
-                        x++;
-                }
-                y++;
-        }
-        return std::nullopt;
-}
-
-/**
- * Applies sudoku rules to determine the set of candidate numbers that can be
- * placed on the `location` in the grid.
- */
-std::vector<int> find_valid_numbers(std::vector<std::vector<SudokuCell>> &grid,
-                                    Point location)
-{
-        std::vector<int> candidates = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-
-        auto remove_candidate = [&](int candidate_digit) {
-                auto position = std::find(candidates.begin(), candidates.end(),
-                                          candidate_digit);
-                if (position != candidates.end()) {
-                        candidates.erase(position);
-                }
-        };
-
-        // Check row
-        for (int x = 0; x < 9; x++) {
-                if (x == location.x) {
-                        continue;
-                }
-                auto &current = grid[location.y][x];
-                if (current.value.has_value()) {
-                        remove_candidate(current.value.value());
-                }
-        }
-
-        // Check column
-        for (int y = 0; y < 9; y++) {
-                if (y == location.y) {
-                        continue;
-                }
-                auto &current = grid[y][location.x];
-                if (current.value.has_value()) {
-                        remove_candidate(current.value.value());
-                }
-        }
-
-        // Check big square
-        Point square_top_left_corner = {3 * (location.x / 3),
-                                        3 * (location.y / 3)};
-
-        for (int y = square_top_left_corner.y; y < square_top_left_corner.y + 3;
-             y++) {
-                for (int x = square_top_left_corner.x;
-                     x < square_top_left_corner.x + 3; x++) {
-                        if (x == location.x && y == location.y) {
-                                continue;
-                        }
-                        auto &current = grid[y][x];
-                        if (current.value.has_value()) {
-                                remove_candidate(current.value.value());
-                        }
-                }
-        }
-
-        return candidates;
-}
 
 /**
  * Implements uniform random number generator (URBG) 'interface'
@@ -340,32 +263,6 @@ bool test_for_unique_solution(std::vector<std::vector<SudokuCell>> &grid,
         return false;
 }
 
-bool solve(std::vector<std::vector<SudokuCell>> &grid)
-{
-        std::optional<Point> maybe_empty = find_empty_cell(grid);
-        if (!maybe_empty.has_value()) {
-                return true;
-        }
-
-        Point empty = maybe_empty.value();
-        LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
-        std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
-
-        LOG_DEBUG(TAG, "Found valid numbers: ", "");
-        for (int v : valid_numbers) {
-                LOG_DEBUG(TAG, "%d ", v);
-        }
-
-        for (int candidate : valid_numbers) {
-                grid[empty.y][empty.x].value = candidate;
-                if (solve(grid)) {
-                        return true;
-                }
-                grid[empty.y][empty.x].value = std::nullopt;
-        }
-
-        return false;
-}
 
 std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
 {
@@ -685,11 +582,12 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
         }
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
-        draw_sudoku_grid_frame(p, customization, gd);
         int current_digit = 1;
+        draw_sudoku_grid_frame(p, customization, gd);
+        draw_grid_numbers(p, customization, gd, grid, current_digit);
+
         draw_circle_selector(p, gd, current_digit, customization->accent_color);
         draw_available_numbers(p, customization, gd, grid);
-        draw_grid_numbers(p, customization, gd, grid, current_digit);
 
         Point caret = {0, 0};
         bool is_game_over = false;

@@ -5,22 +5,9 @@
 
 #include "common_transitions.hpp"
 #include "game_executor.hpp"
+#include "sudoku_engine.hpp"
 
 #define SUDOKU_GRID_SIZE 9
-
-class SudokuCell
-{
-      public:
-        std::optional<int> value;
-        bool is_user_defined = true;
-
-        SudokuCell(std::optional<int> value, bool is_user_defined)
-            : value(value), is_user_defined(is_user_defined)
-        {
-        };
-
-        SudokuCell() = default;
-};
 
 typedef struct SudokuConfiguration {
         int difficulty;
