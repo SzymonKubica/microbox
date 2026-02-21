@@ -796,16 +796,30 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                 // digit.
                                 auto &cell = grid[caret.y][caret.x];
                                 int digit_idx = current_digit - 1;
-                                int previous_count = number_counts[digit_idx];
                                 if (cell.is_user_defined) {
                                         if (cell.value.has_value()) {
+                                                int previous_value =
+                                                    cell.value.value();
+                                                int previous_idx =
+                                                    previous_value - 1;
                                                 cell.value = std::nullopt;
                                                 erase_number(p, customization,
                                                              gd, caret);
                                                 draw_caret(p, customization, gd,
                                                            caret);
-                                                number_counts[digit_idx]--;
+                                                int previous_count =
+                                                    number_counts[previous_idx];
+                                                number_counts[previous_idx]--;
+
                                                 numbers_placed--;
+                                                if (previous_count == 9 &&
+                                                    number_counts
+                                                            [previous_idx] <
+                                                        9) {
+                                                        unmark_number_as_done(
+                                                            p, customization,
+                                                            gd, previous_value);
+                                                }
                                         } else {
                                                 cell.value = current_digit,
                                                 draw_number(p, customization,
@@ -813,22 +827,23 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                                             current_digit);
                                                 number_counts[digit_idx]++;
                                                 numbers_placed++;
-                                        }
-                                }
-                                // If the user added/removed the ninth occurence
-                                // of a given number, we need to update the
-                                // color of its digit in the selector list to
-                                // indicate that it is 'done'
-                                if (number_counts[digit_idx] == 9) {
-                                        LOG_DEBUG(TAG,
-                                                  "Marking number as done.");
-                                        mark_number_as_done(p, customization,
+                                                // If the user added/removed the
+                                                // ninth occurence of a given
+                                                // number, we need to update the
+                                                // color of its digit in the
+                                                // selector list to indicate
+                                                // that it is 'done'
+                                                if (number_counts[digit_idx] ==
+                                                    9) {
+                                                        LOG_DEBUG(
+                                                            TAG,
+                                                            "Marking number as "
+                                                            "done.");
+                                                        mark_number_as_done(
+                                                            p, customization,
                                                             gd, current_digit);
-                                } else if (previous_count == 9 &&
-                                           number_counts[digit_idx] < 9) {
-                                        unmark_number_as_done(p, customization,
-                                                              gd,
-                                                              current_digit);
+                                                }
+                                        }
                                 }
                                 break;
                         }
