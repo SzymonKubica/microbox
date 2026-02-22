@@ -25,7 +25,7 @@ Currently, MicroBox features the following games:
 - :seedling: **Game of Life** - Watch and interact with a cellular automata evolving based on Conway’s rules.
 - :snake: **Snake** - the most iconic retro game.
 - :snake: :snake: **Snake Duel** - two snakes compete against each other.
-
+- :1234: **Sudoku** - Fill a 9x9 grid without violating Sudoku constraints.
 You can see more screenshots from the games [here](docs/gameplay-overview.md).
 
 ## :sparkles: Showcase
@@ -40,9 +40,7 @@ Check out more pictures of the MicroBox case [here](docs/travel-case.md).
 
 ## :rocket: Future Plans
 
-- :1234: **Sudoku** game will be implemented. First version will fetch a solvable
-  sudoku grid from an API. Later iterations will feature a grid generation algorithm
-  and a solver.
+- The next iteration of MicroBox will feature a custom PCB and a bigger display.
 
 ## :handshake: Contributing
 

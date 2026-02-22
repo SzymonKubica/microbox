@@ -29,3 +29,9 @@
 <img src="/assets/images/snake-duel-main-menu.png"alt="Snake Duel Main Menu"/>
 <img src="/assets/images/snake-duel-gameplay.png"alt="Snake Duel Gameplay"/>
 </p>
+
+## Sudoku
+<p align="center">
+<img src="/assets/images/sudoku-main-menu.png"alt="Sudoku Main Menu"/>
+<img src="/assets/images/sudoku-gameplay.png"alt="Sudoku Gameplay"/>
+</p>
