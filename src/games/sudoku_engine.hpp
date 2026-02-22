@@ -18,14 +18,15 @@ class SudokuCell
         bool is_user_defined = true;
 
         SudokuCell(std::optional<int> digit, bool is_user_defined)
-            : digit(digit), is_user_defined(is_user_defined) {
-              //TODO: fix this
-                      /*
-                            assert(1 <= digit && digit <= 9 &&
-                                   "Sudoku cells can only store values between 1
-                         and " "9 (inclusive).");
-                                   */
-              };
+            : digit(digit), is_user_defined(is_user_defined)
+        {
+                if (digit.has_value()) {
+                        assert(
+                            1 <= digit && digit <= 9 &&
+                            "Sudoku cells can only store values between 1 and "
+                            "9 (inclusive).");
+                }
+        };
 
         SudokuCell() = default;
 };

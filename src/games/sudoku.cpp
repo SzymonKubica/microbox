@@ -21,6 +21,136 @@
 SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {.difficulty = 1,
                                              .is_game_in_progress = false};
 
+class SudokuState
+{
+        /**
+         * Validates that a given point location can be used to index the 9x9
+         * Sudoku grid.
+         */
+        void validate_grid_location(const Point &location)
+        {
+                assert(0 <= location.x && location.x <= 9);
+                assert(0 <= location.y && location.y <= 9);
+        }
+
+        void decrement_digit_count(int digit)
+        {
+                int digit_idx = digit - 1;
+                digits_placed--;
+                digit_counts[digit_idx]--;
+        }
+        void increment_digit_count(int digit)
+        {
+                int digit_idx = digit - 1;
+                digits_placed++;
+                digit_counts[digit_idx]++;
+        }
+
+      public:
+        /**
+         * The digit that is currently selected by the user and will be placed
+         * on the grid.
+         */
+        int active_digit = 1;
+        /**
+         * A counter maintaining the total number of digits placed on the grid.
+         * This is required to know when to trigger the sudoku solution
+         * validation logic (it is too wasteful to iterate over all rows,
+         * columns and squares after each update to the grid).
+         */
+        int digits_placed = 0;
+        /**
+         * A 'map' from the digit index to the number of occurrences of this
+         * digit on the grid. This is required for tracking when each digit is
+         * 'done' and should be rendered differently in the available digits
+         * indicator.
+         */
+        int digit_counts[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+        SudokuGrid grid;
+
+        SudokuState(SudokuGrid grid) : grid(grid)
+        {
+                for (int y = 0; y < 9; y++) {
+                        for (int x = 0; x < 9; x++) {
+                                auto &cell = grid[y][x];
+                                if (cell.digit.has_value()) {
+                                        this->increment_digit_count(
+                                            cell.digit.value());
+                                }
+                        }
+                }
+        }
+
+        /**
+         * Given a point on the 9x9 grid, it erases the digit that was there and
+         * updates the state counters after the removal. It returns the number
+         * that was erased.
+         */
+        int erase_digit(const Point &location)
+        {
+                validate_grid_location(location);
+
+                auto &cell = grid[location.y][location.x];
+
+                assert(cell.is_user_defined &&
+                       "Only user-defined cells can be erased.");
+                assert(cell.digit.has_value() &&
+                       "Only cells storing values can be erased.");
+
+                int digit = cell.digit.value();
+                cell.digit = std::nullopt;
+                this->decrement_digit_count(digit);
+                return digit;
+        }
+
+        /**
+         * Given a point on the 9x9 grid, and a digit to be placed there, it
+         * places the `active_digit` on the grid and updates the state counters
+         * after the addition.
+         */
+        void place_digit(const Point &location)
+        {
+                validate_grid_location(location);
+
+                auto &cell = grid[location.y][location.x];
+
+                assert(cell.is_user_defined &&
+                       "Only user-defined cells can be modified.");
+                assert(!cell.digit.has_value() &&
+                       "Only empty cells can be filled with numbers.");
+
+                cell.digit = this->active_digit;
+                this->increment_digit_count(this->active_digit);
+        }
+
+        inline bool is_grid_full() const
+        {
+                return this->digits_placed == 9 * 9;
+        }
+
+        inline bool is_complete(int digit) const
+        {
+                int digit_idx = digit - 1;
+                return this->digit_counts[digit_idx] == 9;
+        }
+        inline int get_digit_count(int digit) const
+        {
+                int digit_idx = digit - 1;
+                return this->digit_counts[digit_idx];
+        }
+
+        void increment_active_digit()
+        {
+                this->active_digit = this->active_digit % 9 + 1;
+        }
+
+        void decrement_active_digit()
+        {
+                this->active_digit =
+                    mathematical_modulo(this->active_digit - 2, 9) + 1;
+        }
+};
+
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization);
 
 std::optional<UserAction>
@@ -112,44 +242,6 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
 
 void erase_number(Platform *p, UserInterfaceCustomization *customization,
                   SquareCellGridDimensions *dimensions, Point location);
-
-std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
-{
-        ConnectionConfig config = {
-            .host = "https://sudoku-api.vercel.app/api/dosuku", .port = 443};
-        std::optional<std::string> response =
-            p->client->get(config, "https://sudoku-api.vercel.app/api/dosuku");
-
-        if (!response.has_value()) {
-                std::vector<std::vector<SudokuCell>> output(
-                    9, std::vector(9, SudokuCell(std::nullopt, true)));
-                return output;
-        }
-
-        const char *response_value = response.value().c_str();
-
-        JsonDocument doc;
-        deserializeJson(doc, response_value);
-
-        auto sudoku_grid = doc["newboard"]["grids"][0]["value"];
-
-        std::vector<std::vector<SudokuCell>> output;
-        for (int i = 0; i < 9; i++) {
-                std::vector<SudokuCell> row;
-                for (int j = 0; j < 9; j++) {
-                        int value = sudoku_grid[i][j];
-                        if (value != 0) {
-                                std::optional<int> value_opt = value;
-                                row.push_back({value_opt, false});
-                        } else {
-                                row.push_back({std::nullopt, true});
-                        }
-                }
-                output.push_back(row);
-        }
-
-        return output;
-}
 
 /**
  * Active number is the one that the user has currently selected and will be
@@ -354,34 +446,21 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
         }
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
-        int current_digit = 1;
+        SudokuState state = SudokuState(grid);
         draw_sudoku_grid_frame(p, customization, gd);
-        draw_grid_numbers(p, customization, gd, grid, current_digit);
+        draw_grid_numbers(p, customization, gd, state.grid, state.active_digit);
 
-        draw_circle_selector(p, gd, current_digit, customization->accent_color);
-        draw_available_numbers(p, customization, gd, grid);
+        draw_circle_selector(p, gd, state.active_digit,
+                             customization->accent_color);
+        draw_available_numbers(p, customization, gd, state.grid);
 
         Point caret = {0, 0};
         bool is_game_over = false;
         bool input_registered_last_iteration = false;
 
-        int numbers_placed = 0;
-        int number_counts[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-        for (int y = 0; y < 9; y++) {
-                for (int x = 0; x < 9; x++) {
-                        auto &cell = grid[y][x];
-                        if (cell.digit.has_value()) {
-                                numbers_placed++;
-                                int digit_idx = cell.digit.value() - 1;
-                                number_counts[digit_idx]++;
-                        }
-                }
-        }
-
         while (!is_game_over) {
-                if (numbers_placed == 9 * 9) {
-                        if (SudokuEngine::validate(grid)) {
+                if (state.is_grid_full()) {
+                        if (SudokuEngine::validate(state.grid)) {
                                 auto help_text = "Congratulations, you solved "
                                                  "the sudoku successfully!";
                                 render_wrapped_help_text(p, customization,
@@ -411,20 +490,20 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                         input_registered_last_iteration = true;
                         switch (act) {
                         case GREEN: {
-
-                                int old_selected = current_digit;
-                                erase_circle_selector(p, gd, current_digit);
-                                current_digit = current_digit % 9 + 1;
+                                int old_selected = state.active_digit;
+                                erase_circle_selector(p, gd,
+                                                      state.active_digit);
+                                state.increment_active_digit();
                                 draw_circle_selector(
-                                    p, gd, current_digit,
+                                    p, gd, state.active_digit,
                                     customization->accent_color);
 
-                                update_single_digit(p, customization, gd, grid,
-                                                    current_digit,
-                                                    old_selected);
-                                update_single_digit(p, customization, gd, grid,
-                                                    current_digit,
-                                                    current_digit);
+                                update_single_digit(
+                                    p, customization, gd, state.grid,
+                                    state.active_digit, old_selected);
+                                update_single_digit(
+                                    p, customization, gd, state.grid,
+                                    state.active_digit, state.active_digit);
 
                                 // If the caret was placed on any of the updated
                                 // digits, it will get clipped, so we need to
@@ -434,21 +513,20 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                 break;
                         }
                         case YELLOW: {
-                                int old_selected = current_digit;
-                                erase_circle_selector(p, gd, current_digit);
-                                current_digit =
-                                    mathematical_modulo(current_digit - 2, 9) +
-                                    1;
+                                int old_selected = state.active_digit;
+                                erase_circle_selector(p, gd,
+                                                      state.active_digit);
+                                state.decrement_active_digit();
                                 draw_circle_selector(
-                                    p, gd, current_digit,
+                                    p, gd, state.active_digit,
                                     customization->accent_color);
 
-                                update_single_digit(p, customization, gd, grid,
-                                                    current_digit,
-                                                    old_selected);
-                                update_single_digit(p, customization, gd, grid,
-                                                    current_digit,
-                                                    current_digit);
+                                update_single_digit(
+                                    p, customization, gd, state.grid,
+                                    state.active_digit, old_selected);
+                                update_single_digit(
+                                    p, customization, gd, state.grid,
+                                    state.active_digit, state.active_digit);
 
                                 // If the caret was placed on any of the updated
                                 // digits, it will get clipped, so we need to
@@ -458,59 +536,38 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                 break;
                         }
                         case RED: {
-                                // We populate / erase the selected grid
-                                // location using the currently selected
-                                // digit.
-                                auto &cell = grid[caret.y][caret.x];
-                                int digit_idx = current_digit - 1;
-                                if (cell.is_user_defined) {
-                                        if (cell.digit.has_value()) {
-                                                int previous_value =
-                                                    cell.digit.value();
-                                                int previous_idx =
-                                                    previous_value - 1;
-                                                cell.digit = std::nullopt;
-                                                erase_number(p, customization,
-                                                             gd, caret);
-                                                draw_caret(p, customization, gd,
-                                                           caret);
-                                                int previous_count =
-                                                    number_counts[previous_idx];
-                                                number_counts[previous_idx]--;
-
-                                                numbers_placed--;
-                                                if (previous_count == 9 &&
-                                                    number_counts
-                                                            [previous_idx] <
-                                                        9) {
-                                                        unmark_number_as_done(
-                                                            p, customization,
-                                                            gd, previous_value);
-                                                }
-                                        } else {
-                                                cell.digit = current_digit,
-                                                draw_number(p, customization,
-                                                            gd, caret, cell,
-                                                            current_digit);
-                                                number_counts[digit_idx]++;
-                                                numbers_placed++;
-                                                // If the user added/removed the
-                                                // ninth occurence of a given
-                                                // number, we need to update the
-                                                // color of its digit in the
-                                                // selector list to indicate
-                                                // that it is 'done'
-                                                if (number_counts[digit_idx] ==
-                                                    9) {
-                                                        LOG_DEBUG(
-                                                            TAG,
-                                                            "Marking number as "
-                                                            "done.");
-                                                        mark_number_as_done(
-                                                            p, customization,
-                                                            gd, current_digit);
-                                                }
+                                auto &cell = state.grid[caret.y][caret.x];
+                                if (cell.is_user_defined &&
+                                    cell.digit.has_value()) {
+                                        int erased = state.erase_digit(caret);
+                                        int count =
+                                            state.get_digit_count(erased);
+                                        // If the count is 8 after
+                                        // removal it means that the
+                                        // digit had 9 occurrences
+                                        // before the removal and is now
+                                        // no longer complete.
+                                        if (count == 8)
+                                                unmark_number_as_done(
+                                                    p, customization, gd,
+                                                    erased);
+                                        // View update
+                                        erase_number(p, customization, gd,
+                                                     caret);
+                                        draw_caret(p, customization, gd, caret);
+                                } else if (cell.is_user_defined) {
+                                        state.place_digit(caret);
+                                        if (state.is_complete(
+                                                state.active_digit)) {
+                                                LOG_DEBUG(TAG, "Digit %d done.",
+                                                          state.active_digit);
+                                                mark_number_as_done(
+                                                    p, customization, gd,
+                                                    state.active_digit);
                                         }
+                                        // View update
+                                        draw_number(p, customization, gd, caret,
+                                                    cell, state.active_digit);
                                 }
                                 break;
                         }
@@ -532,7 +589,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                         return UserAction::CloseWindow;
                                 }
                                 if (std::get<Action>(action) == Action::GREEN) {
-                                        save_game_state(p, config, grid);
+                                        save_game_state(p, config, state.grid);
                                 }
                                 p->time_provider->delay_ms(
                                     MOVE_REGISTERED_DELAY);
@@ -547,7 +604,10 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                         input_registered_last_iteration = false;
                 }
                 p->time_provider->delay_ms(CONTROL_POLLING_DELAY);
-                p->display->refresh();
+                if (!p->display->refresh()) {
+                        delete gd;
+                        return UserAction::CloseWindow;
+                }
         }
         return UserAction::PlayAgain;
 }
@@ -791,4 +851,45 @@ void extract_game_config(SudokuConfiguration *game_config,
                             initial_config->saved_game[y][x];
                 }
         }
+}
+
+/**
+ * Graveyard below (TODO: clean-up / repurpose)
+ */
+std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
+{
+        ConnectionConfig config = {
+            .host = "https://sudoku-api.vercel.app/api/dosuku", .port = 443};
+        std::optional<std::string> response =
+            p->client->get(config, "https://sudoku-api.vercel.app/api/dosuku");
+
+        if (!response.has_value()) {
+                std::vector<std::vector<SudokuCell>> output(
+                    9, std::vector(9, SudokuCell(std::nullopt, true)));
+                return output;
+        }
+
+        const char *response_value = response.value().c_str();
+
+        JsonDocument doc;
+        deserializeJson(doc, response_value);
+
+        auto sudoku_grid = doc["newboard"]["grids"][0]["value"];
+
+        std::vector<std::vector<SudokuCell>> output;
+        for (int i = 0; i < 9; i++) {
+                std::vector<SudokuCell> row;
+                for (int j = 0; j < 9; j++) {
+                        int value = sudoku_grid[i][j];
+                        if (value != 0) {
+                                std::optional<int> value_opt = value;
+                                row.push_back({value_opt, false});
+                        } else {
+                                row.push_back({std::nullopt, true});
+                        }
+                }
+                output.push_back(row);
+        }
+
+        return output;
 }
