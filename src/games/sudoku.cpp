@@ -278,8 +278,8 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
         SudokuState state = SudokuState(grid);
 
         view.render_grid();
-        view.render_grid_numbers(grid);
-        view.underline_all_instances(state.active_digit, grid);
+        view.render_grid_numbers(state.grid);
+        view.underline_all_instances(state.active_digit, state.grid);
         view.render_active_digit_selector();
         view.render_active_digit_selection_indicator(state.active_digit);
 
@@ -345,8 +345,10 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
                         view.move_active_digit_selection_indicator(
                             old_selected, state.active_digit);
-                        view.remove_underline_all_instances(old_selected, grid);
-                        view.underline_all_instances(state.active_digit, grid);
+                        view.remove_underline_all_instances(old_selected,
+                                                            state.grid);
+                        view.underline_all_instances(state.active_digit,
+                                                     state.grid);
 
                         // If the caret was placed on any of the updated digits,
                         // it will get clipped, so we need to redraw it.
