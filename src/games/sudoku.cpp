@@ -1,7 +1,5 @@
 #include <cassert>
-#include <memory>
 #include <optional>
-#include <algorithm>
 #include "sudoku.hpp"
 #include "settings.hpp"
 #include "game_menu.hpp"
@@ -74,10 +72,10 @@ SudokuGame::game_loop(Platform *p, UserInterfaceCustomization *customization)
 std::vector<std::vector<SudokuCell>>
 load_game_state(SudokuConfiguration &config)
 {
-        std::vector<std::vector<SudokuCell>> grid(
-            SUDOKU_GRID_SIZE, std::vector(SUDOKU_GRID_SIZE, SudokuCell{}));
-        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
-                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+        std::vector<std::vector<SudokuCell>> grid(9,
+                                                  std::vector(9, SudokuCell{}));
+        for (int y = 0; y < 9; y++) {
+                for (int x = 0; x < 9; x++) {
                         grid[y][x] = config.saved_game[y][x];
                 }
         }
@@ -89,8 +87,8 @@ void save_game_state(Platform *p, SudokuConfiguration &config,
 {
         config.is_game_in_progress = true;
 
-        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
-                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+        for (int y = 0; y < 9; y++) {
+                for (int x = 0; x < 9; x++) {
                         config.saved_game[y][x] = grid[y][x];
                 }
         }
@@ -115,155 +113,6 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
 void erase_number(Platform *p, UserInterfaceCustomization *customization,
                   SquareCellGridDimensions *dimensions, Point location);
 
-
-/**
- * Implements uniform random number generator (URBG) 'interface'
- */
-class RandomGenerator
-{
-      public:
-        using result_type = uint32_t;
-        result_type operator()() { return rand(); }
-        static constexpr result_type min() { return 0; }
-        static constexpr result_type max()
-        {
-                return static_cast<uint32_t>(RAND_MAX);
-        }
-};
-
-bool populate_solved_grid(std::vector<std::vector<SudokuCell>> &grid)
-{
-        std::optional<Point> maybe_empty = find_empty_cell(grid);
-        if (!maybe_empty.has_value()) {
-                return true;
-        }
-
-        Point empty = maybe_empty.value();
-        LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
-        std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
-
-        std::shuffle(valid_numbers.begin(), valid_numbers.end(),
-                     RandomGenerator{});
-
-        for (int candidate : valid_numbers) {
-                grid[empty.y][empty.x].value = candidate;
-                if (populate_solved_grid(grid)) {
-                        return true;
-                }
-                grid[empty.y][empty.x].value = std::nullopt;
-        }
-
-        return false;
-}
-
-std::vector<std::vector<SudokuCell>> generate_solved_grid()
-{
-        std::vector<std::vector<SudokuCell>> grid(
-            SUDOKU_GRID_SIZE,
-            std::vector(SUDOKU_GRID_SIZE, SudokuCell(std::nullopt, true)));
-
-        populate_solved_grid(grid);
-        return grid;
-}
-bool test_for_unique_solution(std::vector<std::vector<SudokuCell>> &grid,
-                              std::unique_ptr<int> &solution_count);
-
-std::vector<std::vector<SudokuCell>>
-generate_solvable_grid(SudokuConfiguration &config)
-{
-        auto solvable = generate_solved_grid();
-
-        // According to the online wisdom, a sudoku with ~40 cells left
-        // tends to be easy. If you leave ~30 it becomes medium and if only
-        // ~20 cells are left it turns out to be hard. Because of this, we
-        // calculate the number of digits to remove as:
-        // 30 + 10 * x where x is the difficulty level (1, 2, or 3).
-        // This gives us: 1 -> 40, 2 -> 50 and 3 -> 60 which is what we want.
-        int to_remove = 30 + 10 * config.difficulty;
-
-        std::vector<Point> locations_to_remove;
-
-        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
-                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
-                        locations_to_remove.push_back({x, y});
-                }
-        }
-
-        // We shuffle the candidate numbers positions to ensure that the
-        // generated empty number pattern is random.
-        std::shuffle(locations_to_remove.begin(), locations_to_remove.end(),
-                     RandomGenerator{});
-
-        int candidate_idx = 0;
-        int removed = 0;
-
-        while (removed < to_remove) {
-                Point loc = locations_to_remove[candidate_idx];
-                int x = loc.x;
-                int y = loc.y;
-
-                int previous_value = solvable[y][x].value.value();
-                solvable[y][x].value = std::nullopt;
-                solvable[y][x].is_user_defined = true;
-                std::vector<std::vector<SudokuCell>> clone = solvable;
-
-                std::unique_ptr<int> solution_count = std::make_unique<int>(0);
-
-                test_for_unique_solution(clone, solution_count);
-
-                if (*solution_count.get() > 1) {
-                        solvable[y][x].value = previous_value;
-                        solvable[y][x].is_user_defined = false;
-                } else {
-                        removed++;
-                }
-                candidate_idx++;
-        }
-
-        // When the grid is generated, we need to make all cells
-        // non-user-defined.
-        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
-                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
-                        if (solvable[y][x].value.has_value()) {
-                                solvable[y][x].is_user_defined = false;
-                        }
-                }
-        }
-
-        return solvable;
-}
-
-bool test_for_unique_solution(std::vector<std::vector<SudokuCell>> &grid,
-                              std::unique_ptr<int> &solution_count)
-{
-
-        // Prune the search space to return true immediately once more than 1
-        // solution is found.
-        if (*solution_count.get() > 1) {
-                return true;
-        }
-
-        std::optional<Point> maybe_empty = find_empty_cell(grid);
-        if (!maybe_empty.has_value()) {
-                (*solution_count.get())++;
-                return true;
-        }
-
-        Point empty = maybe_empty.value();
-        std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
-
-        for (int candidate : valid_numbers) {
-                grid[empty.y][empty.x].value = candidate;
-                if (test_for_unique_solution(grid, solution_count)) {
-                        return true;
-                }
-                grid[empty.y][empty.x].value = std::nullopt;
-        }
-
-        return false;
-}
-
-
 std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
 {
         ConnectionConfig config = {
@@ -285,9 +134,9 @@ std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
         auto sudoku_grid = doc["newboard"]["grids"][0]["value"];
 
         std::vector<std::vector<SudokuCell>> output;
-        for (int i = 0; i < SUDOKU_GRID_SIZE; i++) {
+        for (int i = 0; i < 9; i++) {
                 std::vector<SudokuCell> row;
-                for (int j = 0; j < SUDOKU_GRID_SIZE; j++) {
+                for (int j = 0; j < 9; j++) {
                         int value = sudoku_grid[i][j];
                         if (value != 0) {
                                 std::optional<int> value_opt = value;
@@ -312,10 +161,10 @@ void draw_grid_numbers(Platform *p, UserInterfaceCustomization *customization,
                        const std::vector<std::vector<SudokuCell>> &grid,
                        int active_number)
 {
-        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
-                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+        for (int y = 0; y < 9; y++) {
+                for (int x = 0; x < 9; x++) {
                         const auto &cell = grid[y][x];
-                        if (cell.value.has_value()) {
+                        if (cell.digit.has_value()) {
                                 draw_number(p, customization, dimensions,
                                             {x, y}, cell, active_number);
                         }
@@ -328,11 +177,11 @@ void update_single_digit(Platform *p, UserInterfaceCustomization *customization,
                          const std::vector<std::vector<SudokuCell>> &grid,
                          int active_number, int digit_to_update)
 {
-        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
-                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+        for (int y = 0; y < 9; y++) {
+                for (int x = 0; x < 9; x++) {
                         const auto &cell = grid[y][x];
-                        if (cell.value.has_value() &&
-                            digit_to_update == cell.value.value()) {
+                        if (cell.digit.has_value() &&
+                            digit_to_update == cell.digit.value()) {
                                 erase_number(p, customization, dimensions,
                                              {x, y});
                                 draw_number(p, customization, dimensions,
@@ -351,7 +200,7 @@ void draw_available_numbers(Platform *p,
                             SquareCellGridDimensions *dimensions,
                             const std::vector<std::vector<SudokuCell>> &grid)
 {
-        for (int i = 0; i < SUDOKU_GRID_SIZE; i++) {
+        for (int i = 0; i < 9; i++) {
                 SudokuCell cell(i + 1, true);
                 // Here we repurpose the number drawing functionality to
                 // render available numbers two cells to the left of the main
@@ -406,7 +255,7 @@ void draw_circle_selector(Platform *p, SquareCellGridDimensions *dimensions,
         int x_margin = dimensions->left_horizontal_margin;
         int y_margin = dimensions->top_vertical_margin;
 
-        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
+        int cell_size = dimensions->actual_height / 9;
         int x_offset = -1.5 * cell_size;
         int y_offset = (selected_number - 1) * cell_size;
         int circle_radius = 3;
@@ -439,7 +288,7 @@ void draw_caret(Platform *p, SquareCellGridDimensions *dimensions,
         int x_margin = dimensions->left_horizontal_margin;
         int y_margin = dimensions->top_vertical_margin;
 
-        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
+        int cell_size = dimensions->actual_height / 9;
         // The caret needs to be drawn inside of the cell and avoid
         // touching its borders. Because of this we need to shift the
         // caret inside the grid and make its sides appropriately
@@ -467,82 +316,6 @@ void erase_caret(Platform *p, SquareCellGridDimensions *dimensions,
         draw_caret(p, dimensions, caret, Black);
 }
 
-bool validate_grid(std::vector<std::vector<SudokuCell>> &grid)
-{
-
-        // Check rows
-        for (int y = 0; y < 9; y++) {
-                int digit_counts[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-                LOG_DEBUG(TAG, "Validating row %d", y);
-                for (int x = 0; x < 9; x++) {
-                        auto &cell = grid[y][x];
-                        if (!cell.value.has_value())
-                                return false;
-                        int value = cell.value.value();
-                        digit_counts[value - 1]++;
-                }
-                for (int i = 0; i < 9; i++) {
-                        int digit = i + 1;
-                        int count = digit_counts[i];
-                        if (count != 1) {
-                                LOG_DEBUG(TAG,
-                                          "Digit %d was found %d times. This "
-                                          "is incorrect",
-                                          digit, count);
-                                return false;
-                        }
-                }
-        }
-        LOG_DEBUG(TAG, "Rows validated successfully!");
-
-        // Check columns
-        for (int x = 0; x < 9; x++) {
-                int digit_counts[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-                for (int y = 0; y < 9; y++) {
-                        auto &cell = grid[y][x];
-                        if (!cell.value.has_value())
-                                return false;
-                        int value = cell.value.value();
-                        digit_counts[value - 1]++;
-                }
-                for (int count : digit_counts) {
-                        if (count != 1) {
-                                return false;
-                        }
-                }
-        }
-        LOG_DEBUG(TAG, "Columns validated successfully!");
-
-        for (int y = 0; y < 9; y += 3) {
-                for (int x = 0; x < 9; x += 3) {
-                        // Check big square
-                        Point square_top_left = {x, y};
-
-                        int digit_counts[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-                        for (int y = square_top_left.y;
-                             y < square_top_left.y + 3; y++) {
-                                for (int x = square_top_left.x;
-                                     x < square_top_left.x + 3; x++) {
-
-                                        auto &cell = grid[y][x];
-                                        if (!cell.value.has_value())
-                                                return false;
-                                        int value = cell.value.value();
-                                        digit_counts[value - 1]++;
-                                }
-                        }
-
-                        for (int count : digit_counts) {
-                                if (count != 1) {
-                                        return false;
-                                }
-                        }
-                }
-        }
-        LOG_DEBUG(TAG, "Squares validated successfully!");
-        return true;
-}
-
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
@@ -556,8 +329,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius(), SUDOKU_GRID_SIZE,
-            SUDOKU_GRID_SIZE, true);
+            p->display->get_display_corner_radius(), 9, 9, true);
 
         std::vector<std::vector<SudokuCell>> grid;
         if (config.is_game_in_progress) {
@@ -575,10 +347,10 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                 if (std::get<Action>(action) == Action::GREEN) {
                         grid = load_game_state(config);
                 } else {
-                        grid = generate_solvable_grid(config);
+                        grid = SudokuEngine::generate_grid(config.difficulty);
                 }
         } else {
-                grid = generate_solvable_grid(config);
+                grid = SudokuEngine::generate_grid(config.difficulty);
         }
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
@@ -594,22 +366,22 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
         bool input_registered_last_iteration = false;
 
         int numbers_placed = 0;
-        int number_counts[SUDOKU_GRID_SIZE] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+        int number_counts[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
-                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+        for (int y = 0; y < 9; y++) {
+                for (int x = 0; x < 9; x++) {
                         auto &cell = grid[y][x];
-                        if (cell.value.has_value()) {
+                        if (cell.digit.has_value()) {
                                 numbers_placed++;
-                                int digit_idx = cell.value.value() - 1;
+                                int digit_idx = cell.digit.value() - 1;
                                 number_counts[digit_idx]++;
                         }
                 }
         }
 
         while (!is_game_over) {
-                if (numbers_placed == SUDOKU_GRID_SIZE * SUDOKU_GRID_SIZE) {
-                        if (validate_grid(grid)) {
+                if (numbers_placed == 9 * 9) {
+                        if (SudokuEngine::validate(grid)) {
                                 auto help_text = "Congratulations, you solved "
                                                  "the sudoku successfully!";
                                 render_wrapped_help_text(p, customization,
@@ -626,8 +398,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                 Action act;
                 if (poll_directional_input(p->directional_controllers, &dir)) {
                         erase_caret(p, gd, caret);
-                        translate_toroidal_array(&caret, dir, SUDOKU_GRID_SIZE,
-                                                 SUDOKU_GRID_SIZE);
+                        translate_toroidal_array(&caret, dir, 9, 9);
                         draw_caret(p, customization, gd, caret);
                         // The delay below was hand-tweaked to feel
                         // good.
@@ -643,8 +414,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
                                 int old_selected = current_digit;
                                 erase_circle_selector(p, gd, current_digit);
-                                current_digit =
-                                    current_digit % SUDOKU_GRID_SIZE + 1;
+                                current_digit = current_digit % 9 + 1;
                                 draw_circle_selector(
                                     p, gd, current_digit,
                                     customization->accent_color);
@@ -667,8 +437,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                 int old_selected = current_digit;
                                 erase_circle_selector(p, gd, current_digit);
                                 current_digit =
-                                    mathematical_modulo(current_digit - 2,
-                                                        SUDOKU_GRID_SIZE) +
+                                    mathematical_modulo(current_digit - 2, 9) +
                                     1;
                                 draw_circle_selector(
                                     p, gd, current_digit,
@@ -695,12 +464,12 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                 auto &cell = grid[caret.y][caret.x];
                                 int digit_idx = current_digit - 1;
                                 if (cell.is_user_defined) {
-                                        if (cell.value.has_value()) {
+                                        if (cell.digit.has_value()) {
                                                 int previous_value =
-                                                    cell.value.value();
+                                                    cell.digit.value();
                                                 int previous_idx =
                                                     previous_value - 1;
-                                                cell.value = std::nullopt;
+                                                cell.digit = std::nullopt;
                                                 erase_number(p, customization,
                                                              gd, caret);
                                                 draw_caret(p, customization, gd,
@@ -719,7 +488,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                                             gd, previous_value);
                                                 }
                                         } else {
-                                                cell.value = current_digit,
+                                                cell.digit = current_digit,
                                                 draw_number(p, customization,
                                                             gd, caret, cell,
                                                             current_digit);
@@ -789,13 +558,13 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
                  std::optional<Color> color_override)
 {
 
-        assert(cell.value.has_value() &&
+        assert(cell.digit.has_value() &&
                "Only cells with values should be rendered");
 
         int x_margin = dimensions->left_horizontal_margin;
         int y_margin = dimensions->top_vertical_margin;
 
-        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
+        int cell_size = dimensions->actual_height / 9;
         int x_offset = location.x * cell_size;
         int y_offset = location.y * cell_size;
 
@@ -812,7 +581,7 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
         int y_padding = (cell_size - fh) / 2 - border_adjustment_offset;
 
         char buffer[2];
-        sprintf(buffer, "%d", cell.value.value());
+        sprintf(buffer, "%d", cell.digit.value());
 
         // Because of pixel-precision inaccuracies we need to adjust the
         // placement of the numbers in the grid.
@@ -832,7 +601,7 @@ void draw_number(Platform *p, UserInterfaceCustomization *customization,
 
         p->display->draw_string({x, y}, buffer, FontSize::Size16, Black,
                                 render_color);
-        if (cell.value.value() == active_number) {
+        if (cell.digit.value() == active_number) {
                 // We underline the active number to make it pop visually.
                 p->display->draw_line({x, y + fh - 1}, {x + fw, y + fh - 1},
                                       customization->accent_color);
@@ -848,7 +617,7 @@ void erase_number(Platform *p, UserInterfaceCustomization *customization,
         int x_margin = dimensions->left_horizontal_margin;
         int y_margin = dimensions->top_vertical_margin;
 
-        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
+        int cell_size = dimensions->actual_height / 9;
         int x_offset = location.x * cell_size;
         int y_offset = location.y * cell_size;
 
@@ -896,10 +665,10 @@ void draw_sudoku_grid_frame(Platform *p,
         int actual_width = dimensions->actual_width;
         int actual_height = dimensions->actual_height;
 
-        int cell_size = dimensions->actual_height / SUDOKU_GRID_SIZE;
+        int cell_size = dimensions->actual_height / 9;
 
         // We only render borders between cells for a minimalistic look
-        for (int i = 1; i < SUDOKU_GRID_SIZE; i++) {
+        for (int i = 1; i < 9; i++) {
                 int offset = i * cell_size;
                 auto draw_vertical_line = [&](int offset) {
                         Point start = {.x = x_margin + offset, .y = y_margin};
@@ -1016,8 +785,8 @@ void extract_game_config(SudokuConfiguration *game_config,
 
         game_config->difficulty = difficulty.get_curr_int_value();
         game_config->is_game_in_progress = initial_config->is_game_in_progress;
-        for (int y = 0; y < SUDOKU_GRID_SIZE; y++) {
-                for (int x = 0; x < SUDOKU_GRID_SIZE; x++) {
+        for (int y = 0; y < 9; y++) {
+                for (int x = 0; x < 9; x++) {
                         game_config->saved_game[y][x] =
                             initial_config->saved_game[y][x];
                 }
