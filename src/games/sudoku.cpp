@@ -12,6 +12,7 @@
 #include "../common/logging.hpp"
 #include "../common/maths_utils.hpp"
 #include "sudoku_engine.hpp"
+#include "sudoku_view.hpp"
 
 #define GAME_LOOP_DELAY 50
 #define CONTROL_POLLING_DELAY 10
@@ -21,6 +22,9 @@
 SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {.difficulty = 1,
                                              .is_game_in_progress = false};
 
+/**
+ * Represents the state of a Sudoku game.
+ */
 class SudokuState
 {
         /**
@@ -231,183 +235,6 @@ void save_game_state(Platform *p, SudokuConfiguration &config,
         p->persistent_storage->put(storage_offset, config);
 }
 
-void draw_sudoku_grid_frame(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            SquareCellGridDimensions *dimensions);
-
-void draw_number(Platform *p, UserInterfaceCustomization *customization,
-                 SquareCellGridDimensions *dimensions, Point location,
-                 const SudokuCell &value, int active_number,
-                 std::optional<Color> color_override = std::nullopt);
-
-void erase_number(Platform *p, UserInterfaceCustomization *customization,
-                  SquareCellGridDimensions *dimensions, Point location);
-
-/**
- * Active number is the one that the user has currently selected and will be
- * placing on the grid. We render this number using the accent color to
- * make it visually stand out.
- */
-void draw_grid_numbers(Platform *p, UserInterfaceCustomization *customization,
-                       SquareCellGridDimensions *dimensions,
-                       const std::vector<std::vector<SudokuCell>> &grid,
-                       int active_number)
-{
-        for (int y = 0; y < 9; y++) {
-                for (int x = 0; x < 9; x++) {
-                        const auto &cell = grid[y][x];
-                        if (cell.digit.has_value()) {
-                                draw_number(p, customization, dimensions,
-                                            {x, y}, cell, active_number);
-                        }
-                }
-        }
-}
-
-void update_single_digit(Platform *p, UserInterfaceCustomization *customization,
-                         SquareCellGridDimensions *dimensions,
-                         const std::vector<std::vector<SudokuCell>> &grid,
-                         int active_number, int digit_to_update)
-{
-        for (int y = 0; y < 9; y++) {
-                for (int x = 0; x < 9; x++) {
-                        const auto &cell = grid[y][x];
-                        if (cell.digit.has_value() &&
-                            digit_to_update == cell.digit.value()) {
-                                erase_number(p, customization, dimensions,
-                                             {x, y});
-                                draw_number(p, customization, dimensions,
-                                            {x, y}, cell, active_number);
-                        }
-                }
-        }
-}
-
-/**
- * Here we repurpose the number drawing functionatlity to render the list of
- * available numbers to the left of the grid.
- */
-void draw_available_numbers(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            SquareCellGridDimensions *dimensions,
-                            const std::vector<std::vector<SudokuCell>> &grid)
-{
-        for (int i = 0; i < 9; i++) {
-                SudokuCell cell(i + 1, true);
-                // Here we repurpose the number drawing functionality to
-                // render available numbers two cells to the left of the main
-                // grid. We set the active number to 0 to ensure that the
-                // indicator does not get rendered.
-                draw_number(p, customization, dimensions, {-2, i}, cell, 0);
-        }
-}
-
-/**
- * When the user places 9 occurences of a given digit we mark it as 'done' in
- * the selector list to the left of the sudoku grid. This is important to make
- * eliminating possible numbers easier.
- */
-void mark_number_as_done(Platform *p, UserInterfaceCustomization *customization,
-                         SquareCellGridDimensions *dimensions, int digit)
-{
-        int digit_idx = digit - 1;
-        SudokuCell cell(digit, true);
-        // Here we repurpose the number drawing functionality to
-        // render available numbers two cells to the left of the main
-        // grid. We set the active number to 0 to ensure that the
-        // indicator does not get rendered.
-        Point location = {-2, digit_idx};
-        erase_number(p, customization, dimensions, location);
-        draw_number(p, customization, dimensions, location, cell, 0,
-                    customization->accent_color);
-}
-
-/**
- * This function reverses the highlight on the given digit in the selector if
- * there are no longer 9 occurences of this digit present on the grid.
- */
-void unmark_number_as_done(Platform *p,
-                           UserInterfaceCustomization *customization,
-                           SquareCellGridDimensions *dimensions, int digit)
-{
-        int digit_idx = digit - 1;
-        SudokuCell cell(digit, true);
-        // Here we repurpose the number drawing functionality to
-        // render available numbers two cells to the left of the main
-        // grid. We set the active number to 0 to ensure that the
-        // indicator does not get rendered.
-        Point location = {-2, digit_idx};
-        erase_number(p, customization, dimensions, location);
-        draw_number(p, customization, dimensions, location, cell, 0);
-}
-
-void draw_circle_selector(Platform *p, SquareCellGridDimensions *dimensions,
-                          int selected_number, Color color)
-{
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
-
-        int cell_size = dimensions->actual_height / 9;
-        int x_offset = -1.5 * cell_size;
-        int y_offset = (selected_number - 1) * cell_size;
-        int circle_radius = 3;
-
-        int padding = (cell_size - circle_radius) / 2;
-        // Need this to make the selector visually balanced and
-        // centered.
-#ifdef EMULATOR
-        int y_adjustment = 3;
-#else
-        int y_adjustment = 1;
-#endif
-
-        int x = x_margin + x_offset + padding;
-        int y = y_margin + y_offset + padding + y_adjustment;
-
-        p->display->draw_circle({x, y}, circle_radius, color, 1, true);
-}
-
-void erase_circle_selector(Platform *p, SquareCellGridDimensions *dimensions,
-                           int selected_number)
-{
-        draw_circle_selector(p, dimensions, selected_number, Black);
-}
-
-void draw_caret(Platform *p, SquareCellGridDimensions *dimensions,
-                const Point &caret, Color caret_color)
-{
-
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
-
-        int cell_size = dimensions->actual_height / 9;
-        // The caret needs to be drawn inside of the cell and avoid
-        // touching its borders. Because of this we need to shift the
-        // caret inside the grid and make its sides appropriately
-        // shorter.
-        int offset = 3;
-
-        int start_x = x_margin + cell_size * caret.x + offset;
-        int start_y = y_margin + cell_size * caret.y + offset;
-
-        int caret_width = cell_size - 2 * offset;
-
-        p->display->draw_rectangle({start_x, start_y}, caret_width, caret_width,
-                                   caret_color, 1, false);
-}
-
-void draw_caret(Platform *p, UserInterfaceCustomization *customization,
-                SquareCellGridDimensions *dimensions, const Point &caret)
-{
-        draw_caret(p, dimensions, caret, White);
-}
-
-void erase_caret(Platform *p, SquareCellGridDimensions *dimensions,
-                 const Point &caret)
-{
-        draw_caret(p, dimensions, caret, Black);
-}
-
 UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
@@ -422,6 +249,8 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
             p->display->get_display_corner_radius(), 9, 9, true);
+
+        SimpleSudokuView view{*customization, *gd, p->display};
 
         std::vector<std::vector<SudokuCell>> grid;
         if (config.is_game_in_progress) {
@@ -447,315 +276,139 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
         SudokuState state = SudokuState(grid);
-        draw_sudoku_grid_frame(p, customization, gd);
-        draw_grid_numbers(p, customization, gd, state.grid, state.active_digit);
 
-        draw_circle_selector(p, gd, state.active_digit,
-                             customization->accent_color);
-        draw_available_numbers(p, customization, gd, state.grid);
+        view.render_grid();
+        view.render_grid_numbers(grid);
+        view.underline_all_instances(state.active_digit, grid);
+        view.render_active_digit_selector();
+        view.render_active_digit_selection_indicator(state.active_digit);
 
         Point caret = {0, 0};
-        bool is_game_over = false;
+        /*
+         * To avoid button debounce issues we keep track of whether the input
+         * was also registered on the previous iteration. If that is the case,
+         * we short-circuit processing. This needs to be done to avoid issues
+         * where a slow press of the physical arduino button causes a
+         * double-click and e.g. sudoku cell values start flickering between
+         * filled and empty.
+         */
         bool input_registered_last_iteration = false;
 
-        while (!is_game_over) {
-                if (state.is_grid_full()) {
-                        if (SudokuEngine::validate(state.grid)) {
-                                auto help_text = "Congratulations, you solved "
-                                                 "the sudoku successfully!";
-                                render_wrapped_help_text(p, customization,
-                                                         help_text);
-                                maybe_interrupt = wait_until_green_pressed(p);
-
-                                if (maybe_interrupt.has_value()) {
-                                        return maybe_interrupt.value();
-                                }
-                                return UserAction::Exit;
-                        }
-                }
-                Direction dir;
-                Action act;
-                if (poll_directional_input(p->directional_controllers, &dir)) {
-                        erase_caret(p, gd, caret);
-                        translate_toroidal_array(&caret, dir, 9, 9);
-                        draw_caret(p, customization, gd, caret);
-                        // The delay below was hand-tweaked to feel
-                        // good.
-                        p->time_provider->delay_ms(GAME_LOOP_DELAY * 3 / 2);
-                }
-                if (poll_action_input(p->action_controllers, &act)) {
-                        if (input_registered_last_iteration) {
-                                continue;
-                        }
-                        input_registered_last_iteration = true;
-                        switch (act) {
-                        case GREEN: {
-                                int old_selected = state.active_digit;
-                                erase_circle_selector(p, gd,
-                                                      state.active_digit);
-                                state.increment_active_digit();
-                                draw_circle_selector(
-                                    p, gd, state.active_digit,
-                                    customization->accent_color);
-
-                                update_single_digit(
-                                    p, customization, gd, state.grid,
-                                    state.active_digit, old_selected);
-                                update_single_digit(
-                                    p, customization, gd, state.grid,
-                                    state.active_digit, state.active_digit);
-
-                                // If the caret was placed on any of the updated
-                                // digits, it will get clipped, so we need to
-                                // redraw it.
-                                erase_caret(p, gd, caret);
-                                draw_caret(p, customization, gd, caret);
-                                break;
-                        }
-                        case YELLOW: {
-                                int old_selected = state.active_digit;
-                                erase_circle_selector(p, gd,
-                                                      state.active_digit);
-                                state.decrement_active_digit();
-                                draw_circle_selector(
-                                    p, gd, state.active_digit,
-                                    customization->accent_color);
-
-                                update_single_digit(
-                                    p, customization, gd, state.grid,
-                                    state.active_digit, old_selected);
-                                update_single_digit(
-                                    p, customization, gd, state.grid,
-                                    state.active_digit, state.active_digit);
-
-                                // If the caret was placed on any of the updated
-                                // digits, it will get clipped, so we need to
-                                // redraw it.
-                                erase_caret(p, gd, caret);
-                                draw_caret(p, customization, gd, caret);
-                                break;
-                        }
-                        case RED: {
-                                auto &cell = state.grid[caret.y][caret.x];
-                                if (cell.is_user_defined &&
-                                    cell.digit.has_value()) {
-                                        int erased = state.erase_digit(caret);
-                                        int count =
-                                            state.get_digit_count(erased);
-                                        // If the count is 8 after
-                                        // removal it means that the
-                                        // digit had 9 occurrences
-                                        // before the removal and is now
-                                        // no longer complete.
-                                        if (count == 8)
-                                                unmark_number_as_done(
-                                                    p, customization, gd,
-                                                    erased);
-                                        // View update
-                                        erase_number(p, customization, gd,
-                                                     caret);
-                                        draw_caret(p, customization, gd, caret);
-                                } else if (cell.is_user_defined) {
-                                        state.place_digit(caret);
-                                        if (state.is_complete(
-                                                state.active_digit)) {
-                                                LOG_DEBUG(TAG, "Digit %d done.",
-                                                          state.active_digit);
-                                                mark_number_as_done(
-                                                    p, customization, gd,
-                                                    state.active_digit);
-                                        }
-                                        // View update
-                                        draw_number(p, customization, gd, caret,
-                                                    cell, state.active_digit);
-                                }
-                                break;
-                        }
-
-                        case BLUE: {
-                                LOG_DEBUG(TAG, "User requested to exit game.");
-                                const char *help_text =
-                                    "Would you like to save your current game "
-                                    "state and resume it later? Press green to "
-                                    "save and exit, or blue to exit without "
-                                    "saving.";
-                                render_wrapped_text(p, customization,
-                                                    help_text);
-                                auto action = wait_until_action_input(p);
-                                if (std::holds_alternative<UserAction>(
-                                        action)) {
-                                        assert(std::get<UserAction>(action) ==
-                                               UserAction::CloseWindow);
-                                        return UserAction::CloseWindow;
-                                }
-                                if (std::get<Action>(action) == Action::GREEN) {
-                                        save_game_state(p, config, state.grid);
-                                }
-                                p->time_provider->delay_ms(
-                                    MOVE_REGISTERED_DELAY);
-                                delete gd;
-                                return UserAction::Exit;
-                        }
-                        }
-                        // We wait slightly longer after an action is
-                        // selected.
-                        p->time_provider->delay_ms(2 * GAME_LOOP_DELAY);
-                } else {
-                        input_registered_last_iteration = false;
-                }
-                p->time_provider->delay_ms(CONTROL_POLLING_DELAY);
+        while (true) {
                 if (!p->display->refresh()) {
                         delete gd;
                         return UserAction::CloseWindow;
                 }
+                if (state.is_grid_full() &&
+                    SudokuEngine::validate(state.grid)) {
+                        auto help_text = "Congratulations, you solved "
+                                         "the sudoku successfully!";
+                        render_wrapped_help_text(p, customization, help_text);
+                        maybe_interrupt = wait_until_green_pressed(p);
+
+                        if (maybe_interrupt.has_value())
+                                return maybe_interrupt.value();
+                        return UserAction::Exit;
+                }
+                Direction dir;
+                Action act;
+                if (poll_directional_input(p->directional_controllers, &dir)) {
+                        Point previous = caret;
+                        translate_toroidal_array(&caret, dir, 9, 9);
+                        view.move_caret(previous, caret);
+                        // The delay below was hand-tweaked to feel
+                        // good.
+                        p->time_provider->delay_ms(GAME_LOOP_DELAY * 3 / 2);
+                }
+                if (!poll_action_input(p->action_controllers, &act)) {
+                        input_registered_last_iteration = false;
+                        p->time_provider->delay_ms(CONTROL_POLLING_DELAY);
+                        continue;
+                }
+                // If the user holds the button depressed, we still only act
+                // once to avoid double-processing of slow presses caused by
+                // button debounce issues.
+                if (input_registered_last_iteration) {
+                        p->time_provider->delay_ms(CONTROL_POLLING_DELAY);
+                        continue;
+                }
+                // Before processing the input we record that we handled it on
+                // this iteration.
+                input_registered_last_iteration = true;
+                switch (act) {
+                case YELLOW:
+                case GREEN: {
+                        int old_selected = state.active_digit;
+
+                        act == GREEN ? state.increment_active_digit()
+                                     : state.decrement_active_digit();
+
+                        view.move_active_digit_selection_indicator(
+                            old_selected, state.active_digit);
+                        view.remove_underline_all_instances(old_selected, grid);
+                        view.underline_all_instances(state.active_digit, grid);
+
+                        // If the caret was placed on any of the updated digits,
+                        // it will get clipped, so we need to redraw it.
+                        view.rerender_caret(caret);
+                        break;
+                }
+                case RED: {
+                        auto &cell = state.grid[caret.y][caret.x];
+                        if (cell.is_user_defined && cell.digit.has_value()) {
+                                int erased = state.erase_digit(caret);
+                                int count = state.get_digit_count(erased);
+                                // If the count is 8 after removal it means that
+                                // the digit had 9 occurrences before the
+                                // removal and is now no longer complete.
+                                if (count == 8)
+                                        view.unmark_digit_completed(erased);
+                                view.erase_cell_contents(caret);
+                                view.render_caret(caret);
+                        } else if (cell.is_user_defined) {
+                                state.place_digit(caret);
+                                if (state.is_complete(state.active_digit)) {
+                                        LOG_DEBUG(TAG, "Digit %d done.",
+                                                  state.active_digit);
+                                        view.mark_digit_completed(
+                                            state.active_digit);
+                                }
+                                view.render_cell(cell, caret);
+                                // Only the active digit can be placed and all
+                                // occurrences of the active digit need to be
+                                // underlined so we place the underline here.
+                                view.underline_cell(caret);
+                        }
+                        break;
+                }
+
+                case BLUE: {
+                        LOG_DEBUG(TAG, "User requested to exit game.");
+                        const char *help_text =
+                            "Would you like to save your current game "
+                            "state and resume it later? Press green to "
+                            "save and exit, or blue to exit without "
+                            "saving.";
+                        render_wrapped_text(p, customization, help_text);
+                        auto action = wait_until_action_input(p);
+                        if (std::holds_alternative<UserAction>(action)) {
+                                assert(std::get<UserAction>(action) ==
+                                       UserAction::CloseWindow);
+                                return UserAction::CloseWindow;
+                        }
+                        if (std::get<Action>(action) == Action::GREEN) {
+                                save_game_state(p, config, state.grid);
+                        }
+                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        delete gd;
+                        return UserAction::Exit;
+                }
+                }
+                // We wait slightly longer after an action is
+                // selected.
+                p->time_provider->delay_ms(2 * GAME_LOOP_DELAY);
         }
         return UserAction::PlayAgain;
-}
-
-void draw_number(Platform *p, UserInterfaceCustomization *customization,
-                 SquareCellGridDimensions *dimensions, Point location,
-                 const SudokuCell &cell, int active_number,
-                 std::optional<Color> color_override)
-{
-
-        assert(cell.digit.has_value() &&
-               "Only cells with values should be rendered");
-
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
-
-        int cell_size = dimensions->actual_height / 9;
-        int x_offset = location.x * cell_size;
-        int y_offset = location.y * cell_size;
-
-        // To ensure that the characters are centered inside of each
-        // cell, we need to calculate the 'padding' around each
-        // character. This is defined by the font height and width. Note
-        // that we are subtracting one to take the cell border into
-        // account and make it visually centered.
-        int border_adjustment_offset = 1;
-        int fh = FONT_SIZE;
-        int fw = FONT_WIDTH;
-
-        int x_padding = (cell_size - fw) / 2 - border_adjustment_offset;
-        int y_padding = (cell_size - fh) / 2 - border_adjustment_offset;
-
-        char buffer[2];
-        sprintf(buffer, "%d", cell.digit.value());
-
-        // Because of pixel-precision inaccuracies we need to adjust the
-        // placement of the numbers in the grid.
-#ifdef EMULATOR
-        int adj = 0;
-#else
-        int adj = 1;
-#endif
-        int x = x_margin + x_offset + x_padding + adj;
-        int y = y_margin + y_offset + y_padding + adj;
-
-        Color render_color = cell.is_user_defined ? White : Gray;
-
-        if (color_override.has_value()) {
-                render_color = color_override.value();
-        }
-
-        p->display->draw_string({x, y}, buffer, FontSize::Size16, Black,
-                                render_color);
-        if (cell.digit.value() == active_number) {
-                // We underline the active number to make it pop visually.
-                p->display->draw_line({x, y + fh - 1}, {x + fw, y + fh - 1},
-                                      customization->accent_color);
-                p->display->draw_line({x, y + fh}, {x + fw, y + fh},
-                                      customization->accent_color);
-        }
-}
-
-void erase_number(Platform *p, UserInterfaceCustomization *customization,
-                  SquareCellGridDimensions *dimensions, Point location)
-{
-
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
-
-        int cell_size = dimensions->actual_height / 9;
-        int x_offset = location.x * cell_size;
-        int y_offset = location.y * cell_size;
-
-        // To ensure that the characters are centered inside of each
-        // cell, we need to calculate the 'padding' around each
-        // character. This is defined by the font height and width. Note
-        // that we are subtracting one to take the cell border into
-        // account and make it visually centered.
-        int border_adjustment_offset = 1;
-        int fh = FONT_SIZE;
-        int fw = FONT_WIDTH;
-
-        int x_padding = (cell_size - fw) / 2 - border_adjustment_offset;
-        int y_padding = (cell_size - fh) / 2 - border_adjustment_offset;
-
-        // Because of pixel-precision inaccuracies we need to adjust the
-        // placement of the numbers in the grid.
-#ifdef EMULATOR
-        int adj = 0;
-#else
-        int adj = 1;
-#endif
-        int x = x_margin + x_offset + x_padding + adj;
-        int y = y_margin + y_offset + y_padding + adj;
-
-        // For active numbers that were underlined we need to erase a bit
-        // further down to remove the underline.
-        int underline_adj = 1;
-
-        p->display->clear_region({x, y}, {x + fw + adj, y + fh + underline_adj},
-                                 Black);
-}
-
-void draw_sudoku_grid_frame(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            SquareCellGridDimensions *dimensions)
-
-{
-        p->display->initialize();
-        p->display->clear(Black);
-
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
-
-        int actual_width = dimensions->actual_width;
-        int actual_height = dimensions->actual_height;
-
-        int cell_size = dimensions->actual_height / 9;
-
-        // We only render borders between cells for a minimalistic look
-        for (int i = 1; i < 9; i++) {
-                int offset = i * cell_size;
-                auto draw_vertical_line = [&](int offset) {
-                        Point start = {.x = x_margin + offset, .y = y_margin};
-                        Point end = {.x = x_margin + offset,
-                                     .y = y_margin + actual_width};
-                        p->display->draw_line(start, end,
-                                              customization->accent_color);
-                };
-                auto draw_horizontal_line = [&](int offset) {
-                        Point start = {.x = x_margin, .y = y_margin + offset};
-                        Point end = {.x = x_margin + actual_width,
-                                     .y = y_margin + offset};
-                        p->display->draw_line(start, end,
-                                              customization->accent_color);
-                };
-
-                draw_vertical_line(offset);
-                draw_horizontal_line(offset);
-
-                // We make the lines between big squares thicker
-                if (i % 3 == 0) {
-                        draw_vertical_line(offset - 1);
-                        draw_horizontal_line(offset - 1);
-                        draw_vertical_line(offset + 1);
-                        draw_horizontal_line(offset + 1);
-                }
-        }
 }
 
 /**

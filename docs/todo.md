@@ -25,11 +25,11 @@
 
 # In Progress
 
-- [ ] remove coupling between sudoku engine and view
-- [ ] clean up sudoku code to remove excessive nesting
 
 
 # Done
+- [x] remove coupling between sudoku engine and view
+- [x] clean up sudoku code to remove excessive nesting
 - [x] add highlighting of sudoku digits that are already completely placed in
       the digit selector.
 - [x] fix minesweeper rendering artifacts
