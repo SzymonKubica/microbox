@@ -26,6 +26,7 @@ Currently, MicroBox features the following games:
 - :snake: **Snake** - the most iconic retro game.
 - :snake: :snake: **Snake Duel** - two snakes compete against each other.
 - :1234: **Sudoku** - Fill a 9x9 grid without violating Sudoku constraints.
+
 You can see more screenshots from the games [here](docs/gameplay-overview.md).
 
 ## :sparkles: Showcase
