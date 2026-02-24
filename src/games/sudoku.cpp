@@ -275,13 +275,19 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
         }
 
         LOG_DEBUG(TAG, "Rendering sudoku game area.");
-        SudokuState state = SudokuState(grid);
+        SudokuState state(grid);
 
         view.render_grid();
         view.render_grid_numbers(state.grid);
         view.underline_all_instances(state.active_digit, state.grid);
         view.render_active_digit_selector();
         view.render_active_digit_selection_indicator(state.active_digit);
+        // If we resumed a game in progress and loaded the grid from the
+        // storage, we need to re-highlight all completed numbers.
+        for (int digit = 1; digit <= 9; digit++) {
+                if (state.is_complete(digit))
+                        view.mark_digit_completed(digit);
+        }
 
         Point caret = {0, 0};
         /*

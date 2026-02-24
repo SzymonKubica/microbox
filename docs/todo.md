@@ -28,6 +28,8 @@
 
 
 # Done
+- [x] fix 'completed' digits not being highlighted when a sudoku grid is loaded
+      from storage
 - [x] remove coupling between sudoku engine and view
 - [x] clean up sudoku code to remove excessive nesting
 - [x] add highlighting of sudoku digits that are already completely placed in
