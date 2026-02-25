@@ -1,9 +1,12 @@
 #include <EEPROM.h>
+#include "Adafruit_seesaw.h"
+#include <Wire.h>
 #include "src/common/platform/arduino/joystick_controller.hpp"
 #include "src/common/platform/arduino/wifi_provider.cpp"
 #include "src/common/platform/arduino/arduino_http_client.hpp"
 #include "src/common/platform/interface/wifi.hpp"
 #include "src/common/platform/arduino/keypad_controller.hpp"
+#include "src/common/platform/arduino/adafruit_mini_controller.hpp"
 #include "src/common/platform/arduino/lcd_display.hpp"
 #include "src/common/platform/arduino/arduino_secrets.hpp"
 #include "src/common/platform/arduino/arduino_time_provider.cpp"
@@ -15,7 +18,10 @@
 LcdDisplay display;
 JoystickController *joystick_controller;
 KeypadController *keypad_controller;
+AdafruitController *adafruit_controller;
 PersistentStorage persistent_storage;
+
+Adafruit_seesaw ss(&Wire1);
 
 /**
  * When making breaking changes to the persistent storage used for game
@@ -37,12 +43,42 @@ void eeprom_erase()
         }
 }
 
+void setup_adafruit_seesaw_i2c_connection()
+{
+
+        Serial.println("Setting up seesaw I2C interface...");
+
+        if (!ss.begin(0x50)) {
+                Serial.println("ERROR! seesaw not found");
+                while (1)
+                        delay(1);
+        }
+        Serial.println("seesaw started");
+        uint32_t version = ((ss.getVersion() >> 16) & 0xFFFF);
+        if (version != 5743) {
+                Serial.print("Wrong firmware loaded? ");
+                Serial.println(version);
+                while (1)
+                        delay(10);
+        }
+        Serial.println("Found Product 5743");
+
+        ss.pinModeBulk(button_mask, INPUT_PULLUP);
+        ss.setGPIOInterrupts(button_mask, 1);
+
+#if defined(IRQ_PIN)
+        pinMode(IRQ_PIN, INPUT);
+#endif
+}
+
 void setup(void)
 {
+
         // Initialise serial port for debugging
         Serial.begin(115200);
 
-        //eeprom_erase();
+        setup_adafruit_seesaw_i2c_connection();
+        // eeprom_erase();
 
         // Set up bins neeeded for controllers
         pinMode(STICK_BUTTON_PIN, INPUT);
@@ -60,6 +96,7 @@ void setup(void)
             new JoystickController((int (*)(unsigned char))&analogRead);
         keypad_controller =
             new KeypadController((int (*)(unsigned char))&digitalRead);
+        adafruit_controller = new AdafruitController(&ss);
 
         persistent_storage = PersistentStorage{};
 
@@ -68,16 +105,19 @@ void setup(void)
         display.setup();
 }
 
+int last_x = 0, last_y = 0;
 void loop(void)
 {
+
         Serial.println("Game console started.");
 
-        std::vector<DirectionalController *> controllers(1);
-        controllers[0] = joystick_controller;
-        std::vector<ActionController *> action_controllers(1);
-        action_controllers[0] = keypad_controller;
+        std::vector<DirectionalController *> controllers = {
+            joystick_controller, adafruit_controller};
+        std::vector<ActionController *> action_controllers =
+            {keypad_controller, adafruit_controller};
 
-        TimeProvider *time_provider = new ArduinoTimeProvider((void (*)(int))&delay);
+        TimeProvider *time_provider =
+            new ArduinoTimeProvider((void (*)(int))&delay);
         WifiProvider *wifi_provider = new ArduinoWifiProvider{};
         ArduinoHttpClient *client = new ArduinoHttpClient();
 

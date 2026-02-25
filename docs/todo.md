@@ -28,6 +28,7 @@
 
 
 # Done
+- [x] add support for the adafruit stemma qt gamepad controller
 - [x] fix 'completed' digits not being highlighted when a sudoku grid is loaded
       from storage
 - [x] remove coupling between sudoku engine and view
