@@ -43,24 +43,23 @@ void eeprom_erase()
         }
 }
 
-void setup_adafruit_seesaw_i2c_connection()
+bool setup_adafruit_seesaw_i2c_connection()
 {
 
         Serial.println("Setting up seesaw I2C interface...");
 
         if (!ss.begin(0x50)) {
                 Serial.println("ERROR! seesaw not found");
-                while (1)
-                        delay(1);
+                return false;
         }
         Serial.println("seesaw started");
         uint32_t version = ((ss.getVersion() >> 16) & 0xFFFF);
         if (version != 5743) {
                 Serial.print("Wrong firmware loaded? ");
                 Serial.println(version);
-                while (1)
-                        delay(10);
+                return false;
         }
+
         Serial.println("Found Product 5743");
 
         ss.pinModeBulk(button_mask, INPUT_PULLUP);
@@ -69,15 +68,17 @@ void setup_adafruit_seesaw_i2c_connection()
 #if defined(IRQ_PIN)
         pinMode(IRQ_PIN, INPUT);
 #endif
+        return true;
 }
 
+bool adafruit_gamepad_available;
 void setup(void)
 {
 
         // Initialise serial port for debugging
         Serial.begin(115200);
 
-        setup_adafruit_seesaw_i2c_connection();
+        adafruit_gamepad_available = setup_adafruit_seesaw_i2c_connection();
         // eeprom_erase();
 
         // Set up bins neeeded for controllers
@@ -90,13 +91,6 @@ void setup(void)
         // Initializes the source of randomness from the
         // noise present on the first digital pin
         initialize_randomness_seed(analogRead(0));
-
-        // Initialize game platrorm components
-        joystick_controller =
-            new JoystickController((int (*)(unsigned char))&analogRead);
-        keypad_controller =
-            new KeypadController((int (*)(unsigned char))&digitalRead);
-        adafruit_controller = new AdafruitController(&ss);
 
         persistent_storage = PersistentStorage{};
 
@@ -111,10 +105,23 @@ void loop(void)
 
         Serial.println("Game console started.");
 
+        // Initialize game platform components
+        joystick_controller =
+            new JoystickController((int (*)(unsigned char))&analogRead);
+        keypad_controller =
+            new KeypadController((int (*)(unsigned char))&digitalRead);
+
+
         std::vector<DirectionalController *> controllers = {
-            joystick_controller, adafruit_controller};
-        std::vector<ActionController *> action_controllers =
-            {keypad_controller, adafruit_controller};
+            joystick_controller};
+        std::vector<ActionController *> action_controllers = {
+            keypad_controller};
+
+        if (adafruit_gamepad_available) {
+                adafruit_controller = new AdafruitController(&ss);
+                action_controllers.push_back(adafruit_controller);
+                controllers.push_back(adafruit_controller);
+        }
 
         TimeProvider *time_provider =
             new ArduinoTimeProvider((void (*)(int))&delay);

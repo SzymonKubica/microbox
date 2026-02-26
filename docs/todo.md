@@ -27,7 +27,9 @@
 
 
 
+
 # Done
+- [x] ensure that the console starts up correctly even if no stemma qt gamepad connected
 - [x] add support for the adafruit stemma qt gamepad controller
 - [x] fix 'completed' digits not being highlighted when a sudoku grid is loaded
       from storage
