@@ -183,18 +183,13 @@ std::optional<UserAction> select_game(Platform *p)
         if (!executor) {
                 LOG_DEBUG(TAG, "Selected game: %d. Game not implemented yet.",
                           config.game);
-                return std::nullopt;
+                return UserAction::PlayAgain;
         }
 
         auto maybe_action = executor->game_loop(p, &customization);
 
-        if (maybe_action.has_value() &&
-            maybe_action.value() == UserAction::CloseWindow) {
-                delete executor;
-                return UserAction::CloseWindow;
-        }
         delete executor;
-        return std::nullopt;
+        return maybe_action.value();
 }
 
 /**

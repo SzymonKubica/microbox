@@ -6,7 +6,9 @@
 class GameExecutor
 {
       public:
-        virtual std::optional<UserAction>
+        virtual UserAction
         game_loop(Platform *p, UserInterfaceCustomization *customization) = 0;
+        virtual const char *get_game_name() = 0;
+        virtual const char *get_help_text() = 0;
         virtual ~GameExecutor() {}
 };

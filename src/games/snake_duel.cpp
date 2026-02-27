@@ -132,7 +132,8 @@ SnakeDuel::game_loop(Platform *p, UserInterfaceCustomization *customization)
                 case UserAction::ShowHelp:
                         LOG_DEBUG(TAG, "User requested snake help screen");
                         render_wrapped_help_text(p, customization, help_text);
-                        return wait_until_green_pressed(p);
+                        wait_until_green_pressed(p);
+                        break;
                 case UserAction::CloseWindow:
                         LOG_DEBUG(TAG, "User closed the window");
                         return UserAction::CloseWindow;

@@ -17,18 +17,29 @@
 
 # TODO
 
-- [ ] understand the random device stuff (mt19937 etc.)
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
 
-- [ ] ensure that generated sudoku grids have unique solutions
+- [ ] ensure that generated sudoku grids have unique solutions (have to play a
+      bunch of games and verify if the algorithm works fine).
+
+- [ ] create a template for the main game loop as this logic is always the same.
+      (or abstract out common functionality to reduce duplication)
+- [ ] clean up all usages of raw pointers.
+- [ ] ensure that menu state transitions are consistent accross all apps
+- [ ] change terminology from 'game' to 'app' to fit better things like settings,
+      wifi config, randomness
+- [ ] add a separate menu for all of the apps.
+- [ ] clean up and simplify state transition propagation handling.
+
+- [ ] design a better logging utility to reomve the c-style macros.
 
 # In Progress
 
 
 
-
 # Done
+- [x] understand the random device stuff (mt19937 etc.)
 - [x] ensure that the console starts up correctly even if no stemma qt gamepad connected
 - [x] add support for the adafruit stemma qt gamepad controller
 - [x] fix 'completed' digits not being highlighted when a sudoku grid is loaded
