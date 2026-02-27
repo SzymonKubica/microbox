@@ -18,7 +18,6 @@ typedef struct GameOfLifeConfiguration {
         int rewind_buffer_size;
 } GameOfLifeConfiguration;
 
-
 /**
  * Collects the game of life configuration from the user.
  *
@@ -35,12 +34,17 @@ std::optional<UserAction>
 collect_game_of_life_config(Platform *p, GameOfLifeConfiguration *game_config,
                             UserInterfaceCustomization *customization);
 
-class GameOfLife : public GameExecutor
+class GameOfLife : public GameExecutor<GameOfLifeConfiguration>
 {
       public:
-        virtual std::optional<UserAction>
-        game_loop(Platform *p,
-                  UserInterfaceCustomization *customization) override;
+        UserAction game_loop(Platform *p,
+                             UserInterfaceCustomization *customization,
+                             const GameOfLifeConfiguration &config) override;
+        std::optional<UserAction>
+        collect_config(Platform *p, UserInterfaceCustomization *customization,
+                       GameOfLifeConfiguration *game_config) override;
+        const char *get_game_name() override;
+        const char *get_help_text() override;
 
         GameOfLife() {}
 };

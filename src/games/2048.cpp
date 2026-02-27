@@ -71,33 +71,14 @@ void free_game_state(GameState *gs);
 UserAction enter_2048_loop(Platform *platform,
                            UserInterfaceCustomization *customization);
 
-std::optional<UserAction>
-Clean2048::game_loop(Platform *p, UserInterfaceCustomization *customization)
+const char *Clean2048::get_game_name() { return "2048"; }
+const char *Clean2048::get_help_text()
 {
-        const char *help_text =
-            "Use the joystick to shift the tiles around the grid. The "
-            "objective is to merge tiles of the same value to reach the 2048 "
-            "tile. At any point in the game press blue to exit.";
 
-        bool exit_requested = false;
-        while (!exit_requested) {
-                switch (enter_2048_loop(p, customization)) {
-                case UserAction::PlayAgain:
-                        LOG_INFO(TAG, "Re-entering the main 2048 game loop.");
-                        continue;
-                case UserAction::Exit:
-                        exit_requested = true;
-                        break;
-                case UserAction::ShowHelp:
-                        LOG_INFO(TAG, "User requsted help screen for 2048.");
-                        render_wrapped_help_text(p, customization, help_text);
-                        wait_until_green_pressed(p);
-                        break;
-                case UserAction::CloseWindow:
-                        return UserAction::CloseWindow;
-                }
-        }
-        return std::nullopt;
+        return "Use the joystick to shift the tiles around the grid. The "
+               "objective is to merge tiles of the same value to reach the "
+               "2048 "
+               "tile. At any point in the game press blue to exit.";
 }
 
 GameState *load_saved_game_state(Game2048Configuration config)
@@ -134,16 +115,9 @@ void save_game_state(Platform *p, Game2048Configuration &config,
         p->persistent_storage->put(storage_offset, config);
 }
 
-UserAction enter_2048_loop(Platform *p,
-                           UserInterfaceCustomization *customization)
+UserAction game_loop(Platform *p, UserInterfaceCustomization *customization,
+                     const Game2048Configuration &config)
 {
-        Game2048Configuration config{};
-
-        auto maybe_action = collect_2048_config(p, &config, customization);
-        if (maybe_action) {
-                return maybe_action.value();
-        }
-
         GameState *state;
 
         if (config.is_game_in_progress) {
@@ -204,7 +178,8 @@ UserAction enter_2048_loop(Platform *p,
                                         return UserAction::CloseWindow;
                                 }
                                 if (std::get<Action>(action) == Action::GREEN) {
-                                        save_game_state(p, config, state);
+                                        Game2048Configuration copy = config;
+                                        save_game_state(p, copy, state);
                                 }
                                 free_game_state(state);
                                 p->time_provider->delay_ms(
@@ -317,8 +292,8 @@ void extract_game_config(Game2048Configuration *game_config,
 }
 
 std::optional<UserAction>
-collect_2048_config(Platform *p, Game2048Configuration *game_config,
-                    UserInterfaceCustomization *customization)
+collect_config(Platform *p, UserInterfaceCustomization *customization,
+               Game2048Configuration *game_config)
 {
         Game2048Configuration *initial_config =
             load_initial_config(p->persistent_storage);

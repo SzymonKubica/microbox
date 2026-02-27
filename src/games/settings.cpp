@@ -9,6 +9,7 @@
 #include "snake.hpp"
 #include "snake_duel.hpp"
 #include "wifi.hpp"
+#include <stdexcept>
 
 #define TAG "settings"
 
@@ -16,24 +17,40 @@ Configuration *assemble_settings_menu_configuration();
 void extract_menu_setting(Game *selected_game, Configuration *config);
 
 std::optional<UserAction>
-Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
+collect_config(Platform *p, UserInterfaceCustomization *customization,
+               SettingsConfiguration *game_config)
+
 {
+        Configuration *settings_config = assemble_settings_menu_configuration();
+        auto maybe_interrupt =
+            collect_configuration(p, settings_config, customization);
+        if (maybe_interrupt) {
+                delete settings_config;
+                return maybe_interrupt;
+        }
+
+        Game selected_game;
+        extract_menu_setting(&selected_game, settings_config);
+        game_config->selected_game = selected_game;
+        delete settings_config;
+        return std::nullopt;
+}
+const char *get_game_name() { return "Settings Menu"; }
+const char *get_help_text()
+{
+        return "Select the game/application and adjust the settings, press RED "
+               "to "
+               "proceed and save the settings. Press BLUE at any point to "
+               "exit.";
+}
+
+UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
+                     const SettingsConfiguration &config)
+{
+        Game selected_game = config.selected_game;
         // We loop until the user presses the blue button on any of the
         // configuration screens.
         while (true) {
-                Configuration *settings_config =
-                    assemble_settings_menu_configuration();
-                auto maybe_interrupt =
-                    collect_configuration(p, settings_config, custom);
-                if (maybe_interrupt) {
-                        delete settings_config;
-                        return maybe_interrupt;
-                }
-
-                Game selected_game;
-                extract_menu_setting(&selected_game, settings_config);
-                delete settings_config;
-
                 int offset = get_settings_storage_offset(selected_game);
                 LOG_DEBUG(
                     TAG,
@@ -49,8 +66,7 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
-                                delete settings_config;
-                                return action;
+                                return action.value();
                         }
                         storage.put(offset, config);
                 } break;
@@ -60,8 +76,7 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
-                                delete settings_config;
-                                return action;
+                                return action.value();
                         }
                         storage.put(offset, config);
                 } break;
@@ -72,8 +87,7 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
-                                delete settings_config;
-                                return action;
+                                return action.value();
                         }
                         storage.put(offset, config);
                 } break;
@@ -84,8 +98,7 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
-                                delete settings_config;
-                                return action;
+                                return action.value();
                         }
                         storage.put(offset, config);
                 } break;
@@ -95,8 +108,7 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
-                                delete settings_config;
-                                return action;
+                                return action.value();
                         }
                         storage.put(offset, config);
                 } break;
@@ -107,8 +119,7 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
-                                delete settings_config;
-                                return action;
+                                return action.value();
                         }
                         storage.put(offset, config);
                 } break;
@@ -119,8 +130,7 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
-                                delete settings_config;
-                                return action;
+                                return action.value();
                         }
                         storage.put(offset, config);
                 } break;
@@ -131,13 +141,12 @@ Settings::game_loop(Platform *p, UserInterfaceCustomization *custom)
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
-                                delete settings_config;
-                                return action;
+                                return action.value();
                         }
                         storage.put(offset, config);
                 } break;
                 default:
-                        return std::nullopt;
+                        throw std::invalid_argument("Unrecogized game.");
                 }
                 LOG_DEBUG(TAG, "Re-entering the settings collecting loop.");
         }

@@ -46,7 +46,7 @@ typedef struct WifiAppConfiguration {
         WifiAppAction action;
 
       public:
-        std::vector<WifiCredentials*> get_saved_configs();
+        std::vector<WifiCredentials *> get_saved_configs();
         const char *get_currently_selected_ssid() const;
         const char *get_currently_selected_password() const;
 
@@ -62,12 +62,17 @@ std::optional<UserAction>
 collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
                         UserInterfaceCustomization *customization);
 
-class WifiApp : public GameExecutor
+class WifiApp : public GameExecutor<WifiAppConfiguration>
 {
       public:
-        virtual std::optional<UserAction>
-        game_loop(Platform *p,
-                  UserInterfaceCustomization *customization) override;
+        UserAction game_loop(Platform *p,
+                             UserInterfaceCustomization *customization,
+                             const WifiAppConfiguration &config) override;
+        std::optional<UserAction>
+        collect_config(Platform *p, UserInterfaceCustomization *customization,
+                       WifiAppConfiguration *game_config) override;
+        const char *get_game_name() override;
+        const char *get_help_text() override;
 
         WifiApp() {}
 };

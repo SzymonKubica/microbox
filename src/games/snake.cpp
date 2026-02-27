@@ -67,67 +67,22 @@ struct GameLoopState {
         bool is_waiting() { return iteration != move_period - 1; }
 };
 
-UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization);
-
-std::optional<UserAction>
-SnakeGame::game_loop(Platform *p, UserInterfaceCustomization *customization)
+const char *SnakeGame::get_game_name() { return "Snake"; };
+const char *SnakeGame::get_help_text()
 {
-        const char *help_text =
-            "Use the joystick to control where the snake goes."
-            "Consume apples to grow the snake. Avoid hitting the walls or "
-            "snake's tail. Press yellow to (un-)pause.";
-
-        bool exit_requested = false;
-        while (!exit_requested) {
-                switch (snake_loop(p, customization)) {
-                case UserAction::PlayAgain: {
-                        LOG_DEBUG(TAG, "Snake game loop finished. "
-                                       "Pausing for input ");
-                        Direction dir;
-                        Action act;
-                        auto maybe_event = pause_until_input(
-                            p->directional_controllers, p->action_controllers,
-                            &dir, &act, p->time_provider, p->display);
-
-                        // We propagate the 'close window' action here.
-                        if (maybe_event.has_value() &&
-                            maybe_event.value() == UserAction::CloseWindow) {
-                                return maybe_event;
-                        }
-
-                        if (act == Action::BLUE) {
-                                exit_requested = true;
-                        }
-                        break;
-                }
-                case UserAction::Exit:
-                        exit_requested = true;
-                        break;
-                case UserAction::ShowHelp:
-                        LOG_DEBUG(TAG, "User requested snake help screen");
-                        render_wrapped_help_text(p, customization, help_text);
-                        wait_until_green_pressed(p);
-                        break;
-                case UserAction::CloseWindow:
-                        return UserAction::CloseWindow;
-                }
-        }
-        return std::nullopt;
-}
+        return "Use the joystick to control where the snake goes."
+               "Consume apples to grow the snake. Avoid hitting the walls or "
+               "snake's tail. Press yellow to (un-)pause.";
+};
 
 void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score);
 
-UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
+UserAction SnakeGame::game_loop(Platform *p,
+                                UserInterfaceCustomization *customization,
+                                const SnakeConfiguration &config)
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
-        SnakeConfiguration config;
-
-        auto maybe_interrupt = collect_snake_config(p, &config, customization);
-
-        if (maybe_interrupt) {
-                return maybe_interrupt.value();
-        }
 
         int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
@@ -355,12 +310,12 @@ UserAction snake_loop(Platform *p, UserInterfaceCustomization *customization)
                 }
         }
 
-        if (!p->display->refresh()) {
-                delete gd;
-                return UserAction::CloseWindow;
-        }
         delete gd;
-        return UserAction::PlayAgain;
+        if (!p->display->refresh()) {
+                return UserAction::CloseWindow;
+        } else {
+                return UserAction::PlayAgain;
+        }
 }
 
 /**
@@ -395,8 +350,8 @@ void extract_game_config(SnakeConfiguration *game_config,
                          Configuration *config);
 
 std::optional<UserAction>
-collect_snake_config(Platform *p, SnakeConfiguration *game_config,
-                     UserInterfaceCustomization *customization)
+collect_config(Platform *p, UserInterfaceCustomization *customization,
+               SnakeConfiguration *game_config)
 {
         Configuration *config =
             assemble_snake_configuration(p->persistent_storage);

@@ -44,48 +44,21 @@ RandomSeedSelectorAction selector_action_from_str(char *name)
 
 UserAction random_seed_picker_loop(Platform *p,
                                    UserInterfaceCustomization *customization);
-std::optional<UserAction>
-RandomSeedPicker::game_loop(Platform *p,
-                            UserInterfaceCustomization *customization)
-{
-        const char *help_text =
-            "Select 'Modify' action and press next (red) to change the seed"
-            "Select 'Download' to fetch a new seed from API (wifi connection "
-            "required)."
-            "Select 'Spin' to srand";
 
-        bool exit_requested = false;
-        while (!exit_requested) {
-                switch (random_seed_picker_loop(p, customization)) {
-                case UserAction::PlayAgain:
-                        LOG_INFO(TAG, "Re-entering the main wifi app loop.");
-                        continue;
-                case UserAction::Exit:
-                        exit_requested = true;
-                        break;
-                case UserAction::ShowHelp:
-                        LOG_INFO(TAG,
-                                 "User requsted help screen for wifi app.");
-                        render_wrapped_help_text(p, customization, help_text);
-                        wait_until_green_pressed(p);
-                        break;
-                case UserAction::CloseWindow:
-                        return UserAction::CloseWindow;
-                }
-        }
-        return std::nullopt;
+const char *get_game_name() { return "Ramdom Seed Picker"; }
+const char *get_help_text()
+{
+        return "Select 'Modify' action and press next (red) to change the seed"
+               "Select 'Download' to fetch a new seed from API (wifi "
+               "connection "
+               "required)."
+               "Select 'Spin' to srand";
 }
 
-UserAction random_seed_picker_loop(Platform *p,
-                                   UserInterfaceCustomization *customization)
+UserAction game_loop(Platform *p, UserInterfaceCustomization *customization,
+                     const RandomSeedPickerConfiguration &config)
 {
-        RandomSeedPickerConfiguration config;
-
-        auto maybe_action =
-            collect_random_seed_picker_config(p, &config, customization);
-        if (maybe_action) {
-                return maybe_action.value();
-        }
+        RandomSeedPickerConfiguration config_copy = config;
 
         switch (config.action) {
         case RandomSeedSelectorAction::Spin: {
@@ -94,8 +67,8 @@ UserAction random_seed_picker_loop(Platform *p,
                 srand(new_seed);
                 int offset =
                     get_settings_storage_offset(Game::RandomSeedPicker);
-                config.seed = new_seed;
-                p->persistent_storage->put(offset, config);
+                config_copy.seed = new_seed;
+                p->persistent_storage->put(offset, config_copy);
 
                 // Display the new seed to the user.
                 char display_text_buffer[256];
@@ -134,8 +107,8 @@ UserAction random_seed_picker_loop(Platform *p,
 
                 int offset =
                     get_settings_storage_offset(Game::RandomSeedPicker);
-                config.seed = new_seed;
-                p->persistent_storage->put(offset, config);
+                config_copy.seed = new_seed;
+                p->persistent_storage->put(offset, config_copy);
 
                 char display_text_buffer[256];
                 sprintf(display_text_buffer, "Fetched new randomness seed: %d",
@@ -171,8 +144,8 @@ UserAction random_seed_picker_loop(Platform *p,
                 srand(new_seed);
                 int offset =
                     get_settings_storage_offset(Game::RandomSeedPicker);
-                config.seed = new_seed;
-                p->persistent_storage->put(offset, config);
+                config_copy.seed = new_seed;
+                p->persistent_storage->put(offset, config_copy);
 
                 // Display the new seed to the user.
                 char display_text_buffer[256];
@@ -183,7 +156,6 @@ UserAction random_seed_picker_loop(Platform *p,
                 free(std::get<char *>(maybe_input));
                 wait_until_green_pressed(p);
                 break;
-
         }
 
         return UserAction::PlayAgain;
@@ -234,9 +206,9 @@ void extract_seed_picker_config(
     Configuration *config);
 
 std::optional<UserAction>
-collect_random_seed_picker_config(Platform *p,
-                                  RandomSeedPickerConfiguration *game_config,
-                                  UserInterfaceCustomization *customization)
+RandomSeedPicker::collect_config(Platform *p,
+                                 UserInterfaceCustomization *customization,
+                                 RandomSeedPickerConfiguration *game_config)
 {
         RandomSeedPickerConfiguration *initial_config =
             load_initial_seed_picker_config(p->persistent_storage);

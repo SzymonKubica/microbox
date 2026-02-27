@@ -40,42 +40,13 @@ const Color GRID_BG_COLOR = White;
 const Color TEXT_COLOR = Black;
 
 WifiAppConfiguration DEFAULT_WIFI_APP_CONFIG;
-/**
- * Returns the action that the user wants to take after the game loop is
- * complete. This can either be 'PlayAgain' or they can request to exit or show
- * the help screen. This needs to be appropriately handled by the caller.
- */
-UserAction wifi_app_loop(Platform *platform,
-                         UserInterfaceCustomization *customization);
 
-std::optional<UserAction>
-WifiApp::game_loop(Platform *p, UserInterfaceCustomization *customization)
+const char *WifiApp::get_game_name() { return "Wifi App"; }
+const char *WifiApp::get_help_text()
 {
-        const char *help_text =
-            "Select 'Modify' action and press next (red) to enter the new "
-            "wifi name and password. Select 'Connect' and press next to "
-            "connect to wifi.";
-
-        bool exit_requested = false;
-        while (!exit_requested) {
-                switch (wifi_app_loop(p, customization)) {
-                case UserAction::PlayAgain:
-                        LOG_INFO(TAG, "Re-entering the main wifi app loop.");
-                        continue;
-                case UserAction::Exit:
-                        exit_requested = true;
-                        break;
-                case UserAction::ShowHelp:
-                        LOG_INFO(TAG,
-                                 "User requsted help screen for wifi app.");
-                        render_wrapped_help_text(p, customization, help_text);
-                        return wait_until_green_pressed(p);
-                case UserAction::CloseWindow:
-                        LOG_INFO(TAG, "User closed the window");
-                        return UserAction::CloseWindow;
-                }
-        }
-        return std::nullopt;
+        return "Select 'Modify' action and press next (red) to enter the new "
+               "wifi name and password. Select 'Connect' and press next to "
+               "connect to wifi.";
 }
 
 /**
@@ -98,24 +69,21 @@ std::optional<UserAction>
 handle_connect(WifiAppConfiguration &config, Platform *p,
                UserInterfaceCustomization *customization);
 
-UserAction wifi_app_loop(Platform *p, UserInterfaceCustomization *customization)
+UserAction WifiApp::game_loop(Platform *p,
+                              UserInterfaceCustomization *customization,
+                              const WifiAppConfiguration &config)
 {
-        WifiAppConfiguration config{};
-
-        auto maybe_action = collect_wifi_app_config(p, &config, customization);
-        if (maybe_action) {
-                return maybe_action.value();
-        }
+        WifiAppConfiguration config_copy = config;
 
         switch (config.action) {
         case AddNew:
-                handle_add_new(config, p, customization);
+                handle_add_new(config_copy, p, customization);
                 break;
         case Modify:
-                handle_modify(config, p, customization);
+                handle_modify(config_copy, p, customization);
                 break;
         case Connect:
-                handle_connect(config, p, customization);
+                handle_connect(config_copy, p, customization);
                 break;
         }
 
@@ -411,8 +379,8 @@ void extract_game_config(WifiAppConfiguration *app_config,
 }
 
 std::optional<UserAction>
-collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
-                        UserInterfaceCustomization *customization)
+WifiApp::collect_config(Platform *p, UserInterfaceCustomization *customization,
+                        WifiAppConfiguration *game_config)
 {
         WifiAppConfiguration *initial_config =
             load_initial_wifi_app_config(p->persistent_storage);

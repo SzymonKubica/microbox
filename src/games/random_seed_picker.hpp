@@ -23,16 +23,22 @@ typedef struct RandomSeedPickerConfiguration {
  * can call it, get the new default setttings and save them in the persistent
  * storage.
  */
-std::optional<UserAction> collect_random_seed_picker_config(
-    Platform *p, RandomSeedPickerConfiguration *game_config,
-    UserInterfaceCustomization *customization);
+std::optional<UserAction>
+collect_random_seed_picker_config(Platform *p,
+                                  RandomSeedPickerConfiguration *game_config,
+                                  UserInterfaceCustomization *customization);
 
-class RandomSeedPicker : public GameExecutor
+class RandomSeedPicker : public GameExecutor<RandomSeedPickerConfiguration>
 {
       public:
-        virtual std::optional<UserAction>
-        game_loop(Platform *p,
-                  UserInterfaceCustomization *customization) override;
+        UserAction
+        game_loop(Platform *p, UserInterfaceCustomization *customization,
+                  const RandomSeedPickerConfiguration &config) override;
+        std::optional<UserAction>
+        collect_config(Platform *p, UserInterfaceCustomization *customization,
+                       RandomSeedPickerConfiguration *game_config) override;
+        const char *get_game_name() override;
+        const char *get_help_text() override;
 
         RandomSeedPicker() {}
 };

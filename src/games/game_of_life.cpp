@@ -150,51 +150,27 @@ load_initial_game_of_life_config(PersistentStorage *storage)
 UserAction game_of_life_loop(Platform *platform,
                              UserInterfaceCustomization *customization);
 
-std::optional<UserAction>
-GameOfLife::game_loop(Platform *p, UserInterfaceCustomization *customization)
+const char *get_game_name() { return "Game of Life"; }
+const char *get_help_text()
 {
-        const char *help_text =
-            "Use the joystick to move the caret around the grid. Press green "
-            "to toggle the cell between alive/dead, yellow to pause, blue to "
-            "rewind back in time, red to exit. There is no aim, you stare at "
-            "the simulation";
 
-        bool exit_requested = false;
-        while (!exit_requested) {
-                switch (game_of_life_loop(p, customization)) {
-                case UserAction::PlayAgain:
-                        LOG_DEBUG(TAG, "Re-entering game of life loop.");
-                        break;
-                case UserAction::Exit:
-                        exit_requested = true;
-                        break;
-                case UserAction::ShowHelp:
-                        LOG_DEBUG(TAG,
-                                  "User requested game of life help screen.");
-                        render_wrapped_help_text(p, customization, help_text);
-                        wait_until_green_pressed(p);
-                        break;
-                case UserAction::CloseWindow:
-                        return UserAction::CloseWindow;
-                }
-        }
-        return std::nullopt;
+        return "Use the joystick to move the caret around the grid. Press "
+               "green "
+               "to toggle the cell between alive/dead, yellow to pause, blue "
+               "to "
+               "rewind back in time, red to exit. There is no aim, you stare "
+               "at "
+               "the simulation";
 }
 
 void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                        int border_offset);
-UserAction game_of_life_loop(Platform *p,
-                             UserInterfaceCustomization *customization)
+
+UserAction game_loop(Platform *p, UserInterfaceCustomization *customization,
+                     const GameOfLifeConfiguration &config)
 {
 
         LOG_DEBUG(TAG, "Entering Game of Life game loop");
-        GameOfLifeConfiguration config;
-
-        auto maybe_interrupt =
-            collect_game_of_life_config(p, &config, customization);
-        if (maybe_interrupt) {
-                return maybe_interrupt.value();
-        }
 
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
@@ -388,8 +364,8 @@ UserAction game_of_life_loop(Platform *p,
 }
 
 std::optional<UserAction>
-collect_game_of_life_config(Platform *p, GameOfLifeConfiguration *game_config,
-                            UserInterfaceCustomization *customization)
+collect_config(Platform *p, UserInterfaceCustomization *customization,
+               GameOfLifeConfiguration *game_config)
 {
         Configuration *config =
             assemble_game_of_life_configuration(p->persistent_storage);

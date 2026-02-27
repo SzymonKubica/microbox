@@ -3,9 +3,12 @@
 #include "common_transitions.hpp"
 #include "game_menu.hpp"
 
-
 std::vector<int> get_settings_storage_offsets();
 int get_settings_storage_offset(Game game);
+
+typedef struct SettingsConfiguration {
+        Game selected_game;
+} SettingsConfiguration;
 
 /**
  * This 'game' is a settings menu responsible for setting the default values of
@@ -16,10 +19,15 @@ int get_settings_storage_offset(Game game);
  * then saved in the persistent storage and used as the default values in the
  * future.
  */
-class Settings : public GameExecutor
+class Settings : public GameExecutor<SettingsConfiguration>
 {
       public:
-        virtual std::optional<UserAction>
-        game_loop(Platform *p,
-                  UserInterfaceCustomization *customization) override;
+        UserAction game_loop(Platform *p,
+                             UserInterfaceCustomization *customization,
+                             const SettingsConfiguration &config) override;
+        std::optional<UserAction>
+        collect_config(Platform *p, UserInterfaceCustomization *customization,
+                       SettingsConfiguration *game_config) override;
+        const char *get_game_name() override;
+        const char *get_help_text() override;
 };

@@ -18,12 +18,17 @@ std::optional<UserAction>
 collect_minesweeper_config(Platform *p, MinesweeperConfiguration *game_config,
                            UserInterfaceCustomization *customization);
 
-class Minesweeper : public GameExecutor
+class Minesweeper : public GameExecutor<MinesweeperConfiguration>
 {
       public:
-        virtual std::optional<UserAction>
-        game_loop(Platform *p,
-                  UserInterfaceCustomization *customization) override;
+        UserAction game_loop(Platform *p,
+                             UserInterfaceCustomization *customization,
+                             const MinesweeperConfiguration &config) override;
+        std::optional<UserAction>
+        collect_config(Platform *p, UserInterfaceCustomization *customization,
+                       MinesweeperConfiguration *game_config) override;
+        const char *get_game_name() override;
+        const char *get_help_text() override;
 
         Minesweeper() {}
 };

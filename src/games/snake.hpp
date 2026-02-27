@@ -13,7 +13,8 @@ typedef struct SnakeConfiguration {
         int speed;
         /**
          * If true, the game engine will wait for an extra tick before ending
-         * the game when the player is about to crash into a wall or snake's tail.
+         * the game when the player is about to crash into a wall or snake's
+         * tail.
          */
         bool allow_grace;
         /**
@@ -33,12 +34,17 @@ std::optional<UserAction>
 collect_snake_config(Platform *p, SnakeConfiguration *game_config,
                      UserInterfaceCustomization *customization);
 
-class SnakeGame : public GameExecutor
+class SnakeGame : public GameExecutor<SnakeConfiguration>
 {
       public:
-        virtual std::optional<UserAction>
-        game_loop(Platform *p,
-                  UserInterfaceCustomization *customization) override;
-
         SnakeGame() {}
+
+        UserAction game_loop(Platform *p,
+                             UserInterfaceCustomization *customization,
+                             const SnakeConfiguration &config) override;
+        std::optional<UserAction>
+        collect_config(Platform *p, UserInterfaceCustomization *customization,
+                       SnakeConfiguration *game_config) override;
+        const char *get_game_name() override;
+        const char *get_help_text() override;
 };

@@ -89,58 +89,21 @@ void place_bombs(std::vector<std::vector<MinesweeperGridCell>> *grid,
 UserAction minesweeper_loop(Platform *platform,
                             UserInterfaceCustomization *customization);
 
-std::optional<UserAction>
-Minesweeper::game_loop(Platform *p, UserInterfaceCustomization *customization)
+const char *Minesweeper::get_game_name() { return "Minesweeper"; }
+const char *Minesweeper::get_help_text()
 {
-        const char *help_text =
-            "Use the joystick to move the caret around the grid. Press green "
-            "to uncover a cell, red to place a flag. The aim "
-            "is to uncover all cells with no mines. Digits in the grid tell you"
-            " the number of mines around the cell.";
-
-        bool exit_requested = false;
-        while (!exit_requested) {
-                switch (minesweeper_loop(p, customization)) {
-                case UserAction::PlayAgain:
-                        LOG_DEBUG(TAG, "Minesweeper game loop finished. "
-                                       "Pausing for input ");
-                        Direction dir;
-                        Action act;
-                        pause_until_input(p->directional_controllers,
-                                          p->action_controllers, &dir, &act,
-                                          p->time_provider, p->display);
-
-                        if (act == Action::BLUE) {
-                                exit_requested = true;
-                        }
-                        break;
-                case UserAction::Exit:
-                        exit_requested = true;
-                        break;
-                case UserAction::ShowHelp:
-                        LOG_DEBUG(TAG,
-                                  "User requested minesweeper help screen");
-                        render_wrapped_help_text(p, customization, help_text);
-                        wait_until_green_pressed(p);
-                        break;
-                case UserAction::CloseWindow:
-                        return UserAction::CloseWindow;
-                }
-        }
-        return std::nullopt;
+        return "Use the joystick to move the caret around the grid. Press "
+               "green "
+               "to uncover a cell, red to place a flag. The aim "
+               "is to uncover all cells with no mines. Digits in the grid tell "
+               "you"
+               " the number of mines around the cell.";
 }
-UserAction minesweeper_loop(Platform *p,
-                            UserInterfaceCustomization *customization)
+UserAction Minesweeper::game_loop(Platform *p,
+                                  UserInterfaceCustomization *customization,
+                                  const MinesweeperConfiguration &config)
 {
         LOG_DEBUG(TAG, "Entering Minesweeper game loop");
-        MinesweeperConfiguration config;
-
-        auto maybe_interrupt =
-            collect_minesweeper_config(p, &config, customization);
-
-        if (maybe_interrupt) {
-                return maybe_interrupt.value();
-        }
 
         MinesweeperGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
@@ -561,8 +524,9 @@ void extract_game_config(MinesweeperConfiguration *game_config,
                          Configuration *config);
 
 std::optional<UserAction>
-collect_minesweeper_config(Platform *p, MinesweeperConfiguration *game_config,
-                           UserInterfaceCustomization *customization)
+Minesweeper::collect_config(Platform *p,
+                            UserInterfaceCustomization *customization,
+                            MinesweeperConfiguration *game_config)
 {
         Configuration *config =
             assemble_minesweeper_configuration(p->persistent_storage);

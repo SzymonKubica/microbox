@@ -153,43 +153,48 @@ std::optional<UserAction> select_game(Platform *p)
         }
 
         LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
-
-        GameExecutor *executor = [&]() -> GameExecutor * {
-                switch (config.game) {
-                case Game::Unknown:
-                case Game::Clean2048:
-                        return new class Clean2048();
-                case Game::Minesweeper:
-                        return new class Minesweeper();
-                case Game::GameOfLife:
-                        return new class GameOfLife();
-                case Game::Settings:
-                        return new class Settings();
-                case Game::Snake:
-                        return new class SnakeGame();
-                case Game::SnakeDuel:
-                        return new class SnakeDuel();
-                case Game::WifiApp:
-                        return new class WifiApp();
-                case Game::RandomSeedPicker:
-                        return new class RandomSeedPicker();
-                case Game::Sudoku:
-                        return new class SudokuGame();
-                default:
-                        return NULL;
-                }
-        }();
-
-        if (!executor) {
-                LOG_DEBUG(TAG, "Selected game: %d. Game not implemented yet.",
-                          config.game);
-                return UserAction::PlayAgain;
+        std::optional<UserAction> maybe_action;
+        switch (config.game) {
+        case Game::Unknown:
+        case Game::Clean2048:
+                maybe_action = common_game_loop(new Clean2048(), p, &customization);
+        case Game::Minesweeper:
+                return new class Minesweeper();
+        case Game::GameOfLife:
+                return new class GameOfLife();
+        case Game::Settings:
+                return new class Settings();
+        case Game::Snake:
+                return new class SnakeGame();
+        case Game::SnakeDuel:
+                return new class SnakeDuel();
+        case Game::WifiApp:
+                return new class WifiApp();
+        case Game::RandomSeedPicker:
+                return new class RandomSeedPicker();
+        case Game::Sudoku:
+                return new class SudokuGame();
+        case Game::MainMenu:
+                break;
         }
 
-        auto maybe_action = executor->game_loop(p, &customization);
+        GameExecutor executor = [&]() -> GameExecutor * {
+                default:
+                        return NULL;
+        }
+}
+();
 
-        delete executor;
-        return maybe_action.value();
+if (!executor) {
+        LOG_DEBUG(TAG, "Selected game: %d. Game not implemented yet.",
+                  config.game);
+        return UserAction::PlayAgain;
+}
+
+auto maybe_action = executor->game_loop(p, &customization);
+
+delete executor;
+return maybe_action.value();
 }
 
 /**

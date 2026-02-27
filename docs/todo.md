@@ -33,6 +33,7 @@
 - [ ] clean up and simplify state transition propagation handling.
 
 - [ ] design a better logging utility to reomve the c-style macros.
+- [ ] add aliases for button to have something like 'exit button' instead of Action::BLUE
 
 # In Progress
 

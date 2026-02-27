@@ -6,6 +6,7 @@
 #include "snake_common.hpp"
 #include "snake_duel.hpp"
 #include "2048.hpp"
+// TODO: fix warnings about those headers not being used directly.
 #include "game_of_life.hpp"
 #include "settings.hpp"
 #include "game_menu.hpp"
@@ -95,51 +96,12 @@ struct SnakeDuelLoopState {
 UserAction snake_duel_loop(Platform *p,
                            UserInterfaceCustomization *customization);
 
-std::optional<UserAction>
-SnakeDuel::game_loop(Platform *p, UserInterfaceCustomization *customization)
+const char *SnakeDuel::get_game_name() { return "Snake Duel"; }
+const char *SnakeDuel::get_help_text()
 {
-        const char *help_text =
-            "Use the joystick to control where the snake goes."
-            "Consume apples to grow the snake. Avoid hitting the walls or "
-            "snake's tail. Second player: use keypad to control the snake.";
-
-        bool exit_requested = false;
-        while (!exit_requested) {
-                switch (snake_duel_loop(p, customization)) {
-                case UserAction::PlayAgain: {
-                        LOG_DEBUG(TAG, "Snake duel game loop finished. "
-                                       "Pausing for input ");
-                        Direction dir;
-                        Action act;
-                        auto maybe_event = pause_until_input(
-                            p->directional_controllers, p->action_controllers,
-                            &dir, &act, p->time_provider, p->display);
-
-                        // We propagate the 'close window' action here.
-                        if (maybe_event.has_value() &&
-                            maybe_event.value() == UserAction::CloseWindow) {
-                                return maybe_event;
-                        }
-
-                        if (act == Action::BLUE) {
-                                exit_requested = true;
-                        }
-                        break;
-                }
-                case UserAction::Exit:
-                        exit_requested = true;
-                        break;
-                case UserAction::ShowHelp:
-                        LOG_DEBUG(TAG, "User requested snake help screen");
-                        render_wrapped_help_text(p, customization, help_text);
-                        wait_until_green_pressed(p);
-                        break;
-                case UserAction::CloseWindow:
-                        LOG_DEBUG(TAG, "User closed the window");
-                        return UserAction::CloseWindow;
-                }
-        }
-        return std::nullopt;
+        return "Use the joystick to control where the snake goes."
+               "Consume apples to grow the snake. Avoid hitting the walls or "
+               "snake's tail. Second player: use keypad to control the snake.";
 }
 
 void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
@@ -173,18 +135,11 @@ void take_snake_step(
     std::function<void(Point &point, Color color)> &render_cell,
     SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary);
 
-UserAction snake_duel_loop(Platform *p,
-                           UserInterfaceCustomization *customization)
+UserAction SnakeDuel::game_loop(Platform *p,
+                                UserInterfaceCustomization *customization,
+                                const SnakeDuelConfiguration &config)
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
-        SnakeDuelConfiguration config;
-
-        auto maybe_interrupt =
-            collect_snake_duel_config(p, &config, customization);
-
-        if (maybe_interrupt) {
-                return maybe_interrupt.value();
-        }
 
         int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
@@ -565,8 +520,9 @@ SnakeDuelConfiguration *
 load_initial_snake_duel_config(PersistentStorage *storage);
 
 std::optional<UserAction>
-collect_snake_duel_config(Platform *p, SnakeDuelConfiguration *game_config,
-                          UserInterfaceCustomization *customization)
+SnakeDuel::collect_config(Platform *p,
+                          UserInterfaceCustomization *customization,
+                          SnakeDuelConfiguration *game_config)
 {
         Configuration *config =
             assemble_snake_duel_configuration(p->persistent_storage);

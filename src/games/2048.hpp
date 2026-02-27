@@ -61,12 +61,17 @@ bool is_game_over(GameState *gs);
 bool is_game_finished(GameState *gs);
 void take_turn(GameState *gs, int direction);
 
-class Clean2048 : public GameExecutor
+class Clean2048 : public GameExecutor<Game2048Configuration>
 {
       public:
-        virtual std::optional<UserAction>
-        game_loop(Platform *p,
-                  UserInterfaceCustomization *customization) override;
-
         Clean2048() {}
+
+        UserAction game_loop(Platform *p,
+                             UserInterfaceCustomization *customization,
+                             const Game2048Configuration &config) override;
+        std::optional<UserAction>
+        collect_config(Platform *p, UserInterfaceCustomization *customization,
+                       Game2048Configuration *game_config) override;
+        const char *get_game_name() override;
+        const char *get_help_text() override;
 };
