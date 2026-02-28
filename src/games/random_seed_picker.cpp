@@ -45,8 +45,8 @@ RandomSeedSelectorAction selector_action_from_str(char *name)
 UserAction random_seed_picker_loop(Platform *p,
                                    UserInterfaceCustomization *customization);
 
-const char *get_game_name() { return "Ramdom Seed Picker"; }
-const char *get_help_text()
+const char *RandomSeedPicker::get_game_name() { return "Ramdom Seed Picker"; }
+const char *RandomSeedPicker::get_help_text()
 {
         return "Select 'Modify' action and press next (red) to change the seed"
                "Select 'Download' to fetch a new seed from API (wifi "
@@ -55,7 +55,7 @@ const char *get_help_text()
                "Select 'Spin' to srand";
 }
 
-UserAction game_loop(Platform *p, UserInterfaceCustomization *customization,
+UserAction RandomSeedPicker::game_loop(Platform *p, UserInterfaceCustomization *customization,
                      const RandomSeedPickerConfiguration &config)
 {
         RandomSeedPickerConfiguration config_copy = config;

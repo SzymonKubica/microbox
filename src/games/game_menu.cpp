@@ -132,7 +132,7 @@ std::optional<UserAction> select_game(Platform *p)
         // requests help message. The current version of the help text rendering
         // does not depend on it but this might become problematic in the
         // future.
-        UserInterfaceCustomization customization = {
+        UserInterfaceCustomization c = {
             config.accent_color, config.rendering_mode, config.show_help_text};
 
         const char *help_text =
@@ -143,7 +143,7 @@ std::optional<UserAction> select_game(Platform *p)
 
         if (maybe_interrupt.has_value() &&
             maybe_interrupt.value() == UserAction::ShowHelp) {
-                render_wrapped_help_text(p, &customization, help_text);
+                render_wrapped_help_text(p, &c, help_text);
                 return wait_until_green_pressed(p);
         }
 
@@ -153,48 +153,33 @@ std::optional<UserAction> select_game(Platform *p)
         }
 
         LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
-        std::optional<UserAction> maybe_action;
-        switch (config.game) {
-        case Game::Unknown:
-        case Game::Clean2048:
-                maybe_action = common_game_loop(new Clean2048(), p, &customization);
-        case Game::Minesweeper:
-                return new class Minesweeper();
-        case Game::GameOfLife:
-                return new class GameOfLife();
-        case Game::Settings:
-                return new class Settings();
-        case Game::Snake:
-                return new class SnakeGame();
-        case Game::SnakeDuel:
-                return new class SnakeDuel();
-        case Game::WifiApp:
-                return new class WifiApp();
-        case Game::RandomSeedPicker:
-                return new class RandomSeedPicker();
-        case Game::Sudoku:
-                return new class SudokuGame();
-        case Game::MainMenu:
-                break;
-        }
-
-        GameExecutor executor = [&]() -> GameExecutor * {
+        auto maybe_action = [&]() -> std::optional<UserAction> {
+                switch (config.game) {
+                case Game::Clean2048:
+                        return execute_game(new Clean2048(), p, &c);
+                case Game::Minesweeper:
+                        return execute_game(new Minesweeper(), p, &c);
+                case Game::GameOfLife:
+                        return execute_game(new GameOfLife(), p, &c);
+                case Game::Settings:
+                        return execute_game(new Settings(), p, &c);
+                case Game::Snake:
+                        return execute_game(new SnakeGame(), p, &c);
+                case Game::SnakeDuel:
+                        return execute_game(new SnakeDuel(), p, &c);
+                case Game::WifiApp:
+                        return execute_game(new WifiApp(), p, &c);
+                case Game::RandomSeedPicker:
+                        return execute_game(new RandomSeedPicker(), p, &c);
+                case Game::Sudoku:
+                        return execute_game(new SudokuGame(), p, &c);
                 default:
-                        return NULL;
-        }
-}
-();
+                        LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
+                        return UserAction::Exit;
+                }
+        }();
 
-if (!executor) {
-        LOG_DEBUG(TAG, "Selected game: %d. Game not implemented yet.",
-                  config.game);
-        return UserAction::PlayAgain;
-}
-
-auto maybe_action = executor->game_loop(p, &customization);
-
-delete executor;
-return maybe_action.value();
+        return maybe_action.value();
 }
 
 /**

@@ -19,12 +19,17 @@ std::optional<UserAction>
 collect_sudoku_config(Platform *p, SudokuConfiguration *game_config,
                       UserInterfaceCustomization *customization);
 
-class SudokuGame : public GameExecutor
+class SudokuGame : public GameExecutor<SudokuConfiguration>
 {
       public:
-        virtual std::optional<UserAction>
-        game_loop(Platform *p,
-                  UserInterfaceCustomization *customization) override;
+        UserAction game_loop(Platform *p,
+                                     UserInterfaceCustomization *customization,
+                                     const SudokuConfiguration &config) override;
+        std::optional<UserAction>
+        collect_config(Platform *p, UserInterfaceCustomization *customization,
+                       SudokuConfiguration *game_config) override;
+        const char *get_game_name() override;
+        const char *get_help_text() override;
 
         SudokuGame() {}
 };

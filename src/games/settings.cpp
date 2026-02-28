@@ -17,8 +17,8 @@ Configuration *assemble_settings_menu_configuration();
 void extract_menu_setting(Game *selected_game, Configuration *config);
 
 std::optional<UserAction>
-collect_config(Platform *p, UserInterfaceCustomization *customization,
-               SettingsConfiguration *game_config)
+Settings::collect_config(Platform *p, UserInterfaceCustomization *customization,
+                         SettingsConfiguration *game_config)
 
 {
         Configuration *settings_config = assemble_settings_menu_configuration();
@@ -35,8 +35,8 @@ collect_config(Platform *p, UserInterfaceCustomization *customization,
         delete settings_config;
         return std::nullopt;
 }
-const char *get_game_name() { return "Settings Menu"; }
-const char *get_help_text()
+const char *Settings::get_game_name() { return "Settings Menu"; }
+const char *Settings::get_help_text()
 {
         return "Select the game/application and adjust the settings, press RED "
                "to "
@@ -44,8 +44,8 @@ const char *get_help_text()
                "exit.";
 }
 
-UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
-                     const SettingsConfiguration &config)
+UserAction Settings::game_loop(Platform *p, UserInterfaceCustomization *custom,
+                               const SettingsConfiguration &config)
 {
         Game selected_game = config.selected_game;
         // We loop until the user presses the blue button on any of the
@@ -72,7 +72,8 @@ UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
                 } break;
                 case Game::Clean2048: {
                         Game2048Configuration config;
-                        auto action = collect_2048_config(p, &config, custom);
+                        auto action = (new Clean2048())
+                                          ->collect_config(p, custom, &config);
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
@@ -82,8 +83,8 @@ UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
                 } break;
                 case Game::Minesweeper: {
                         MinesweeperConfiguration config;
-                        auto action =
-                            collect_minesweeper_config(p, &config, custom);
+                        auto action = (new Minesweeper())
+                                          ->collect_config(p, custom, &config);
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
@@ -93,8 +94,8 @@ UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
                 } break;
                 case Game::GameOfLife: {
                         GameOfLifeConfiguration config;
-                        auto action =
-                            collect_game_of_life_config(p, &config, custom);
+                        auto action = (new GameOfLife())
+                                          ->collect_config(p, custom, &config);
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
@@ -104,7 +105,8 @@ UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
                 } break;
                 case Game::Snake: {
                         SnakeConfiguration config;
-                        auto action = collect_snake_config(p, &config, custom);
+                        auto action = (new SnakeGame())
+                                          ->collect_config(p, custom, &config);
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
@@ -114,8 +116,8 @@ UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
                 } break;
                 case Game::SnakeDuel: {
                         SnakeDuelConfiguration config;
-                        auto action =
-                            collect_snake_duel_config(p, &config, custom);
+                        auto action = (new SnakeDuel())
+                                          ->collect_config(p, custom, &config);
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
@@ -126,7 +128,7 @@ UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
                 case Game::WifiApp: {
                         WifiAppConfiguration config;
                         auto action =
-                            collect_wifi_app_config(p, &config, custom);
+                            (new WifiApp())->collect_config(p, custom, &config);
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
@@ -136,8 +138,9 @@ UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
                 } break;
                 case Game::RandomSeedPicker: {
                         RandomSeedPickerConfiguration config;
-                        auto action = collect_random_seed_picker_config(
-                            p, &config, custom);
+                        // TODO: clean up to remove those allocations
+                        auto action = (new RandomSeedPicker())
+                                          ->collect_config(p, custom, &config);
                         if (action &&
                             (action.value() == UserAction::Exit ||
                              action.value() == UserAction::CloseWindow)) {
@@ -146,7 +149,7 @@ UserAction game_loop(Platform *p, UserInterfaceCustomization *custom,
                         storage.put(offset, config);
                 } break;
                 default:
-                        throw std::invalid_argument("Unrecogized game.");
+                        return UserAction::Exit;
                 }
                 LOG_DEBUG(TAG, "Re-entering the settings collecting loop.");
         }

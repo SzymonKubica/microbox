@@ -23,10 +23,7 @@
 - [ ] ensure that generated sudoku grids have unique solutions (have to play a
       bunch of games and verify if the algorithm works fine).
 
-- [ ] create a template for the main game loop as this logic is always the same.
-      (or abstract out common functionality to reduce duplication)
 - [ ] clean up all usages of raw pointers.
-- [ ] ensure that menu state transitions are consistent accross all apps
 - [ ] change terminology from 'game' to 'app' to fit better things like settings,
       wifi config, randomness
 - [ ] add a separate menu for all of the apps.
@@ -40,6 +37,9 @@
 
 
 # Done
+- [x] ensure that menu state transitions are consistent accross all apps
+- [x] create a template for the main game loop as this logic is always the same.
+      (or abstract out common functionality to reduce duplication)
 - [x] understand the random device stuff (mt19937 etc.)
 - [x] ensure that the console starts up correctly even if no stemma qt gamepad connected
 - [x] add support for the adafruit stemma qt gamepad controller

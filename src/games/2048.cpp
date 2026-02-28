@@ -115,8 +115,9 @@ void save_game_state(Platform *p, Game2048Configuration &config,
         p->persistent_storage->put(storage_offset, config);
 }
 
-UserAction game_loop(Platform *p, UserInterfaceCustomization *customization,
-                     const Game2048Configuration &config)
+UserAction Clean2048::game_loop(Platform *p,
+                                UserInterfaceCustomization *customization,
+                                const Game2048Configuration &config)
 {
         GameState *state;
 
@@ -292,8 +293,9 @@ void extract_game_config(Game2048Configuration *game_config,
 }
 
 std::optional<UserAction>
-collect_config(Platform *p, UserInterfaceCustomization *customization,
-               Game2048Configuration *game_config)
+Clean2048::collect_config(Platform *p,
+                          UserInterfaceCustomization *customization,
+                          Game2048Configuration *game_config)
 {
         Game2048Configuration *initial_config =
             load_initial_config(p->persistent_storage);

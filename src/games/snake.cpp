@@ -350,7 +350,7 @@ void extract_game_config(SnakeConfiguration *game_config,
                          Configuration *config);
 
 std::optional<UserAction>
-collect_config(Platform *p, UserInterfaceCustomization *customization,
+SnakeGame::collect_config(Platform *p, UserInterfaceCustomization *customization,
                SnakeConfiguration *game_config)
 {
         Configuration *config =

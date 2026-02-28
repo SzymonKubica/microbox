@@ -155,56 +155,17 @@ class SudokuState
         }
 };
 
-UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization);
-
-std::optional<UserAction>
-SudokuGame::game_loop(Platform *p, UserInterfaceCustomization *customization)
+const char *SudokuGame::get_game_name() { return "Sudoku"; }
+const char *SudokuGame::get_help_text()
 {
-        const char *help_text =
-            "Use the left/right buttons to select which digit you are "
-            "inserting. Use the joystick to control the cursor. Press green to "
-            "(re-)place the current digit.";
-
-        bool exit_requested = false;
-        while (!exit_requested) {
-                switch (sudoku_loop(p, customization)) {
-                case UserAction::PlayAgain: {
-                        LOG_DEBUG(TAG, "Sudoku game loop finished. "
-                                       "Pausing for input ");
-                        Direction dir;
-                        Action act;
-                        auto maybe_event = pause_until_input(
-                            p->directional_controllers, p->action_controllers,
-                            &dir, &act, p->time_provider, p->display);
-
-                        // We propagate the 'close window' action here.
-                        if (maybe_event.has_value() &&
-                            maybe_event.value() == UserAction::CloseWindow) {
-                                return maybe_event;
-                        }
-
-                        if (act == Action::BLUE) {
-                                exit_requested = true;
-                        }
-                        break;
-                }
-                case UserAction::Exit:
-                        exit_requested = true;
-                        break;
-                case UserAction::ShowHelp:
-                        LOG_DEBUG(TAG, "User requested sudoku help screen");
-                        render_wrapped_help_text(p, customization, help_text);
-                        wait_until_green_pressed(p);
-                        break;
-                case UserAction::CloseWindow:
-                        return UserAction::CloseWindow;
-                }
-        }
-        return std::nullopt;
+        return "Use the left/right buttons to select which digit you are "
+               "inserting. Use the joystick to control the cursor. Press green "
+               "to "
+               "(re-)place the current digit.";
 }
 
 std::vector<std::vector<SudokuCell>>
-load_game_state(SudokuConfiguration &config)
+load_game_state(const SudokuConfiguration &config)
 {
         std::vector<std::vector<SudokuCell>> grid(9,
                                                   std::vector(9, SudokuCell{}));
@@ -235,16 +196,11 @@ void save_game_state(Platform *p, SudokuConfiguration &config,
         p->persistent_storage->put(storage_offset, config);
 }
 
-UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
+UserAction SudokuGame::game_loop(Platform *p,
+                                 UserInterfaceCustomization *customization,
+                                 const SudokuConfiguration &config)
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
-        SudokuConfiguration config;
-
-        auto maybe_interrupt = collect_sudoku_config(p, &config, customization);
-
-        if (maybe_interrupt) {
-                return maybe_interrupt.value();
-        }
 
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
@@ -310,7 +266,7 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                         auto help_text = "Congratulations, you solved "
                                          "the sudoku successfully!";
                         render_wrapped_help_text(p, customization, help_text);
-                        maybe_interrupt = wait_until_green_pressed(p);
+                        auto maybe_interrupt = wait_until_green_pressed(p);
 
                         if (maybe_interrupt.has_value())
                                 return maybe_interrupt.value();
@@ -405,7 +361,8 @@ UserAction sudoku_loop(Platform *p, UserInterfaceCustomization *customization)
                                 return UserAction::CloseWindow;
                         }
                         if (std::get<Action>(action) == Action::GREEN) {
-                                save_game_state(p, config, state.grid);
+                                SudokuConfiguration copy = config;
+                                save_game_state(p, copy, state.grid);
                         }
                         p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         delete gd;
@@ -431,8 +388,9 @@ void extract_game_config(SudokuConfiguration *game_config,
                          SudokuConfiguration *initial_config);
 
 std::optional<UserAction>
-collect_sudoku_config(Platform *p, SudokuConfiguration *game_config,
-                      UserInterfaceCustomization *customization)
+SudokuGame::collect_config(Platform *p,
+                           UserInterfaceCustomization *customization,
+                           SudokuConfiguration *game_config)
 {
         SudokuConfiguration *initial_config =
             load_initial_sudoku_config(p->persistent_storage);

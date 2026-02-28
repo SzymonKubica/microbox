@@ -129,7 +129,7 @@ find_fallback_next_safe_step(Snake &snake, std::vector<std::vector<Cell>> &grid,
                              SquareCellGridDimensions *gd);
 void take_snake_step(
     Platform *p, UserInterfaceCustomization *customization,
-    SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
+    const SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
     std::function<void(Point &point, Color color)> &render_cell,
@@ -370,7 +370,7 @@ UserAction SnakeDuel::game_loop(Platform *p,
 
 void take_snake_step(
     Platform *p, UserInterfaceCustomization *customization,
-    SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
+    const SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
     std::function<void(Point &point, Color color)> &render_cell,

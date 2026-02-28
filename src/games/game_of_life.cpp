@@ -150,8 +150,8 @@ load_initial_game_of_life_config(PersistentStorage *storage)
 UserAction game_of_life_loop(Platform *platform,
                              UserInterfaceCustomization *customization);
 
-const char *get_game_name() { return "Game of Life"; }
-const char *get_help_text()
+const char *GameOfLife::get_game_name() { return "Game of Life"; }
+const char *GameOfLife::get_help_text()
 {
 
         return "Use the joystick to move the caret around the grid. Press "
@@ -166,8 +166,9 @@ const char *get_help_text()
 void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                        int border_offset);
 
-UserAction game_loop(Platform *p, UserInterfaceCustomization *customization,
-                     const GameOfLifeConfiguration &config)
+UserAction GameOfLife::game_loop(Platform *p,
+                                 UserInterfaceCustomization *customization,
+                                 const GameOfLifeConfiguration &config)
 {
 
         LOG_DEBUG(TAG, "Entering Game of Life game loop");
@@ -364,8 +365,9 @@ UserAction game_loop(Platform *p, UserInterfaceCustomization *customization,
 }
 
 std::optional<UserAction>
-collect_config(Platform *p, UserInterfaceCustomization *customization,
-               GameOfLifeConfiguration *game_config)
+GameOfLife::collect_config(Platform *p,
+                           UserInterfaceCustomization *customization,
+                           GameOfLifeConfiguration *game_config)
 {
         Configuration *config =
             assemble_game_of_life_configuration(p->persistent_storage);
