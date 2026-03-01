@@ -51,13 +51,27 @@ const char *WifiApp::get_help_text()
 
 /**
  * Allocates two char buffers and handles the UI interaction to allow the user
- * to input the network SSID and password. The caller of this function is
+ * to input the network SSID and password. The pointers to the resulting buffers
+ * are then written into the `ssid` and `password` output parameters. The resaon
+ * for this c-like output parameters design is that we need to provide ability
+ * to return a 'close window' user action if the emulator window is closed while
+ * the user is entering password input.
+ *
+ * Ideally we could have used a `std::variant`
+ * to return either that interrupt action or the pair of character buffers.
+ * Howvever, this is not possible because  `std::variant` is not supported on
+ * the Arduino Uno Q (the reason for that is that the zephyr OS platform is an
+ * RTOS that does not allow for exceptions and so the exceptional behaviour when
+ * the variant is misused cannot be supported).
+ *
+ * The caller of this function is
  * responsible for deallocating the char buffers once they are saved in the
- * destination EEPROM location.
+ * destination EEPROM location (or otherwise processed).
  */
-std::variant<std::pair<char *, char *>, UserAction>
+std::optional<UserAction>
 get_ssid_and_password_input(Platform *p,
-                            UserInterfaceCustomization *customization);
+                            UserInterfaceCustomization *customization,
+                            char **ssid, char **password);
 
 std::optional<UserAction>
 handle_add_new(WifiAppConfiguration &config, Platform *p,
@@ -111,9 +125,12 @@ handle_add_new(WifiAppConfiguration &config, Platform *p,
                 return wait_until_green_pressed(p);
         }
 
-        auto maybe_input = get_ssid_and_password_input(p, customization);
-        if (std::holds_alternative<UserAction>(maybe_input)) {
-                UserAction action = std::get<UserAction>(maybe_input);
+        char *ssid;
+        char *password;
+        auto maybe_interrupt =
+            get_ssid_and_password_input(p, customization, &ssid, &password);
+        if (maybe_interrupt.has_value()) {
+                UserAction action = maybe_interrupt.value();
                 if (action == UserAction::Exit) {
                         LOG_DEBUG(
                             TAG,
@@ -125,8 +142,6 @@ handle_add_new(WifiAppConfiguration &config, Platform *p,
                         return action;
                 }
         }
-        auto [ssid, password] =
-            std::get<std::pair<char *, char *>>(maybe_input);
 
         int new_idx = config.occupied_config_slots;
         config.occupied_config_slots += 1;
@@ -144,10 +159,13 @@ std::optional<UserAction>
 handle_modify(WifiAppConfiguration &config, Platform *p,
               UserInterfaceCustomization *customization)
 {
-        auto input = get_ssid_and_password_input(p, customization);
+        char *ssid;
+        char *password;
+        auto maybe_interrupt =
+            get_ssid_and_password_input(p, customization, &ssid, &password);
 
-        if (std::holds_alternative<UserAction>(input)) {
-                UserAction action = std::get<UserAction>(input);
+        if (maybe_interrupt.has_value()) {
+                UserAction action = maybe_interrupt.value();
                 if (action == UserAction::Exit) {
                         LOG_DEBUG(
                             TAG,
@@ -159,8 +177,6 @@ handle_modify(WifiAppConfiguration &config, Platform *p,
                         return action;
                 }
         }
-        auto [ssid, password] = std::get<std::pair<char *, char *>>(input);
-
         auto &selected_config =
             config.saved_configurations[config.curr_config_idx];
         LOG_DEBUG(TAG, "Overwriting wifi credentials in storage slot %d.",
@@ -208,29 +224,34 @@ handle_connect(WifiAppConfiguration &config, Platform *p,
         return wait_until_green_pressed(p);
 }
 
-std::variant<std::pair<char *, char *>, UserAction>
+std::optional<UserAction>
 get_ssid_and_password_input(Platform *p,
-                            UserInterfaceCustomization *customization)
+                            UserInterfaceCustomization *customization,
+                            char **ssid, char **password)
 {
         LOG_DEBUG(TAG, "Getting user input for SSID...");
-        auto ssid = collect_string_input(p, customization, "Enter SSID");
-        if (std::holds_alternative<UserAction>(ssid)) {
-                return std::get<UserAction>(ssid);
+        {
+                auto maybe_interrupt =
+                    collect_string_input(p, customization, "Enter SSID", ssid);
+                if (maybe_interrupt.has_value()) {
+                        return maybe_interrupt;
+                }
         }
 
         LOG_DEBUG(TAG, "Getting user input for password...");
-        auto password =
-            collect_string_input(p, customization, "Enter password");
-        if (std::holds_alternative<UserAction>(password)) {
-                return std::get<UserAction>(password);
+        {
+                auto maybe_interrupt = collect_string_input(
+                    p, customization, "Enter password", password);
+                if (maybe_interrupt.has_value()) {
+                        return maybe_interrupt;
+                }
         }
 
-        char *ssid_str = std::get<char *>(ssid);
-        char *password_str = std::get<char *>(password);
+        char *ssid_str = *ssid;
+        char *password_str = *password;
         LOG_DEBUG(TAG, "User entered SSID: %s", ssid_str);
         LOG_DEBUG(TAG, "User entered password: %s", password_str);
-        std::pair<char *, char *> result = {ssid_str, password_str};
-        return result;
+        return std::nullopt;
 }
 
 WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)

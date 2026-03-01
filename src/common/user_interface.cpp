@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
-#include <variant>
 #include <map>
 
 #include "user_interface.hpp"
@@ -936,9 +935,9 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
  * this array once done processing the data. If the user cancels the input
  * process, an empty optional is returned.
  */
-std::variant<char *, UserAction>
+std::optional<UserAction>
 collect_string_input(Platform *p, UserInterfaceCustomization *customization,
-                     const char *input_prompt)
+                     const char *input_prompt, char **input)
 {
         Display *display = p->display;
         LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
@@ -1198,7 +1197,8 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
 
         free(output_line_2);
         free(output_line_1);
-        return output;
+        *input = output;
+        return std::nullopt;
 }
 
 void render_logo(Display *display, UserInterfaceCustomization *customization,

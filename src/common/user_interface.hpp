@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <map>
-#include <variant>
 #include "user_interface_customization.hpp"
 #include "configuration.hpp"
 #include "platform/interface/display.hpp"
@@ -14,9 +13,9 @@ void render_config_menu(Display *display, Configuration *config,
                         UserInterfaceCustomization *customization,
                         bool should_render_logo = false);
 
-std::variant<char *, UserAction>
+std::optional<UserAction>
 collect_string_input(Platform *p, UserInterfaceCustomization *customization,
-                     const char *input_prompt);
+                     const char *input_prompt, char **input);
 void render_logo(Display *display, UserInterfaceCustomization *customization,
                  Point position);
 void render_controls_explanations(Display *display);

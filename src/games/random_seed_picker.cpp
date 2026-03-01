@@ -55,8 +55,10 @@ const char *RandomSeedPicker::get_help_text()
                "Select 'Spin' to srand";
 }
 
-UserAction RandomSeedPicker::game_loop(Platform *p, UserInterfaceCustomization *customization,
-                     const RandomSeedPickerConfiguration &config)
+UserAction
+RandomSeedPicker::game_loop(Platform *p,
+                            UserInterfaceCustomization *customization,
+                            const RandomSeedPickerConfiguration &config)
 {
         RandomSeedPickerConfiguration config_copy = config;
 
@@ -121,11 +123,12 @@ UserAction RandomSeedPicker::game_loop(Platform *p, UserInterfaceCustomization *
         case RandomSeedSelectorAction::Modify:
                 LOG_DEBUG(TAG, "Modify option selected");
 
-                auto maybe_input = collect_string_input(p, customization,
-                                                        "Enter new seed value");
+                char *seed_str;
+                auto maybe_interrupt = collect_string_input(
+                    p, customization, "Enter new seed value", &seed_str);
 
-                if (std::holds_alternative<UserAction>(maybe_input)) {
-                        UserAction action = std::get<UserAction>(maybe_input);
+                if (maybe_interrupt.has_value()) {
+                        UserAction action = maybe_interrupt.value();
                         assert(action == UserAction::Exit ||
                                action == UserAction::CloseWindow);
                         if (action == UserAction::Exit) {
@@ -139,7 +142,7 @@ UserAction RandomSeedPicker::game_loop(Platform *p, UserInterfaceCustomization *
                                 return action;
                         }
                 }
-                int new_seed = atoi(std::get<char *>(maybe_input));
+                int new_seed = atoi(seed_str);
 
                 srand(new_seed);
                 int offset =
@@ -153,7 +156,7 @@ UserAction RandomSeedPicker::game_loop(Platform *p, UserInterfaceCustomization *
                         "Saved the new, manually-entered randomness seed: %d",
                         new_seed);
                 render_wrapped_help_text(p, customization, display_text_buffer);
-                free(std::get<char *>(maybe_input));
+                free(seed_str);
                 wait_until_green_pressed(p);
                 break;
         }
