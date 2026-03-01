@@ -29,60 +29,27 @@
 # THE SOFTWARE.
 #
 ******************************************************************************/
-#ifndef _DEV_CONFIG_H_
-#define _DEV_CONFIG_H_
-
-#include <stdint.h>
-#include <stdio.h>
-#include <SPI.h>
-#include "../lib/Debug.h"
-#include <avr/pgmspace.h>
-
-#define UBYTE uint8_t
-#define UWORD uint16_t
-#define UDOUBLE uint32_t
+#include "DEV_Config.h"
 
 /*
- * GPIO config
- */
+void GPIO_Init() {
+  pinMode(DEV_CS_PIN, OUTPUT);
+  pinMode(DEV_RST_PIN, OUTPUT);
+  pinMode(DEV_DC_PIN, OUTPUT);
+  pinMode(DEV_BL_PIN, OUTPUT);
+  analogWrite(DEV_BL_PIN, 140);
+}
+void Config_Init() {
 
-/*
- *#define DEV_CS_PIN  10
-#define DEV_DC_PIN  7
-#define DEV_RST_PIN 8
-#define DEV_BL_PIN  9
+  GPIO_Init();
 
- */
-#define DEV_CS_PIN 5
-#define DEV_DC_PIN 7
-#define DEV_RST_PIN 3
-#define DEV_BL_PIN 4
+  // Serial
+  Serial.begin(115200);
 
-/**
- * GPIO read and write
- **/
-#define DEV_Digital_Write(_pin, _value)                                        \
-        digitalWrite(_pin, _value == 0 ? LOW : HIGH)
-#define DEV_Digital_Read(_pin) digitalRead(_pin)
-
-/**
- * SPI
- **/
-#define DEV_SPI_WRITE(_dat) SPI.transfer(_dat)
-
-/**
- * delay x ms
- **/
-#define DEV_Delay_ms(__xms) delay(__xms)
-
-/**
- * PWM_BL
- **/
-#define DEV_Set_BL(_Pin, _Value) analogWrite(_Pin, _Value)
-
-#define DEV_SPI_BEGIN_TRANSACTION()                                            \
-        SPI.beginTransaction(SPISettings(24000000, MSBFIRST, SPI_MODE0));
-#define DEV_SPI_END_TRANSACTION() SPI.endTransaction();
-/*-----------------------------------------------------------------------------*/
-void Config_Init();
-#endif
+  // spi
+  // I had to update the SPI initialization code here to use SPISettings,
+  // otherwise the code wouldn't compile.
+  SPI.beginTransaction(SPISettings(40000000, // try 20–40 MHz
+                                   MSBFIRST, SPI_MODE3));
+}
+*/

@@ -1,13 +1,13 @@
 /*****************************************************************************
-* | File        :   DEV_Config.c
+* | File      	:	LCD_Driver.h
 * | Author      :   Waveshare team
-* | Function    :   Hardware underlying interface
-* | Info        :   Used to shield the underlying layers of each master and enhance portability
-*----------------
-* | This version:   V1.0
-* | Date        :   2018-11-22
+* | Function    :   LCD driver
 * | Info        :
-
+*----------------
+* |	This version:   V1.0
+* | Date        :   2018-12-18
+* | Info        :   
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -27,31 +27,25 @@
 # THE SOFTWARE.
 #
 ******************************************************************************/
+#ifndef __LCD_DRIVER_H
+#define __LCD_DRIVER_H
+
 #include "DEV_Config.h"
 
-void GPIO_Init()
-{
-    pinMode(DEV_CS_PIN, OUTPUT);
-    pinMode(DEV_RST_PIN, OUTPUT);
-    pinMode(DEV_DC_PIN, OUTPUT);
-    pinMode(DEV_BL_PIN, OUTPUT);
-    analogWrite(DEV_BL_PIN,140);
-}
+#define LCD_WIDTH   240 //LCD width
+#define LCD_HEIGHT  320 //LCD height
 
- void Config_Init()
-{
-    GPIO_Init();
+ 
+void LCD_WriteData_Word(UWORD da);
 
-    //Serial
-    Serial.begin(115200);
+void LCD_SetCursor(UWORD X, UWORD Y);
+void LCD_SetWindow(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD  Yend);
+void LCD_DrawPaint(UWORD x, UWORD y, UWORD Color);
 
-    //spi
-    SPI.begin();
+void LCD_Init(void);
+void LCD_SetBackLight(UWORD Value);
 
+void LCD_Clear(UWORD Color);
+void LCD_ClearWindow(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,UWORD color);
 
-  // spi
-  // I had to update the SPI initialization code here to use SPISettings,
-  // otherwise the code wouldn't compile.
-  SPI.beginTransaction(SPISettings(40000000, // try 20–40 MHz
-                                   MSBFIRST, SPI_MODE3));
-}
+#endif

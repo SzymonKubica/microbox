@@ -14,6 +14,15 @@
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
+- [ ] add a separate menu for all of the apps.
+
+- [ ] ensure the game compiles for uno q
+- [ ] figure out a workaround for the lack of eeprom on uno q
+- [ ] build a persistent storage dummy impl for uno q to hide the ugly #defines.
+- [ ] ensure we can compile stuff for uno q with exceptions enabled (or
+      some skeleton version of that, equivalent to what we have on R4)
+      this might involve modifying the platform.txt file here:
+      `/home/szymon/.arduino15/packages/arduino/hardware/zephyr/0.53.1`
 
 # TODO
 
@@ -24,10 +33,8 @@
       bunch of games and verify if the algorithm works fine).
 
 - [ ] clean up all usages of raw pointers.
-- [ ] add a separate menu for all of the apps.
-- [ ] clean up and simplify state transition propagation handling.
 
-- [ ] design a better logging utility to reomve the c-style macros.
+- [ ] design a better logging utility to remove the c-style macros.
 - [ ] add aliases for button to have something like 'exit button' instead of Action::BLUE
 
 # In Progress
@@ -37,19 +44,15 @@
 - [ ] fix all new memory leaks
 
 - [ ] new display & controller testing
-  - [ ] ensure the game compiles for uno q
-    - [ ] figure out a workaround for the lack of eeprom on uno q
-    - [ ] build a persistent storage dummy impl for uno q to hide the ugly #defines.
-    - [ ] ensure we can compile stuff for uno q with exceptions enabled (or
-          some skeleton version of that, equivalent to what we have on R4)
-          this might involve modifying the platform.txt file here:
-          `/home/szymon/.arduino15/packages/arduino/hardware/zephyr/0.53.1`
-  - [ ] figure out how to get the library for the different display dimension
-  - [ ] wire the display to uno q
+   - [ ] restructure the display lib setup with namespaces to allow the two
+         display dimensions to coexist alongside each other
+   - [x] figure out how to get the library for the different display dimension
+   - [x] wire the display to uno q (decided to do this with the regular r4 as uno q is basically incompatible)
 
 
 
 # Done
+- [x] clean up and simplify state transition propagation handling.
 - [x] add extensive documentation of the core control loop executor.
 - [x] change terminology from 'game' to 'app' to fit better things like settings,
       wifi config, randomness

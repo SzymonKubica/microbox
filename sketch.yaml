@@ -1,2 +1,5 @@
-default_fqbn: arduino:zephyr:unoq
+#default_fqbn: arduino:zephyr:unoq
+default_fqbn: arduino:renesas_uno:unor4wifi
 default_port: /dev/ttyACM0
+#platforms:
+#      - platform: arduino:zephyr
