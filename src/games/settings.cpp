@@ -44,7 +44,7 @@ const char *Settings::get_help_text()
                "exit.";
 }
 
-UserAction Settings::game_loop(Platform *p, UserInterfaceCustomization *custom,
+UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
                                const SettingsConfiguration &config)
 {
         Game selected_game = config.selected_game;

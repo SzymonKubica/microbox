@@ -196,7 +196,7 @@ void save_game_state(Platform *p, SudokuConfiguration &config,
         p->persistent_storage->put(storage_offset, config);
 }
 
-UserAction SudokuGame::game_loop(Platform *p,
+UserAction SudokuGame::app_loop(Platform *p,
                                  UserInterfaceCustomization *customization,
                                  const SudokuConfiguration &config)
 {

@@ -1,5 +1,5 @@
 #pragma once
-#include "game_executor.hpp"
+#include "application_executor.hpp"
 #include "common_transitions.hpp"
 #include "../common/configuration.hpp"
 #include <optional>
@@ -18,10 +18,10 @@ std::optional<UserAction>
 collect_minesweeper_config(Platform *p, MinesweeperConfiguration *game_config,
                            UserInterfaceCustomization *customization);
 
-class Minesweeper : public GameExecutor<MinesweeperConfiguration>
+class Minesweeper : public ApplicationExecutor<MinesweeperConfiguration>
 {
       public:
-        UserAction game_loop(Platform *p,
+        UserAction app_loop(Platform *p,
                              UserInterfaceCustomization *customization,
                              const MinesweeperConfiguration &config) override;
         std::optional<UserAction>

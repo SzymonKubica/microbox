@@ -115,7 +115,7 @@ void save_game_state(Platform *p, Game2048Configuration &config,
         p->persistent_storage->put(storage_offset, config);
 }
 
-UserAction Clean2048::game_loop(Platform *p,
+UserAction Clean2048::app_loop(Platform *p,
                                 UserInterfaceCustomization *customization,
                                 const Game2048Configuration &config)
 {

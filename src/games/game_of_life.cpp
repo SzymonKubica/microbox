@@ -166,7 +166,7 @@ const char *GameOfLife::get_help_text()
 void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                        int border_offset);
 
-UserAction GameOfLife::game_loop(Platform *p,
+UserAction GameOfLife::app_loop(Platform *p,
                                  UserInterfaceCustomization *customization,
                                  const GameOfLifeConfiguration &config)
 {

@@ -4,7 +4,7 @@
 #include "../common/configuration.hpp"
 
 #include "common_transitions.hpp"
-#include "game_executor.hpp"
+#include "application_executor.hpp"
 
 typedef struct SnakeDuelConfiguration {
         /**
@@ -34,10 +34,10 @@ std::optional<UserAction>
 collect_snake_duel_config(Platform *p, SnakeDuelConfiguration *game_config,
                           UserInterfaceCustomization *customization);
 
-class SnakeDuel : public GameExecutor<SnakeDuelConfiguration>
+class SnakeDuel : public ApplicationExecutor<SnakeDuelConfiguration>
 {
       public:
-        UserAction game_loop(Platform *p,
+        UserAction app_loop(Platform *p,
                              UserInterfaceCustomization *customization,
                              const SnakeDuelConfiguration &config) override;
         std::optional<UserAction>

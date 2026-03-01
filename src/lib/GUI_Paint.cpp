@@ -332,14 +332,14 @@ void Paint_DrawRectangle(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend,
                                        Line_width, LINE_STYLE_SOLID);
                 }
         } else {
-                Paint_DrawLine(Xstart, Ystart, Xend, Ystart, Color,
-                               Line_width, LINE_STYLE_SOLID);
-                Paint_DrawLine(Xstart, Ystart, Xstart, Yend, Color,
-                               Line_width, LINE_STYLE_SOLID);
+                Paint_DrawLine(Xstart, Ystart, Xend, Ystart, Color, Line_width,
+                               LINE_STYLE_SOLID);
+                Paint_DrawLine(Xstart, Ystart, Xstart, Yend, Color, Line_width,
+                               LINE_STYLE_SOLID);
                 Paint_DrawLine(Xend, Yend, Xend, Ystart, Color, Line_width,
                                LINE_STYLE_SOLID);
-                Paint_DrawLine(Xend, Yend, Xstart, Yend, Color,
-                               Line_width, LINE_STYLE_SOLID);
+                Paint_DrawLine(Xend, Yend, Xstart, Yend, Color, Line_width,
+                               LINE_STYLE_SOLID);
         }
 }
 
@@ -710,7 +710,14 @@ void Paint_DrawFloatNum(UWORD Xpoint, UWORD Ypoint, double Nummber,
                         UWORD Color_Background, UWORD Color_Foreground)
 {
         char Str[ARRAY_LEN] = {0};
+#if defined(ARDUINO_UNO_Q)
+        // Note: on arduino uno q there is no support for exceptions
+        // hence we cannot use any stdlib functions that require call stack
+        // unwind functionality.
+        //snprintf(Str, sizeof(Str), "%.*f", Decimal_Point + 2, Nummber);
+#else
         dtostrf(Nummber, 0, Decimal_Point + 2, Str);
+#endif
         char *pStr = (char *)malloc((strlen(Str)) * sizeof(char));
         memcpy(pStr, Str, (strlen(Str) - 2));
         *(pStr + strlen(Str) - 1) = '\0';

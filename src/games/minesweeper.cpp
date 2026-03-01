@@ -99,7 +99,7 @@ const char *Minesweeper::get_help_text()
                "you"
                " the number of mines around the cell.";
 }
-UserAction Minesweeper::game_loop(Platform *p,
+UserAction Minesweeper::app_loop(Platform *p,
                                   UserInterfaceCustomization *customization,
                                   const MinesweeperConfiguration &config)
 {
@@ -122,9 +122,14 @@ UserAction Minesweeper::game_loop(Platform *p,
         std::vector<std::vector<MinesweeperGridCell>> grid(
             rows, std::vector<MinesweeperGridCell>(cols));
 
-        /* We only place bombs after the user selects the cell to uncover.
-           This avoids situations where the first selected cell is a bomb
-           and the game is immediately over without user's logical error. */
+        auto grid_at = [&](const Point &location) -> MinesweeperGridCell {
+                return grid[location.y][location.x];
+        };
+
+        /* We only place bombs after the user selects the cell to
+           uncover. This avoids situations where the first selected cell
+           is a bomb and the game is immediately over without user's
+           logical error. */
         bool bombs_placed = false;
 
         Point caret_position = {.x = 0, .y = 0};
@@ -159,8 +164,7 @@ UserAction Minesweeper::game_loop(Platform *p,
                         /* Once the cells become uncovered, the background is
                         set to black. Because of this, we need to change the
                         erase color */
-                        if (grid[caret_position.y][caret_position.x]
-                                .is_uncovered) {
+                        if (grid_at(caret_position).is_uncovered) {
                                 erase_caret(p->display, &caret_position, gd,
                                             Black);
                                 // We need to 'uncover' the cell again to ensure
@@ -168,8 +172,7 @@ UserAction Minesweeper::game_loop(Platform *p,
                                 // caret overlaps with them.
                                 uncover_grid_cell(p->display, &caret_position,
                                                   gd, &grid, &total_uncovered);
-                        } else if (grid[caret_position.y][caret_position.x]
-                                       .is_flagged) {
+                        } else if (grid_at(caret_position).is_flagged) {
                                 erase_caret(p->display, &caret_position, gd,
                                             customization->accent_color);
                                 // We need to unflag and flag the cell again to
@@ -250,12 +253,18 @@ UserAction Minesweeper::game_loop(Platform *p,
                                                 p->display, &caret_position, gd,
                                                 &grid, &total_uncovered);
 
+                                        draw_caret(p->display, &caret_position,
+                                                   gd);
                                         if (maybe_interrupt) {
                                                 delete gd;
                                                 return maybe_interrupt.value();
                                         }
                                         break;
                                 }
+
+                        case Action::BLUE:
+                                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
+                                return UserAction::Exit;
                         default:
                                 LOG_DEBUG(TAG, "Irrelevant action input: %s",
                                           action_to_str(act));

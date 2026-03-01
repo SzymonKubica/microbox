@@ -1,5 +1,5 @@
 #pragma once
-#include "game_executor.hpp"
+#include "application_executor.hpp"
 #include "common_transitions.hpp"
 #include "../common/configuration.hpp"
 #include "../common/grid.hpp"
@@ -34,10 +34,10 @@ std::optional<UserAction>
 collect_game_of_life_config(Platform *p, GameOfLifeConfiguration *game_config,
                             UserInterfaceCustomization *customization);
 
-class GameOfLife : public GameExecutor<GameOfLifeConfiguration>
+class GameOfLife : public ApplicationExecutor<GameOfLifeConfiguration>
 {
       public:
-        UserAction game_loop(Platform *p,
+        UserAction app_loop(Platform *p,
                              UserInterfaceCustomization *customization,
                              const GameOfLifeConfiguration &config) override;
         std::optional<UserAction>

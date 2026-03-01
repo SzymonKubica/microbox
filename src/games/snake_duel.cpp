@@ -135,7 +135,7 @@ void take_snake_step(
     std::function<void(Point &point, Color color)> &render_cell,
     SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary);
 
-UserAction SnakeDuel::game_loop(Platform *p,
+UserAction SnakeDuel::app_loop(Platform *p,
                                 UserInterfaceCustomization *customization,
                                 const SnakeDuelConfiguration &config)
 {

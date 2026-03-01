@@ -4,7 +4,7 @@
 #include "../common/configuration.hpp"
 
 #include "common_transitions.hpp"
-#include "game_executor.hpp"
+#include "application_executor.hpp"
 
 #define AVAILABLE_CONFIGURATION_SLOTS 5
 
@@ -62,10 +62,10 @@ std::optional<UserAction>
 collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
                         UserInterfaceCustomization *customization);
 
-class WifiApp : public GameExecutor<WifiAppConfiguration>
+class WifiApp : public ApplicationExecutor<WifiAppConfiguration>
 {
       public:
-        UserAction game_loop(Platform *p,
+        UserAction app_loop(Platform *p,
                              UserInterfaceCustomization *customization,
                              const WifiAppConfiguration &config) override;
         std::optional<UserAction>

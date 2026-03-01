@@ -3,7 +3,6 @@
 #include <string.h>
 #include <cstring>
 #include <algorithm>
-#include <variant>
 #include "wifi.hpp"
 
 #include "../common/logging.hpp"
@@ -83,9 +82,9 @@ std::optional<UserAction>
 handle_connect(WifiAppConfiguration &config, Platform *p,
                UserInterfaceCustomization *customization);
 
-UserAction WifiApp::game_loop(Platform *p,
-                              UserInterfaceCustomization *customization,
-                              const WifiAppConfiguration &config)
+UserAction WifiApp::app_loop(Platform *p,
+                             UserInterfaceCustomization *customization,
+                             const WifiAppConfiguration &config)
 {
         WifiAppConfiguration config_copy = config;
 

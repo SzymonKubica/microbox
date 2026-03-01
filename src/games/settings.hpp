@@ -1,5 +1,5 @@
 #pragma once
-#include "game_executor.hpp"
+#include "application_executor.hpp"
 #include "common_transitions.hpp"
 #include "game_menu.hpp"
 
@@ -19,10 +19,10 @@ typedef struct SettingsConfiguration {
  * then saved in the persistent storage and used as the default values in the
  * future.
  */
-class Settings : public GameExecutor<SettingsConfiguration>
+class Settings : public ApplicationExecutor<SettingsConfiguration>
 {
       public:
-        UserAction game_loop(Platform *p,
+        UserAction app_loop(Platform *p,
                              UserInterfaceCustomization *customization,
                              const SettingsConfiguration &config) override;
         std::optional<UserAction>

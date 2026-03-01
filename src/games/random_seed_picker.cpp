@@ -1,5 +1,4 @@
 #include <cstring>
-#include <variant>
 #include <cassert>
 
 #include "../common/logging.hpp"
@@ -56,7 +55,7 @@ const char *RandomSeedPicker::get_help_text()
 }
 
 UserAction
-RandomSeedPicker::game_loop(Platform *p,
+RandomSeedPicker::app_loop(Platform *p,
                             UserInterfaceCustomization *customization,
                             const RandomSeedPickerConfiguration &config)
 {

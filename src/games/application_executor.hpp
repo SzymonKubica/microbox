@@ -4,7 +4,6 @@
 #include "../common/user_interface_customization.hpp"
 #include "../common/configuration.hpp"
 
-#include "game_executor.hpp"
 #include "game_menu.hpp"
 #include "../common/configuration.hpp"
 #include "../common/constants.hpp"
@@ -14,50 +13,82 @@
 
 #define EXECUTOR_TAG "executor"
 
-template <typename ConfigStruct> class GameExecutor
+/**
+ * All applications that run on MicroBox should instantiate this template.
+ * The mental model of all applications consists of two steps:
+ * 1. Load saved preset configuration and allow the user to modify this
+ * configuration:
+ *    - this is required by all games where the user gets to specify all game
+ *    input parameters pior to playing the game (e.g. difficulty, speed, ...)
+ *    - the reason we require this as part of the interface is to allow for
+ *    reusing the UI that renders the config options and provide a reusable
+ *    templat that handles the common state transistions driven by the user
+ *    input in `execute_app`.
+ * 2. Execute a single run of the application/game:
+ *    - this is the actual interesting part of each executor, for games this
+ *    is the game loop that provides a single playthrough and for other
+ *    applictions it is the actual work that the application performs (e.g.
+ *    getting wifi SSID and password settings and connecting to the wifi)
+ */
+template <typename ConfigStruct> class ApplicationExecutor
 {
       public:
         /**
-         * The main loop of the game representing a single playthrough.
+         * The main loop of the application/game representing a single
+         * application work / playthrough.
          */
-        virtual UserAction game_loop(Platform *p,
-                                     UserInterfaceCustomization *customization,
-                                     const ConfigStruct &config) = 0;
+        virtual UserAction app_loop(Platform *p,
+                                    UserInterfaceCustomization *customization,
+                                    const ConfigStruct &config) = 0;
         /**
-         * Configuration collecting method, this is the first step of each game.
+         * Configuration collecting method, this is the first step of each app.
+         * Note how this is parameterized with the `ConfigStruct` template type
+         * parameter, this is important to allow the apps to collect their
+         * specific config.
          */
         virtual std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        ConfigStruct *game_config) = 0;
 
-        virtual const char *get_game_name() = 0;
         /**
          * Static text that will be rendered when the user requests the help
          * screen.
          */
         virtual const char *get_help_text() = 0;
-        virtual ~GameExecutor() {}
+
+        /**
+         * This is required to customize the logs in `execute_app` function
+         * to customize the logs to align with the application.
+         */
+        virtual const char *get_game_name() = 0;
+        virtual ~ApplicationExecutor() {}
 };
 
-inline void log_game_finished(const char *game_name);
+inline void log_game_finished(const char *app_name);
+inline void log_help_requested(const char *app_name);
 inline bool close_window_requested(std::optional<UserAction> maybe_event);
-inline bool show_help_requested(std::optional<UserAction> maybe_event);
+inline bool exit_requested(std::optional<UserAction> maybe_event);
+inline bool help_requested(std::optional<UserAction> maybe_event);
 
 template <typename ConfigStruct>
 std::optional<UserAction>
-execute_game(GameExecutor<ConfigStruct> *executor, Platform *p,
-             UserInterfaceCustomization *customization)
+execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
+            UserInterfaceCustomization *customization)
 {
 
         while (true) {
-                // Before each game we allow the user to specify its
+                // Before each game/application we allow the user to specify its
                 // configuration and possibly review the help message.
                 ConfigStruct config;
                 auto maybe_event =
                     executor->collect_config(p, customization, &config);
 
-                if (show_help_requested(maybe_event)) {
-                        LOG_DEBUG(EXECUTOR_TAG, "User requested help screen");
+                if (exit_requested(maybe_event)) {
+                        return UserAction::Exit;
+                }
+
+                if (help_requested(maybe_event)) {
+                        log_help_requested(executor->get_help_text());
                         render_wrapped_help_text(p, customization,
                                                  executor->get_help_text());
                         auto maybe_event = wait_until_green_pressed(p);
@@ -84,7 +115,7 @@ execute_game(GameExecutor<ConfigStruct> *executor, Platform *p,
                         continue;
                 }
 
-                auto action = executor->game_loop(p, customization, config);
+                auto action = executor->app_loop(p, customization, config);
 
                 assert(action != UserAction::ShowHelp &&
                        "Showing game help is only supported in the game "
@@ -104,7 +135,6 @@ execute_game(GameExecutor<ConfigStruct> *executor, Platform *p,
 
                         Direction dir;
                         Action act;
-
                         auto maybe_event = pause_until_input(
                             p->directional_controllers, p->action_controllers,
                             &dir, &act, p->time_provider, p->display);
@@ -124,20 +154,35 @@ execute_game(GameExecutor<ConfigStruct> *executor, Platform *p,
         }
 }
 
+inline bool maybe_event_matches(const std::optional<UserAction> &maybe_event,
+                                UserAction expected_action)
+{
+
+        return maybe_event.has_value() &&
+               maybe_event.value() == expected_action;
+}
 inline bool close_window_requested(std::optional<UserAction> maybe_event)
 {
-        return maybe_event.has_value() &&
-               maybe_event.value() == UserAction::CloseWindow;
+        return maybe_event_matches(maybe_event, UserAction::CloseWindow);
 }
 
-inline bool show_help_requested(std::optional<UserAction> maybe_event)
+inline bool exit_requested(std::optional<UserAction> maybe_event)
 {
-        return maybe_event.has_value() &&
-               maybe_event.value() == UserAction::ShowHelp;
+        return maybe_event_matches(maybe_event, UserAction::Exit);
+}
+
+inline bool help_requested(std::optional<UserAction> maybe_event)
+{
+        return maybe_event_matches(maybe_event, UserAction::ShowHelp);
 }
 
 inline void log_game_finished(const char *game_name)
 {
         LOG_DEBUG(EXECUTOR_TAG, "%s game loop finished. Pausing for input ",
                   game_name);
+}
+
+inline void log_help_requested(const char *app_name)
+{
+        LOG_DEBUG(EXECUTOR_TAG, "User requested help screen for %s", app_name);
 }

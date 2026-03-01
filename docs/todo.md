@@ -24,8 +24,6 @@
       bunch of games and verify if the algorithm works fine).
 
 - [ ] clean up all usages of raw pointers.
-- [ ] change terminology from 'game' to 'app' to fit better things like settings,
-      wifi config, randomness
 - [ ] add a separate menu for all of the apps.
 - [ ] clean up and simplify state transition propagation handling.
 
@@ -34,17 +32,29 @@
 
 # In Progress
 
+- [ ] clean up all imports to remove the indirect import warnings
+- [ ] separate games from applications
+- [ ] fix all new memory leaks
+
 - [ ] new display & controller testing
   - [ ] ensure the game compiles for uno q
     - [ ] figure out a workaround for the lack of eeprom on uno q
     - [ ] build a persistent storage dummy impl for uno q to hide the ugly #defines.
+    - [ ] ensure we can compile stuff for uno q with exceptions enabled (or
+          some skeleton version of that, equivalent to what we have on R4)
+          this might involve modifying the platform.txt file here:
+          `/home/szymon/.arduino15/packages/arduino/hardware/zephyr/0.53.1`
   - [ ] figure out how to get the library for the different display dimension
   - [ ] wire the display to uno q
 
 
 
-
 # Done
+- [x] add extensive documentation of the core control loop executor.
+- [x] change terminology from 'game' to 'app' to fit better things like settings,
+      wifi config, randomness
+- [x] fix exit state transition handling for snake duel
+- [x] fix caret rerendering for minesweeper
 - [x] ensure that menu state transitions are consistent accross all apps
 - [x] create a template for the main game loop as this logic is always the same.
       (or abstract out common functionality to reduce duplication)

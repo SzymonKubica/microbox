@@ -5,7 +5,7 @@
 #include "../common/configuration.hpp"
 
 #include "common_transitions.hpp"
-#include "game_executor.hpp"
+#include "application_executor.hpp"
 
 typedef struct Game2048Configuration {
         int grid_size;
@@ -61,14 +61,14 @@ bool is_game_over(GameState *gs);
 bool is_game_finished(GameState *gs);
 void take_turn(GameState *gs, int direction);
 
-class Clean2048 : public GameExecutor<Game2048Configuration>
+class Clean2048 : public ApplicationExecutor<Game2048Configuration>
 {
       public:
         Clean2048() {}
 
-        UserAction game_loop(Platform *p,
-                             UserInterfaceCustomization *customization,
-                             const Game2048Configuration &config) override;
+        UserAction app_loop(Platform *p,
+                            UserInterfaceCustomization *customization,
+                            const Game2048Configuration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        Game2048Configuration *game_config) override;

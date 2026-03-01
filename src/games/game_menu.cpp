@@ -6,7 +6,7 @@
 #include "../common/platform/interface/color.hpp"
 #include "../common/constants.hpp"
 #include "2048.hpp"
-#include "game_executor.hpp"
+#include "application_executor.hpp"
 #include "minesweeper.hpp"
 #include "settings.hpp"
 #include "sudoku.hpp"
@@ -156,23 +156,23 @@ std::optional<UserAction> select_game(Platform *p)
         auto maybe_action = [&]() -> std::optional<UserAction> {
                 switch (config.game) {
                 case Game::Clean2048:
-                        return execute_game(new Clean2048(), p, &c);
+                        return execute_app(new Clean2048(), p, &c);
                 case Game::Minesweeper:
-                        return execute_game(new Minesweeper(), p, &c);
+                        return execute_app(new Minesweeper(), p, &c);
                 case Game::GameOfLife:
-                        return execute_game(new GameOfLife(), p, &c);
+                        return execute_app(new GameOfLife(), p, &c);
                 case Game::Settings:
-                        return execute_game(new Settings(), p, &c);
+                        return execute_app(new Settings(), p, &c);
                 case Game::Snake:
-                        return execute_game(new SnakeGame(), p, &c);
+                        return execute_app(new SnakeGame(), p, &c);
                 case Game::SnakeDuel:
-                        return execute_game(new SnakeDuel(), p, &c);
+                        return execute_app(new SnakeDuel(), p, &c);
                 case Game::WifiApp:
-                        return execute_game(new WifiApp(), p, &c);
+                        return execute_app(new WifiApp(), p, &c);
                 case Game::RandomSeedPicker:
-                        return execute_game(new RandomSeedPicker(), p, &c);
+                        return execute_app(new RandomSeedPicker(), p, &c);
                 case Game::Sudoku:
-                        return execute_game(new SudokuGame(), p, &c);
+                        return execute_app(new SudokuGame(), p, &c);
                 default:
                         LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                         return UserAction::Exit;

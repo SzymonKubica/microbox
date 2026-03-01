@@ -4,7 +4,7 @@
 #include "../common/configuration.hpp"
 
 #include "common_transitions.hpp"
-#include "game_executor.hpp"
+#include "application_executor.hpp"
 #include "sudoku_engine.hpp"
 
 #define SUDOKU_GRID_SIZE 9
@@ -19,10 +19,10 @@ std::optional<UserAction>
 collect_sudoku_config(Platform *p, SudokuConfiguration *game_config,
                       UserInterfaceCustomization *customization);
 
-class SudokuGame : public GameExecutor<SudokuConfiguration>
+class SudokuGame : public ApplicationExecutor<SudokuConfiguration>
 {
       public:
-        UserAction game_loop(Platform *p,
+        UserAction app_loop(Platform *p,
                                      UserInterfaceCustomization *customization,
                                      const SudokuConfiguration &config) override;
         std::optional<UserAction>

@@ -78,7 +78,7 @@ const char *SnakeGame::get_help_text()
 void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score);
 
-UserAction SnakeGame::game_loop(Platform *p,
+UserAction SnakeGame::app_loop(Platform *p,
                                 UserInterfaceCustomization *customization,
                                 const SnakeConfiguration &config)
 {

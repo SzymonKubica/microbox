@@ -1,5 +1,5 @@
 #pragma once
-#include "game_executor.hpp"
+#include "application_executor.hpp"
 #include "common_transitions.hpp"
 #include "../common/configuration.hpp"
 
@@ -28,12 +28,13 @@ collect_random_seed_picker_config(Platform *p,
                                   RandomSeedPickerConfiguration *game_config,
                                   UserInterfaceCustomization *customization);
 
-class RandomSeedPicker : public GameExecutor<RandomSeedPickerConfiguration>
+class RandomSeedPicker
+    : public ApplicationExecutor<RandomSeedPickerConfiguration>
 {
       public:
         UserAction
-        game_loop(Platform *p, UserInterfaceCustomization *customization,
-                  const RandomSeedPickerConfiguration &config) override;
+        app_loop(Platform *p, UserInterfaceCustomization *customization,
+                 const RandomSeedPickerConfiguration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        RandomSeedPickerConfiguration *game_config) override;
