@@ -34,6 +34,14 @@
 
 # In Progress
 
+- [ ] new display & controller testing
+  - [ ] ensure the game compiles for uno q
+    - [ ] figure out a workaround for the lack of eeprom on uno q
+    - [ ] build a persistent storage dummy impl for uno q to hide the ugly #defines.
+  - [ ] figure out how to get the library for the different display dimension
+  - [ ] wire the display to uno q
+
+
 
 
 # Done

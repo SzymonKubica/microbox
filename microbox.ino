@@ -1,6 +1,10 @@
-#include <EEPROM.h>
 #include "Adafruit_seesaw.h"
 #include <Wire.h>
+
+#if !defined(ARDUINO_UNO_Q)
+#include <EEPROM.h>
+#endif
+
 #include "src/common/platform/arduino/joystick_controller.hpp"
 #include "src/common/platform/arduino/wifi_provider.cpp"
 #include "src/common/platform/arduino/arduino_http_client.hpp"
@@ -37,10 +41,12 @@ Adafruit_seesaw ss(&Wire1);
  */
 void eeprom_erase()
 {
+#if !defined(ARDUINO_UNO_Q)
         // Iterate through all EEPROM addresses and write 0 to each
         for (int i = 0; i < EEPROM.length(); i++) {
                 EEPROM.write(i, 0);
         }
+#endif
 }
 
 bool setup_adafruit_seesaw_i2c_connection()
@@ -110,7 +116,6 @@ void loop(void)
             new JoystickController((int (*)(unsigned char))&analogRead);
         keypad_controller =
             new KeypadController((int (*)(unsigned char))&digitalRead);
-
 
         std::vector<DirectionalController *> controllers = {
             joystick_controller};

@@ -127,13 +127,14 @@ UserAction Clean2048::game_loop(Platform *p,
                     "continue the previous game or red to start a "
                     "new game.";
                 render_wrapped_text(p, customization, help_text);
-                auto action = wait_until_action_input(p);
-                if (std::holds_alternative<UserAction>(action)) {
-                        assert(std::get<UserAction>(action) ==
+                Action action;
+                auto maybe_interrupt = wait_until_action_input(p, action);
+                if (maybe_interrupt.has_value()) {
+                        assert(maybe_interrupt.value() ==
                                UserAction::CloseWindow);
                         return UserAction::CloseWindow;
                 }
-                if (std::get<Action>(action) == Action::GREEN) {
+                if (action == Action::GREEN) {
                         state = load_saved_game_state(config);
                 } else {
                         state = initialize_game_state(config.grid_size,
@@ -171,14 +172,15 @@ UserAction Clean2048::game_loop(Platform *p,
                                     "saving.";
                                 render_wrapped_text(p, customization,
                                                     help_text);
-                                auto action = wait_until_action_input(p);
-                                if (std::holds_alternative<UserAction>(
-                                        action)) {
-                                        assert(std::get<UserAction>(action) ==
+                                Action action;
+                                auto maybe_interrupt =
+                                    wait_until_action_input(p, action);
+                                if (maybe_interrupt.has_value()) {
+                                        assert(maybe_interrupt.value() ==
                                                UserAction::CloseWindow);
                                         return UserAction::CloseWindow;
                                 }
-                                if (std::get<Action>(action) == Action::GREEN) {
+                                if (action == Action::GREEN) {
                                         Game2048Configuration copy = config;
                                         save_game_state(p, copy, state);
                                 }

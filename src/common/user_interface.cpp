@@ -1231,13 +1231,13 @@ std::optional<UserAction> wait_until_green_pressed(Platform *p)
         }
 }
 
-std::variant<Action, UserAction> wait_until_action_input(Platform *p)
+std::optional<UserAction> wait_until_action_input(Platform *p, Action &action)
 {
         while (true) {
-                Action act;
-                if (poll_action_input(p->action_controllers, &act)) {
+                Action input;
+                if (poll_action_input(p->action_controllers, &action)) {
                         p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
-                        return act;
+                        action = input;
                 }
                 p->time_provider->delay_ms(INPUT_POLLING_DELAY);
                 if (!p->display->refresh()) {

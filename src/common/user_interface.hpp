@@ -29,6 +29,6 @@ void render_wrapped_help_text(Platform *p,
 void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
                          const char *text);
 std::optional<UserAction> wait_until_green_pressed(Platform *p);
-std::variant<Action, UserAction> wait_until_action_input(Platform *p);
+std::optional<UserAction> wait_until_action_input(Platform *p, Action &action);
 
 ConfigurationDiff *empty_diff();
