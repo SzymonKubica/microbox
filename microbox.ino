@@ -1,9 +1,7 @@
 #include "Adafruit_seesaw.h"
 #include <Wire.h>
 
-#if !defined(ARDUINO_UNO_Q)
 #include <EEPROM.h>
-#endif
 
 #include "src/common/platform/arduino/joystick_controller.hpp"
 #include "src/common/platform/arduino/wifi_provider.cpp"
@@ -11,7 +9,12 @@
 #include "src/common/platform/interface/wifi.hpp"
 #include "src/common/platform/arduino/keypad_controller.hpp"
 #include "src/common/platform/arduino/adafruit_mini_controller.hpp"
-#include "src/common/platform/arduino/lcd_display.hpp"
+#if defined(WAVESHARE_1_69_INCH_LCD)
+#include "src/common/platform/arduino/lcd_display_1_69_inch.hpp"
+#endif
+#if defined(WAVESHARE_2_4_INCH_LCD)
+#include "src/common/platform/arduino/lcd_display_2_4_inch.hpp"
+#endif
 #include "src/common/platform/arduino/arduino_secrets.hpp"
 #include "src/common/platform/arduino/arduino_time_provider.cpp"
 #include "src/common/platform/interface/persistent_storage.hpp"
@@ -25,7 +28,10 @@ KeypadController *keypad_controller;
 AdafruitController *adafruit_controller;
 PersistentStorage persistent_storage;
 
+#if defined(ARDUINO_UNOR4_WIFI)
 Adafruit_seesaw ss(&Wire1);
+#define IRQ_PIN 5
+#endif
 
 /**
  * When making breaking changes to the persistent storage used for game
@@ -52,6 +58,7 @@ void eeprom_erase()
 bool setup_adafruit_seesaw_i2c_connection()
 {
 
+#if defined(ARDUINO_UNOR4_WIFI)
         Serial.println("Setting up seesaw I2C interface...");
 
         if (!ss.begin(0x50)) {
@@ -73,6 +80,7 @@ bool setup_adafruit_seesaw_i2c_connection()
 
 #if defined(IRQ_PIN)
         pinMode(IRQ_PIN, INPUT);
+#endif
 #endif
         return true;
 }
@@ -123,9 +131,13 @@ void loop(void)
             keypad_controller};
 
         if (adafruit_gamepad_available) {
+#if defined(ARDUINO_UNOR4_WIFI)
+                // Only R4 wifi has the stemma qt port for the Wire1 SPI
+                // interface. On R4 Minima Adafruit seesaw is not defined.
                 adafruit_controller = new AdafruitController(&ss);
                 action_controllers.push_back(adafruit_controller);
                 controllers.push_back(adafruit_controller);
+#endif
         }
 
         TimeProvider *time_provider =

@@ -66,6 +66,7 @@ template <typename ConfigStruct> class ApplicationExecutor
 
 inline void log_game_finished(const char *app_name);
 inline void log_help_requested(const char *app_name);
+inline void log_exit_requested(const char *app_name);
 inline bool close_window_requested(std::optional<UserAction> maybe_event);
 inline bool exit_requested(std::optional<UserAction> maybe_event);
 inline bool help_requested(std::optional<UserAction> maybe_event);
@@ -84,11 +85,12 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                     executor->collect_config(p, customization, &config);
 
                 if (exit_requested(maybe_event)) {
-                        return UserAction::Exit;
+                        log_exit_requested(executor->get_game_name());
+                        //return UserAction::Exit;
                 }
 
                 if (help_requested(maybe_event)) {
-                        log_help_requested(executor->get_help_text());
+                        log_help_requested(executor->get_game_name());
                         render_wrapped_help_text(p, customization,
                                                  executor->get_help_text());
                         auto maybe_event = wait_until_green_pressed(p);
@@ -185,4 +187,9 @@ inline void log_game_finished(const char *game_name)
 inline void log_help_requested(const char *app_name)
 {
         LOG_DEBUG(EXECUTOR_TAG, "User requested help screen for %s", app_name);
+}
+
+inline void log_exit_requested(const char *app_name)
+{
+        LOG_DEBUG(EXECUTOR_TAG, "User requested to exit from %s", app_name);
 }
