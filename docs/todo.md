@@ -44,7 +44,8 @@
 - [ ] fix all new memory leaks
 
 - [ ] new display & controller testing
-   - [ ] restructure the display lib setup with namespaces to allow the two
+   - [ ] figure out what is causing issues between the display on SPI and gamepad on I2C.
+   - [x] restructure the display lib setup with namespaces to allow the two
          display dimensions to coexist alongside each other
    - [x] figure out how to get the library for the different display dimension
    - [x] wire the display to uno q (decided to do this with the regular r4 as uno q is basically incompatible)

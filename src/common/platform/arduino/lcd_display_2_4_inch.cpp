@@ -216,7 +216,7 @@ void LcdDisplay::clear_region(Point top_left, Point bottom_right,
          * ends one unit too high, we need to add a simlar adjustment to the
          * region clearing function to ensure consistency.
          */
-        int adj = 1;
+        int adj = 0;
         Paint_ClearWindows(top_left.x - adj, top_left.y - adj,
                            bottom_right.x - adj, bottom_right.y - adj,
                            clear_color);

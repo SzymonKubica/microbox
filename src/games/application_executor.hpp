@@ -86,7 +86,7 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
 
                 if (exit_requested(maybe_event)) {
                         log_exit_requested(executor->get_game_name());
-                        //return UserAction::Exit;
+                        return UserAction::Exit;
                 }
 
                 if (help_requested(maybe_event)) {

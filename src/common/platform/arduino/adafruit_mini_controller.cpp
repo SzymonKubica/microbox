@@ -37,6 +37,9 @@ bool AdafruitController::poll_for_input(Action *input)
 {
 
         uint32_t buttons = ss->digitalReadBulk(button_mask);
+        // reject impossible results due to I2C delays caused by heavy SPI load.
+        if (buttons == 0 || buttons == 0xFFFFFFFF)
+                return false;
 
         // Serial.println(buttons, BIN);
 
