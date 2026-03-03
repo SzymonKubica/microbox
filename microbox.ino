@@ -125,10 +125,8 @@ void loop(void)
         keypad_controller =
             new KeypadController((int (*)(unsigned char))&digitalRead);
 
-        std::vector<DirectionalController *> controllers = {
-            joystick_controller};
-        std::vector<ActionController *> action_controllers = {
-            keypad_controller};
+        std::vector<DirectionalController *> controllers = { };
+        std::vector<ActionController *> action_controllers = { };
 
         if (adafruit_gamepad_available) {
 #if defined(ARDUINO_UNOR4_WIFI)

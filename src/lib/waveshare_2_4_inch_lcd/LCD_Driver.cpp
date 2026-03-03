@@ -53,6 +53,7 @@ static void LCD_Write_Command(UBYTE data)
         DEV_SPI_BEGIN_TRANSACTION();
         DEV_SPI_WRITE(data);
         DEV_SPI_END_TRANSACTION();
+        DEV_Digital_Write(DEV_CS_PIN, 1);
 }
 
 static void LCD_WriteData_Byte(UBYTE data)

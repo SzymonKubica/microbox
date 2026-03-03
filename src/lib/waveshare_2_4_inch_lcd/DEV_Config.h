@@ -51,7 +51,7 @@
  * #if defined(WAVESHARE_1_69_INCH_LCD)
  * input shield on which the 1.69 inch LCD is mounted.
  */
-#define DEV_CS_PIN 10
+#define DEV_CS_PIN 5
 #define DEV_DC_PIN 7
 #define DEV_RST_PIN 3
 #define DEV_BL_PIN 4
