@@ -8,8 +8,8 @@
 #include "random_seed_picker.hpp"
 #include "snake.hpp"
 #include "snake_duel.hpp"
+#include "sudoku.hpp"
 #include "wifi.hpp"
-#include <stdexcept>
 
 #define TAG "settings"
 
@@ -45,7 +45,7 @@ const char *Settings::get_help_text()
 }
 
 UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
-                               const SettingsConfiguration &config)
+                              const SettingsConfiguration &config)
 {
         Game selected_game = config.selected_game;
         // We loop until the user presses the blue button on any of the
@@ -148,6 +148,18 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
                         }
                         storage.put(offset, config);
                 } break;
+                case Game::Sudoku: {
+                        SudokuConfiguration config;
+                        // TODO: clean up to remove those allocations
+                        auto action = (new SudokuGame())
+                                          ->collect_config(p, custom, &config);
+                        if (action &&
+                            (action.value() == UserAction::Exit ||
+                             action.value() == UserAction::CloseWindow)) {
+                                return action.value();
+                        }
+                        storage.put(offset, config);
+                } break;
                 default:
                         return UserAction::Exit;
                 }
@@ -203,7 +215,8 @@ Configuration *assemble_settings_menu_configuration()
 #if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
                                 game_to_string(Game::WifiApp),
 #endif
-                                game_to_string(Game::RandomSeedPicker)};
+                                game_to_string(Game::RandomSeedPicker),
+                                game_to_string(Game::Sudoku)};
 
         auto *menu = ConfigurationOption::of_strings(
             "Modify", available_games, game_to_string(Game::MainMenu));

@@ -197,8 +197,8 @@ void save_game_state(Platform *p, SudokuConfiguration &config,
 }
 
 UserAction SudokuGame::app_loop(Platform *p,
-                                 UserInterfaceCustomization *customization,
-                                 const SudokuConfiguration &config)
+                                UserInterfaceCustomization *customization,
+                                const SudokuConfiguration &config)
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
 
@@ -216,7 +216,7 @@ UserAction SudokuGame::app_loop(Platform *p,
                     "new game.";
                 render_wrapped_text(p, customization, help_text);
                 Action action;
-                auto maybe_interrupt = wait_until_action_input(p, action);
+                auto maybe_interrupt = wait_until_action_input(p, &action);
                 if (maybe_interrupt.has_value()) {
                         assert(maybe_interrupt.value() ==
                                UserAction::CloseWindow);
@@ -226,13 +226,16 @@ UserAction SudokuGame::app_loop(Platform *p,
                         grid = load_game_state(config);
                 } else {
                         grid = SudokuEngine::generate_grid(config.difficulty);
+                        LOG_DEBUG(TAG, "Grid generated successfully.");
                 }
         } else {
                 grid = SudokuEngine::generate_grid(config.difficulty);
+                LOG_DEBUG(TAG, "Grid generated successfully.");
         }
 
-        LOG_DEBUG(TAG, "Rendering sudoku game area.");
+        LOG_DEBUG(TAG, "Initializing game state.");
         SudokuState state(grid);
+        LOG_DEBUG(TAG, "Rendering sudoku game area.");
 
         view.render_grid();
         view.render_grid_numbers(state.grid);
@@ -357,7 +360,7 @@ UserAction SudokuGame::app_loop(Platform *p,
                         render_wrapped_text(p, customization, help_text);
                         Action action;
                         auto maybe_interrupt =
-                            wait_until_action_input(p, action);
+                            wait_until_action_input(p, &action);
                         if (maybe_interrupt.has_value()) {
                                 assert(maybe_interrupt.value() ==
                                        UserAction::CloseWindow);

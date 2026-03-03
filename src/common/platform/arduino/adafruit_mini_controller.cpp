@@ -42,22 +42,22 @@ bool AdafruitController::poll_for_input(Action *input)
                 return false;
 
         if (!(buttons & (1UL << BUTTON_A))) {
-                LOG_DEBUG(TAG, "red pressed.");
+                LOG_DEBUG(TAG, "A button pressed.");
                 *input = Action::RED;
                 return true;
         }
         if (!(buttons & (1UL << BUTTON_B))) {
-                LOG_DEBUG(TAG, "green pressed.");
+                LOG_DEBUG(TAG, "B button pressed.");
                 *input = Action::GREEN;
                 return true;
         }
         if (!(buttons & (1UL << BUTTON_Y))) {
-                LOG_DEBUG(TAG, "blue pressed.");
+                LOG_DEBUG(TAG, "Y button pressed.");
                 *input = Action::BLUE;
                 return true;
         }
         if (!(buttons & (1UL << BUTTON_X))) {
-                LOG_DEBUG(TAG, "yellow pressed.");
+                LOG_DEBUG(TAG, "X button pressed.");
                 *input = Action::YELLOW;
                 return true;
         }

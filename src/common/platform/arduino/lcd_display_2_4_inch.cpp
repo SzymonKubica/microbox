@@ -3,13 +3,14 @@
 #include "../../../lib/waveshare_2_4_inch_lcd/GUI_Paint.h"
 #include "../../../lib/waveshare_2_4_inch_lcd/LCD_Driver.h"
 
+// TODO: ensure that this can be set to 0 without bricking the console.
 #define DISPLAY_CORNER_RADIUS 40
 #define SCREEN_BORDER_WIDTH 3
 void LcdDisplay::setup()
 {
         Config_Init();
         LCD_Init();
-        //LCD_SetBackLight(50);
+        // LCD_SetBackLight(50);
         Paint_Clear(BLACK);
 };
 
@@ -216,7 +217,7 @@ void LcdDisplay::clear_region(Point top_left, Point bottom_right,
          * ends one unit too high, we need to add a simlar adjustment to the
          * region clearing function to ensure consistency.
          */
-        int adj = 0;
+        int adj = 1;
         Paint_ClearWindows(top_left.x - adj, top_left.y - adj,
                            bottom_right.x - adj, bottom_right.y - adj,
                            clear_color);

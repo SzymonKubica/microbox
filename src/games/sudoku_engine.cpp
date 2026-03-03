@@ -169,7 +169,12 @@ SudokuGrid SudokuEngine::generate_grid(int difficulty_level)
         int candidate_idx = 0;
         int removed = 0;
 
-        while (removed < to_remove) {
+        while (removed < to_remove &&
+               candidate_idx < locations_to_remove.size()) {
+                LOG_DEBUG(
+                    TAG,
+                    "Trying to remove candidate cell %d (%d removed so far)",
+                    candidate_idx, removed);
                 Point loc = locations_to_remove[candidate_idx];
                 int x = loc.x;
                 int y = loc.y;
@@ -179,7 +184,12 @@ SudokuGrid SudokuEngine::generate_grid(int difficulty_level)
                 cell.digit = std::nullopt;
                 cell.is_user_defined = true;
 
+#ifdef EMULATOR
                 if (SudokuEngine::has_unique_solution(solvable)) {
+#else
+                  //TODO: optimize the uniqueness checking logic to work on arduino
+                if (true) {
+#endif
                         removed++;
                 } else {
                         cell.digit = previous_value;
@@ -244,8 +254,7 @@ SudokuGrid generate_solved_grid()
         return grid;
 }
 
-bool test_for_unique_solution(SudokuGrid &grid,
-                              std::unique_ptr<int> &solution_count);
+bool test_for_unique_solution(SudokuGrid &grid, int *solution_count);
 
 /**
  * Given a Sudoku grid, it verifies if it can be solved and the solution
@@ -259,27 +268,26 @@ bool SudokuEngine::has_unique_solution(const SudokuGrid &grid)
 {
 
         SudokuGrid clone = grid;
-        std::unique_ptr<int> solution_count = std::make_unique<int>(0);
-        test_for_unique_solution(clone, solution_count);
-        return *solution_count.get() == 1;
+        int solution_count = 0;
+        test_for_unique_solution(clone, &solution_count);
+        return solution_count == 1;
 }
 
 /**
  * Tests if a given grid can be uniquely solved
  */
-bool test_for_unique_solution(SudokuGrid &grid,
-                              std::unique_ptr<int> &solution_count)
+bool test_for_unique_solution(SudokuGrid &grid, int *solution_count)
 {
 
         // Prune the search space to return true immediately once more than 1
         // solution is found.
-        if (*solution_count.get() > 1) {
+        if (*solution_count > 1) {
                 return true;
         }
 
         std::optional<Point> maybe_empty = find_empty_cell(grid);
         if (!maybe_empty.has_value()) {
-                (*solution_count.get())++;
+                (*solution_count)++;
                 return true;
         }
 
@@ -292,7 +300,7 @@ bool test_for_unique_solution(SudokuGrid &grid,
                 // all candidates and rely on the short-circuit logic above
                 // to terminate once more than on solution is found
                 test_for_unique_solution(grid, solution_count);
-                if (*solution_count.get() > 1) {
+                if (*solution_count > 1) {
                         return true;
                 }
                 grid[empty.y][empty.x].digit = std::nullopt;

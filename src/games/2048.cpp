@@ -128,7 +128,7 @@ UserAction Clean2048::app_loop(Platform *p,
                     "new game.";
                 render_wrapped_text(p, customization, help_text);
                 Action action;
-                auto maybe_interrupt = wait_until_action_input(p, action);
+                auto maybe_interrupt = wait_until_action_input(p, &action);
                 if (maybe_interrupt.has_value()) {
                         assert(maybe_interrupt.value() ==
                                UserAction::CloseWindow);
@@ -174,7 +174,7 @@ UserAction Clean2048::app_loop(Platform *p,
                                                     help_text);
                                 Action action;
                                 auto maybe_interrupt =
-                                    wait_until_action_input(p, action);
+                                    wait_until_action_input(p, &action);
                                 if (maybe_interrupt.has_value()) {
                                         assert(maybe_interrupt.value() ==
                                                UserAction::CloseWindow);
