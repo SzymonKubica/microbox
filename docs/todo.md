@@ -42,17 +42,19 @@
 - [ ] clean up all imports to remove the indirect import warnings
 - [ ] separate games from applications
 - [ ] fix all new memory leaks
+- [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
+- [ ] fix minesweeper crashing
 
-- [ ] new display & controller testing
-   - [ ] figure out what is causing issues between the display on SPI and gamepad on I2C.
-   - [x] restructure the display lib setup with namespaces to allow the two
-         display dimensions to coexist alongside each other
-   - [x] figure out how to get the library for the different display dimension
-   - [x] wire the display to uno q (decided to do this with the regular r4 as uno q is basically incompatible)
 
 
 
 # Done
+- [x] new display & controller testing
+   - [x] figure out what is causing issues between the display on SPI and gamepad on I2C.
+   - [x] restructure the display lib setup with namespaces to allow the two
+         display dimensions to coexist alongside each other
+   - [x] figure out how to get the library for the different display dimension
+   - [x] wire the display to uno q (decided to do this with the regular r4 as uno q is basically incompatible)
 - [x] clean up and simplify state transition propagation handling.
 - [x] add extensive documentation of the core control loop executor.
 - [x] change terminology from 'game' to 'app' to fit better things like settings,
