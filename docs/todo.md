@@ -44,11 +44,13 @@
 - [ ] fix all new memory leaks
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [ ] fix minesweeper crashing
+- [ ] document patches required on esp32
 
 
 
 
 # Done
+- [x] make the game console compile for esp32
 - [x] new display & controller testing
    - [x] figure out what is causing issues between the display on SPI and gamepad on I2C.
    - [x] restructure the display lib setup with namespaces to allow the two

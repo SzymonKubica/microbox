@@ -21,9 +21,6 @@
 #include "src/games/game_menu.hpp"
 #include "src/games/2048.hpp"
 
-typedef uint8_t BitOrder;
-#define MSBFIRST SPI_MSBFIRST
-#define LSBFIRST SPI_LSBFIRST
 #include "Adafruit_seesaw.h"
 
 LcdDisplay display;
