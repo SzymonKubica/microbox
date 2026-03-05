@@ -1,6 +1,9 @@
 #pragma once
 #ifndef EMULATOR
 #include <cstdint>
+typedef uint8_t BitOrder;
+#define MSBFIRST SPI_MSBFIRST
+#define LSBFIRST SPI_LSBFIRST
 #include "Adafruit_seesaw.h"
 #include "../interface/controller.hpp"
 

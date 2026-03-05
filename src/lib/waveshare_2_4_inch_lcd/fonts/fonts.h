@@ -52,8 +52,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
+#ifdef ARDUINO_ARCH_AVR
 #include <avr/pgmspace.h>
-//ASCII
+#else
+#include <pgmspace.h>
+#endif//ASCII
 typedef struct _tFont
 {
   const uint8_t *table;

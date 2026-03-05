@@ -33,11 +33,20 @@
 #ifndef _DEV_CONFIG_H_
 #define _DEV_CONFIG_H_
 
+#include <Arduino.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <SPI.h>
 #include "Debug.h"
+
+// AVR architecture has a separate facility for storing constants in flash
+// instead of RAM and so we need an override here. for esp32 no override is
+// required.
+#ifdef ARDUINO_ARCH_AVR
 #include <avr/pgmspace.h>
+#else
+#include <pgmspace.h>
+#endif
 
 
 

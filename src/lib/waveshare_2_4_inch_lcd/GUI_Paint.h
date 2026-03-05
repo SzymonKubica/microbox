@@ -39,8 +39,11 @@
 #include "LCD_Driver.h"
 #include "fonts/fonts.h"
 #include "Debug.h"
+#ifdef ARDUINO_ARCH_AVR
 #include <avr/pgmspace.h>
-/**
+#else
+#include <pgmspace.h>
+#endif/**
  * Image attributes
 **/
 typedef struct {
