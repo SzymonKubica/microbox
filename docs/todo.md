@@ -39,6 +39,8 @@
 
 # In Progress
 
+- [ ] add documentation of the patches.
+- [ ] restore compatibility with arduino uno r4
 - [ ] add wifi support for esp32
 - [ ] use a better display library for esp32 (the current AVR-optimized approach is bad).
 - [ ] add proper #define switching for esp32
