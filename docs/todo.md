@@ -39,6 +39,9 @@
 
 # In Progress
 
+- [ ] add wifi support for esp32
+- [ ] use a better display library for esp32 (the current AVR-optimized approach is bad).
+- [ ] add proper #define switching for esp32
 - [ ] clean up all imports to remove the indirect import warnings
 - [ ] separate games from applications
 - [ ] fix all new memory leaks

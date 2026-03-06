@@ -29,9 +29,9 @@ KeypadController *keypad_controller;
 AdafruitController *adafruit_controller;
 PersistentStorage persistent_storage;
 
-#if defined(ARDUINO_UNOR4_WIFI)
-Adafruit_seesaw ss(&Wire1);
-#define IRQ_PIN 5
+#if 1
+Adafruit_seesaw ss(&Wire);
+// #define IRQ_PIN 5
 #endif
 
 /**
@@ -59,7 +59,7 @@ void eeprom_erase()
 bool setup_adafruit_seesaw_i2c_connection()
 {
 
-#if defined(ARDUINO_UNOR4_WIFI)
+#if 1
         Serial.println("Setting up seesaw I2C interface...");
 
         if (!ss.begin(0x50)) {
@@ -80,11 +80,14 @@ bool setup_adafruit_seesaw_i2c_connection()
         ss.setGPIOInterrupts(button_mask, 1);
 
 #if defined(IRQ_PIN)
-        pinMode(IRQ_PIN, INPUT);
+        // pinMode(IRQ_PIN, INPUT);
 #endif
 #endif
         return true;
 }
+
+// ESP32 OVERRIDE
+SET_LOOP_TASK_STACK_SIZE(16 * 1024);
 
 bool adafruit_gamepad_available;
 void setup(void)
@@ -102,6 +105,7 @@ void setup(void)
         pinMode(DOWN_BUTTON_PIN, INPUT);
         pinMode(UP_BUTTON_PIN, INPUT);
         pinMode(RIGHT_BUTTON_PIN, INPUT);
+
 
         // Initializes the source of randomness from the
         // noise present on the first digital pin
@@ -130,7 +134,7 @@ void loop(void)
         std::vector<ActionController *> action_controllers = {};
 
         if (adafruit_gamepad_available) {
-#if defined(ARDUINO_UNOR4_WIFI)
+#if 1
                 // Only R4 wifi has the stemma qt port for the Wire1 SPI
                 // interface. On R4 Minima Adafruit seesaw is not defined.
                 adafruit_controller = new AdafruitController(&ss);

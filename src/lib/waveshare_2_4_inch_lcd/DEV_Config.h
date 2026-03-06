@@ -60,9 +60,14 @@
  * #if defined(WAVESHARE_1_69_INCH_LCD)
  * input shield on which the 1.69 inch LCD is mounted.
  */
-#define DEV_CS_PIN 5
-#define DEV_DC_PIN 7
-#define DEV_RST_PIN 3
+//#define DEV_CS_PIN 5
+//#define DEV_DC_PIN 7
+//#define DEV_RST_PIN 3
+//#define DEV_BL_PIN 4
+//
+#define DEV_CS_PIN 32
+#define DEV_DC_PIN 27
+#define DEV_RST_PIN 14
 #define DEV_BL_PIN 4
 
 
@@ -89,7 +94,7 @@
  #define  DEV_Set_PWM(_Value)  analogWrite(DEV_BL_PIN, _Value)
 
 #define DEV_SPI_BEGIN_TRANSACTION()                                            \
-        SPI.beginTransaction(SPISettings(24000000, MSBFIRST, SPI_MODE0));
+        SPI.beginTransaction(SPISettings(40000000, MSBFIRST, SPI_MODE0));
 #define DEV_SPI_END_TRANSACTION() SPI.endTransaction();
 
 /*-----------------------------------------------------------------------------*/

@@ -39,9 +39,13 @@ void GPIO_Init() {
   pinMode(DEV_BL_PIN, OUTPUT);
   analogWrite(DEV_BL_PIN, 140);
 }
+#define PIN_SCK  5
+#define PIN_MISO 21
+#define PIN_MOSI 19
 void Config_Init() {
 
   GPIO_Init();
+  SPI.begin(PIN_SCK, PIN_MISO, PIN_MOSI, DEV_CS_PIN);
 
   // Serial
   Serial.begin(115200);
