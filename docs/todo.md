@@ -39,6 +39,8 @@
 
 # In Progress
 
+- [ ] tweak instrumentation so that esp32 can also connect to wifi
+- [ ] remove mandatory wait for input at the end of each application loop
 - [ ] add documentation of the patches.
 - [ ] restore compatibility with arduino uno r4
 - [ ] add wifi support for esp32
