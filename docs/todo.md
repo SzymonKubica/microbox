@@ -28,6 +28,7 @@
 
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
+- [ ] add sleep mode
 
 - [ ] ensure that generated sudoku grids have unique solutions (have to play a
       bunch of games and verify if the algorithm works fine).

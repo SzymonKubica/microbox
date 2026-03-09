@@ -10,6 +10,7 @@
 #include "minesweeper.hpp"
 #include "settings.hpp"
 #include "sudoku.hpp"
+#include "sleep.hpp"
 #include "wifi.hpp"
 #include "game_of_life.hpp"
 #include "random_seed_picker.hpp"
@@ -80,7 +81,7 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
 #if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
              game_to_string(Game::WifiApp),
 #endif
-             game_to_string(Game::Settings),
+             game_to_string(Game::Sleep), game_to_string(Game::Settings),
              game_to_string(Game::RandomSeedPicker)},
             game_to_string(initial_config->game));
 
@@ -173,6 +174,8 @@ std::optional<UserAction> select_game(Platform *p)
                         return execute_app(new RandomSeedPicker(), p, &c);
                 case Game::Sudoku:
                         return execute_app(new SudokuGame(), p, &c);
+                case Game::Sleep:
+                        return execute_app(new SleepApp(), p, &c);
                 default:
                         LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                         return UserAction::Exit;
@@ -252,6 +255,8 @@ Game game_from_string(const char *name)
                 return Game::RandomSeedPicker;
         if (strcmp(name, game_to_string(Game::Sudoku)) == 0)
                 return Game::Sudoku;
+        if (strcmp(name, game_to_string(Game::Sleep)) == 0)
+                return Game::Sleep;
         return Game::Unknown;
 }
 
@@ -297,6 +302,8 @@ const char *game_to_string(Game game)
                 return "Sudoku";
         case Game::RandomSeedPicker:
                 return "Randomness";
+        case Game::Sleep:
+                return "Sleep";
         default:
                 return "Unknown";
         }
