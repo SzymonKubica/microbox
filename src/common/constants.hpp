@@ -4,14 +4,24 @@
 
 #include "platform/interface/color.hpp"
 #include <vector>
+
+#if defined(WAVESHARE_2_4_INCH_LCD)
+#define FONT_SIZE 16
+#define HEADING_FONT_SIZE 16
+#else
 #define FONT_SIZE 16
 #define HEADING_FONT_SIZE 24
+#endif
+
 
 #ifdef EMULATOR
 #define HEADING_FONT_WIDTH 15
-#endif
-#ifndef EMULATOR
+#else
+#if defined(WAVESHARE_2_4_INCH_LCD)
+#define HEADING_FONT_WIDTH 12
+#else
 #define HEADING_FONT_WIDTH 17
+#endif
 #endif
 
 // The font on the emulator is not pixel-accurate the same as what we
@@ -21,7 +31,11 @@
 #define FONT_WIDTH 10
 #endif
 #ifndef EMULATOR
+#if defined(WAVESHARE_2_4_INCH_LCD)
+#define FONT_WIDTH 12
+#else
 #define FONT_WIDTH 11
+#endif
 #endif
 
 #define SCREEN_BORDER_WIDTH 3

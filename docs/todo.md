@@ -40,6 +40,7 @@
 
 # In Progress
 
+- [ ] fix settings loop getting stuck
 - [ ] tweak instrumentation so that esp32 can also connect to wifi
 - [ ] remove mandatory wait for input at the end of each application loop
 - [ ] add documentation of the patches.
@@ -58,6 +59,8 @@
 
 
 # Done
+- [x] fix integration with the TFT library
+- [x] fix integration with the TFT library
 - [x] make the game console compile for esp32
 - [x] new display & controller testing
    - [x] figure out what is causing issues between the display on SPI and gamepad on I2C.

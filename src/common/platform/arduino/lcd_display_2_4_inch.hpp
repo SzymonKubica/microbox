@@ -1,4 +1,4 @@
-#if defined(WAVESHARE_2_4_INCH_LCD)
+#if 1 || defined(WAVESHARE_2_4_INCH_LCD)
 #pragma once
 #include "../interface/display.hpp"
 

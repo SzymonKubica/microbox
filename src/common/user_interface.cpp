@@ -206,12 +206,19 @@ void render_config_bar_centered(Display *display, int y_start,
                                 // else it will overflow the config bar border.
 #ifdef EMULATOR
                                 int border = 0;
+                                int adj = 0;
+#else
+#if defined(WAVESHARE_2_4_INCH_LCD)
+                                int border = 0;
+                                int adj = v_padding;
 #else
                                 int border = 1;
+                                int adj = 0;
+#endif
 #endif
                                 display->draw_rectangle(
                                     bar_name_str_start,
-                                    option_text_max_len * fw, fh + v_padding,
+                                    option_text_max_len * fw, fh + v_padding - adj,
                                     Black, border, true);
                         }
                         // The only other option supported right now is the
@@ -911,7 +918,11 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
         // vertical lines, this is because of differences in how those shapes
         // are rendered in SFML vs waveshare LCD display driver. We override
         // here to make the logo look good on both platforms.
+#if defined(WAVESHARE_2_4_INCH_LCD)
+        int adj = 2;
+#else
         int adj = 1;
+#endif
 #endif
         Point center = {letter_leg_start.x + radius + adj,
                         letter_front_end.y - letter_front_gap};
