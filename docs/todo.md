@@ -40,6 +40,7 @@
 
 # In Progress
 
+- [ ] fix game of life rendering artifacts
 - [ ] fix settings loop getting stuck
 - [ ] tweak instrumentation so that esp32 can also connect to wifi
 - [ ] remove mandatory wait for input at the end of each application loop
