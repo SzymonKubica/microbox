@@ -92,9 +92,9 @@ void LcdDisplay::clear_region(Point top_left, Point bottom_right,
                               Color clear_color)
 
 {
-        int adj = 1;
+        int adj = 0;
         tft.fillRect(
-            top_left.x, top_left.y - adj, bottom_right.x - top_left.x - adj,
+            top_left.x, top_left.y - adj, bottom_right.x - top_left.x,
             bottom_right.y - top_left.y - adj, to_tft_color(clear_color));
 };
 

@@ -28,19 +28,12 @@
 
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
-- [ ] add sleep mode
-
 - [ ] ensure that generated sudoku grids have unique solutions (have to play a
       bunch of games and verify if the algorithm works fine).
-
 - [ ] clean up all usages of raw pointers.
-
 - [ ] design a better logging utility to remove the c-style macros.
 - [ ] add aliases for button to have something like 'exit button' instead of Action::BLUE
-
-# In Progress
-
-- [ ] fix game of life rendering artifacts
+- [ ] migrate 1.69 inch display to use the TFT library
 - [ ] fix settings loop getting stuck
 - [ ] tweak instrumentation so that esp32 can also connect to wifi
 - [ ] remove mandatory wait for input at the end of each application loop
@@ -56,10 +49,17 @@
 - [ ] fix minesweeper crashing
 - [ ] document patches required on esp32
 
+# In Progress
+
+- [ ] add proper low power sleep mode
+
 
 
 
 # Done
+- [x] add sleep mode
+- [x] fix sudoku underline rendering
+- [x] fix game of life rendering artifacts
 - [x] fix integration with the TFT library
 - [x] fix integration with the TFT library
 - [x] make the game console compile for esp32
