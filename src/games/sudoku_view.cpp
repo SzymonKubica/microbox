@@ -216,11 +216,11 @@ void erase_digit(Display *display, UserInterfaceCustomization *customization,
 #ifdef EMULATOR
         int adj = 0;
 #else
+        int adj = 1;
 #if defined(WAVESHARE_2_4_INCH_LCD)
         // TODO: make this consistent across different displays.
-        int adj = 0;
+        underline_adj = 0;
 #else
-        int adj = 1;
 #endif
 #endif
 

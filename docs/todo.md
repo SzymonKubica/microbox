@@ -48,13 +48,11 @@
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [ ] fix minesweeper crashing
 - [ ] document patches required on esp32
+- [ ] ensure that the emulator has pixel precision overrides and not the physical display
 
 # In Progress
 
 - [ ] add proper low power sleep mode
-
-
-
 
 # Done
 - [x] add sleep mode
