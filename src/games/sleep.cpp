@@ -9,6 +9,7 @@
 #define TAG "sleep_app"
 
 #if defined(WAVESHARE_2_4_INCH_LCD) // TODO: make this specific to the esp32
+#include "esp_sleep.h"
 #include "Arduino.h"
 #endif
 
@@ -17,7 +18,7 @@ const char *SleepApp::get_help_text()
 {
         return "Press red (right) button to enter the sleep mode."
                "The screen will turn off."
-               "Press any button to exit the sleep mode.";
+               "Press and hold any button for 10s to exit the sleep mode.";
 };
 
 void update_score(Platform *p, SquareCellGridDimensions *dimensions,
@@ -32,15 +33,24 @@ UserAction SleepApp::app_loop(Platform *p,
                                     // battery driven deployment
 #define DEV_BL_PIN 4
         analogWrite(DEV_BL_PIN, 0);
-#endif
 
-        Action act;
-        wait_until_action_input(p, &act);
-        p->time_provider->delay_ms(INPUT_REGISTERED_DELAY);
+        while (true) {
+                // sleep for 5 seconds and then check for input, if registered
+                // exit out of the loop.
+                esp_sleep_enable_timer_wakeup(10 * 1000000);
+                esp_light_sleep_start(); // CPU pauses here
 
-#if defined(WAVESHARE_2_4_INCH_LCD) // TODO: make this specific to the esp32
-                                    // battery driven deployment
+                Action action;
+                if (poll_action_input(p->action_controllers, &action)) {
+                        break;
+                }
+        }
+
+        // After we exit the loop, we turn the screen back on.
         analogWrite(DEV_BL_PIN, 140);
+        // We wait for a bit so that the user has time to release the button
+        // before going into another sleep session
+        p->time_provider->delay_ms(1000);
 #endif
         return UserAction::PlayAgain;
 }

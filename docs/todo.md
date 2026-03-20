@@ -26,6 +26,8 @@
 
 # TODO
 
+- [ ] create a git submodule for the stl assets to make git clone of the main
+      microbox a bit more manageable
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
 - [ ] ensure that generated sudoku grids have unique solutions (have to play a
@@ -52,9 +54,9 @@
 
 # In Progress
 
-- [ ] add proper low power sleep mode
 
 # Done
+- [x] add proper low power sleep mode
 - [x] add sleep mode
 - [x] fix sudoku underline rendering
 - [x] fix game of life rendering artifacts
