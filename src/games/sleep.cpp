@@ -16,9 +16,13 @@
 const char *SleepApp::get_game_name() { return "SleepApp"; };
 const char *SleepApp::get_help_text()
 {
-        return "Press red (right) button to enter the sleep mode."
-               "The screen will turn off."
-               "Press and hold any button for 10s to exit the sleep mode.";
+        return "Press green (down) button to enter the light sleep mode."
+               " The screen will turn off."
+               " Press and hold any button for 10s to exit the sleep mode. "
+               "Press"
+               " red (right) button to enter deep sleep. Reset the console to "
+               "wake "
+               "up.";
 };
 
 void update_score(Platform *p, SquareCellGridDimensions *dimensions,
@@ -33,6 +37,16 @@ UserAction SleepApp::app_loop(Platform *p,
                                     // battery driven deployment
 #define DEV_BL_PIN 4
         analogWrite(DEV_BL_PIN, 0);
+
+        if (config.deep_sleep) {
+                // We are entering deep sleep and shutting down the main CPU.
+                // The intent is that resetting the console is the only way to
+                // wake up now.
+                p->display->sleep();
+                gpio_hold_en((gpio_num_t)DEV_BL_PIN);
+                gpio_deep_sleep_hold_en();
+                esp_deep_sleep_start();
+        }
 
         while (true) {
                 // sleep for 5 seconds and then check for input, if registered
@@ -60,8 +74,12 @@ SleepApp::collect_config(Platform *p, UserInterfaceCustomization *customization,
                          SleepConfiguration *game_config)
 {
         render_wrapped_text(p, customization, get_help_text());
-        game_config->sleep = true;
+        game_config->deep_sleep = false;
         Action act;
         wait_until_action_input(p, &act);
+
+        if (act == Action::RED) {
+                game_config->deep_sleep = true;
+        }
         return std::nullopt;
 }

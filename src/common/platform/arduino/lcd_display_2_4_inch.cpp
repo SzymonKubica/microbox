@@ -93,9 +93,9 @@ void LcdDisplay::clear_region(Point top_left, Point bottom_right,
 
 {
         int adj = 0;
-        tft.fillRect(
-            top_left.x, top_left.y - adj, bottom_right.x - top_left.x,
-            bottom_right.y - top_left.y - adj, to_tft_color(clear_color));
+        tft.fillRect(top_left.x, top_left.y - adj, bottom_right.x - top_left.x,
+                     bottom_right.y - top_left.y - adj,
+                     to_tft_color(clear_color));
 };
 
 // We return the width for the height as the display is mounted horizontally.
@@ -110,6 +110,11 @@ bool LcdDisplay::refresh()
 {
         // This is a no-op as the display does not require refreshing
         return true;
+}
+
+void LcdDisplay::sleep()
+{
+        tft.writecommand(0x10); // ILI9341 SLEEP IN
 }
 
 #endif

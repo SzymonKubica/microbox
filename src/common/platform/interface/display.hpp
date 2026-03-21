@@ -111,4 +111,6 @@ class Display
          * compilation which would make the code ugly and cluttered.
          */
         virtual bool refresh() = 0;
+
+        virtual void sleep() = 0;
 };

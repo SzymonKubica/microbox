@@ -55,7 +55,9 @@
 # In Progress
 
 
+
 # Done
+- [x] add proper deep sleep support
 - [x] add proper low power sleep mode
 - [x] add sleep mode
 - [x] fix sudoku underline rendering

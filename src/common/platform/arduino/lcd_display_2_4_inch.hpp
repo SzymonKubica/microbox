@@ -113,5 +113,7 @@ class LcdDisplay : public Display
          * compilation which would make the code ugly and cluttered.
          */
         virtual bool refresh() override;
+
+        virtual void sleep() override;
 };
 #endif

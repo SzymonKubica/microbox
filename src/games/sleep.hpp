@@ -7,7 +7,7 @@
 #include "application_executor.hpp"
 
 typedef struct SleepConfiguration {
-        bool sleep;
+        bool deep_sleep;
 } SleepConfiguration;
 
 std::optional<UserAction>
