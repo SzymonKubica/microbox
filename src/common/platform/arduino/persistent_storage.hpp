@@ -8,6 +8,8 @@ template <typename T> T &PersistentStorage::get(int offset, T &t)
 }
 template <typename T> const T &PersistentStorage::put(int offset, const T &t)
 {
-        return EEPROM.put(offset, t);
+        T result =  EEPROM.put(offset, t);
+        EEPROM.commit();
+        return result;
 }
 #endif

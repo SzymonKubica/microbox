@@ -1,6 +1,7 @@
 #include <Wire.h>
 
 #include <EEPROM.h>
+#include <nvs_flash.h>
 
 #include "src/common/platform/arduino/joystick_controller.hpp"
 #include "src/common/platform/arduino/wifi_provider.cpp"
@@ -96,8 +97,20 @@ void setup(void)
         // Initialise serial port for debugging
         Serial.begin(115200);
 
-        adafruit_gamepad_available = setup_adafruit_seesaw_i2c_connection();
         // eeprom_erase();
+        bool erase_flash = false;
+        if (erase_flash) {
+                nvs_flash_erase();
+                nvs_flash_init();
+        }
+
+#ifdef ARDUINO_ARCH_ESP32
+        // On esp32 EEPROM is simulated in the flash storage. Because of this
+        // we need to initialize it here explicitly
+        EEPROM.begin(512);
+#endif
+
+        adafruit_gamepad_available = setup_adafruit_seesaw_i2c_connection();
 
         // Set up bins neeeded for controllers
         pinMode(STICK_BUTTON_PIN, INPUT);
@@ -105,7 +118,6 @@ void setup(void)
         pinMode(DOWN_BUTTON_PIN, INPUT);
         pinMode(UP_BUTTON_PIN, INPUT);
         pinMode(RIGHT_BUTTON_PIN, INPUT);
-
 
         // Initializes the source of randomness from the
         // noise present on the first digital pin
