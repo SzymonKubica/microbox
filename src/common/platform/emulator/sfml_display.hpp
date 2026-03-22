@@ -113,6 +113,13 @@ class SfmlDisplay : public Display
          */
         virtual bool refresh() override;
 
+        /**
+         * For physical displays this is supposed to send a command to the
+         * display driver to turn off and turn the display backlight to save
+         * battery.
+         */
+        virtual void sleep() override;
+
         SfmlDisplay(sf::RenderWindow *window, sf::RenderTexture *texture)
             : window(window), texture(texture)
         {

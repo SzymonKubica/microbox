@@ -10,6 +10,8 @@ void SfmlDisplay::setup() {};
 
 void SfmlDisplay::initialize() {}
 
+void SfmlDisplay::sleep() {};
+
 sf::Color map_to_sf_color(Color color);
 void SfmlDisplay::clear(Color color)
 {

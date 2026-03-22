@@ -112,5 +112,10 @@ class Display
          */
         virtual bool refresh() = 0;
 
+        /**
+         * For physical displays this is supposed to send a command to the
+         * display driver to turn off and turn the display backlight to save
+         * battery.
+         */
         virtual void sleep() = 0;
 };

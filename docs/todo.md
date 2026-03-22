@@ -51,10 +51,11 @@
 - [ ] fix minesweeper crashing
 - [ ] document patches required on esp32
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
+- [ ] add brightness changing app
 
 # In Progress
 
-
+- [ ] add/debug persistent storage on esp32
 
 # Done
 - [x] add proper deep sleep support
