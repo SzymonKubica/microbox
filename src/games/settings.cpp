@@ -10,6 +10,7 @@
 #include "snake_duel.hpp"
 #include "sudoku.hpp"
 #include "wifi.hpp"
+#include <memory>
 
 #define TAG "settings"
 
@@ -39,162 +40,144 @@ const char *Settings::get_game_name() { return "Settings Menu"; }
 const char *Settings::get_help_text()
 {
         return "Select the game/application and adjust the settings, press RED "
-               "to "
-               "proceed and save the settings. Press BLUE at any point to "
-               "exit.";
+               "(right) to proceed and save the settings. Press BLUE (left) at "
+               "any point to exit.";
 }
 
 UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
                               const SettingsConfiguration &config)
 {
         Game selected_game = config.selected_game;
-        // We loop until the user presses the blue button on any of the
-        // configuration screens.
-        while (true) {
-                int offset = get_settings_storage_offset(selected_game);
-                LOG_DEBUG(
-                    TAG,
-                    "Computed configuration storage offset for game %s: %d",
-                    game_to_string(selected_game), offset);
+        int offset = get_settings_storage_offset(selected_game);
+        LOG_DEBUG(TAG, "Computed configuration storage offset for game %s: %d",
+                  game_to_string(selected_game), offset);
 
-                PersistentStorage storage = *(p->persistent_storage);
+        PersistentStorage storage = *(p->persistent_storage);
 
-                switch (selected_game) {
-                case Game::MainMenu: {
-                        GameMenuConfiguration config;
-                        auto action = collect_game_menu_config(p, &config);
-                        if (action &&
-                            (action.value() == UserAction::Exit ||
-                             action.value() == UserAction::CloseWindow)) {
-                                return action.value();
-                        }
-                        storage.put(offset, config);
-                } break;
-                case Game::Clean2048: {
-                        Game2048Configuration config;
-                        auto action = (new Clean2048())
-                                          ->collect_config(p, custom, &config);
-                        if (action &&
-                            (action.value() == UserAction::Exit ||
-                             action.value() == UserAction::CloseWindow)) {
-                                return action.value();
-                        }
-                        storage.put(offset, config);
-                } break;
-                case Game::Minesweeper: {
-                        MinesweeperConfiguration config;
-                        auto action = (new Minesweeper())
-                                          ->collect_config(p, custom, &config);
-                        if (action &&
-                            (action.value() == UserAction::Exit ||
-                             action.value() == UserAction::CloseWindow)) {
-                                return action.value();
-                        }
-                        storage.put(offset, config);
-                } break;
-                case Game::GameOfLife: {
-                        GameOfLifeConfiguration config;
-                        auto action = (new GameOfLife())
-                                          ->collect_config(p, custom, &config);
-                        if (action &&
-                            (action.value() == UserAction::Exit ||
-                             action.value() == UserAction::CloseWindow)) {
-                                return action.value();
-                        }
-                        storage.put(offset, config);
-                } break;
-                case Game::Snake: {
-                        SnakeConfiguration config;
-                        auto action = (new SnakeGame())
-                                          ->collect_config(p, custom, &config);
-                        if (action &&
-                            (action.value() == UserAction::Exit ||
-                             action.value() == UserAction::CloseWindow)) {
-                                return action.value();
-                        }
-                        storage.put(offset, config);
-                } break;
-                case Game::SnakeDuel: {
-                        SnakeDuelConfiguration config;
-                        auto action = (new SnakeDuel())
-                                          ->collect_config(p, custom, &config);
-                        if (action &&
-                            (action.value() == UserAction::Exit ||
-                             action.value() == UserAction::CloseWindow)) {
-                                return action.value();
-                        }
-                        storage.put(offset, config);
-                } break;
-                case Game::WifiApp: {
-                        WifiAppConfiguration config;
-                        auto action =
-                            (new WifiApp())->collect_config(p, custom, &config);
-                        if (action &&
-                            (action.value() == UserAction::Exit ||
-                             action.value() == UserAction::CloseWindow)) {
-                                return action.value();
-                        }
-                        storage.put(offset, config);
-                } break;
-                case Game::RandomSeedPicker: {
-                        RandomSeedPickerConfiguration config;
-                        // TODO: clean up to remove those allocations
-                        auto action = (new RandomSeedPicker())
-                                          ->collect_config(p, custom, &config);
-                        if (action &&
-                            (action.value() == UserAction::Exit ||
-                             action.value() == UserAction::CloseWindow)) {
-                                return action.value();
-                        }
-                        storage.put(offset, config);
-                } break;
-                case Game::Sudoku: {
-                        SudokuConfiguration config;
-                        // TODO: clean up to remove those allocations
-                        auto action = (new SudokuGame())
-                                          ->collect_config(p, custom, &config);
-                        if (action &&
-                            (action.value() == UserAction::Exit ||
-                             action.value() == UserAction::CloseWindow)) {
-                                return action.value();
-                        }
-                        storage.put(offset, config);
-                } break;
-                default:
-                        return UserAction::Exit;
-                }
-                LOG_DEBUG(TAG, "Re-entering the settings collecting loop.");
+        auto is_exit_action = [](std::optional<UserAction> action) {
+                return action.value() == UserAction::Exit ||
+                       action.value() == UserAction::CloseWindow;
+        };
+
+        switch (selected_game) {
+        case Game::MainMenu: {
+                GameMenuConfiguration config;
+                auto action = collect_game_menu_config(p, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        case Game::Clean2048: {
+                Game2048Configuration config;
+                auto game = std::make_unique<Clean2048>();
+                auto action = game->collect_config(p, custom, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        case Game::Minesweeper: {
+                MinesweeperConfiguration config;
+                auto game = std::make_unique<Minesweeper>();
+                auto action = game->collect_config(p, custom, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        case Game::GameOfLife: {
+                GameOfLifeConfiguration config;
+                auto game = std::make_unique<GameOfLife>();
+                auto action = game->collect_config(p, custom, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        case Game::Snake: {
+                SnakeConfiguration config;
+                auto game = std::make_unique<SnakeGame>();
+                auto action = game->collect_config(p, custom, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        case Game::SnakeDuel: {
+                SnakeDuelConfiguration config;
+                auto game = std::make_unique<SnakeDuel>();
+                auto action = game->collect_config(p, custom, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        case Game::WifiApp: {
+                WifiAppConfiguration config;
+                auto game = std::make_unique<WifiApp>();
+                auto action = game->collect_config(p, custom, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        case Game::RandomSeedPicker: {
+                RandomSeedPickerConfiguration config;
+                auto game = std::make_unique<RandomSeedPicker>();
+                auto action = game->collect_config(p, custom, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        case Game::Sudoku: {
+                SudokuConfiguration config;
+                auto game = std::make_unique<SudokuGame>();
+                auto action = game->collect_config(p, custom, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        default:
+                return UserAction::Exit;
         }
+        LOG_DEBUG(TAG, "Re-entering the settings collecting loop.");
+        return UserAction::PlayAgain;
 }
 
 std::vector<int> get_settings_storage_offsets()
 {
-        std::vector<int> offsets(11);
-        offsets[static_cast<int>(Game::MainMenu)] = 0;
-        offsets[static_cast<int>(Game::Clean2048)] =
-            offsets[static_cast<int>(Game::MainMenu)] +
-            sizeof(GameMenuConfiguration);
-        offsets[static_cast<int>(Game::Minesweeper)] =
-            offsets[static_cast<int>(Game::Clean2048)] +
-            sizeof(Game2048Configuration);
-        offsets[static_cast<int>(Game::GameOfLife)] =
-            offsets[static_cast<int>(Game::Minesweeper)] +
-            sizeof(MinesweeperConfiguration);
-        offsets[static_cast<int>(Game::RandomSeedPicker)] =
-            offsets[static_cast<int>(Game::GameOfLife)] +
-            sizeof(GameOfLifeConfiguration);
-        offsets[static_cast<int>(Game::Snake)] =
-            offsets[static_cast<int>(Game::RandomSeedPicker)] +
-            sizeof(RandomSeedPickerConfiguration);
-        offsets[static_cast<int>(Game::SnakeDuel)] =
-            offsets[static_cast<int>(Game::Snake)] + sizeof(SnakeConfiguration);
-        offsets[static_cast<int>(Game::WifiApp)] =
-            offsets[static_cast<int>(Game::SnakeDuel)] +
-            sizeof(SnakeDuelConfiguration);
-        offsets[static_cast<int>(Game::Sudoku)] =
-            offsets[static_cast<int>(Game::WifiApp)] +
-            sizeof(WifiAppConfiguration);
-        return offsets;
+        auto ordinal = [](Game game) { return static_cast<int>(game); };
+
+        std::map<Game, int> config_size = {
+            {Game::MainMenu, sizeof(GameMenuConfiguration)},
+            {Game::Clean2048, sizeof(Game2048Configuration)},
+            {Game::Minesweeper, sizeof(MinesweeperConfiguration)},
+            {Game::GameOfLife, sizeof(GameOfLifeConfiguration)},
+            {Game::RandomSeedPicker, sizeof(RandomSeedPickerConfiguration)},
+            {Game::Snake, sizeof(SnakeConfiguration)},
+            {Game::SnakeDuel, sizeof(SnakeDuelConfiguration)},
+            {Game::WifiApp, sizeof(WifiAppConfiguration)},
+            {Game::Sudoku, sizeof(SudokuConfiguration)},
+        };
+
+        std::vector<Game> games = {
+            Game::MainMenu,   Game::Clean2048,        Game::Minesweeper,
+            Game::GameOfLife, Game::RandomSeedPicker, Game::Snake,
+            Game::SnakeDuel,  Game::WifiApp,          Game::Sudoku,
+        };
+
+        // We make the offsets size a two element bigger as the game enum starts
+        // at 1 and we skip number 5 as that is the 'Settings' app itself.
+        std::vector<int> offset(games.size() + 2);
+
+        /*
+         * Here we are setting the beginning offsets of the configuration struct
+         * for each game so that each consecutive struct starts immediately
+         * after the previous one.
+         */
+        offset[ordinal(Game::MainMenu)] = 0;
+        for (int i = 1; i < games.size(); i++) {
+                Game prev = games[i - 1];
+                Game game = games[i];
+                int prev_idx = ordinal(prev);
+                int game_idx = ordinal(game);
+                offset[game_idx] = offset[prev_idx] + config_size[prev];
+        }
+        return offset;
 }
 
 int get_settings_storage_offset(Game game)
@@ -205,18 +188,21 @@ int get_settings_storage_offset(Game game)
 Configuration *assemble_settings_menu_configuration()
 {
 
-        auto available_games = {game_to_string(Game::MainMenu),
-                                game_to_string(Game::Minesweeper),
-                                game_to_string(Game::Clean2048),
-                                game_to_string(Game::GameOfLife),
-                                game_to_string(Game::Snake),
-                                game_to_string(Game::SnakeDuel),
-        // Disable the wifi functionality on the Uno R4 Minima
+        auto available_games = {
+            game_to_string(Game::MainMenu),
+            game_to_string(Game::Minesweeper),
+            game_to_string(Game::Clean2048),
+            game_to_string(Game::GameOfLife),
+            game_to_string(Game::Snake),
+            game_to_string(Game::SnakeDuel),
+            game_to_string(Game::RandomSeedPicker),
+            game_to_string(Game::Sudoku),
 #if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
-                                game_to_string(Game::WifiApp),
+            // Only enable the WiFi app on Arduino R4 for now.
+            // TODO: add support for esp32 and enable it here.
+            game_to_string(Game::WifiApp),
 #endif
-                                game_to_string(Game::RandomSeedPicker),
-                                game_to_string(Game::Sudoku)};
+        };
 
         auto *menu = ConfigurationOption::of_strings(
             "Modify", available_games, game_to_string(Game::MainMenu));

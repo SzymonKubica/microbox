@@ -67,6 +67,7 @@ template <typename ConfigStruct> class ApplicationExecutor
 inline void log_game_finished(const char *app_name);
 inline void log_help_requested(const char *app_name);
 inline void log_exit_requested(const char *app_name);
+inline void log_close_window_requested(const char *app_name);
 inline bool close_window_requested(std::optional<UserAction> maybe_event);
 inline bool exit_requested(std::optional<UserAction> maybe_event);
 inline bool help_requested(std::optional<UserAction> maybe_event);
@@ -87,6 +88,11 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                 if (exit_requested(maybe_event)) {
                         log_exit_requested(executor->get_game_name());
                         return UserAction::Exit;
+                }
+
+                if (close_window_requested(maybe_event)) {
+                        log_exit_requested(executor->get_game_name());
+                        return UserAction::CloseWindow;
                 }
 
                 if (help_requested(maybe_event)) {
@@ -132,7 +138,7 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                  * iteration of the loop. If the user presses the Exit button,
                  * we exit.
                  */
-                if (action == UserAction::PlayAgain) {
+                if (action == UserAction::PauseAndPlayAgain) {
                         log_game_finished(executor->get_game_name());
 
                         Direction dir;
@@ -150,8 +156,11 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                         continue;
                 }
 
-                // All other actions (exit/close window) are propagated
-                // 1:1 upwards.
+                if (action == UserAction::PlayAgain) {
+                        continue;
+                }
+
+                // All other actions (exit/close window) are propagated upwards.
                 return action;
         }
 }
@@ -192,4 +201,12 @@ inline void log_help_requested(const char *app_name)
 inline void log_exit_requested(const char *app_name)
 {
         LOG_DEBUG(EXECUTOR_TAG, "User requested to exit from %s", app_name);
+}
+
+inline void log_close_window_requested(const char *app_name)
+{
+        LOG_DEBUG(EXECUTOR_TAG,
+                  "User requested to close the window while collecting "
+                  "configuation for %s",
+                  app_name);
 }

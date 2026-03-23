@@ -27,6 +27,14 @@ enum class UserAction {
          * saying that a bunch of memory leaks was found.
          */
         CloseWindow,
+        /**
+         * When a game returns this action, the UI will pause and wait for input
+         * before exiting out of the game loop and rendering the game
+         * configuration menu again. The idea behind this is to allow the user
+         * to see the final frame of the game (e.g. all exploded mines after
+         * they lost a minesweeper game).
+         */
+        PauseAndPlayAgain,
 };
 
 typedef struct ConfigurationOption {
