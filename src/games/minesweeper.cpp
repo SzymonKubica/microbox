@@ -319,7 +319,7 @@ UserAction Minesweeper::app_loop(Platform *p,
                 return UserAction::CloseWindow;
         }
         delete gd;
-        return UserAction::PlayAgain;
+        return UserAction::PauseAndPlayAgain;
 }
 
 void place_bombs(std::vector<std::vector<MinesweeperGridCell>> *grid,

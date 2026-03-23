@@ -314,7 +314,7 @@ UserAction SnakeGame::app_loop(Platform *p,
         if (!p->display->refresh()) {
                 return UserAction::CloseWindow;
         } else {
-                return UserAction::PlayAgain;
+                return UserAction::PauseAndPlayAgain;
         }
 }
 

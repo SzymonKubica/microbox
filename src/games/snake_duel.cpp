@@ -297,7 +297,7 @@ UserAction SnakeDuel::app_loop(Platform *p,
                                 delete gd;
                                 p->time_provider->delay_ms(
                                     MOVE_REGISTERED_DELAY);
-                                return UserAction::PlayAgain;
+                                return UserAction::PauseAndPlayAgain;
                         }
                 }
 
@@ -365,7 +365,7 @@ UserAction SnakeDuel::app_loop(Platform *p,
                 return UserAction::CloseWindow;
         }
         delete gd;
-        return UserAction::PlayAgain;
+        return UserAction::PauseAndPlayAgain;
 }
 
 void take_snake_step(
