@@ -100,8 +100,8 @@ const char *Minesweeper::get_help_text()
                " the number of mines around the cell.";
 }
 UserAction Minesweeper::app_loop(Platform *p,
-                                  UserInterfaceCustomization *customization,
-                                  const MinesweeperConfiguration &config)
+                                 UserInterfaceCustomization *customization,
+                                 const MinesweeperConfiguration &config)
 {
         LOG_DEBUG(TAG, "Entering Minesweeper game loop");
 

@@ -19,8 +19,8 @@
 
 #define TAG "sudoku"
 
-SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {.difficulty = 1,
-                                             .is_game_in_progress = false};
+SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {
+    .difficulty = 1, .is_game_in_progress = false, .accent_color = Color::Cyan};
 
 /**
  * Represents the state of a Sudoku game.
@@ -239,7 +239,8 @@ UserAction SudokuGame::app_loop(Platform *p,
 
         view.render_grid();
         view.render_grid_numbers(state.grid);
-        view.underline_all_instances(state.active_digit, state.grid);
+        view.underline_all_instances(state.active_digit, state.grid,
+                                     config.accent_color);
         view.render_active_digit_selector();
         view.render_active_digit_selection_indicator(state.active_digit);
         // If we resumed a game in progress and loaded the grid from the
@@ -314,7 +315,7 @@ UserAction SudokuGame::app_loop(Platform *p,
                         view.remove_underline_all_instances(old_selected,
                                                             state.grid);
                         view.underline_all_instances(state.active_digit,
-                                                     state.grid);
+                                                     state.grid, config.accent_color);
 
                         // If the caret was placed on any of the updated digits,
                         // it will get clipped, so we need to redraw it.
@@ -345,7 +346,7 @@ UserAction SudokuGame::app_loop(Platform *p,
                                 // Only the active digit can be placed and all
                                 // occurrences of the active digit need to be
                                 // underlined so we place the underline here.
-                                view.underline_cell(caret);
+                                view.underline_cell(caret, config.accent_color);
                         }
                         break;
                 }
@@ -423,7 +424,10 @@ assemble_sudoku_configuration(SudokuConfiguration *initial_config)
         ConfigurationOption *difficulty = ConfigurationOption::of_integers(
             "Difficulty", {1, 2, 3}, initial_config->difficulty);
 
-        std::vector<ConfigurationOption *> options = {difficulty};
+        ConfigurationOption *accent_color = ConfigurationOption::of_colors(
+            "Color", AVAILABLE_COLORS, initial_config->accent_color);
+
+        std::vector<ConfigurationOption *> options = {difficulty, accent_color};
 
         return new Configuration("Sudoku", options);
 }
@@ -467,9 +471,11 @@ void extract_game_config(SudokuConfiguration *game_config,
                          SudokuConfiguration *initial_config)
 {
         ConfigurationOption difficulty = *config->options[0];
+        ConfigurationOption accent_color = *config->options[1];
 
         game_config->difficulty = difficulty.get_curr_int_value();
         game_config->is_game_in_progress = initial_config->is_game_in_progress;
+        game_config->accent_color = accent_color.get_current_color_value();
         for (int y = 0; y < 9; y++) {
                 for (int x = 0; x < 9; x++) {
                         game_config->saved_game[y][x] =

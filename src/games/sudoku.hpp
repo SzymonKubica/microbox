@@ -13,6 +13,7 @@ typedef struct SudokuConfiguration {
         int difficulty;
         bool is_game_in_progress;
         SudokuCell saved_game[SUDOKU_GRID_SIZE][SUDOKU_GRID_SIZE];
+        Color accent_color;
 } SudokuConfiguration;
 
 std::optional<UserAction>

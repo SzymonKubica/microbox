@@ -26,6 +26,7 @@ class SudokuView
          * Underlines a digit placed in a cell under a given location.
          */
         virtual void underline_cell(const Point &location) = 0;
+        virtual void underline_cell(const Point &location, Color color) = 0;
         /**
          * Erases the digit that was placed on a given cell.
          */
@@ -37,6 +38,8 @@ class SudokuView
          */
         virtual void underline_all_instances(int digit,
                                              const SudokuGrid &grid) = 0;
+        virtual void underline_all_instances(int digit, const SudokuGrid &grid,
+                                             Color color) = 0;
         /**
          * When the active digit changes we need to remove the underline that
          * was placed below all occurrences of the previously active digit.
@@ -119,11 +122,14 @@ class SimpleSudokuView : SudokuView
         void render_grid_numbers(const SudokuGrid &grid) override;
         void underline_all_instances(int digit,
                                      const SudokuGrid &grid) override;
+        void underline_all_instances(int digit, const SudokuGrid &grid,
+                                     Color color) override;
         void remove_underline_all_instances(int digit,
                                             const SudokuGrid &grid) override;
         void render_cell(const SudokuCell &cell,
                          const Point &location) override;
         void underline_cell(const Point &location) override;
+        void underline_cell(const Point &location, Color color) override;
         void erase_cell_contents(const Point &location) override;
 
         void move_caret(const Point &from, const Point &to) override;

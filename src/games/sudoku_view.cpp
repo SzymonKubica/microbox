@@ -73,6 +73,9 @@ void render_digit_underline(Display *display,
                             UserInterfaceCustomization *customization,
                             SquareCellGridDimensions *dimensions,
                             Point location);
+void render_digit_underline(Display *display, Color color,
+                            SquareCellGridDimensions *dimensions,
+                            Point location);
 
 void SimpleSudokuView::render_grid_numbers(const SudokuGrid &grid)
 {
@@ -85,6 +88,18 @@ void SimpleSudokuView::render_grid_numbers(const SudokuGrid &grid)
         process_all_cells(grid, render_if_value_present);
 }
 
+void SimpleSudokuView::underline_all_instances(int digit,
+                                               const SudokuGrid &grid,
+                                               Color color)
+{
+        auto underline_if_value_present = [&](const SudokuCell &cell,
+                                              const Point &location) {
+                if (cell.digit.has_value() && cell.digit.value() == digit)
+                        render_digit_underline(display, color, &dimensions,
+                                               location);
+        };
+        process_all_cells(grid, underline_if_value_present);
+}
 void SimpleSudokuView::underline_all_instances(int digit,
                                                const SudokuGrid &grid)
 {
@@ -186,15 +201,21 @@ void render_digit_underline(Display *display,
                             SquareCellGridDimensions *dimensions,
                             Point location)
 {
+        render_digit_underline(display, customization->accent_color, dimensions,
+                               location);
+}
+
+void render_digit_underline(Display *display, Color color,
+                            SquareCellGridDimensions *dimensions,
+                            Point location)
+{
         Point start = calculate_cell_text_start(dimensions, location);
         int x = start.x;
         int y = start.y;
         int fh = FONT_SIZE;
         int fw = FONT_WIDTH;
-        display->draw_line({x, y + fh - 1}, {x + fw, y + fh - 1},
-                           customization->accent_color);
-        display->draw_line({x, y + fh}, {x + fw, y + fh},
-                           customization->accent_color);
+        display->draw_line({x, y + fh - 1}, {x + fw, y + fh - 1}, color);
+        display->draw_line({x, y + fh}, {x + fw, y + fh}, color);
 }
 
 void erase_digit(Display *display, UserInterfaceCustomization *customization,
@@ -236,6 +257,10 @@ void SimpleSudokuView::render_cell(const SudokuCell &cell,
 void SimpleSudokuView::underline_cell(const Point &location)
 {
         render_digit_underline(display, &customization, &dimensions, location);
+}
+void SimpleSudokuView::underline_cell(const Point &location, Color color)
+{
+        render_digit_underline(display, color, &dimensions, location);
 }
 void SimpleSudokuView::erase_cell_contents(const Point &location)
 {
