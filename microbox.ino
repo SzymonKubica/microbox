@@ -107,7 +107,7 @@ void setup(void)
 #ifdef ARDUINO_ARCH_ESP32
         // On esp32 EEPROM is simulated in the flash storage. Because of this
         // we need to initialize it here explicitly
-        EEPROM.begin(512);
+        EEPROM.begin(3072);
 #endif
 
         adafruit_gamepad_available = setup_adafruit_seesaw_i2c_connection();
