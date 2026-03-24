@@ -168,5 +168,7 @@ void loop(void)
                              .wifi_provider = wifi_provider,
                              .client = client};
 
-        select_game(&platform);
+        while (true) {
+                select_game(&platform);
+        }
 }

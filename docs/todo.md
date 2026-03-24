@@ -52,12 +52,13 @@
 - [ ] document patches required on esp32
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] add brightness changing app
+- [ ] change arduino controllers to avoid passing pointers to standard arduino functions.
 
 # In Progress
 
-- [ ] add/debug persistent storage on esp32
 
 # Done
+- [x] add/debug persistent storage on esp32
 - [x] add proper deep sleep support
 - [x] add proper low power sleep mode
 - [x] add sleep mode
