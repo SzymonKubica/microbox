@@ -79,6 +79,7 @@ bool setup_adafruit_seesaw_i2c_connection()
 
         ss.pinModeBulk(button_mask, INPUT_PULLUP);
         ss.setGPIOInterrupts(button_mask, 1);
+        pinMode(38, INPUT);
 
 #if defined(IRQ_PIN)
         // pinMode(IRQ_PIN, INPUT);
@@ -91,6 +92,47 @@ bool setup_adafruit_seesaw_i2c_connection()
 SET_LOOP_TASK_STACK_SIZE(16 * 1024);
 
 bool adafruit_gamepad_available;
+
+void rgb_blink_task(void *parameter)
+{
+        const int rgb_mode = 0;
+        const int off = 1;
+        const int flashlight = 2;
+        int current = 0;
+        while (true) {
+                if (digitalRead(38) == LOW) {
+                        current = (current + 1) % 3;
+                }
+#ifdef RGB_BUILTIN
+                switch (current) {
+                case rgb_mode:
+                        digitalWrite(RGB_BUILTIN,
+                                     HIGH); // Turn the RGB LED white
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        digitalWrite(RGB_BUILTIN, LOW); // Turn the RGB LED off
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+                        rgbLedWrite(RGB_BUILTIN, RGB_BRIGHTNESS, 0, 0); // Red
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        rgbLedWrite(RGB_BUILTIN, 0, RGB_BRIGHTNESS, 0); // Green
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        rgbLedWrite(RGB_BUILTIN, 0, 0, RGB_BRIGHTNESS); // Blue
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        rgbLedWrite(RGB_BUILTIN, 0, 0, 0); // Off / black
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        break;
+                case off:
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        break;
+                case flashlight:
+                        digitalWrite(RGB_BUILTIN,
+                                     HIGH); // Turn the RGB LED white
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                }
+#endif
+        }
+}
+
 void setup(void)
 {
 
@@ -128,6 +170,14 @@ void setup(void)
         // Initialize the hardware LCD display
         display = LcdDisplay{};
         display.setup();
+
+        xTaskCreate(rgb_blink_task,            // function
+                    "RGB diode blinking task", // name
+                    2048,                      // stack size
+                    NULL,                      // parameter
+                    1,                         // priority
+                    NULL                       // task handle
+        );
 }
 
 int last_x = 0, last_y = 0;
