@@ -78,7 +78,7 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
              game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
              game_to_string(Game::SnakeDuel), game_to_string(Game::Sudoku),
         // Disable the WiFi app on the Uno R4 Minima
-#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
+#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR) || defined(ARDUINO_ARCH_ESP32)
              game_to_string(Game::WifiApp),
 #endif
              game_to_string(Game::Sleep), game_to_string(Game::Settings),

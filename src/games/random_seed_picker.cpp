@@ -181,7 +181,7 @@ load_initial_seed_picker_config(PersistentStorage *storage)
         RandomSeedPickerConfiguration *output =
             new RandomSeedPickerConfiguration();
 
-        if (config.seed == 0) {
+        if (config.seed == 0 || config.seed == -1) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "seed picker configuration, using default values.");

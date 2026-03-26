@@ -7,6 +7,7 @@
 #include "application_executor.hpp"
 
 #define AVAILABLE_CONFIGURATION_SLOTS 5
+#define INITIALIZATION_MAGIC_NUMBER 12345
 
 typedef enum WifiAppAction {
         AddNew = 0,
@@ -33,12 +34,14 @@ typedef struct WifiCredentials {
  * it to/from persistent memory only saves down pointers and not the actual
  * strings.
  */
+
 typedef struct WifiAppConfiguration {
         /**
          * Required to detect if the wifi app configuration struct has not
-         * yet been initialized in the persistent storage.
+         * yet been initialized in the persistent storage. If this does not match
+         * the initialization magic number, we assume that
          */
-        bool is_initialized;
+        int intialization_magic_number;
         std::size_t curr_config_idx;
         int occupied_config_slots;
         WifiCredentials saved_configurations[AVAILABLE_CONFIGURATION_SLOTS];
@@ -49,6 +52,7 @@ typedef struct WifiAppConfiguration {
         std::vector<WifiCredentials *> get_saved_configs();
         const char *get_currently_selected_ssid() const;
         const char *get_currently_selected_password() const;
+        bool is_initialized() const;
 
 } WifiAppConfiguration;
 

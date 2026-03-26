@@ -267,7 +267,7 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
 
         WifiAppConfiguration *output = new WifiAppConfiguration();
 
-        if (!config.is_initialized) {
+        if (!config.is_initialized()) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "wifi app configuration, using default values.");
                 // We need to populate the defaults on the fly here as
@@ -281,7 +281,7 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
                 DEFAULT_WIFI_APP_CONFIG.curr_config_idx = 0;
                 DEFAULT_WIFI_APP_CONFIG.occupied_config_slots = 1;
                 DEFAULT_WIFI_APP_CONFIG.connect_on_startup = false;
-                DEFAULT_WIFI_APP_CONFIG.is_initialized = true;
+                DEFAULT_WIFI_APP_CONFIG.intialization_magic_number = INITIALIZATION_MAGIC_NUMBER;
                 DEFAULT_WIFI_APP_CONFIG.action = WifiAppAction::Modify;
                 memcpy(output, &DEFAULT_WIFI_APP_CONFIG,
                        sizeof(WifiAppConfiguration));
@@ -318,6 +318,7 @@ assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
             passwords.begin(),
             [](WifiCredentials *credentials) { return credentials->password; });
 
+        LOG_DEBUG(TAG, "Starting to read saved wiifi credentials.");
         auto *ssid = ConfigurationOption::of_strings(
             "SSID", ssids, initial_config->get_currently_selected_ssid());
         auto *password = ConfigurationOption::of_strings(
@@ -361,7 +362,7 @@ void extract_game_config(WifiAppConfiguration *app_config,
         ConfigurationOption connect_on_startup = *config->options[2];
         ConfigurationOption app_action = *config->options[3];
 
-        app_config->is_initialized = true;
+        app_config->intialization_magic_number = INITIALIZATION_MAGIC_NUMBER;
 
         /**
          * We infer the currently selected configuration index by
@@ -465,6 +466,12 @@ std::vector<WifiCredentials *> WifiAppConfiguration::get_saved_configs()
 const char *WifiAppConfiguration::get_currently_selected_password() const
 {
         return saved_configurations[curr_config_idx].password;
+}
+
+bool WifiAppConfiguration::is_initialized() const
+{
+        // magic number telling us that the config was initialized properly
+        return this->intialization_magic_number == INITIALIZATION_MAGIC_NUMBER;
 }
 
 const char *WifiAppConfiguration::get_currently_selected_ssid() const
