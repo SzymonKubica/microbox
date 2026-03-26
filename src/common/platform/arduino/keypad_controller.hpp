@@ -29,28 +29,6 @@ class KeypadController : public ActionController
          * This is to be called only once inside of the `setup` Arduino
          * function.
          *
-         * DEPRECATED: This will likely not be necessary in the future. Original
-         * plan was to initialize the pins there. The problem is that the
-         * function for doing this is overloaded so we cannot pass it as a
-         * pointer without contextual information (makes sense, it won't be
-         * possible to infer which function to call).
          */
         void setup() override;
-
-        KeypadController(int (*digital_read_)(unsigned char))
-            : digital_read(digital_read_)
-        {
-        }
-
-      private:
-        /**
-         * The digital read function that is provided by the Arduino core layer.
-         * Allows for testing the state of the buttons on the keypad.
-         *
-         * This is to be passed in when constructing the keypad controller.
-         * The reason is that we cannot import the Arduino specific functions
-         * inside of the C++ sources.
-         *
-         */
-        int (*digital_read)(unsigned char);
 };

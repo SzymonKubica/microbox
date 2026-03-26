@@ -98,7 +98,7 @@ void rgb_blink_task(void *parameter)
         const int rgb_mode = 0;
         const int off = 1;
         const int flashlight = 2;
-        int current = 0;
+        int current = 1;
         while (true) {
                 if (digitalRead(38) == LOW) {
                         current = (current + 1) % 3;
@@ -155,11 +155,6 @@ void setup(void)
         adafruit_gamepad_available = setup_adafruit_seesaw_i2c_connection();
 
         // Set up bins neeeded for controllers
-        pinMode(STICK_BUTTON_PIN, INPUT);
-        pinMode(LEFT_BUTTON_PIN, INPUT);
-        pinMode(DOWN_BUTTON_PIN, INPUT);
-        pinMode(UP_BUTTON_PIN, INPUT);
-        pinMode(RIGHT_BUTTON_PIN, INPUT);
 
         // Initializes the source of randomness from the
         // noise present on the first digital pin
@@ -187,10 +182,10 @@ void loop(void)
         Serial.println("Game console started.");
 
         // Initialize game platform components
-        joystick_controller =
-            new JoystickController((int (*)(unsigned char))&analogRead);
-        keypad_controller =
-            new KeypadController((int (*)(unsigned char))&digitalRead);
+        joystick_controller = new JoystickController();
+        joystick_controller->setup();
+        keypad_controller = new KeypadController();
+        keypad_controller->setup();
 
         std::vector<DirectionalController *> controllers = {};
         std::vector<ActionController *> action_controllers = {};

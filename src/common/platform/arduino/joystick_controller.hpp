@@ -8,11 +8,6 @@
 #define HIGH_THRESHOLD 900
 #define LOW_THRESHOLD 100
 
-/** Pins controlling the joystick */
-#define A0 13
-#define STICK_BUTTON_PIN A0
-#define STICK_Y_PIN 16
-#define STICK_X_PIN 17
 
 class JoystickController : public DirectionalController
 {
@@ -37,30 +32,6 @@ class JoystickController : public DirectionalController
          * Setup function used for e.g. initializing pins of the controller.
          * This is to be called only once inside of the `setup` Arduino
          * function.
-         *
-         * DEPRECATED: This will likely not be necessary in the future. Original plan
-         * was to initialize the pins there. The problem is that the function for
-         * doing this is overloaded so we cannot pass it as a pointer without
-         * contextual information (makes sense, it won't be possible to infer
-         * which function to call).
          */
         void setup() override;
-
-        JoystickController(int (*analog_read_)(unsigned char))
-            : analog_read(analog_read_)
-        {
-        }
-
-      private:
-        /**
-         * The analog read function that is provided by the Arduino core layer.
-         * Allows for reading the voltage on the potentiometer that is
-         * controlled by the joystick.
-         *
-         * This is to be passed in when constructing the joystick controller.
-         * The reason is that we cannot import the Arduino specific functions
-         * inside of the C++ sources.
-         *
-         */
-        int (*analog_read)(unsigned char);
 };

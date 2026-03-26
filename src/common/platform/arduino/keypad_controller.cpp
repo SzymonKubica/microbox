@@ -1,10 +1,11 @@
 #include "keypad_controller.hpp"
+#include <Arduino.h>
 
 bool KeypadController::poll_for_input(Action *input) {
-        int leftButton = this->digital_read(LEFT_BUTTON_PIN);
-        int downButton = this->digital_read(DOWN_BUTTON_PIN);
-        int upButton = this->digital_read(UP_BUTTON_PIN);
-        int rightButton = this->digital_read(RIGHT_BUTTON_PIN);
+        int leftButton = digitalRead(LEFT_BUTTON_PIN);
+        int downButton = digitalRead(DOWN_BUTTON_PIN);
+        int upButton = digitalRead(UP_BUTTON_PIN);
+        int rightButton = digitalRead(RIGHT_BUTTON_PIN);
 
         if (!leftButton) {
                 *input = Action::BLUE;
@@ -26,4 +27,8 @@ bool KeypadController::poll_for_input(Action *input) {
 }
 
 void KeypadController::setup() {
+        pinMode(LEFT_BUTTON_PIN, INPUT);
+        pinMode(DOWN_BUTTON_PIN, INPUT);
+        pinMode(UP_BUTTON_PIN, INPUT);
+        pinMode(RIGHT_BUTTON_PIN, INPUT);
 }
