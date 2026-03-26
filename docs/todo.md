@@ -51,6 +51,9 @@
 - [ ] document patches required on esp32
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] add brightness changing app
+- [ ] debug random seed picker
+- [ ] design a robust way of telling if a config stored in persistent storage is
+      garbage and needs to be thrown away and overwritten
 
 # In Progress
 
