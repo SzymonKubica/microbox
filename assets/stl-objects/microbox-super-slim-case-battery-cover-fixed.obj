@@ -1,5 +1,0 @@
-# FreeCAD v1.0 build2 Arch module
-# https://www.freecad.org
-mtllib microbox-super-slim-case-battery-cover-fixed.mtl
-o Body006
-usemtl color_727980

@@ -1,0 +1,3 @@
+[submodule "assets/stl"]
+	path = assets/stl
+	url = https://github.com/SzymonKubica/microbox-stl-assets
