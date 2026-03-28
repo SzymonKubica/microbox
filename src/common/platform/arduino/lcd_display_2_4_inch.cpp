@@ -1,9 +1,8 @@
 #if 1 || defined(WAVESHARE_2_4_INCH_LCD)
 #include "lcd_display_2_4_inch.hpp"
-// work in progress for TFT library
-#include <TFT_eSPI.h> // Hardware-specific library
-#include <SPI.h>
 #include <cstdint>
+#include <TFT_eSPI.h>
+#include <SPI.h>
 
 TFT_eSPI tft = TFT_eSPI();
 

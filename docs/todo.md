@@ -27,35 +27,41 @@
 # TODO
 
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
-- [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
 - [ ] ensure that generated sudoku grids have unique solutions (have to play a
       bunch of games and verify if the algorithm works fine).
 - [ ] clean up all usages of raw pointers.
 - [ ] design a better logging utility to remove the c-style macros.
 - [ ] add aliases for button to have something like 'exit button' instead of Action::BLUE
 - [ ] migrate 1.69 inch display to use the TFT library
-- [ ] fix settings loop getting stuck
-- [ ] remove mandatory wait for input at the end of each application loop
-- [ ] add documentation of the patches.
+- [ ] document patches required on esp32
+- [ ] add 'vendoring' for the TFT LCD display library to ensure users don't need to to
+      patching of the library code globally in their arduino libs. This is tricky
+      as the library depends on the global arduino installation structure.
+      It migth be better to explain / clean-up the process of configuring the
+      library with the correct pins and target device.
 - [ ] restore compatibility with arduino uno r4
-- [ ] add wifi support for esp32
-- [ ] use a better display library for esp32 (the current AVR-optimized approach is bad).
 - [ ] add proper #define switching for esp32
 - [ ] clean up all imports to remove the indirect import warnings
 - [ ] separate games from applications
 - [ ] fix all new memory leaks
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
+- [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
 - [ ] fix minesweeper crashing
-- [ ] document patches required on esp32
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] add brightness changing app
-- [ ] debug random seed picker
+- [ ] add config struct version validations
+- [ ] master zellij and use it for compile/upload/monitor logs workflow.
 
 # In Progress
 
-- [ ] add config struct version validations
 
 # Done
+- [x] debug sending https requests on arduino (might require changing the web client API) (this is tough)
+- [x] add wifi support for esp32
+- [x] debug random seed picker
+- [x] use a better display library for esp32 (the current AVR-optimized approach is bad).
+- [x] remove mandatory wait for input at the end of each application loop
+- [x] fix settings loop getting stuck
 - [x] design a robust way of telling if a config stored in persistent storage is
       garbage and needs to be thrown away and overwritten
 - [x] create a git submodule for the stl assets to make git clone of the main

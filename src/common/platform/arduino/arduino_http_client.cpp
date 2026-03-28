@@ -25,13 +25,26 @@ ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
                 client.println("Connection: close");
                 client.println();
 
-                // Wait for response
-                while (client.connected() && !client.available())
-                        delay(4);
+                std::string response;
+                char buf[64];
+                unsigned long start = millis();
+                while (client.connected() || client.available()) {
+                        if (client.available()) {
+                                int len = client.readBytes(buf, sizeof(buf));
+                                response.append(buf, len);
 
-                std::string response = client.readString().c_str();
+                                start =
+                                    millis(); // reset timeout after each chunk
+                        } else {
+                                // No data, wait a tiny bit
+                                delay(1);
+                        }
 
-                LOG_DEBUG("wifi_client", response.c_str());
+                        // Timeout guard
+                        if (millis() - start > 3000) { // 3s without data
+                                break;
+                        }
+                }
 
                 int body_start = response.find("\r\n\r\n");
                 if (body_start != -1) {
