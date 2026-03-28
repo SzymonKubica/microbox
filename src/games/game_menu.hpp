@@ -19,6 +19,7 @@ enum class Game : int {
 };
 
 typedef struct GameMenuConfiguration {
+        ConfigurationHeader header;
         Game game;
         Color accent_color;
         UserInterfaceRenderingMode rendering_mode;

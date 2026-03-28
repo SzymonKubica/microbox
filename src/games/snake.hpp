@@ -7,6 +7,7 @@
 #include "application_executor.hpp"
 
 typedef struct SnakeConfiguration {
+        ConfigurationHeader header;
         /**
          * Speed of the snake in cells travelled per second.
          */

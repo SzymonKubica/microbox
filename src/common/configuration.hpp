@@ -6,6 +6,20 @@
 #include "map"
 #include <optional>
 
+const uint32_t CONFIGURATION_MAGIC = 0xC0DE;
+/**
+ * A header that is stored at the beginning of each configuration struct. This
+ * is needed to prevent issues with uninitialized memory EEPROM / NVS leading to
+ * garbage configuration values being loaded.
+ */
+struct ConfigurationHeader {
+
+      public:
+        uint32_t magic = CONFIGURATION_MAGIC;
+        uint16_t version;
+        bool is_valid() const { return this->magic == CONFIGURATION_MAGIC; }
+};
+
 typedef enum ConfigurationOptionType {
         INT,
         STRING,

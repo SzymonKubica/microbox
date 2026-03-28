@@ -4,14 +4,20 @@
 #if defined(ARDUINO_UNOR4_WIFI)
 #include <WiFiS3.h>
 #endif
+#if defined(ARDUINO_ARCH_ESP32)
+#include <WiFi.h>
+#endif
 #include <cstdint>
 
 std::optional<std::string>
 ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
 {
-#if defined(ARDUINO_UNOR4_WIFI)
+#if defined(ARDUINO_UNOR4_WIFI) || defined(ARDUINO_ARCH_ESP32)
         WiFiClient client;
+        LOG_DEBUG("wifi_client", "Connecting to host...");
         if (client.connect(config.host.c_str(), (uint16_t)config.port)) {
+                LOG_DEBUG("wifi_client",
+                          "Connected to host, sending request...");
                 std::string get_request = "GET " + url + " HTTP/1.1";
                 std::string host = "Host: " + config.host;
                 client.println(get_request.c_str());
@@ -23,10 +29,7 @@ ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
                 while (client.connected() && !client.available())
                         delay(4);
 
-                std::string response;
-                while (client.available()) {
-                        response += std::string(client.readString().c_str());
-                }
+                std::string response = client.readString().c_str();
 
                 LOG_DEBUG("wifi_client", response.c_str());
 

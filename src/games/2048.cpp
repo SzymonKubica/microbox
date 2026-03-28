@@ -116,8 +116,8 @@ void save_game_state(Platform *p, Game2048Configuration &config,
 }
 
 UserAction Clean2048::app_loop(Platform *p,
-                                UserInterfaceCustomization *customization,
-                                const Game2048Configuration &config)
+                               UserInterfaceCustomization *customization,
+                               const Game2048Configuration &config)
 {
         GameState *state;
 
@@ -213,7 +213,7 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
 {
         int storage_offset = get_settings_storage_offset(Game::Clean2048);
 
-        Game2048Configuration config{};
+        Game2048Configuration config;
         LOG_DEBUG(TAG,
                   "Trying to load initial settings from the persistent storage "
                   "at offset %d",
@@ -222,7 +222,7 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
 
         Game2048Configuration *output = new Game2048Configuration();
 
-        if (config.target_max_tile == 0) {
+        if (!config.header.is_valid()) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "2048 game configuration, using default values.");

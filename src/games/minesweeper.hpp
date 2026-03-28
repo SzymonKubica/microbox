@@ -5,6 +5,7 @@
 #include <optional>
 
 typedef struct MinesweeperConfiguration {
+        ConfigurationHeader header;
         int mines_num;
 } MinesweeperConfiguration;
 
@@ -22,8 +23,8 @@ class Minesweeper : public ApplicationExecutor<MinesweeperConfiguration>
 {
       public:
         UserAction app_loop(Platform *p,
-                             UserInterfaceCustomization *customization,
-                             const MinesweeperConfiguration &config) override;
+                            UserInterfaceCustomization *customization,
+                            const MinesweeperConfiguration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        MinesweeperConfiguration *game_config) override;

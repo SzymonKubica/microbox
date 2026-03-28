@@ -8,6 +8,7 @@
 #include "application_executor.hpp"
 
 typedef struct Game2048Configuration {
+        ConfigurationHeader header;
         int grid_size;
         int target_max_tile;
         // Indicates whether the game configuration has an ongoing game saved
@@ -39,16 +40,6 @@ class GameState
         {
         }
 };
-
-/**
- * Similar to `collect_configuration` from `configuration.hpp`, it returns true
- * if the configuration was successfully collected. Otherwise, if the user
- * requested exit by pressing the blue button, it returns false and this needs
- * to be handled by the main game loop.
- */
-std::optional<UserAction>
-collect_2048_config(Platform *p, Game2048Configuration *game_config,
-                    UserInterfaceCustomization *customization);
 
 GameState *initialize_game_state(int gridSize, int target_max_tile);
 

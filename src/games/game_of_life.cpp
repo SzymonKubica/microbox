@@ -25,6 +25,7 @@
 #define EMPTY false
 
 GameOfLifeConfiguration DEFAULT_GAME_OF_LIFE_CONFIG = {
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 1},
     .prepopulate_grid = false,
     .use_toroidal_array = true,
     .simulation_speed = 2,
@@ -107,10 +108,7 @@ load_initial_game_of_life_config(PersistentStorage *storage)
 {
         int storage_offset = get_settings_storage_offset(Game::GameOfLife);
 
-        GameOfLifeConfiguration config = {.prepopulate_grid = false,
-                                          .use_toroidal_array = false,
-                                          .simulation_speed = 0,
-                                          .rewind_buffer_size = 0};
+        GameOfLifeConfiguration config;
 
         LOG_DEBUG(TAG,
                   "Trying to load initial settings from the persistent storage "
@@ -120,7 +118,7 @@ load_initial_game_of_life_config(PersistentStorage *storage)
 
         GameOfLifeConfiguration *output = new GameOfLifeConfiguration();
 
-        if (config.rewind_buffer_size == 0) {
+        if (!config.header.is_valid()) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "game of life configuration, using default values.");

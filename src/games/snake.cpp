@@ -16,10 +16,12 @@
 
 #define TAG "snake"
 
-SnakeConfiguration DEFAULT_CONFIG = {.speed = 6,
-                                     .allow_grace = false,
-                                     .enable_poop = true,
-                                     .allow_pause = false};
+SnakeConfiguration DEFAULT_CONFIG = {
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 1},
+    .speed = 7,
+    .allow_grace = false,
+    .enable_poop = true,
+    .allow_pause = false};
 using namespace SnakeDefinitions;
 
 /**
@@ -79,8 +81,8 @@ void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score);
 
 UserAction SnakeGame::app_loop(Platform *p,
-                                UserInterfaceCustomization *customization,
-                                const SnakeConfiguration &config)
+                               UserInterfaceCustomization *customization,
+                               const SnakeConfiguration &config)
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
 
@@ -350,8 +352,9 @@ void extract_game_config(SnakeConfiguration *game_config,
                          Configuration *config);
 
 std::optional<UserAction>
-SnakeGame::collect_config(Platform *p, UserInterfaceCustomization *customization,
-               SnakeConfiguration *game_config)
+SnakeGame::collect_config(Platform *p,
+                          UserInterfaceCustomization *customization,
+                          SnakeConfiguration *game_config)
 {
         Configuration *config =
             assemble_snake_configuration(p->persistent_storage);
@@ -398,19 +401,13 @@ SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
         int storage_offset = get_settings_storage_offset(Game::Snake);
         LOG_DEBUG(TAG, "Loading config from offset %d", storage_offset);
 
-        // We initialize empty config to detect corrupted memory and fallback
-        // to defaults if needed.
-        SnakeConfiguration config = {.speed = 0,
-                                     .allow_grace = 0,
-                                     .enable_poop = false,
-                                     .allow_pause = 0};
-
+        SnakeConfiguration config;
         LOG_DEBUG(TAG, "Trying to load settings from the persistent storage");
         storage->get(storage_offset, config);
 
         SnakeConfiguration *output = new SnakeConfiguration();
 
-        if (config.speed == 0) {
+        if (!config.header.is_valid()) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "snake configuration, using default values.");
                 memcpy(output, &DEFAULT_CONFIG, sizeof(SnakeConfiguration));

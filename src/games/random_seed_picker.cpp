@@ -10,7 +10,9 @@
 #define TAG "random_seed_picker"
 
 RandomSeedPickerConfiguration DEFAULT_RANDOM_SEED_PICKER_CONFIG = {
-    .seed = 1234, .action = RandomSeedSelectorAction::Download};
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 1},
+    .seed = 1234,
+    .action = RandomSeedSelectorAction::Download};
 
 const char *selector_action_to_str(RandomSeedSelectorAction action)
 {
@@ -56,8 +58,8 @@ const char *RandomSeedPicker::get_help_text()
 
 UserAction
 RandomSeedPicker::app_loop(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            const RandomSeedPickerConfiguration &config)
+                           UserInterfaceCustomization *customization,
+                           const RandomSeedPickerConfiguration &config)
 {
         RandomSeedPickerConfiguration config_copy = config;
 
@@ -181,7 +183,7 @@ load_initial_seed_picker_config(PersistentStorage *storage)
         RandomSeedPickerConfiguration *output =
             new RandomSeedPickerConfiguration();
 
-        if (config.seed == 0 || config.seed == -1) {
+        if (!config.header.is_valid()) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "seed picker configuration, using default values.");
@@ -240,7 +242,7 @@ Configuration *assemble_random_seed_picker_configuration(
 
         auto available_actions = {
         // Disable the download functionality on the Uno R4 Minima
-#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
+#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR) || defined(ARDUINO_ARCH_ESP32)
             selector_action_to_str(RandomSeedSelectorAction::Download),
 #endif
             selector_action_to_str(RandomSeedSelectorAction::Modify),

@@ -6,7 +6,8 @@
 #include "common_transitions.hpp"
 #include "application_executor.hpp"
 
-typedef struct SnakeDuelConfiguration {
+typedef struct SnakeDuelConfiguration{
+        ConfigurationHeader header;
         /**
          * Speed of the snake in cells travelled per second.
          */
@@ -38,8 +39,8 @@ class SnakeDuel : public ApplicationExecutor<SnakeDuelConfiguration>
 {
       public:
         UserAction app_loop(Platform *p,
-                             UserInterfaceCustomization *customization,
-                             const SnakeDuelConfiguration &config) override;
+                            UserInterfaceCustomization *customization,
+                            const SnakeDuelConfiguration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        SnakeDuelConfiguration *game_config) override;

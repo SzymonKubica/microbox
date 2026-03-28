@@ -6,6 +6,7 @@
 #include <optional>
 
 typedef struct GameOfLifeConfiguration {
+        ConfigurationHeader header;
         bool prepopulate_grid;
         bool use_toroidal_array;
         /**

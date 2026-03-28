@@ -12,7 +12,9 @@
 
 #define TAG "minesweeper"
 
-MinesweeperConfiguration DEFAULT_MINESWEEPER_CONFIG = {.mines_num = 25};
+MinesweeperConfiguration DEFAULT_MINESWEEPER_CONFIG = {
+  .header = {.magic = CONFIGURATION_MAGIC, .version = 1},
+  .mines_num = 25};
 
 typedef struct MinesweeperGridDimensions {
         int rows;
@@ -558,7 +560,7 @@ load_initial_minesweeper_config(PersistentStorage *storage)
         LOG_DEBUG(TAG, "Loading minesweeper saved config from offset %d",
                   storage_offset);
 
-        MinesweeperConfiguration config = {.mines_num = 0};
+        MinesweeperConfiguration config;
 
         LOG_DEBUG(TAG, "Trying to load initial settings from the "
                        "persistent storage");
@@ -566,7 +568,7 @@ load_initial_minesweeper_config(PersistentStorage *storage)
 
         MinesweeperConfiguration *output = new MinesweeperConfiguration();
 
-        if (config.mines_num == 0) {
+        if (!config.header.is_valid()) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "minesweeper configuration, using default values.");

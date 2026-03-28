@@ -7,6 +7,7 @@ std::vector<int> get_settings_storage_offsets();
 int get_settings_storage_offset(Game game);
 
 typedef struct SettingsConfiguration {
+        ConfigurationHeader header;
         Game selected_game;
 } SettingsConfiguration;
 

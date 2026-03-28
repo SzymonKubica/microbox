@@ -26,8 +26,6 @@
 
 # TODO
 
-- [ ] create a git submodule for the stl assets to make git clone of the main
-      microbox a bit more manageable
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] debug sending https requests on arduino (might require changing the web client API) (this is tough)
 - [ ] ensure that generated sudoku grids have unique solutions (have to play a
@@ -52,13 +50,16 @@
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] add brightness changing app
 - [ ] debug random seed picker
-- [ ] design a robust way of telling if a config stored in persistent storage is
-      garbage and needs to be thrown away and overwritten
 
 # In Progress
 
+- [ ] add config struct version validations
 
 # Done
+- [x] design a robust way of telling if a config stored in persistent storage is
+      garbage and needs to be thrown away and overwritten
+- [x] create a git submodule for the stl assets to make git clone of the main
+      microbox a bit more manageable
 - [x] tweak instrumentation so that esp32 can also connect to wifi
 - [x] change arduino controllers to avoid passing pointers to standard arduino functions.
 - [x] add/debug persistent storage on esp32

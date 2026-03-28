@@ -9,7 +9,8 @@
 
 #define SUDOKU_GRID_SIZE 9
 
-typedef struct SudokuConfiguration {
+typedef struct SudokuConfiguration : ConfigurationHeader {
+        ConfigurationHeader header;
         int difficulty;
         bool is_game_in_progress;
         SudokuCell saved_game[SUDOKU_GRID_SIZE][SUDOKU_GRID_SIZE];
@@ -24,8 +25,8 @@ class SudokuGame : public ApplicationExecutor<SudokuConfiguration>
 {
       public:
         UserAction app_loop(Platform *p,
-                                     UserInterfaceCustomization *customization,
-                                     const SudokuConfiguration &config) override;
+                            UserInterfaceCustomization *customization,
+                            const SudokuConfiguration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        SudokuConfiguration *game_config) override;

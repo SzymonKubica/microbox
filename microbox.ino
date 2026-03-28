@@ -89,7 +89,7 @@ bool setup_adafruit_seesaw_i2c_connection()
 }
 
 // ESP32 OVERRIDE
-SET_LOOP_TASK_STACK_SIZE(16 * 1024);
+SET_LOOP_TASK_STACK_SIZE(32 * 1024);
 
 bool adafruit_gamepad_available;
 

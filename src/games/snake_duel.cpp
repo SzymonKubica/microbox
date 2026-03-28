@@ -21,11 +21,12 @@
 
 constexpr int GAME_CELL_WIDTH = DEFAULT_SNAKE_GAME_CELL_WIDTH;
 
-SnakeDuelConfiguration DEFAULT_SNAKE_DUEL_CONFIG = {.speed = 6,
-                                                    .allow_grace = false,
-                                                    .enable_poop = true,
-                                                    .secondary_player_color =
-                                                        Blue};
+SnakeDuelConfiguration DEFAULT_SNAKE_DUEL_CONFIG = {
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 1},
+    .speed = 6,
+    .allow_grace = false,
+    .enable_poop = true,
+    .secondary_player_color = Blue};
 
 using namespace SnakeDefinitions;
 
@@ -136,8 +137,8 @@ void take_snake_step(
     SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary);
 
 UserAction SnakeDuel::app_loop(Platform *p,
-                                UserInterfaceCustomization *customization,
-                                const SnakeDuelConfiguration &config)
+                               UserInterfaceCustomization *customization,
+                               const SnakeDuelConfiguration &config)
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
 
@@ -574,20 +575,14 @@ load_initial_snake_duel_config(PersistentStorage *storage)
         int storage_offset = get_settings_storage_offset(Game::SnakeDuel);
         LOG_DEBUG(TAG, "Loading config from offset %d", storage_offset);
 
-        // We initialize empty config to detect corrupted memory and fallback
-        // to defaults if needed.
-        SnakeDuelConfiguration config = {.speed = 0,
-                                         .allow_grace = 0,
-                                         .enable_poop = false,
-                                         .secondary_player_color = Blue,
-                                         .enable_ai = false};
+        SnakeDuelConfiguration config;
 
         LOG_DEBUG(TAG, "Trying to load settings from the persistent storage");
         storage->get(storage_offset, config);
 
         SnakeDuelConfiguration *output = new SnakeDuelConfiguration();
 
-        if (config.speed == 0) {
+        if (!config.header.is_valid()) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "snake configuration, using default values.");
                 memcpy(output, &DEFAULT_SNAKE_DUEL_CONFIG,

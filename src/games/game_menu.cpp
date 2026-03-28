@@ -20,6 +20,7 @@
 #define TAG "game_menu"
 
 GameMenuConfiguration DEFAULT_MENU_CONFIGURATION = {
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 1},
     .game = Game::GameOfLife,
     .accent_color = DarkBlue,
     .rendering_mode = Minimalistic,
@@ -34,10 +35,7 @@ load_initial_menu_configuration(PersistentStorage *storage)
 
         int storage_offset = get_settings_storage_offset(Game::MainMenu);
 
-        GameMenuConfiguration configuration = {.game = Game::Unknown,
-                                               .accent_color = DarkBlue,
-                                               .rendering_mode = Minimalistic,
-                                               .show_help_text = true};
+        GameMenuConfiguration configuration{};
 
         LOG_DEBUG(TAG,
                   "Trying to load initial settings from the persistent storage "
@@ -47,7 +45,7 @@ load_initial_menu_configuration(PersistentStorage *storage)
 
         GameMenuConfiguration *output = new GameMenuConfiguration();
 
-        if (!is_valid_game(configuration.game)) {
+        if (!configuration.header.is_valid()) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "game menu configuration, using default values.");
@@ -78,7 +76,8 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
              game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
              game_to_string(Game::SnakeDuel), game_to_string(Game::Sudoku),
         // Disable the WiFi app on the Uno R4 Minima
-#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR) ||                        \
+    defined(ARDUINO_ARCH_ESP32)
              game_to_string(Game::WifiApp),
 #endif
              game_to_string(Game::Sleep), game_to_string(Game::Settings),

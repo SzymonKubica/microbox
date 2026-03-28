@@ -12,6 +12,7 @@ void enter_random_seed_picker_loop(Platform *platform,
                                    UserInterfaceCustomization *customization);
 
 typedef struct RandomSeedPickerConfiguration {
+        ConfigurationHeader header;
         int seed;
         RandomSeedSelectorAction action;
 } RandomSeedPickerConfiguration;

@@ -20,7 +20,10 @@
 #define TAG "sudoku"
 
 SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {
-    .difficulty = 1, .is_game_in_progress = false, .accent_color = Color::Cyan};
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 1},
+    .difficulty = 1,
+    .is_game_in_progress = false,
+    .accent_color = Color::Cyan};
 
 /**
  * Represents the state of a Sudoku game.
@@ -315,7 +318,8 @@ UserAction SudokuGame::app_loop(Platform *p,
                         view.remove_underline_all_instances(old_selected,
                                                             state.grid);
                         view.underline_all_instances(state.active_digit,
-                                                     state.grid, config.accent_color);
+                                                     state.grid,
+                                                     config.accent_color);
 
                         // If the caret was placed on any of the updated digits,
                         // it will get clipped, so we need to redraw it.
@@ -437,16 +441,14 @@ SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage)
         int storage_offset = get_settings_storage_offset(Game::Sudoku);
         LOG_DEBUG(TAG, "Loading config from offset %d", storage_offset);
 
-        // We initialize empty config to detect corrupted memory and
-        // fallback to defaults if needed.
-        SudokuConfiguration config = {.difficulty = 0};
+        SudokuConfiguration config{};
 
         LOG_DEBUG(TAG, "Trying to load settings from the persistent storage");
         storage->get(storage_offset, config);
 
         SudokuConfiguration *output = new SudokuConfiguration();
 
-        if (config.difficulty == 0) {
+        if (!config.header.is_valid()) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "sudoku configuration, using default values.");
                 memcpy(output, &DEFAULT_SUDOKU_CONFIG,

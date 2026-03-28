@@ -36,6 +36,7 @@ typedef struct WifiCredentials {
  */
 
 typedef struct WifiAppConfiguration {
+        ConfigurationHeader header;
         /**
          * Required to detect if the wifi app configuration struct has not
          * yet been initialized in the persistent storage. If this does not match
