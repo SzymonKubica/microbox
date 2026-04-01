@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <optional>
 
 #include "snake_common.hpp"
@@ -148,13 +149,13 @@ UserAction SnakeDuel::app_loop(Platform *p,
         LOG_DEBUG(TAG, "Entering Snake game loop");
 
         int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
-        SquareCellGridDimensions *gd = calculate_grid_dimensions(
+        std::unique_ptr<SquareCellGridDimensions> gd(calculate_grid_dimensions(
             p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius(), game_cell_width);
+            p->display->get_display_corner_radius(), game_cell_width));
         int rows = gd->rows;
         int cols = gd->cols;
 
-        draw_grid_frame(p, customization, gd);
+        draw_grid_frame(p, customization, gd.get());
 
         std::vector<std::vector<Cell>> grid(rows, std::vector<Cell>(cols));
 
@@ -164,7 +165,7 @@ UserAction SnakeDuel::app_loop(Platform *p,
         // actual score count, we need to cancel out the three spaces and
         // subtract them from score_end pixel position.
         int score_end =
-            render_centered_above_frame(p, gd, (char *)"P1:    P2:    ");
+            render_centered_above_frame(p, gd.get(), (char *)"P1:    P2:    ");
 
         /*
          * Helper lambda expressions to avoid passing platform / context
@@ -183,29 +184,30 @@ UserAction SnakeDuel::app_loop(Platform *p,
         // Re-renders the score of Player 1 in the correct location above the
         // grid as determined by grid dimensions and the score text end x
         // position.
-        auto render_player_1_score = [p, gd, &grid, score_end](int score) {
-                update_duel_score(p, gd, score_end, score);
+        auto render_player_1_score = [p, &gd, &grid, score_end](int score) {
+                update_duel_score(p, gd.get(), score_end, score);
         };
         // Re-renders the score of Player 2 in the correct location above the
         // grid as determined by grid dimensions and the score text end x
         // position.
-        auto render_player_2_score = [p, gd, &grid, score_end](int score) {
-                update_duel_score(p, gd, score_end, score, true);
+        auto render_player_2_score = [p, &gd, &grid, score_end](int score) {
+                update_duel_score(p, gd.get(), score_end, score, true);
         };
         // After the value of a given cell in the grid is changed, this
         // re-renders that single cell in the display.
         std::function<void(Point & location, Color color)> render_cell =
-            [p, gd, &grid, customization](Point &location, Color color) {
-                    refresh_grid_cell(p->display, color, gd, &grid, location);
+            [p, &gd, &grid, customization](Point &location, Color color) {
+                    refresh_grid_cell(p->display, color, gd.get(), &grid,
+                                      location);
             };
         // Renders the snake's head including the neck (2nd segment right behind
         // the head).
         std::function<void(ColoredSnake & snake)> render_head =
-            [p, gd, &grid, customization](ColoredSnake &snake) {
+            [p, &gd, &grid, customization](ColoredSnake &snake) {
                     auto neck = snake.get_neck();
-                    render_segment_connection(p->display, snake.color, gd,
+                    render_segment_connection(p->display, snake.color, gd.get(),
                                               &grid, neck, snake.head);
-                    render_snake_head(p->display, snake.color, gd, &grid,
+                    render_snake_head(p->display, snake.color, gd.get(), &grid,
                                       snake);
             };
 
@@ -213,7 +215,6 @@ UserAction SnakeDuel::app_loop(Platform *p,
         render_player_2_score(0);
 
         if (!p->display->refresh()) {
-                delete gd;
                 return UserAction::CloseWindow;
         }
 
@@ -302,7 +303,6 @@ UserAction SnakeDuel::app_loop(Platform *p,
                         if (config.enable_ai && state.is_snake_one_dead &&
                             act == Action::BLUE) {
                                 delay_millis(MOVE_REGISTERED_DELAY);
-                                delete gd;
                                 return UserAction::PauseAndPlayAgain;
                         }
                 }
@@ -316,31 +316,27 @@ UserAction SnakeDuel::app_loop(Platform *p,
                 }
                 state.last_step_timestamp = current_time();
 
+                TimeProvider *timer = p->time_provider;
                 {
-                        // RAII duration logger.
-                        DurationLogger logger(
-                            p->time_provider,
-                            "Snake 1 took a step in %d milliseconds.");
+                        // Logs the elapsed time upon destruction at the end of
+                        // the enclosing block.
+                        DurationLogger l(timer, "Snake 1 moved in %d millis.");
 
                         if (!state.is_snake_one_dead) {
                                 snake.direction = new_snake_direction;
-                                take_snake_step(p, customization, config, gd,
-                                                score_end, grid, render_head,
-                                                render_cell, state, snake,
-                                                false);
+                                take_snake_step(p, customization, config,
+                                                gd.get(), score_end, grid,
+                                                render_head, render_cell, state,
+                                                snake, false);
                         }
                 }
-
                 {
-                        // RAII duration logger.
-                        DurationLogger logger(
-                            p->time_provider,
-                            "Snake 2 took a step in %d milliseconds.");
+                        DurationLogger l(timer, "Snake 2 moved in %d millis.");
 
                         if (!state.is_snake_two_dead) {
                                 if (config.enable_ai) {
-                                        auto maybe_next_step =
-                                            next_step(second_snake, grid, gd);
+                                        auto maybe_next_step = next_step(
+                                            second_snake, grid, gd.get());
                                         if (maybe_next_step.has_value()) {
                                                 new_second_snake_direction =
                                                     maybe_next_step.value();
@@ -349,15 +345,14 @@ UserAction SnakeDuel::app_loop(Platform *p,
 
                                 second_snake.direction =
                                     new_second_snake_direction;
-                                take_snake_step(p, customization, config, gd,
-                                                score_end, grid, render_head,
-                                                render_cell, state,
+                                take_snake_step(p, customization, config,
+                                                gd.get(), score_end, grid,
+                                                render_head, render_cell, state,
                                                 second_snake, true);
                         }
                 }
 
                 if (wait_for_next_move(frame_start).has_value()) {
-                        delete gd;
                         return UserAction::CloseWindow;
                 };
                 int elapsed = current_time() - frame_start;
@@ -365,10 +360,8 @@ UserAction SnakeDuel::app_loop(Platform *p,
         }
 
         if (!p->display->refresh()) {
-                delete gd;
                 return UserAction::CloseWindow;
         }
-        delete gd;
         return UserAction::PauseAndPlayAgain;
 }
 

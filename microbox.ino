@@ -36,6 +36,8 @@ Adafruit_seesaw ss(&Wire);
 #endif
 
 /**
+ * TODO: is this even requied anymore given that now persistent storage
+ *       structs are properly versioned.
  * When making breaking changes to the persistent storage used for game
  * configs, sometimes it is required to clean EEPROM before the new schema
  * of the config values can be written to it. This function allows for that.
