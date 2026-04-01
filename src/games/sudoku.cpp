@@ -163,8 +163,7 @@ const char *SudokuGame::get_help_text()
 {
         return "Use the left/right buttons to select which digit you are "
                "inserting. Use the joystick to control the cursor. Press green "
-               "to "
-               "(re-)place the current digit.";
+               "to (re-)place the current digit.";
 }
 
 std::vector<std::vector<SudokuCell>>
@@ -484,45 +483,4 @@ void extract_game_config(SudokuConfiguration *game_config,
                             initial_config->saved_game[y][x];
                 }
         }
-}
-
-/**
- * Graveyard below (TODO: clean-up / repurpose)
- */
-std::vector<std::vector<SudokuCell>> fetch_sudoku_grid(Platform *p)
-{
-        ConnectionConfig config = {
-            .host = "https://sudoku-api.vercel.app/api/dosuku", .port = 443};
-        std::optional<std::string> response =
-            p->client->get(config, "https://sudoku-api.vercel.app/api/dosuku");
-
-        if (!response.has_value()) {
-                std::vector<std::vector<SudokuCell>> output(
-                    9, std::vector(9, SudokuCell(std::nullopt, true)));
-                return output;
-        }
-
-        const char *response_value = response.value().c_str();
-
-        JsonDocument doc;
-        deserializeJson(doc, response_value);
-
-        auto sudoku_grid = doc["newboard"]["grids"][0]["value"];
-
-        std::vector<std::vector<SudokuCell>> output;
-        for (int i = 0; i < 9; i++) {
-                std::vector<SudokuCell> row;
-                for (int j = 0; j < 9; j++) {
-                        int value = sudoku_grid[i][j];
-                        if (value != 0) {
-                                std::optional<int> value_opt = value;
-                                row.push_back({value_opt, false});
-                        } else {
-                                row.push_back({std::nullopt, true});
-                        }
-                }
-                output.push_back(row);
-        }
-
-        return output;
 }

@@ -5,13 +5,11 @@
 
 #include "snake_common.hpp"
 #include "snake_duel.hpp"
-#include "2048.hpp"
-// TODO: fix warnings about those headers not being used directly.
-#include "game_of_life.hpp"
 #include "settings.hpp"
 #include "game_menu.hpp"
 
 #include "../common/configuration.hpp"
+#include "../common/profiling.hpp"
 #include "../common/constants.hpp"
 #include "../common/grid.hpp"
 #include "../common/logging.hpp"
@@ -110,6 +108,13 @@ void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
                        bool is_secondary = false);
 
 /**
+ * Combines `find_next_step_towards_apple` and `find_fallback_next_safe_step`
+ * to steer the 'AI' snake.
+ */
+std::optional<Direction> next_step(Snake &snake,
+                                   std::vector<std::vector<Cell>> &grid,
+                                   SquareCellGridDimensions *gd);
+/**
  * Given the snake (its current head location) and the current state of the
  * grid it finds the direction where the snake needs to turn in this moment
  * to get too the apple.
@@ -149,7 +154,6 @@ UserAction SnakeDuel::app_loop(Platform *p,
         int rows = gd->rows;
         int cols = gd->cols;
 
-        LOG_DEBUG(TAG, "Rendering snake duel game area.");
         draw_grid_frame(p, customization, gd);
 
         std::vector<std::vector<Cell>> grid(rows, std::vector<Cell>(cols));
@@ -182,7 +186,7 @@ UserAction SnakeDuel::app_loop(Platform *p,
         auto render_player_1_score = [p, gd, &grid, score_end](int score) {
                 update_duel_score(p, gd, score_end, score);
         };
-        // Re-renders the score of Player 1 in the correct location above the
+        // Re-renders the score of Player 2 in the correct location above the
         // grid as determined by grid dimensions and the score text end x
         // position.
         auto render_player_2_score = [p, gd, &grid, score_end](int score) {
@@ -204,8 +208,6 @@ UserAction SnakeDuel::app_loop(Platform *p,
                     render_snake_head(p->display, snake.color, gd, &grid,
                                       snake);
             };
-
-        LOG_DEBUG(TAG, "Snake game area border drawn.");
 
         render_player_1_score(0);
         render_player_2_score(0);
@@ -248,34 +250,38 @@ UserAction SnakeDuel::app_loop(Platform *p,
         // Here the color doesn't matter as apples are always red.
         render_cell(apple_location, primary_color);
 
+        /*
+         Time-related shorthand functions
+         */
+        auto current_time = [&]() { return p->time_provider->milliseconds(); };
+        auto delay_millis = [&](int duration_millis) {
+                p->time_provider->delay_ms(duration_millis);
+        };
         SnakeDuelLoopState state{config.speed};
 
         // Convenience funtion to ensure each short-circuit exit of the
         // loop iteration waits until the next move.
         auto wait_for_next_move =
-            [p, &state](long frame_start_millis) -> std::optional<UserAction> {
-                long elapsed =
-                    p->time_provider->milliseconds() - frame_start_millis;
-
-                if (GAME_LOOP_DELAY > elapsed) {
-                        p->time_provider->delay_ms(GAME_LOOP_DELAY - elapsed);
-                }
-                if (!p->display->refresh()) {
+            [p, &state, &current_time, &delay_millis](
+                long frame_start_millis) -> std::optional<UserAction> {
+                long elapsed = current_time() - frame_start_millis;
+                if (GAME_LOOP_DELAY > elapsed)
+                        delay_millis(GAME_LOOP_DELAY - elapsed);
+                if (!p->display->refresh())
                         return UserAction::CloseWindow;
-                }
                 return std::nullopt;
         };
 
-        // We let the user change the new snake direction at any point during
-        // the frame but it gets applied on the snake only at the end of the
-        // given frame. The reason for this is that doing it each time an input
-        // is registered led to issues where quick changes to the direction
-        // could make the snake go opposite (turn on the spot) and fail the
-        // game.
+        // We let the user change the new snake direction at any point
+        // during the frame but it gets applied on the snake only at the
+        // end of the given frame. The reason for this is that doing it
+        // each time an input is registered led to issues where quick
+        // changes to the direction could make the snake go opposite
+        // (turn on the spot) and fail the game.
         Direction new_snake_direction = snake.direction;
         Direction new_second_snake_direction = second_snake.direction;
         while (!state.is_game_over()) {
-                long frame_start = p->time_provider->milliseconds();
+                long frame_start = current_time();
                 Direction dir;
                 Action act;
                 // The `!is_opposite` check prevents instant game-over when user
@@ -295,9 +301,8 @@ UserAction SnakeDuel::app_loop(Platform *p,
                         // mode, we let the player quit early by pressing blue.
                         if (config.enable_ai && state.is_snake_one_dead &&
                             act == Action::BLUE) {
+                                delay_millis(MOVE_REGISTERED_DELAY);
                                 delete gd;
-                                p->time_provider->delay_ms(
-                                    MOVE_REGISTERED_DELAY);
                                 return UserAction::PauseAndPlayAgain;
                         }
                 }
@@ -305,60 +310,58 @@ UserAction SnakeDuel::app_loop(Platform *p,
                 // If we are paused or it is not the time to move yet, we finish
                 // processing early.
                 if (state.is_waiting(p->time_provider)) {
-                        if (wait_for_next_move(frame_start).has_value()) {
+                        if (wait_for_next_move(frame_start).has_value())
                                 return UserAction::CloseWindow;
-                        };
                         continue;
                 }
-                state.last_step_timestamp = p->time_provider->milliseconds();
+                state.last_step_timestamp = current_time();
 
-                long start = p->time_provider->milliseconds();
-                if (!state.is_snake_one_dead) {
-                        snake.direction = new_snake_direction;
-                        take_snake_step(p, customization, config, gd, score_end,
-                                        grid, render_head, render_cell, state,
-                                        snake, false);
+                {
+                        // RAII duration logger.
+                        DurationLogger logger(
+                            p->time_provider,
+                            "Snake 1 took a step in %d milliseconds.");
+
+                        if (!state.is_snake_one_dead) {
+                                snake.direction = new_snake_direction;
+                                take_snake_step(p, customization, config, gd,
+                                                score_end, grid, render_head,
+                                                render_cell, state, snake,
+                                                false);
+                        }
                 }
-                long end = p->time_provider->milliseconds();
-                LOG_DEBUG(TAG, "Snake 1 took a step in %d milliseconds.",
-                          end - start);
-                start = p->time_provider->milliseconds();
-                if (!state.is_snake_two_dead) {
-                        if (config.enable_ai) {
-                                auto direction = find_next_step_towards_apple(
-                                    second_snake, grid);
-                                if (direction.has_value() &&
-                                    !is_opposite(direction.value(),
-                                                 second_snake.direction)) {
-                                        new_second_snake_direction =
-                                            direction.value();
-                                } else {
-                                        auto fallback =
-                                            find_fallback_next_safe_step(
-                                                second_snake, grid, gd);
-                                        // Fallback will never to turn in place.
-                                        if (fallback.has_value()) {
+
+                {
+                        // RAII duration logger.
+                        DurationLogger logger(
+                            p->time_provider,
+                            "Snake 2 took a step in %d milliseconds.");
+
+                        if (!state.is_snake_two_dead) {
+                                if (config.enable_ai) {
+                                        auto maybe_next_step =
+                                            next_step(second_snake, grid, gd);
+                                        if (maybe_next_step.has_value()) {
                                                 new_second_snake_direction =
-                                                    fallback.value();
+                                                    maybe_next_step.value();
                                         }
                                 }
-                        }
 
-                        second_snake.direction = new_second_snake_direction;
-                        take_snake_step(p, customization, config, gd, score_end,
-                                        grid, render_head, render_cell, state,
-                                        second_snake, true);
+                                second_snake.direction =
+                                    new_second_snake_direction;
+                                take_snake_step(p, customization, config, gd,
+                                                score_end, grid, render_head,
+                                                render_cell, state,
+                                                second_snake, true);
+                        }
                 }
-                end = p->time_provider->milliseconds();
-                LOG_DEBUG(TAG, "Snake 2 took a step in %d milliseconds.",
-                          end - start);
 
                 if (wait_for_next_move(frame_start).has_value()) {
                         delete gd;
                         return UserAction::CloseWindow;
                 };
-                LOG_DEBUG(TAG, "Game loop iteration took %d milliseconds.",
-                          p->time_provider->milliseconds() - frame_start);
+                int elapsed = current_time() - frame_start;
+                LOG_DEBUG(TAG, "Iteration took %d milliseconds.", elapsed);
         }
 
         if (!p->display->refresh()) {
@@ -631,14 +634,19 @@ void extract_game_config(SnakeDuelConfiguration *game_config,
 
 /* Functions responsible for 'AI' snake steering follow below */
 
+std::optional<Direction> next_step(Snake &snake,
+                                   std::vector<std::vector<Cell>> &grid,
+                                   SquareCellGridDimensions *gd);
+
 /**
  * Given the current position of the snake, and the grid with all currently
- * occupied cells and apple location, it finds a path to the apple using BFS and
- * then sets the next step along that path in the &next output parameter.
+ * occupied cells and apple location, it finds a path to the apple using BFS
+ * and then sets the next step along that path in the &next output
+ * parameter.
  *
- * The reason we are doing this in such an 'impure' way is that returning the
- * entire path works on a powerful desktop machine, however on an arduino we
- * would get crashes which I suspect were memory related.
+ * The reason we are doing this in such an 'impure' way is that returning
+ * the entire path works on a powerful desktop machine, however on an
+ * arduino we would get crashes which I suspect were memory related.
  */
 bool find_next_step(const Point &start,
                     const std::vector<std::vector<Cell>> &grid,
@@ -699,6 +707,25 @@ find_fallback_next_safe_step(Snake &snake, std::vector<std::vector<Cell>> &grid,
         }
 
         return determine_displacement_direction(snake.head, next);
+}
+
+std::optional<Direction> next_step(Snake &snake,
+                                   std::vector<std::vector<Cell>> &grid,
+                                   SquareCellGridDimensions *gd)
+{
+        auto direction = find_next_step_towards_apple(snake, grid);
+        if (direction.has_value() &&
+            !is_opposite(direction.value(), snake.direction)) {
+                return direction.value();
+        }
+
+        auto fallback = find_fallback_next_safe_step(snake, grid, gd);
+        // Fallback will never turn backwards in place. Hence, no need to check
+        // if the fallback direction is opposite.
+        if (fallback.has_value()) {
+                return fallback.value();
+        }
+        return std::nullopt;
 }
 
 /**

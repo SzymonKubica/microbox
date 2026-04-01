@@ -42,7 +42,8 @@ calculate_grid_dimensions(int display_width, int display_height,
 
 SquareCellGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
-                          int display_rounded_corner_radius, int rows, int cols, bool square_cells)
+                          int display_rounded_corner_radius, int rows, int cols,
+                          bool square_cells)
 {
         // Bind input params to short names for improved readability.
         int w = display_width;
@@ -52,13 +53,12 @@ calculate_grid_dimensions(int display_width, int display_height,
         int usable_width = w - r;
         int usable_height = h - r;
 
-
         int cell_width = usable_width / cols;
         int cell_height = usable_height / rows;
 
         if (square_cells) {
-          cell_width = std::min(cell_height, cell_width);
-          cell_height = cell_width;
+                cell_width = std::min(cell_height, cell_width);
+                cell_height = cell_width;
         }
 
         int actual_width = cols * cell_width;
@@ -72,18 +72,19 @@ calculate_grid_dimensions(int display_width, int display_height,
                   "Calculated grid dimensions: %d rows, %d cols, "
                   "left margin: %d, top margin: %d, actual width: %d, "
                   "actual height: %d",
-                  rows, cols, left_horizontal_margin,
-                  top_vertical_margin, actual_width, actual_height);
+                  rows, cols, left_horizontal_margin, top_vertical_margin,
+                  actual_width, actual_height);
 
-        return new SquareCellGridDimensions(
-            rows, cols, top_vertical_margin, left_horizontal_margin,
-            actual_width, actual_height);
+        return new SquareCellGridDimensions(rows, cols, top_vertical_margin,
+                                            left_horizontal_margin,
+                                            actual_width, actual_height);
 }
 
 void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
                      SquareCellGridDimensions *dimensions)
 
 {
+        LOG_DEBUG(TAG, "Rendering rectangular game area.");
         p->display->initialize();
         p->display->clear(Black);
 
@@ -107,6 +108,7 @@ void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
             {.x = x_margin - border_offset, .y = y_margin - border_offset},
             actual_width + 2 * border_offset, actual_height + 2 * border_offset,
             customization->accent_color, border_width, false);
+        LOG_DEBUG(TAG, "Rectangular game area drawn.");
 }
 
 int render_centered_above_frame(Platform *p,
