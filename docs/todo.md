@@ -27,6 +27,7 @@
 # TODO
 
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
+- [ ] clean up sudoku before ensuring that solutions are unique
 - [ ] ensure that generated sudoku grids have unique solutions (have to play a
       bunch of games and verify if the algorithm works fine).
 - [ ] clean up all usages of raw pointers.

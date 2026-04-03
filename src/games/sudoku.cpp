@@ -4,7 +4,6 @@
 #include "settings.hpp"
 #include "game_menu.hpp"
 
-#include "../lib/ArduinoJson-v7.4.2.h"
 #include "../common/configuration.hpp"
 #include "../common/configuration.hpp"
 #include "../common/constants.hpp"
@@ -91,7 +90,8 @@ class SudokuState
         /**
          * Given a point on the 9x9 grid, it erases the digit that was there and
          * updates the state counters after the removal. It returns the number
-         * that was erased.
+         * that was erased. This is requied to properly track the counts of the
+         * digits after a number is erased.
          */
         int erase_digit(const Point &location)
         {
