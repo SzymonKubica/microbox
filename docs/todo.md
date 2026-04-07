@@ -52,8 +52,11 @@
 - [ ] add brightness changing app
 - [ ] add config struct version validations
 - [ ] master zellij and use it for compile/upload/monitor logs workflow.
+- [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 
 # In Progress
+
+- [ ] create devkit controller with the trinkey
 
 
 # Done
