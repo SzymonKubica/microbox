@@ -56,10 +56,10 @@
 
 # In Progress
 
-- [ ] create devkit controller with the trinkey
 
 
 # Done
+- [x] create devkit controller with the trinkey
 - [x] debug sending https requests on arduino (might require changing the web client API) (this is tough)
 - [x] add wifi support for esp32
 - [x] debug random seed picker
