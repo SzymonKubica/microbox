@@ -1,5 +1,4 @@
 #include "controller.hpp"
-#include "../../../common/logging.hpp"
 
 /**
  * Checks if any of the controllers has recorded user input. If so, the input

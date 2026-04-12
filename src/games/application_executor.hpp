@@ -72,6 +72,11 @@ inline bool close_window_requested(std::optional<UserAction> maybe_event);
 inline bool exit_requested(std::optional<UserAction> maybe_event);
 inline bool help_requested(std::optional<UserAction> maybe_event);
 
+/**
+ * This function runs the app executor using a common user input loop. Note that
+ * it 'takes ownership' of the pointer to the executor, hence we need to ensure
+ * that it gets freed on each exit from the while loop below;
+ */
 template <typename ConfigStruct>
 std::optional<UserAction>
 execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
@@ -87,11 +92,13 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
 
                 if (exit_requested(maybe_event)) {
                         log_exit_requested(executor->get_game_name());
+                        delete executor;
                         return UserAction::Exit;
                 }
 
                 if (close_window_requested(maybe_event)) {
                         log_exit_requested(executor->get_game_name());
+                        delete executor;
                         return UserAction::CloseWindow;
                 }
 
@@ -116,6 +123,7 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                          * hence the two return pathways out of this function.
                          */
                         if (close_window_requested(maybe_event)) {
+                                delete executor;
                                 return UserAction::CloseWindow;
                         }
                         // Iterate again to render config menu again after help
@@ -148,11 +156,14 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                             &dir, &act, p->time_provider, p->display);
 
                         if (close_window_requested(maybe_event)) {
+                                delete executor;
                                 return UserAction::CloseWindow;
                         }
 
-                        if (act == Action::BLUE)
+                        if (act == Action::BLUE) {
+                                delete executor;
                                 return UserAction::Exit;
+                        }
                         continue;
                 }
 
@@ -161,6 +172,7 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                 }
 
                 // All other actions (exit/close window) are propagated upwards.
+                delete executor;
                 return action;
         }
 }

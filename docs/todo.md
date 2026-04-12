@@ -16,14 +16,6 @@
 
 - [ ] add a separate menu for all of the apps.
 
-- [ ] ensure the game compiles for uno q
-- [ ] figure out a workaround for the lack of eeprom on uno q
-- [ ] build a persistent storage dummy impl for uno q to hide the ugly #defines.
-- [ ] ensure we can compile stuff for uno q with exceptions enabled (or
-      some skeleton version of that, equivalent to what we have on R4)
-      this might involve modifying the platform.txt file here:
-      `/home/szymon/.arduino15/packages/arduino/hardware/zephyr/0.53.1`
-
 # TODO
 
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
@@ -53,11 +45,13 @@
 - [ ] master zellij and use it for compile/upload/monitor logs workflow.
 - [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 
+- [ ] design new platform separation and ensure that arduino uno r4 wifi/minima are separate from esp32
+
 # In Progress
 
-- [ ] fix all new memory leaks
 
 # Done
+- [x] fix all new memory leaks
 - [x] think about sudoku digit highlighting to make it less intrusive (e.g. small dot instead of underline)
 - [x] add small sudoku rendering overrrides to make it look better on the target device
 - [x] create devkit controller with the trinkey
