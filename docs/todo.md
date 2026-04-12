@@ -56,9 +56,9 @@
 # In Progress
 
 - [ ] fix all new memory leaks
-- [ ] think about sudoku digit highlighting to make it less intrusive (e.g. small dot instead of underline)
 
 # Done
+- [x] think about sudoku digit highlighting to make it less intrusive (e.g. small dot instead of underline)
 - [x] add small sudoku rendering overrrides to make it look better on the target device
 - [x] create devkit controller with the trinkey
 - [x] debug sending https requests on arduino (might require changing the web client API) (this is tough)
