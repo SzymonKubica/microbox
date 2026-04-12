@@ -184,7 +184,7 @@ SudokuGrid SudokuEngine::generate_grid(int difficulty_level)
                 cell.digit = std::nullopt;
                 cell.is_user_defined = true;
 
-#ifdef EMULATOR
+#if defined(EMULATOR) || defined(ARDUINO_ARCH_ESP32)
                 if (SudokuEngine::has_unique_solution(solvable)) {
 #else
                   //TODO: optimize the uniqueness checking logic to work on arduino

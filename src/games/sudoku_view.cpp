@@ -214,7 +214,7 @@ void render_digit_underline(Display *display, Color color,
         int y = start.y;
         int fh = FONT_SIZE;
         int fw = FONT_WIDTH;
-        display->draw_line({x, y + fh + 1}, {x + fw, y + fh + 1}, color);
+        display->draw_line({x, y + fh}, {x + fw, y + fh}, color);
 }
 
 void erase_digit(Display *display, UserInterfaceCustomization *customization,
@@ -229,7 +229,7 @@ void erase_digit(Display *display, UserInterfaceCustomization *customization,
 
         // For active numbers that were underlined we need to erase a bit
         // further down to remove the underline.
-        int underline_adj = 2;
+        int underline_adj = 1;
 
         // Because of pixel-precision inaccuracies we need to adjust the
         // placement of the numbers in the grid.

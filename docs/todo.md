@@ -50,6 +50,7 @@
 
 # In Progress
 
+- [ ] reenable sudoku grid unique solution testing for esp32
 
 # Done
 - [x] master zellij and use it for compile/upload/monitor logs workflow.
