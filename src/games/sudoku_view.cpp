@@ -319,8 +319,8 @@ void SimpleSudokuView::rerender_caret(const Point &location)
 /* Active Digit Selector */
 
 /**
- * Renders a list of available numbers to the left of the main sudoku grid.
- * It is used to change the currently active digit.
+ * Renders a small dot next to the currently selected digit in the available
+ * digits selector on the left.
  */
 void render_digit_selection_indicator(Display *display,
                                       SquareCellGridDimensions *dimensions,
@@ -330,7 +330,11 @@ void render_digit_selection_indicator(Display *display,
         int y_margin = dimensions->top_vertical_margin;
 
         int cell_size = dimensions->actual_height / 9;
-        int x_offset = -1.5 * cell_size;
+        // We shift the x position of the indicator slightly to the right to
+        // ensure that rerendering of the selector digits doesn't clip the
+        // indicator.
+        int x_offset_adjustment = 3;
+        int x_offset = -1.5 * cell_size + x_offset_adjustment;
         int y_offset = (selected_number - 1) * cell_size;
         int circle_radius = 3;
 

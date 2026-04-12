@@ -44,7 +44,6 @@
 - [ ] add proper #define switching for esp32
 - [ ] clean up all imports to remove the indirect import warnings
 - [ ] separate games from applications
-- [ ] fix all new memory leaks
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
 - [ ] fix minesweeper crashing
@@ -56,7 +55,9 @@
 
 # In Progress
 
-
+- [ ] fix all new memory leaks
+- [ ] add small sudoku rendering overrrides to make it look better on the target device
+- [ ] think about sudoku digit highlighting to make it less intrusive (e.g. small dot instead of underline)
 
 # Done
 - [x] create devkit controller with the trinkey
