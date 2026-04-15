@@ -19,9 +19,6 @@
 # TODO
 
 - [ ] migrate 1.69 inch display to use the TFT library
-- [ ] clean up sudoku before ensuring that solutions are unique
-- [ ] ensure that generated sudoku grids have unique solutions (have to play a
-      bunch of games and verify if the algorithm works fine).
 
 - [ ] add aliases for button to have something like 'exit button' instead of Action::BLUE
 
@@ -42,7 +39,6 @@
 - [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
 - [ ] fix minesweeper crashing
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
-- [ ] add brightness changing app
 - [ ] add config struct version validations
 - [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 
@@ -50,9 +46,14 @@
 
 # In Progress
 
-- [ ] reenable sudoku grid unique solution testing for esp32
+- [ ] add persistence and load-on-startup for the brightness settings.
 
 # Done
+- [x] add brightness changing app
+- [x] clean up sudoku before ensuring that solutions are unique
+- [x] ensure that generated sudoku grids have unique solutions (have to play a
+      bunch of games and verify if the algorithm works fine).
+- [x] reenable sudoku grid unique solution testing for esp32
 - [x] master zellij and use it for compile/upload/monitor logs workflow.
 - [x] fix all new memory leaks
 - [x] think about sudoku digit highlighting to make it less intrusive (e.g. small dot instead of underline)

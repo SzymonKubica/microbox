@@ -7,6 +7,7 @@
 #include "../common/constants.hpp"
 #include "2048.hpp"
 #include "application_executor.hpp"
+#include "brightness.hpp"
 #include "minesweeper.hpp"
 #include "settings.hpp"
 #include "sudoku.hpp"
@@ -81,7 +82,9 @@ assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
              game_to_string(Game::WifiApp),
 #endif
              game_to_string(Game::Sleep), game_to_string(Game::Settings),
-             game_to_string(Game::RandomSeedPicker)},
+             game_to_string(Game::RandomSeedPicker),
+             game_to_string(Game::Brightness),
+             },
             game_to_string(initial_config->game));
 
         auto *accent_color = ConfigurationOption::of_colors(
@@ -175,6 +178,8 @@ std::optional<UserAction> select_game(Platform *p)
                         return execute_app(new SudokuGame(), p, &c);
                 case Game::Sleep:
                         return execute_app(new SleepApp(), p, &c);
+                case Game::Brightness:
+                        return execute_app(new BrightnessApp(), p, &c);
                 default:
                         LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                         return UserAction::Exit;
@@ -256,6 +261,8 @@ Game game_from_string(const char *name)
                 return Game::Sudoku;
         if (strcmp(name, game_to_string(Game::Sleep)) == 0)
                 return Game::Sleep;
+        if (strcmp(name, game_to_string(Game::Brightness)) == 0)
+                return Game::Brightness;
         return Game::Unknown;
 }
 
@@ -303,6 +310,8 @@ const char *game_to_string(Game game)
                 return "Randomness";
         case Game::Sleep:
                 return "Sleep";
+        case Game::Brightness:
+                return "Brightness";
         default:
                 return "Unknown";
         }

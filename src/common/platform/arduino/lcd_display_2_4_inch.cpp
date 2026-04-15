@@ -1,10 +1,13 @@
 #if 1 || defined(WAVESHARE_2_4_INCH_LCD)
 #include "lcd_display_2_4_inch.hpp"
+#include <Arduino.h>
 #include <cstdint>
 #include <TFT_eSPI.h>
 #include <SPI.h>
 
 TFT_eSPI tft = TFT_eSPI();
+
+#define DEV_BL_PIN 4
 
 uint16_t to_tft_color(Color c) { return static_cast<uint16_t>(c); }
 
@@ -27,7 +30,7 @@ void LcdDisplay::setup()
 {
         tft.init();
         tft.setRotation(3);
-        // Clear screen
+        analogWrite(DEV_BL_PIN, 140);
         tft.fillScreen(TFT_BLACK);
 }
 void LcdDisplay::initialize() {};
