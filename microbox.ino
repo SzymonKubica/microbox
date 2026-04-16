@@ -21,6 +21,7 @@
 
 #include "src/games/game_menu.hpp"
 #include "src/games/2048.hpp"
+#include "src/games/brightness.hpp"
 
 #include "Adafruit_seesaw.h"
 
@@ -214,6 +215,8 @@ void loop(void)
                              .persistent_storage = &persistent_storage,
                              .wifi_provider = wifi_provider,
                              .client = client};
+
+        set_brightness_from_storage(&persistent_storage);
 
         while (true) {
                 select_game(&platform);

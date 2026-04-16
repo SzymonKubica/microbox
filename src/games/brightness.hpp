@@ -7,12 +7,15 @@
 #include "application_executor.hpp"
 
 typedef struct BrightnessConfiguration {
+        ConfigurationHeader header;
         int brightness;
 } BrightnessConfiguration;
 
 std::optional<UserAction>
 collect_snake_config(Platform *p, BrightnessConfiguration *game_config,
                      UserInterfaceCustomization *customization);
+
+void set_brightness_from_storage(PersistentStorage *storage);
 
 class BrightnessApp : public ApplicationExecutor<BrightnessConfiguration>
 {

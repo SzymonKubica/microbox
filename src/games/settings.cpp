@@ -1,4 +1,5 @@
 #include "2048.hpp"
+#include "brightness.hpp"
 #include "game_menu.hpp"
 #include "../common/configuration.hpp"
 #include "../common/logging.hpp"
@@ -152,17 +153,21 @@ std::vector<int> get_settings_storage_offsets()
             {Game::SnakeDuel, sizeof(SnakeDuelConfiguration)},
             {Game::WifiApp, sizeof(WifiAppConfiguration)},
             {Game::Sudoku, sizeof(SudokuConfiguration)},
+            {Game::Brightness, sizeof(BrightnessConfiguration)},
         };
 
         std::vector<Game> games = {
             Game::MainMenu,   Game::Clean2048,        Game::Minesweeper,
             Game::GameOfLife, Game::RandomSeedPicker, Game::Snake,
             Game::SnakeDuel,  Game::WifiApp,          Game::Sudoku,
+            Game::Brightness,
         };
 
         // We make the offsets size a two element bigger as the game enum starts
-        // at 1 and we skip number 5 as that is the 'Settings' app itself.
-        std::vector<int> offset(games.size() + 2);
+        // at 1 and we skip number 5 as that is the 'Settings' app itself. We
+        // also skip number 11 as that is the sleep app that currently doesn't
+        // require configuration.
+        std::vector<int> offset(games.size() + 3);
 
         /*
          * Here we are setting the beginning offsets of the configuration struct

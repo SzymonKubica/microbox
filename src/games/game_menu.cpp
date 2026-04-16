@@ -204,6 +204,8 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
         GameMenuConfiguration *initial_config =
             load_initial_menu_configuration(p->persistent_storage);
 
+        LOG_DEBUG(TAG, "Initial configuration was loaded.");
+
         // As explained above, if the user changes the game, going back to the
         // main menu will result in the menu having this game selected and
         // not the initial config game. This is to avoid users having to change
