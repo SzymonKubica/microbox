@@ -43,13 +43,13 @@
 - [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 
 - [ ] design new platform separation and ensure that arduino uno r4 wifi/minima are separate from esp32
-- [ ] add number input function
 
 # In Progress
 
-- [ ] add persistence and load-on-startup for the brightness settings.
+- [ ] add number input function
 
 # Done
+- [x] add persistence and load-on-startup for the brightness settings.
 - [x] add brightness changing app
 - [x] clean up sudoku before ensuring that solutions are unique
 - [x] ensure that generated sudoku grids have unique solutions (have to play a

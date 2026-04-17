@@ -218,8 +218,8 @@ void render_config_bar_centered(Display *display, int y_start,
 #endif
                                 display->draw_rectangle(
                                     bar_name_str_start,
-                                    option_text_max_len * fw, fh + v_padding - adj,
-                                    Black, border, true);
+                                    option_text_max_len * fw,
+                                    fh + v_padding - adj, Black, border, true);
                         }
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
@@ -1209,6 +1209,17 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
         free(output_line_2);
         free(output_line_1);
         *input = output;
+        return std::nullopt;
+}
+
+std::optional<UserAction>
+collect_number_input(Platform *p, UserInterfaceCustomization *customization,
+                     const char *input_prompt, int **input)
+{
+
+        // TODO: Clean up the string input function below and make it reusable
+        // to make
+        // a number input function here.
         return std::nullopt;
 }
 
