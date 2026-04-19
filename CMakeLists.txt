@@ -17,8 +17,8 @@ add_compile_definitions(EMULATOR=1)
 
 # This recursively grabs all .cpp files in the specified directories.
 # It allows for adding new source files without needing to modify this CMakeLists.txt.
-file(GLOB_RECURSE SFML_PLATFORM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/common/platform/emulator/*.cpp)
-file(GLOB_RECURSE PLATFORM_DEFS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/common/platform/interface/*.cpp)
+file(GLOB_RECURSE SFML_PLATFORM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/platform/emulator/*.cpp)
+file(GLOB_RECURSE PLATFORM_DEFS CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/platform/interface/*.cpp)
 file(GLOB COMMON_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/common/*.cpp)
 file(GLOB GAME_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/games/*.cpp)
 

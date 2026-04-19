@@ -1,4 +1,4 @@
-#include "../common/platform/interface/platform.hpp"
+#include "../platform/interface/platform.hpp"
 #include "game_menu.hpp"
 
 #include "../common/configuration.hpp"

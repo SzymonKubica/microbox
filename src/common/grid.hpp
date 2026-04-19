@@ -1,5 +1,5 @@
 #pragma once
-#include "platform/interface/platform.hpp"
+#include "../platform/interface/platform.hpp"
 #include "user_interface_customization.hpp"
 
 /**

@@ -1,6 +1,6 @@
 #pragma once
 #include <cassert>
-#include "../common/platform/interface/platform.hpp"
+#include "../platform/interface/platform.hpp"
 #include "../common/user_interface_customization.hpp"
 #include "../common/configuration.hpp"
 

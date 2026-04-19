@@ -1,33 +1,21 @@
-#include "../interface/controller.hpp"
+#pragma once
+#ifndef EMULATOR
+#include "Adafruit_seesaw.h"
+#include "../../interface/controller.hpp"
 
-/*
- * This module implements a device driver for the DFRobot arduino input shield.
- * See here for component specification: https://wiki.dfrobot.com/dfr0008/
- *
- * The input shield has a joystick and four buttons, hence this module
- * implements both the `DirectionalController` and `ActionController`
- * interfaces.
- */
+#define BUTTON_X 6
+#define BUTTON_Y 2
+#define BUTTON_A 5
+#define BUTTON_B 1
+#define BUTTON_SELECT 0
+#define BUTTON_START 16
+extern uint32_t button_mask;
 
-/**
- * The joystick reports the current position using two potentiometers. Those
- * are read using analog pins that return values in range 0-1023. The two
- * constants below control the minimum displacement required for the joystick
- * to register a directional input.
- */
-#define HIGH_THRESHOLD 900
-#define LOW_THRESHOLD 100
-
-#define LEFT_BUTTON_PIN 9
-#define DOWN_BUTTON_PIN 15
-#define UP_BUTTON_PIN 8
-#define RIGHT_BUTTON_PIN 12
-
-class ArduinoInputShield : public DirectionalController, public ActionController
+class MiniGamepadController : public DirectionalController, public ActionController
 {
       public:
         /**
-         * For a given controllers, this function will inspect its state to
+         * For a given controller, this function will inspect its state to
          * determine if an input is being entered. Note that for physical
          * controllers, this function only tests for the state of the controller
          * right now (it doesn't poll for a period of time). Becuase of this,
@@ -41,6 +29,19 @@ class ArduinoInputShield : public DirectionalController, public ActionController
          * direction pointer remains unchanged.
          */
         bool poll_for_input(Direction *input) override;
+
+        /**
+         * Setup function used for e.g. initializing pins of the controller.
+         * This is to be called only once inside of the `setup` Arduino
+         * function.
+         *
+         * DEPRECATED: This will likely not be necessary in the future. Original
+         * plan was to initialize the pins there. The problem is that the
+         * function for doing this is overloaded so we cannot pass it as a
+         * pointer without contextual information (makes sense, it won't be
+         * possible to infer which function to call).
+         */
+        void setup() override;
 
         /**
          * For a given controller, this function will inspect its state to
@@ -58,10 +59,9 @@ class ArduinoInputShield : public DirectionalController, public ActionController
          */
         bool poll_for_input(Action *input) override;
 
-        /**
-         * Setup function used for e.g. initializing pins of the controller.
-         * This is to be called only once inside of the `setup` Arduino
-         * function.
-         */
-        void setup() override;
+        MiniGamepadController(Adafruit_seesaw *ss) : ss(ss) {}
+
+      private:
+        Adafruit_seesaw *ss;
 };
+#endif

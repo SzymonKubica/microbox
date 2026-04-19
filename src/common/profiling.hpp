@@ -1,5 +1,5 @@
 #include "logging.hpp"
-#include "platform/interface/time_provider.hpp"
+#include "../platform/interface/time_provider.hpp"
 
 /**
  * RAII utility for measuring the duration of things. To measure the of how

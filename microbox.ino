@@ -3,20 +3,20 @@
 #include <EEPROM.h>
 #include <nvs_flash.h>
 
-#include "src/common/platform/arduino/wifi_provider.cpp"
-#include "src/common/platform/drivers/input_shield.hpp"
-#include "src/common/platform/arduino/arduino_http_client.hpp"
-#include "src/common/platform/interface/wifi.hpp"
-#include "src/common/platform/arduino/adafruit_mini_controller.hpp"
+#include "src/platform/boards/arduino_r4_wifi/wifi_provider.cpp"
+#include "src/platform/drivers/input/input_shield.hpp"
+#include "src/platform/boards/arduino_r4_wifi/arduino_http_client.hpp"
+#include "src/platform/interface/wifi.hpp"
+#include "src/platform/drivers/input/adafruit_mini_gamepad.hpp"
 #if defined(WAVESHARE_1_69_INCH_LCD)
-#include "src/common/platform/arduino/lcd_display_1_69_inch.hpp"
+#include "src/platform/drivers/display/lcd_display_1_69_inch.hpp"
 #endif
 #if defined(WAVESHARE_2_4_INCH_LCD)
-#include "src/common/platform/arduino/lcd_display_2_4_inch.hpp"
+#include "src/platform/drivers/display/lcd_display_2_4_inch.hpp"
 #endif
-#include "src/common/platform/arduino/arduino_secrets.hpp"
-#include "src/common/platform/arduino/arduino_time_provider.cpp"
-#include "src/common/platform/interface/persistent_storage.hpp"
+#include "src/platform/boards/arduino_r4_wifi/arduino_secrets.hpp"
+#include "src/platform/boards/arduino_r4_wifi/arduino_time_provider.cpp"
+#include "src/platform/interface/persistent_storage.hpp"
 
 #include "src/games/game_menu.hpp"
 #include "src/games/2048.hpp"
@@ -26,7 +26,7 @@
 
 LcdDisplay display;
 ArduinoInputShield *input_shield;
-AdafruitController *adafruit_controller;
+MiniGamepadController *adafruit_controller;
 PersistentStorage persistent_storage;
 
 #if 1
@@ -192,7 +192,7 @@ void loop(void)
 #if 1
                 // Only R4 wifi has the stemma qt port for the Wire1 SPI
                 // interface. On R4 Minima Adafruit seesaw is not defined.
-                adafruit_controller = new AdafruitController(&ss);
+                adafruit_controller = new MiniGamepadController(&ss);
                 action_controllers.push_back(adafruit_controller);
                 controllers.push_back(adafruit_controller);
 #endif

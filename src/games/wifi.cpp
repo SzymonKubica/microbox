@@ -6,10 +6,10 @@
 #include "wifi.hpp"
 
 #include "../common/logging.hpp"
-#include "../common/platform/arduino/wifi_provider.cpp"
-#include "../common/platform/interface/platform.hpp"
+#include "../platform/boards/arduino_r4_wifi/wifi_provider.cpp"
+#include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
-#include "../common/platform/arduino/arduino_secrets.hpp"
+#include "../platform/boards/arduino_r4_wifi/arduino_secrets.hpp"
 
 #include "game_menu.hpp"
 #include "common_transitions.hpp"

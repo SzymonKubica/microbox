@@ -8,8 +8,8 @@
 #include "constants.hpp"
 #include "logging.hpp"
 #include "user_interface.hpp"
-#include "platform/interface/controller.hpp"
-#include "platform/interface/color.hpp"
+#include "../platform/interface/controller.hpp"
+#include "../platform/interface/color.hpp"
 
 #define TAG "configuration"
 

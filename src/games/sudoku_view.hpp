@@ -1,7 +1,7 @@
 #include "../common/point.hpp"
 #include "../common/user_interface_customization.hpp"
 #include "../common/grid.hpp"
-#include "../common/platform/interface/color.hpp"
+#include "../platform/interface/color.hpp"
 #include "sudoku_engine.hpp"
 
 class SudokuView

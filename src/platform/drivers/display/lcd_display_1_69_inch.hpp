@@ -1,6 +1,6 @@
 #if defined(WAVESHARE_1_69_INCH_LCD)
 #pragma once
-#include "../interface/display.hpp"
+#include "../../interface/display.hpp"
 
 /**
  * @brief LcdDisplay class that implements the Display interface for the

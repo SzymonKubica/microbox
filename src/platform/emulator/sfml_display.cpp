@@ -2,7 +2,7 @@
 #ifdef EMULATOR
 #include "sfml_display.hpp"
 #include <SFML/Graphics.hpp>
-#include "../../constants.hpp"
+#include "../../common/constants.hpp"
 
 #define SCREEN_BORDER_WIDTH 3
 

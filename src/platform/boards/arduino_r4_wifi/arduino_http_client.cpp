@@ -1,6 +1,6 @@
 #ifndef EMULATOR
 #include "./arduino_http_client.hpp"
-#include "../../logging.hpp"
+#include "../../../common/logging.hpp"
 #if defined(ARDUINO_UNOR4_WIFI)
 #include <WiFiS3.h>
 #endif

@@ -1,5 +1,5 @@
 #ifndef EMULATOR
-#include "../interface/persistent_storage.hpp"
+#include "../../interface/persistent_storage.hpp"
 #include <EEPROM.h>
 
 template <typename T> T &PersistentStorage::get(int offset, T &t)

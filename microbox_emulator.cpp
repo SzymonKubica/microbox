@@ -1,17 +1,17 @@
 #ifdef EMULATOR
 #include "emulator_config.h"
 
-#include "src/common/platform/interface/platform.hpp"
+#include "src/platform/interface/platform.hpp"
 #include "src/common/constants.hpp"
-#include "src/common/platform/emulator/sfml_display.hpp"
-#include "src/common/platform/emulator/emulated_wifi_provider.cpp"
-#include "src/common/platform/emulator/emulator_http_client.hpp"
-#include "src/common/platform/emulator/emulator_time_provider.cpp"
-#include "src/common/platform/emulator/sfml_controller.hpp"
-#include "src/common/platform/emulator/sfml_awsd_controller.hpp"
-#include "src/common/platform/emulator/sfml_hjkl_controller.hpp"
-#include "src/common/platform/emulator/sfml_action_controller.hpp"
-#include "src/common/platform/emulator/persistent_storage.hpp"
+#include "src/platform/emulator/sfml_display.hpp"
+#include "src/platform/emulator/emulated_wifi_provider.cpp"
+#include "src/platform/emulator/emulator_http_client.hpp"
+#include "src/platform/emulator/emulator_time_provider.cpp"
+#include "src/platform/emulator/sfml_controller.hpp"
+#include "src/platform/emulator/sfml_awsd_controller.hpp"
+#include "src/platform/emulator/sfml_hjkl_controller.hpp"
+#include "src/platform/emulator/sfml_action_controller.hpp"
+#include "src/platform/emulator/persistent_storage.hpp"
 
 #include "src/common/logging.hpp"
 

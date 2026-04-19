@@ -1,6 +1,6 @@
 #include "point.hpp"
 #include "stdlib.h"
-#include "platform/interface/input.hpp"
+#include "../platform/interface/input.hpp"
 
 #include "maths_utils.hpp"
 #include <optional>

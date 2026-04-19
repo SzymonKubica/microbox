@@ -5,7 +5,7 @@
 #if defined(ARDUINO_ARCH_ESP32)
 #include <WiFi.h>
 #endif
-#include "../interface/wifi.hpp"
+#include "../../interface/wifi.hpp"
 
 #include "arduino_secrets.hpp"
 

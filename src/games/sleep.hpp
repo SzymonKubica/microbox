@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/platform/interface/platform.hpp"
+#include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
 
 #include "common_transitions.hpp"

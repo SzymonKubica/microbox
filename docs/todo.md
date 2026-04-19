@@ -45,6 +45,9 @@
 # In Progress
 
 - [ ] design new platform separation and ensure that arduino uno r4 wifi/minima are separate from esp32
+- [ ] separate wifi and http client implementations for arduino uno r4 / esp32
+- [ ] idea: instead of having 'target' folder with #defines, have the target folder
+      construct the ready platform object with all dependencies.
 
 # Done
 - [x] integrate random seed picker with the new number input

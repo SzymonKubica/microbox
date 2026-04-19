@@ -2,7 +2,7 @@
  * games.*/
 #pragma once
 
-#include "platform/interface/color.hpp"
+#include "../platform/interface/color.hpp"
 #include <vector>
 
 #if defined(WAVESHARE_2_4_INCH_LCD)

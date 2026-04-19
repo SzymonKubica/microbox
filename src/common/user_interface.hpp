@@ -4,7 +4,7 @@
 #include <map>
 #include "user_interface_customization.hpp"
 #include "configuration.hpp"
-#include "platform/interface/display.hpp"
+#include "../platform/interface/display.hpp"
 
 void setup_display();
 

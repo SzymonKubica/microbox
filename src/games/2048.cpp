@@ -9,8 +9,8 @@
 
 #include "../common/logging.hpp"
 #include "../common/constants.hpp"
-#include "../common/platform/interface/display.hpp"
-#include "../common/platform/interface/platform.hpp"
+#include "../platform/interface/display.hpp"
+#include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
 
 #include "game_menu.hpp"

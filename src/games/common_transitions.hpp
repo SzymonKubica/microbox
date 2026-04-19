@@ -1,7 +1,7 @@
 #include "../common/configuration.hpp"
-#include "../common/platform/interface/display.hpp"
-#include "../common/platform/interface/controller.hpp"
-#include "../common/platform/interface/time_provider.hpp"
+#include "../platform/interface/display.hpp"
+#include "../platform/interface/controller.hpp"
+#include "../platform/interface/time_provider.hpp"
 #include "../common/user_interface_customization.hpp"
 
 void display_game_over(Display *display,

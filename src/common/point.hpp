@@ -1,5 +1,5 @@
 #pragma once
-#include "platform/interface/input.hpp"
+#include "../platform/interface/input.hpp"
 #include <optional>
 #include <vector>
 typedef struct Point {

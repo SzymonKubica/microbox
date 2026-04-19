@@ -6,8 +6,8 @@
 
 #include "user_interface.hpp"
 #include "configuration.hpp"
-#include "platform/interface/color.hpp"
-#include "platform/interface/display.hpp"
+#include "../platform/interface/color.hpp"
+#include "../platform/interface/display.hpp"
 #include "../common/logging.hpp"
 #include "../common/maths_utils.hpp"
 #include "constants.hpp"

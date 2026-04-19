@@ -1,6 +1,6 @@
 #ifdef EMULATOR
 #include "../interface/wifi.hpp"
-#include "../../logging.hpp"
+#include "../../common/logging.hpp"
 #include <cstdio>
 #include <filesystem>
 #include <optional>
