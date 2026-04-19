@@ -3,11 +3,10 @@
 #include <EEPROM.h>
 #include <nvs_flash.h>
 
-#include "src/common/platform/arduino/joystick_controller.hpp"
 #include "src/common/platform/arduino/wifi_provider.cpp"
+#include "src/common/platform/drivers/input_shield.hpp"
 #include "src/common/platform/arduino/arduino_http_client.hpp"
 #include "src/common/platform/interface/wifi.hpp"
-#include "src/common/platform/arduino/keypad_controller.hpp"
 #include "src/common/platform/arduino/adafruit_mini_controller.hpp"
 #if defined(WAVESHARE_1_69_INCH_LCD)
 #include "src/common/platform/arduino/lcd_display_1_69_inch.hpp"
@@ -26,8 +25,7 @@
 #include "Adafruit_seesaw.h"
 
 LcdDisplay display;
-JoystickController *joystick_controller;
-KeypadController *keypad_controller;
+ArduinoInputShield *input_shield;
 AdafruitController *adafruit_controller;
 PersistentStorage persistent_storage;
 
@@ -184,11 +182,8 @@ void loop(void)
 
         Serial.println("Game console started.");
 
-        // Initialize game platform components
-        joystick_controller = new JoystickController();
-        joystick_controller->setup();
-        keypad_controller = new KeypadController();
-        keypad_controller->setup();
+        input_shield = new ArduinoInputShield();
+        input_shield->setup();
 
         std::vector<DirectionalController *> controllers = {};
         std::vector<ActionController *> action_controllers = {};

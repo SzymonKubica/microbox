@@ -1,6 +1,13 @@
 #include "adafruit_mini_controller.hpp"
-#include "joystick_controller.hpp"
 #include "../../logging.hpp"
+
+/**
+ * The joystick reports the current position using two potentiometers. Those
+ * are read using analog pins that return values in range 0-1023. The two
+ * constants below control how quickly the joystick registers input.
+ */
+#define HIGH_THRESHOLD 900
+#define LOW_THRESHOLD 100
 
 #define TAG "AdafruitController"
 
