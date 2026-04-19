@@ -37,13 +37,12 @@ UserAction BrightnessApp::app_loop(Platform *p,
                                    const BrightnessConfiguration &config)
 {
 
-        char *brightness_str;
-        auto maybe_interrupt = collect_string_input(
-            p, customization, "Enter brightness 0-100%", &brightness_str);
+        int brightness;
+        auto maybe_interrupt = collect_number_input(
+            p, customization, "Enter brightness 0-100%", &brightness);
         if (maybe_interrupt.has_value()) {
                 return maybe_interrupt.value();
         }
-        int brightness = atoi(brightness_str);
         assert(0 < brightness && brightness <= 100);
 #if defined(WAVESHARE_2_4_INCH_LCD)
 #define DEV_BL_PIN 4

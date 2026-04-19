@@ -985,7 +985,6 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
             (w - strlen(input_prompt) * FONT_WIDTH) / 2;
         Point prompt_text_start = {.x = prompt_text_centering_margin,
                                    .y = FONT_WIDTH};
-
         p->display->draw_string(prompt_text_start, (char *)input_prompt,
                                 FontSize::Size16, Black, White);
 
@@ -1214,12 +1213,262 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
 
 std::optional<UserAction>
 collect_number_input(Platform *p, UserInterfaceCustomization *customization,
-                     const char *input_prompt, int **input)
+                     const char *input_prompt, int *input)
 {
+        Display *display = p->display;
+        LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
 
-        // TODO: Clean up the string input function below and make it reusable
-        // to make
-        // a number input function here.
+        // Bind input params to short names for improved readability.
+        int w = display->get_width();
+        int h = display->get_height();
+        int r = display->get_display_corner_radius();
+
+        int margin = r / 4;
+        int usable_width = w - margin / 2;
+        int usable_height = h - margin / 2;
+
+        int max_cols = usable_width / FONT_WIDTH;
+        int max_rows = usable_height / FONT_SIZE;
+
+        int actual_width = max_cols * FONT_WIDTH;
+        int actual_height = max_rows * FONT_SIZE;
+
+        // We calculate centering margins
+        int left_horizontal_margin = (w - actual_width) / 2;
+
+        int keyboard_rows = 4;
+        int input_row = 1;
+        int spacing = 2;
+        int text_rows = keyboard_rows + input_row + spacing;
+        int top_vertical_margin = (h - text_rows * FONT_SIZE) / 2;
+
+        LOG_DEBUG(TAG, "Keyboard grid area has %d available columns", max_cols);
+
+        p->display->clear(Black);
+
+        // TODO: this logic is the samse as above, we can extract it to a shared
+        // helper.
+        int prompt_text_centering_margin =
+            (w - strlen(input_prompt) * FONT_WIDTH) / 2;
+        Point prompt_text_start = {.x = prompt_text_centering_margin,
+                                   .y = FONT_WIDTH};
+        p->display->draw_string(prompt_text_start, (char *)input_prompt,
+                                FontSize::Size16, Black, White);
+
+        // Note how the bottom right part of the keyboard is filled with
+        // spaces this is needed to ensure that the selection cursor is
+        // translated within a rectangular area and we don't get ouside
+        // string buffer index errors. Also note that the 'x' character at the
+        // end is a placeholder for cancellation button. If the user selects
+        // that, the input process is aborted.
+        std::vector<const char *> base_char_map = {
+            "789",
+            "456",
+            "123",
+            "0 x",
+        };
+
+        Point cancellation_key_location = {2, 3};
+
+        int centering_margin =
+            (usable_width - FONT_WIDTH * strlen(base_char_map[0])) / 2 /
+            FONT_WIDTH;
+        // This contorls how deep eachr row of the rendered keyboard is
+        // indented.
+        std::vector<int> left_indent_map =
+            std::vector<int>(base_char_map.size(), centering_margin);
+
+        Point input_text_start = {.x = left_horizontal_margin,
+                                  .y = top_vertical_margin};
+        Point input_text_start_second_line = {.x = left_horizontal_margin,
+                                              .y = top_vertical_margin +
+                                                   FONT_SIZE + 4};
+
+        // For now we only support up to two lines of user input. Longer strings
+        // are not supported.
+        int max_input_len = max_cols * 2;
+        // We always itialize the buffer with size +1 to allow for the null
+        // terminator.
+        char *output = (char *)malloc(sizeof(char) * (max_input_len + 1));
+        // This is only used for rendering if the length of output string is
+        // greater than `max_cols`. Unlike the main output,
+        // this buffer is freed at the end and is not returned to the user.
+        char *output_line_1 =
+            (char *)malloc(sizeof(char) * (max_input_len + 1));
+        char *output_line_2 =
+            (char *)malloc(sizeof(char) * (max_input_len + 1));
+        // If the user enters nothing we need to be safe and still write the
+        // null terminator.
+        output[0] = '\0';
+
+        Point cursor = {0, 0};
+
+        int keyboard_start_y =
+            top_vertical_margin + (input_row + spacing) * FONT_SIZE;
+
+        auto render_character_at_location =
+            [display, &cursor, left_indent_map,
+             keyboard_start_y](Point location, Color color,
+                               std::vector<const char *> &character_map) {
+                    int x = location.x;
+                    int y = location.y;
+                    const char *row = character_map[y];
+                    int left_indent = left_indent_map[y];
+                    // we mutiply the index by two here to spread out the
+                    // keyboard characters a bit.
+                    Point start = {.x = (left_indent + 2 * x) * FONT_WIDTH,
+                                   .y = keyboard_start_y + y * FONT_SIZE};
+                    char buffer[2];
+                    buffer[0] = row[x];
+                    buffer[1] = '\0';
+                    display->clear_region(
+                        start, {start.x + FONT_WIDTH, start.y + FONT_SIZE + 4},
+                        Black);
+                    display->draw_string(start, buffer, FontSize::Size16, Black,
+                                         color);
+            };
+
+        // We define this reusasble lambda so that we can easily re-render the
+        // grid when the capitalization setting changes.
+        auto render_keyboard = [&cursor, customization,
+                                render_character_at_location](
+                                   std::vector<const char *> &character_map) {
+                for (int y = 0; y < character_map.size(); y++) {
+                        for (int x = 0; x < strlen(character_map[y]); x++) {
+                                Color color = (cursor.x == x && cursor.y == y)
+                                                  ? customization->accent_color
+                                                  : White;
+                                render_character_at_location({x, y}, color,
+                                                             character_map);
+                        }
+                }
+        };
+
+        auto extract_current_char =
+            [&cursor](std::vector<const char *> &character_map) {
+                    return character_map[cursor.y][cursor.x];
+            };
+
+        auto render_current_input_text = [display, input_text_start,
+                                          input_text_start_second_line,
+                                          max_cols, output, output_line_1,
+                                          output_line_2](int output_idx) {
+                int line_1_end = std::min(output_idx, max_cols);
+                // We clear one past the end of the line to ensure that this
+                // function also works for re-rendering after backspace is hit.
+                display->clear_region(
+                    input_text_start,
+                    {input_text_start.x + FONT_WIDTH * (line_1_end + 1),
+                     input_text_start.y + FONT_SIZE + 4},
+                    Black);
+
+                strncpy(output_line_1, output, line_1_end);
+                // ensure that the rendered line 1 is properly null-terminated
+                output_line_1[line_1_end] = '\0';
+                display->draw_string(input_text_start, output_line_1,
+                                     FontSize::Size16, Black, White);
+                // Only render second line if enough chars
+                int line_2_end = output_idx - max_cols;
+                if (output_idx >= max_cols) {
+                        // We clear even if it is equal to ensure that when this
+                        // function is used for re-rendering after backspace,
+                        // the last character from the second line disappears.
+                        display->clear_region(
+                            input_text_start_second_line,
+                            {input_text_start_second_line.x +
+                                 FONT_WIDTH * (line_2_end + 1),
+                             input_text_start_second_line.y + FONT_SIZE + 4},
+                            Black);
+                }
+                if (output_idx > max_cols) {
+                        strncpy(output_line_2, (output + max_cols), line_2_end);
+                        // ensure that the rendered line 2 is properly
+                        // null-terminated
+                        output_line_2[line_2_end] = '\0';
+                        display->draw_string(input_text_start_second_line,
+                                             output_line_2, FontSize::Size16,
+                                             Black, White);
+                }
+        };
+
+        render_keyboard(base_char_map);
+
+        if (customization->show_help_text) {
+                std::map<Action, std::string> button_hints;
+                button_hints[Action::BLUE] = "Erase";
+                button_hints[Action::YELLOW] = "Caps";
+                button_hints[Action::RED] = "Done";
+                button_hints[Action::GREEN] = "Select";
+                render_controls_explanations(p->display, button_hints);
+        }
+
+        bool input_confirmed = false;
+        bool is_capitalized = false;
+        int output_idx = 0;
+        while (!input_confirmed) {
+                Direction dir;
+                Action act;
+                if (poll_directional_input(p->directional_controllers, &dir)) {
+                        render_character_at_location(cursor, White,
+                                                     base_char_map);
+                        translate_toroidal_array(&cursor, dir,
+                                                 base_char_map.size(),
+                                                 strlen(base_char_map[0]));
+                        render_character_at_location(
+                            cursor, customization->accent_color, base_char_map);
+                        p->time_provider->delay_ms(INPUT_POLLING_DELAY);
+                }
+                if (poll_action_input(p->action_controllers, &act)) {
+                        switch (act) {
+                        case RED:
+                                input_confirmed = true;
+                                break;
+                        case GREEN: {
+                                if (cursor.x == cancellation_key_location.x &&
+                                    cursor.y == cancellation_key_location.y) {
+                                        LOG_DEBUG(
+                                            TAG,
+                                            "User selected the cancellation "
+                                            "key, aborting input collection.");
+                                        free(output);
+                                        free(output_line_1);
+                                        free(output_line_2);
+                                        return UserAction::Exit;
+                                }
+                                if (output_idx < max_input_len) {
+                                        char selection =
+                                            extract_current_char(base_char_map);
+                                        output[output_idx] = selection;
+                                        // We need to null-terminate the
+                                        // unfinished input to be able to print
+                                        // it.
+                                        output[output_idx + 1] = '\0';
+                                        output_idx++;
+                                        render_current_input_text(output_idx);
+                                }
+                                break;
+                        }
+                        case BLUE:
+                                if (output_idx > 0) {
+                                        output_idx--;
+                                        output[output_idx] = '\0';
+                                        render_current_input_text(output_idx);
+                                }
+                                break;
+                        case YELLOW:
+                                break;
+                        }
+                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                }
+                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
+                if (!p->display->refresh()) {
+                        return UserAction::CloseWindow;
+                }
+        }
+
+        free(output_line_2);
+        free(output_line_1);
+        *input = atoi(output);
         return std::nullopt;
 }
 

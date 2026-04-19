@@ -18,7 +18,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                      const char *input_prompt, char **input);
 std::optional<UserAction>
 collect_number_input(Platform *p, UserInterfaceCustomization *customization,
-                     const char *input_prompt, int **input);
+                     const char *input_prompt, int *input);
 void render_logo(Display *display, UserInterfaceCustomization *customization,
                  Point position);
 void render_controls_explanations(Display *display);
