@@ -1317,7 +1317,7 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                     // we mutiply the index by two here to spread out the
                     // keyboard characters a bit.
                     Point start = {.x = (left_indent + 2 * x) * FONT_WIDTH,
-                                   .y = keyboard_start_y + y * FONT_SIZE};
+                                   .y = keyboard_start_y + 2 * y * FONT_SIZE};
                     char buffer[2];
                     buffer[0] = row[x];
                     buffer[1] = '\0';

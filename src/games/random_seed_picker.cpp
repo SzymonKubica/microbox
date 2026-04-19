@@ -124,9 +124,9 @@ RandomSeedPicker::app_loop(Platform *p,
         case RandomSeedSelectorAction::Modify:
                 LOG_DEBUG(TAG, "Modify option selected");
 
-                char *seed_str;
-                auto maybe_interrupt = collect_string_input(
-                    p, customization, "Enter new seed value", &seed_str);
+                int new_seed = 0;
+                auto maybe_interrupt = collect_number_input(
+                    p, customization, "Enter new seed value", &new_seed);
 
                 if (maybe_interrupt.has_value()) {
                         UserAction action = maybe_interrupt.value();
@@ -143,7 +143,6 @@ RandomSeedPicker::app_loop(Platform *p,
                                 return action;
                         }
                 }
-                int new_seed = atoi(seed_str);
 
                 srand(new_seed);
                 int offset =
@@ -157,7 +156,6 @@ RandomSeedPicker::app_loop(Platform *p,
                         "Saved the new, manually-entered randomness seed: %d",
                         new_seed);
                 render_wrapped_help_text(p, customization, display_text_buffer);
-                free(seed_str);
                 wait_until_green_pressed(p);
                 break;
         }

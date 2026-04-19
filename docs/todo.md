@@ -42,13 +42,14 @@
 - [ ] add config struct version validations
 - [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 
-- [ ] design new platform separation and ensure that arduino uno r4 wifi/minima are separate from esp32
-
 # In Progress
 
-- [ ] add number input function
+- [ ] design new platform separation and ensure that arduino uno r4 wifi/minima are separate from esp32
 
 # Done
+- [x] integrate random seed picker with the new number input
+- [x] add validations for the brightness setting
+- [x] add number input function
 - [x] add persistence and load-on-startup for the brightness settings.
 - [x] add brightness changing app
 - [x] clean up sudoku before ensuring that solutions are unique
