@@ -5,7 +5,7 @@
 
 #include "src/platform/boards/arduino_r4_wifi/wifi_provider.cpp"
 #include "src/platform/drivers/input/input_shield.hpp"
-#include "src/platform/boards/arduino_r4_wifi/arduino_http_client.hpp"
+#include "src/platform/boards/esp32/http_client.hpp"
 #include "src/platform/interface/wifi.hpp"
 #include "src/platform/drivers/input/adafruit_mini_gamepad.hpp"
 #if defined(WAVESHARE_1_69_INCH_LCD)
@@ -107,8 +107,7 @@ void rgb_blink_task(void *parameter)
 #ifdef RGB_BUILTIN
                 switch (current) {
                 case rgb_mode:
-                        digitalWrite(RGB_BUILTIN,
-                                     HIGH); // Turn the RGB LED white
+                        digitalWrite(RGB_BUILTIN, HIGH); // Turn the RGB LED white
                         vTaskDelay(1000 / portTICK_PERIOD_MS);
                         digitalWrite(RGB_BUILTIN, LOW); // Turn the RGB LED off
                         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -201,7 +200,7 @@ void loop(void)
         TimeProvider *time_provider =
             new ArduinoTimeProvider((void (*)(int))&delay);
         WifiProvider *wifi_provider = new ArduinoWifiProvider{};
-        ArduinoHttpClient *client = new ArduinoHttpClient();
+        Esp32HttpClient *client = new Esp32HttpClient();
 
         Platform platform = {.display = &display,
                              .directional_controllers = &controllers,

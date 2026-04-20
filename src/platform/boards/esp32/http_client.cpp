@@ -1,18 +1,12 @@
-#ifndef EMULATOR
-#include "./arduino_http_client.hpp"
-#include "../../../common/logging.hpp"
-#if defined(ARDUINO_UNOR4_WIFI)
-#include <WiFiS3.h>
-#endif
 #if defined(ARDUINO_ARCH_ESP32)
+#include "./http_client.hpp"
+#include "../../../common/logging.hpp"
 #include <WiFi.h>
-#endif
 #include <cstdint>
 
 std::optional<std::string>
-ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
+Esp32HttpClient::get(const ConnectionConfig &config, const std::string &url)
 {
-#if defined(ARDUINO_UNOR4_WIFI) || defined(ARDUINO_ARCH_ESP32)
         WiFiClient client;
         LOG_DEBUG("wifi_client", "Connecting to host...");
         if (client.connect(config.host.c_str(), (uint16_t)config.port)) {
@@ -33,8 +27,7 @@ ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
                                 int len = client.readBytes(buf, sizeof(buf));
                                 response.append(buf, len);
 
-                                start =
-                                    millis(); // reset timeout after each chunk
+                                start = millis(); // reset timeout after each chunk
                         } else {
                                 // No data, wait a tiny bit
                                 delay(1);
@@ -58,8 +51,6 @@ ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
                 Serial.println("Connection to host failed");
                 return std::nullopt;
         }
-#else
         return std::nullopt;
-#endif
 }
 #endif
