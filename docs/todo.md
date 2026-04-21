@@ -48,6 +48,7 @@
 - [ ] separate wifi and http client implementations for arduino uno r4 / esp32
 - [ ] idea: instead of having 'target' folder with #defines, have the target folder
       construct the ready platform object with all dependencies.
+- [ ] add proper way of injecting default wifi ssid & password secrets
 
 # Done
 - [x] integrate random seed picker with the new number input

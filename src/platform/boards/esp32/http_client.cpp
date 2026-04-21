@@ -1,11 +1,12 @@
+#include "src/platform/interface/wifi.hpp"
 #if defined(ARDUINO_ARCH_ESP32)
 #include "./http_client.hpp"
 #include "../../../common/logging.hpp"
 #include <WiFi.h>
 #include <cstdint>
 
-std::optional<std::string>
-Esp32HttpClient::get(const ConnectionConfig &config, const std::string &url)
+std::optional<std::string> Esp32HttpClient::get(const ConnectionConfig &config,
+                                                const std::string &url)
 {
         WiFiClient client;
         LOG_DEBUG("wifi_client", "Connecting to host...");
@@ -27,7 +28,8 @@ Esp32HttpClient::get(const ConnectionConfig &config, const std::string &url)
                                 int len = client.readBytes(buf, sizeof(buf));
                                 response.append(buf, len);
 
-                                start = millis(); // reset timeout after each chunk
+                                start =
+                                    millis(); // reset timeout after each chunk
                         } else {
                                 // No data, wait a tiny bit
                                 delay(1);

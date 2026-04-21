@@ -3,9 +3,10 @@
 #include <EEPROM.h>
 #include <nvs_flash.h>
 
-#include "src/platform/boards/arduino_r4_wifi/wifi_provider.cpp"
 #include "src/platform/drivers/input/input_shield.hpp"
+// TODO: move those esp32 specific includes to a separate esp32 platform target file
 #include "src/platform/boards/esp32/http_client.hpp"
+#include "src/platform/boards/esp32/wifi_provider.hpp"
 #include "src/platform/interface/wifi.hpp"
 #include "src/platform/drivers/input/adafruit_mini_gamepad.hpp"
 #if defined(WAVESHARE_1_69_INCH_LCD)
@@ -14,7 +15,6 @@
 #if defined(WAVESHARE_2_4_INCH_LCD)
 #include "src/platform/drivers/display/lcd_display_2_4_inch.hpp"
 #endif
-#include "src/platform/boards/arduino_r4_wifi/arduino_secrets.hpp"
 #include "src/platform/boards/arduino_r4_wifi/arduino_time_provider.cpp"
 #include "src/platform/interface/persistent_storage.hpp"
 
@@ -199,7 +199,7 @@ void loop(void)
 
         TimeProvider *time_provider =
             new ArduinoTimeProvider((void (*)(int))&delay);
-        WifiProvider *wifi_provider = new ArduinoWifiProvider{};
+        WifiProvider *wifi_provider = new Esp32WifiProvider{};
         Esp32HttpClient *client = new Esp32HttpClient();
 
         Platform platform = {.display = &display,
