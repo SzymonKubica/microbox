@@ -1,4 +1,5 @@
 #ifndef EMULATOR
+#pragma once
 #include "../../interface/persistent_storage.hpp"
 #include <EEPROM.h>
 

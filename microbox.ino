@@ -3,36 +3,20 @@
 #include <EEPROM.h>
 #include <nvs_flash.h>
 
-#include "src/platform/drivers/input/input_shield.hpp"
-// TODO: move those esp32 specific includes to a separate esp32 platform target file
-#include "src/platform/boards/esp32/http_client.hpp"
-#include "src/platform/boards/esp32/wifi_provider.hpp"
-#include "src/platform/interface/wifi.hpp"
-#include "src/platform/drivers/input/adafruit_mini_gamepad.hpp"
-#if defined(WAVESHARE_1_69_INCH_LCD)
-#include "src/platform/drivers/display/lcd_display_1_69_inch.hpp"
-#endif
-#if defined(WAVESHARE_2_4_INCH_LCD)
-#include "src/platform/drivers/display/lcd_display_2_4_inch.hpp"
-#endif
-#include "src/platform/boards/arduino_r4_wifi/arduino_time_provider.cpp"
-#include "src/platform/interface/persistent_storage.hpp"
+// TODO: all arduino R4 specific items were commented out.
+//#include "src/platform/drivers/input/input_shield.hpp"
+// TODO: move those esp32 specific includes to a separate esp32 platform target
+// file
+#include "src/platform/target/microbox_v2.hpp"
+//#if defined(WAVESHARE_1_69_INCH_LCD)
+//#include "src/platform/drivers/display/lcd_display_1_69_inch.hpp"
+//#endif
 
 #include "src/games/game_menu.hpp"
 #include "src/games/2048.hpp"
 #include "src/games/brightness.hpp"
 
-#include "Adafruit_seesaw.h"
-
-LcdDisplay display;
-ArduinoInputShield *input_shield;
-MiniGamepadController *adafruit_controller;
-PersistentStorage persistent_storage;
-
-#if 1
-Adafruit_seesaw ss(&Wire);
-// #define IRQ_PIN 5
-#endif
+//ArduinoInputShield *input_shield;
 
 /**
  * TODO: is this even requied anymore given that now persistent storage
@@ -58,37 +42,6 @@ void eeprom_erase()
 #endif
 }
 
-bool setup_adafruit_seesaw_i2c_connection()
-{
-
-#if 1
-        Serial.println("Setting up seesaw I2C interface...");
-
-        if (!ss.begin(0x50)) {
-                Serial.println("ERROR! seesaw not found");
-                return false;
-        }
-        Serial.println("seesaw started");
-        uint32_t version = ((ss.getVersion() >> 16) & 0xFFFF);
-        if (version != 5743) {
-                Serial.print("Wrong firmware loaded? ");
-                Serial.println(version);
-                return false;
-        }
-
-        Serial.println("Found Product 5743");
-
-        ss.pinModeBulk(button_mask, INPUT_PULLUP);
-        ss.setGPIOInterrupts(button_mask, 1);
-        pinMode(38, INPUT);
-
-#if defined(IRQ_PIN)
-        // pinMode(IRQ_PIN, INPUT);
-#endif
-#endif
-        return true;
-}
-
 // ESP32 OVERRIDE
 SET_LOOP_TASK_STACK_SIZE(32 * 1024);
 
@@ -107,7 +60,8 @@ void rgb_blink_task(void *parameter)
 #ifdef RGB_BUILTIN
                 switch (current) {
                 case rgb_mode:
-                        digitalWrite(RGB_BUILTIN, HIGH); // Turn the RGB LED white
+                        digitalWrite(RGB_BUILTIN,
+                                     HIGH); // Turn the RGB LED white
                         vTaskDelay(1000 / portTICK_PERIOD_MS);
                         digitalWrite(RGB_BUILTIN, LOW); // Turn the RGB LED off
                         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -133,6 +87,8 @@ void rgb_blink_task(void *parameter)
         }
 }
 
+Platform *platform;
+
 void setup(void)
 {
 
@@ -146,25 +102,15 @@ void setup(void)
                 nvs_flash_init();
         }
 
-#ifdef ARDUINO_ARCH_ESP32
-        // On esp32 EEPROM is simulated in the flash storage. Because of this
-        // we need to initialize it here explicitly
-        EEPROM.begin(3072);
-#endif
+        platform = initialize_platform();
 
-        adafruit_gamepad_available = setup_adafruit_seesaw_i2c_connection();
+        setup(platform);
 
         // Set up bins neeeded for controllers
 
         // Initializes the source of randomness from the
         // noise present on the first digital pin
         initialize_randomness_seed(analogRead(0));
-
-        persistent_storage = PersistentStorage{};
-
-        // Initialize the hardware LCD display
-        display = LcdDisplay{};
-        display.setup();
 
         xTaskCreate(rgb_blink_task,            // function
                     "RGB diode blinking task", // name
@@ -181,38 +127,12 @@ void loop(void)
 
         Serial.println("Game console started.");
 
-        input_shield = new ArduinoInputShield();
-        input_shield->setup();
+        //        input_shield = new ArduinoInputShield();
+        //        input_shield->setup();
 
-        std::vector<DirectionalController *> controllers = {};
-        std::vector<ActionController *> action_controllers = {};
-
-        if (adafruit_gamepad_available) {
-#if 1
-                // Only R4 wifi has the stemma qt port for the Wire1 SPI
-                // interface. On R4 Minima Adafruit seesaw is not defined.
-                adafruit_controller = new MiniGamepadController(&ss);
-                action_controllers.push_back(adafruit_controller);
-                controllers.push_back(adafruit_controller);
-#endif
-        }
-
-        TimeProvider *time_provider =
-            new ArduinoTimeProvider((void (*)(int))&delay);
-        WifiProvider *wifi_provider = new Esp32WifiProvider{};
-        Esp32HttpClient *client = new Esp32HttpClient();
-
-        Platform platform = {.display = &display,
-                             .directional_controllers = &controllers,
-                             .action_controllers = &action_controllers,
-                             .time_provider = time_provider,
-                             .persistent_storage = &persistent_storage,
-                             .wifi_provider = wifi_provider,
-                             .client = client};
-
-        set_brightness_from_storage(&persistent_storage);
+        set_brightness_from_storage(platform->persistent_storage);
 
         while (true) {
-                select_game(&platform);
+                select_game(platform);
         }
 }
