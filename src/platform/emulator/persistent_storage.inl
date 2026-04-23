@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 
-template <typename T> T &PersistentStorage::get(int offset, T &t)
+template <typename T> T &EmulatorPersistentStorage::get(int offset, T &t)
 {
         std::ifstream ifs("persistent_storage.bin", std::ios::binary);
 
@@ -26,7 +26,7 @@ template <typename T> T &PersistentStorage::get(int offset, T &t)
         return t;
 }
 
-template <typename T> const T &PersistentStorage::put(int offset, const T &t)
+template <typename T> const T &EmulatorPersistentStorage::put(int offset, const T &t)
 {
         std::fstream ofs;
         // We need to specify both in and out to avoid having the truncate setting

@@ -1,21 +1,34 @@
 #pragma once
-class PersistentStorage
+/**
+ * TODO: document why we are using CRTP here and how it works
+ */
+template <typename Impl> class AbstractPersistentStorage
 {
-      public:
-        template <typename T> T &get(int offset, T &t);
-        template <typename T> const T &put(int offset, const T &t);
 
-        void setup();
+      public:
+        template <typename T> T &get(int offset, T &t)
+        {
+                return static_cast<Impl *>(this)->get(offset, t);
+        }
+        template <typename T> const T &put(int offset, const T &t)
+        {
+                return static_cast<Impl *>(this)->put(offset, t);
+        }
+
+        void setup() { static_cast<Impl *>(this)->setup(); }
 };
 
-/*
- * Below we include the actual implementation of the templated methods. Note
- * that it is required that the templted methods have their definitions in the
- * header file as the compiler generated the concrete implementations on demand
- * depending on what parameters get passed into them. We use a different
- * implementation depending on emulator/target device, hence we need to include
- * the *.inl files conditionally.
- */
-#ifdef EMULATOR
-#include "../emulator/persistent_storage.inl"
+
+#if defined(EMULATOR)
+#include "../emulator/persistent_storage.hpp"
+using PersistentStorage = EmulatorPersistentStorage;
+#elif defined(ARDUINO_UNOR4_WIFI)
+#include "../boards/arduino_r4_wifi/persistent_storage.hpp"
+using PersistentStorage = ArduinoPersistentStorage;
+#elif defined(ARDUINO_ARCH_ESP32)
+#include "../boards/esp32/persistent_storage.hpp"
+using PersistentStorage = Esp32PersistentStorage;
+#else
+#error "Unknown platform"
 #endif
+
