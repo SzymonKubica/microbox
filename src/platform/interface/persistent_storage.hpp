@@ -4,6 +4,8 @@ class PersistentStorage
       public:
         template <typename T> T &get(int offset, T &t);
         template <typename T> const T &put(int offset, const T &t);
+
+        void setup();
 };
 
 /*
@@ -16,6 +18,4 @@ class PersistentStorage
  */
 #ifdef EMULATOR
 #include "../emulator/persistent_storage.inl"
-#else
-#include "../boards/arduino_r4_wifi/persistent_storage.hpp"
 #endif

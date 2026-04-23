@@ -4,15 +4,13 @@
 #include "../boards/generic/time_provider.hpp"
 #include "../boards/esp32/wifi_provider.hpp"
 #include "../boards/esp32/http_client.hpp"
+#include "../boards/esp32/persistent_storage.hpp"
 #include "../interface/controller.hpp"
 #include "Adafruit_seesaw.h"
 #include "Arduino.h"
 #include <EEPROM.h>
 
-#if 1
 Adafruit_seesaw ss(&Wire);
-// #define IRQ_PIN 5
-#endif
 
 Platform *initialize_platform()
 {
@@ -48,7 +46,6 @@ Platform *initialize_platform()
 bool setup_adafruit_seesaw_i2c_connection()
 {
 
-#if 1
         Serial.println("Setting up seesaw I2C interface...");
 
         if (!ss.begin(0x50)) {
@@ -69,18 +66,11 @@ bool setup_adafruit_seesaw_i2c_connection()
         ss.setGPIOInterrupts(button_mask, 1);
         pinMode(38, INPUT);
 
-#if defined(IRQ_PIN)
-        // pinMode(IRQ_PIN, INPUT);
-#endif
-#endif
         return true;
 }
 void setup(Platform *platform)
 {
         platform->display->setup();
-
-        // On esp32 EEPROM is simulated in the flash storage. Because of this
-        // we need to initialize it here explicitly
-        EEPROM.begin(3072);
+        platform->persistent_storage->setup();
         setup_adafruit_seesaw_i2c_connection();
 }
