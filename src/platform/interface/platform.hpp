@@ -18,8 +18,8 @@
  */
 struct Platform {
         Display *display;
-        std::vector<DirectionalController*> directional_controllers;
-        std::vector<ActionController*> action_controllers;
+        std::vector<DirectionalController *> directional_controllers;
+        std::vector<ActionController *> action_controllers;
         TimeProvider *time_provider;
         PersistentStorage *persistent_storage;
         WifiProvider *wifi_provider;

@@ -11,7 +11,8 @@
 #define BUTTON_START 16
 extern uint32_t button_mask;
 
-class MiniGamepadController : public DirectionalController, public ActionController
+class MiniGamepadController : public DirectionalController,
+                              public ActionController
 {
       public:
         /**

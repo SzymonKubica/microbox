@@ -30,7 +30,8 @@ bool ArduinoInputShield::poll_for_input(Direction *input)
         return false;
 }
 
-bool ArduinoInputShield::poll_for_input(Action *input) {
+bool ArduinoInputShield::poll_for_input(Action *input)
+{
         int leftButton = digitalRead(LEFT_BUTTON_PIN);
         int downButton = digitalRead(DOWN_BUTTON_PIN);
         int upButton = digitalRead(UP_BUTTON_PIN);
@@ -55,7 +56,8 @@ bool ArduinoInputShield::poll_for_input(Action *input) {
         return false;
 }
 
-void ArduinoInputShield::setup() {
+void ArduinoInputShield::setup()
+{
         pinMode(LEFT_BUTTON_PIN, INPUT);
         pinMode(DOWN_BUTTON_PIN, INPUT);
         pinMode(UP_BUTTON_PIN, INPUT);

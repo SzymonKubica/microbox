@@ -13,7 +13,6 @@
 #define HEADING_FONT_SIZE 24
 #endif
 
-
 #ifdef EMULATOR
 #define HEADING_FONT_WIDTH 15
 #else

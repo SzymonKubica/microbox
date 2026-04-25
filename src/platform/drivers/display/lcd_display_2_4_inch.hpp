@@ -19,7 +19,8 @@ class LcdDisplay : public Display
          * particular implementation of the display. In case of the hardware
          * display, this is supposed to initialize the display driver and erease
          * its previous contents. Note that this should be called inside of
-         * the `setup` Arduino function and is intended to be executed only once.
+         * the `setup` Arduino function and is intended to be executed only
+         * once.
          */
         virtual void setup() override;
         /**

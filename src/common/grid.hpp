@@ -40,8 +40,8 @@ calculate_grid_dimensions(int display_width, int display_height,
 
 SquareCellGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
-                          int display_rounded_corner_radius,
-                          int rows, int cols, bool square_cells);
+                          int display_rounded_corner_radius, int rows, int cols,
+                          bool square_cells);
 
 void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
                      SquareCellGridDimensions *dimensions);

@@ -24,8 +24,8 @@ class Settings : public ApplicationExecutor<SettingsConfiguration>
 {
       public:
         UserAction app_loop(Platform *p,
-                             UserInterfaceCustomization *customization,
-                             const SettingsConfiguration &config) override;
+                            UserInterfaceCustomization *customization,
+                            const SettingsConfiguration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        SettingsConfiguration *game_config) override;

@@ -41,8 +41,8 @@ class SnakeGame : public ApplicationExecutor<SnakeConfiguration>
         SnakeGame() {}
 
         UserAction app_loop(Platform *p,
-                             UserInterfaceCustomization *customization,
-                             const SnakeConfiguration &config) override;
+                            UserInterfaceCustomization *customization,
+                            const SnakeConfiguration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        SnakeConfiguration *game_config) override;

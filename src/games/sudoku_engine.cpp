@@ -187,7 +187,8 @@ SudokuGrid SudokuEngine::generate_grid(int difficulty_level)
 #if defined(EMULATOR) || defined(ARDUINO_ARCH_ESP32)
                 if (SudokuEngine::has_unique_solution(solvable)) {
 #else
-                  //TODO: optimize the uniqueness checking logic to work on arduino
+                // TODO: optimize the uniqueness checking logic to work on
+                // arduino
                 if (true) {
 #endif
                         removed++;

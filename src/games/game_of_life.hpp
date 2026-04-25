@@ -39,8 +39,8 @@ class GameOfLife : public ApplicationExecutor<GameOfLifeConfiguration>
 {
       public:
         UserAction app_loop(Platform *p,
-                             UserInterfaceCustomization *customization,
-                             const GameOfLifeConfiguration &config) override;
+                            UserInterfaceCustomization *customization,
+                            const GameOfLifeConfiguration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        GameOfLifeConfiguration *game_config) override;

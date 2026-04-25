@@ -4,8 +4,9 @@
  * Checks if any of the controllers has recorded user input. If so, the input
  * direction will be written into the `registered_dir` output parameter.
  */
-bool poll_directional_input(const std::vector<DirectionalController *> &controllers,
-                            Direction *registered_dir)
+bool poll_directional_input(
+    const std::vector<DirectionalController *> &controllers,
+    Direction *registered_dir)
 {
         bool input_registered = false;
         // If multiple  controllers register input, the last one takes

@@ -18,7 +18,6 @@ template <typename Impl> class AbstractPersistentStorage
         void setup() { static_cast<Impl *>(this)->setup(); }
 };
 
-
 #if defined(EMULATOR)
 #include "../emulator/persistent_storage.hpp"
 using PersistentStorage = EmulatorPersistentStorage;
@@ -31,4 +30,3 @@ using PersistentStorage = Esp32PersistentStorage;
 #else
 #error "Unknown platform"
 #endif
-

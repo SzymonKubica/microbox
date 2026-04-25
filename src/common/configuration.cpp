@@ -449,4 +449,3 @@ ConfigurationOption::ConfigurationOption(const ConfigurationOption &other)
         }
         }
 }
-

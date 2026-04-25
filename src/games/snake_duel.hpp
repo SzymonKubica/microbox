@@ -6,7 +6,7 @@
 #include "common_transitions.hpp"
 #include "application_executor.hpp"
 
-typedef struct SnakeDuelConfiguration{
+typedef struct SnakeDuelConfiguration {
         ConfigurationHeader header;
         /**
          * Speed of the snake in cells travelled per second.

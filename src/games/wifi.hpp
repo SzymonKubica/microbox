@@ -39,8 +39,8 @@ typedef struct WifiAppConfiguration {
         ConfigurationHeader header;
         /**
          * Required to detect if the wifi app configuration struct has not
-         * yet been initialized in the persistent storage. If this does not match
-         * the initialization magic number, we assume that
+         * yet been initialized in the persistent storage. If this does not
+         * match the initialization magic number, we assume that
          */
         int intialization_magic_number;
         std::size_t curr_config_idx;
@@ -71,8 +71,8 @@ class WifiApp : public ApplicationExecutor<WifiAppConfiguration>
 {
       public:
         UserAction app_loop(Platform *p,
-                             UserInterfaceCustomization *customization,
-                             const WifiAppConfiguration &config) override;
+                            UserInterfaceCustomization *customization,
+                            const WifiAppConfiguration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
                        WifiAppConfiguration *game_config) override;

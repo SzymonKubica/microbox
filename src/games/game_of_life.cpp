@@ -165,8 +165,8 @@ void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                        int border_offset);
 
 UserAction GameOfLife::app_loop(Platform *p,
-                                 UserInterfaceCustomization *customization,
-                                 const GameOfLifeConfiguration &config)
+                                UserInterfaceCustomization *customization,
+                                const GameOfLifeConfiguration &config)
 {
 
         LOG_DEBUG(TAG, "Entering Game of Life game loop");

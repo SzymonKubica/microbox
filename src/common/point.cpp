@@ -5,8 +5,9 @@
 #include "maths_utils.hpp"
 #include <optional>
 
-Point operator+(Point first, Point second) {
-  return {first.x + second.x, first.y + second.y};
+Point operator+(Point first, Point second)
+{
+        return {first.x + second.x, first.y + second.y};
 }
 
 void translate(Point *p, Direction dir)

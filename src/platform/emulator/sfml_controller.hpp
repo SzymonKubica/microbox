@@ -25,11 +25,11 @@ class SfmlInputController : public DirectionalController
          * This is to be called only once inside of the `setup` Arduino
          * function.
          *
-         * DEPRECATED: This will likely not be necessary in the future. Original plan
-         * was to initialize the pins there. The problem is that the function for
-         * doing this is overloaded so we cannot pass it as a pointer without
-         * contextual information (makes sense, it won't be possible to infer
-         * which function to call).
+         * DEPRECATED: This will likely not be necessary in the future. Original
+         * plan was to initialize the pins there. The problem is that the
+         * function for doing this is overloaded so we cannot pass it as a
+         * pointer without contextual information (makes sense, it won't be
+         * possible to infer which function to call).
          */
         void setup() override;
 };

@@ -13,8 +13,7 @@
 #define TAG "minesweeper"
 
 MinesweeperConfiguration DEFAULT_MINESWEEPER_CONFIG = {
-  .header = {.magic = CONFIGURATION_MAGIC, .version = 1},
-  .mines_num = 25};
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 1}, .mines_num = 25};
 
 typedef struct MinesweeperGridDimensions {
         int rows;
