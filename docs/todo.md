@@ -46,10 +46,14 @@
 
 # In Progress
 
-- [ ] restore compatibility with arduino uno r4
-  - [ ] wifi library port
-  - [ ] target wiring
-  - [ ] display overrides remove
+- [ ] restore compatibility with arduino r4 minima
+- [ ] add dummy wifi provider for the minima saying that there is no wifi and
+      then have the code react to that gracefully (e.g. the platform should be
+      able to say if it has wifi support and then based on that the code around
+      that should react (e.g. wifi app should not display if the microcontroller doesn't have support for the wifi)
+
+
+- [ ] remove all raw calls to Serial.println and replace those with proper logging.
 
 - [ ] clean up all usages of raw pointers.
   - [ ] platform code
@@ -60,6 +64,14 @@
 - [ ] fix state transitions on the light sleep functionality
 
 # Done
+- [x] clean up display-specific constants and remove the need for build flags
+      to specify which display is to be used. (MICROBOX_1/2) flag should be
+      sufficient. (this won't be done because display libs are heavyweight and
+      they shouldn't all be included if we are only using one display at a time).
+- [x] restore compatibility with arduino uno r4
+  - [x] wifi library port
+  - [x] target wiring
+  - [x] display overrides remove
 - [x] migrate 1.69 inch display to use the TFT library (imposible as Arduino not supported)
 - [x] design new platform separation and ensure that arduino uno r4 wifi/minima are separate from esp32
 - [x] separate wifi and http client implementations for arduino uno r4 / esp32

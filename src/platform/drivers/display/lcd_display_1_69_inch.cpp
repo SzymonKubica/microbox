@@ -5,7 +5,7 @@
 
 #define DISPLAY_CORNER_RADIUS 40
 #define SCREEN_BORDER_WIDTH 3
-void LcdDisplay::setup()
+void LcdDisplay_1_69::setup()
 {
         Config_Init();
         LCD_Init();
@@ -13,14 +13,14 @@ void LcdDisplay::setup()
         Paint_Clear(BLACK);
 };
 
-void LcdDisplay::initialize()
+void LcdDisplay_1_69::initialize()
 {
         Paint_NewImage(LCD_WIDTH, LCD_HEIGHT, 270, WHITE);
 };
 
-void LcdDisplay::clear(Color color) { Paint_Clear(color); };
+void LcdDisplay_1_69::clear(Color color) { Paint_Clear(color); };
 
-void LcdDisplay::draw_rounded_border(Color color)
+void LcdDisplay_1_69::draw_rounded_border(Color color)
 {
         int rounding_radius = DISPLAY_CORNER_RADIUS;
         int margin = SCREEN_BORDER_WIDTH;
@@ -103,7 +103,7 @@ void LcdDisplay::draw_rounded_border(Color color)
             LCD_WIDTH - margin - line_width - 1, BLACK);
 };
 
-void LcdDisplay::draw_circle(Point center, int radius, Color color,
+void LcdDisplay_1_69::draw_circle(Point center, int radius, Color color,
                              int border_width, bool filled)
 {
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
@@ -121,7 +121,7 @@ void LcdDisplay::draw_circle(Point center, int radius, Color color,
                          static_cast<DRAW_FILL>(filled_repr));
 };
 
-void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
+void LcdDisplay_1_69::draw_rectangle(Point start, int width, int height, Color color,
                                 int border_width, bool filled)
 {
 
@@ -141,7 +141,7 @@ void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
                             static_cast<DRAW_FILL>(filled_repr));
 };
 
-void LcdDisplay::draw_rounded_rectangle(Point start, int width, int height,
+void LcdDisplay_1_69::draw_rounded_rectangle(Point start, int width, int height,
                                         int radius, Color color)
 {
 
@@ -175,7 +175,7 @@ void LcdDisplay::draw_rounded_rectangle(Point start, int width, int height,
                             color, DOT_PIXEL_1X1, DRAW_FILL_FULL);
 };
 
-void LcdDisplay::draw_line(Point start, Point end, Color color)
+void LcdDisplay_1_69::draw_line(Point start, Point end, Color color)
 {
         /*
          * We need to add the adjustment because of the pixel-precision
@@ -189,8 +189,8 @@ void LcdDisplay::draw_line(Point start, Point end, Color color)
                        DOT_PIXEL_1X1, LINE_STYLE_SOLID);
 }
 
-sFONT *map_font_size(FontSize font_size);
-void LcdDisplay::draw_string(Point start, char *string_buffer,
+sFONT *map_font_size_1_69_specific(FontSize font_size);
+void LcdDisplay_1_69::draw_string(Point start, char *string_buffer,
                              FontSize font_size, Color bg_color, Color fg_color)
 {
         /*
@@ -202,10 +202,10 @@ void LcdDisplay::draw_string(Point start, char *string_buffer,
          */
         int adj = 1;
         Paint_DrawString_EN(start.x - 1, start.y - 1, string_buffer,
-                            map_font_size(font_size), bg_color, fg_color);
+                            map_font_size_1_69_specific(font_size), bg_color, fg_color);
 };
 
-void LcdDisplay::clear_region(Point top_left, Point bottom_right,
+void LcdDisplay_1_69::clear_region(Point top_left, Point bottom_right,
                               Color clear_color)
 
 {
@@ -222,7 +222,7 @@ void LcdDisplay::clear_region(Point top_left, Point bottom_right,
                            clear_color);
 };
 
-sFONT *map_font_size(FontSize font_size)
+sFONT *map_font_size_1_69_specific(FontSize font_size)
 {
         switch (font_size) {
         case Size16:
@@ -235,19 +235,19 @@ sFONT *map_font_size(FontSize font_size)
 }
 
 // We return the width for the height as the display is mounted horizontally.
-int LcdDisplay::get_height() { return LCD_WIDTH; };
+int LcdDisplay_1_69::get_height() { return LCD_WIDTH; };
 
 // We return the height for the width as the display is mounted horizontally.
-int LcdDisplay::get_width() { return LCD_HEIGHT; };
+int LcdDisplay_1_69::get_width() { return LCD_HEIGHT; };
 
-int LcdDisplay::get_display_corner_radius() { return DISPLAY_CORNER_RADIUS; }
-bool LcdDisplay::refresh()
+int LcdDisplay_1_69::get_display_corner_radius() { return DISPLAY_CORNER_RADIUS; }
+bool LcdDisplay_1_69::refresh()
 {
         // This is a no-op as the display does not require refreshing
         return true;
 }
 
-void LcdDisplay::sleep()
+void LcdDisplay_1_69::sleep()
 {
         // TODO: For now this is a no-op as we don't support display sleeping on
         // the Arduino waveshare 1.69 inch LCD.

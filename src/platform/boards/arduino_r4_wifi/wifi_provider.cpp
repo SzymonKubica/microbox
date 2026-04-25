@@ -1,5 +1,6 @@
 #if defined(ARDUINO_UNOR4_WIFI)
 #include "wifi_provider.hpp"
+#include <Arduino.h>
 WifiData *ArduinoWifiProvider::get_wifi_data()
 {
         WifiData *data = new WifiData();

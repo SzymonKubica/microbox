@@ -1,0 +1,13 @@
+CompileFlags:
+  Remove: [
+    "-nostdlib",
+    "-mlongcalls",
+    "-mdisable-hardware-atomics",
+    "-fstrict-volatile-bitfields",
+    "-fno-tree-switch-conversion"
+  ]
+  Add: [
+    "-DSOC_WIFI_SUPPORTED",
+    "-DCONFIG_ESP_WIFI_REMOTE_ENABLED=1",
+    ]
+  CompilationDatabase: build/

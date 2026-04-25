@@ -17,12 +17,16 @@ if [ "$target" != "esp32" ] && [ "$target" != "minima" ] && [ "$target" != "r4wi
     exit 1
 fi
 
-set -x # Enables command echo-ing
 if [ "$target" == "minima" ]; then
-  cp scripts/sketch/sketch-minima.yaml sketch.yaml
-elif [ "$target" == "r4wifi" ]; then
-  cp scripts/sketch/sketch-unor4wifi.yaml sketch.yaml
-else
-  cp scripts/sketch/sketch-esp32.yaml sketch.yaml
-fi
 set -x
+  cp scripts/sketch/sketch-minima.yaml sketch.yaml
+set +x
+elif [ "$target" == "r4wifi" ]; then
+set -x
+  cp scripts/sketch/sketch-unor4wifi.yaml sketch.yaml
+set +x
+else
+set -x
+  cp scripts/sketch/sketch-esp32.yaml sketch.yaml
+set +x
+fi

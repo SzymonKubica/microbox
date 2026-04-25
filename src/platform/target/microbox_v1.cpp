@@ -8,7 +8,7 @@
 
 Platform *initialize_platform()
 {
-        LcdDisplay *display = new LcdDisplay();
+        LcdDisplay_1_69 *display = new LcdDisplay_1_69();
         ArduinoInputShield *controller = new ArduinoInputShield();
         std::vector<DirectionalController *> controllers{controller};
         std::vector<ActionController *> action_controllers{controller};

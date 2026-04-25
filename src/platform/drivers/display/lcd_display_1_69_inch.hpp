@@ -10,7 +10,7 @@
  * display. All calls are forwarded to the library responsible for driving the
  * display. Because of this, this module depends on the `src/lib/` modules.
  */
-class LcdDisplay : public Display
+class LcdDisplay_1_69 : public Display
 {
       public:
         /**

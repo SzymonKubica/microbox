@@ -24,20 +24,26 @@ fi
 
 if [ -z "$platform" ]; then
     echo "Usage: $0 <platform>"
-    echo "Platform should be either 'arduino' or 'emulator'."
+    echo "Platform should be either 'arduino', 'esp32, or 'emulator'."
     exit 1
 fi
 
-if [ "$platform" != "arduino" ] && [ "$platform" != "emulator" ]; then
+if [ "$platform" != "esp32" ] && [ "$platform" != "arduino" ] && [ "$platform" != "emulator" ]; then
     echo "Invalid platform: $platform"
-    echo "Platform should be either 'arduino' or 'emulator'."
+    echo "Platform should be either 'arduino', 'esp32, or 'emulator'."
     exit 1
 fi
 
-set -x # Enables command echo-ing
 if [ "$platform" == "arduino" ]; then
-  cp scripts/clangd/clangd-arduino .clangd
-else
-  cp scripts/clangd/clangd-emulator .clangd
-fi
 set -x
+  cp scripts/clangd/clangd-arduino .clangd
+set +x
+elif [ "$platform" == "esp32" ]; then
+set -x
+  cp scripts/clangd/clangd-esp32 .clangd
+set +x
+else
+set -x
+  cp scripts/clangd/clangd-emulator .clangd
+set +x
+fi
