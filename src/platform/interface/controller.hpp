@@ -62,12 +62,13 @@ class ActionController
  * Checks if any of the controllers has recorded user input. If so, the input
  * direction will be written into the `registered_dir` output parameter.
  */
-bool poll_directional_input(std::vector<DirectionalController *> *controllers,
-                            Direction *registered_dir);
+bool poll_directional_input(
+    const std::vector<DirectionalController *> &controllers,
+    Direction *registered_dir);
 
 /**
- * Checks if any of the controllers has recorded user action input. If so, the input
- * action will be written into the `registered_action` output parameter.
+ * Checks if any of the controllers has recorded user action input. If so, the
+ * input action will be written into the `registered_action` output parameter.
  */
-bool poll_action_input(std::vector<ActionController *> *controllers,
+bool poll_action_input(const std::vector<ActionController *> &controllers,
                        Action *registered_action);

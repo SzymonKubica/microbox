@@ -22,13 +22,8 @@ Platform *initialize_platform()
         Esp32HttpClient *client = new Esp32HttpClient();
         PersistentStorage *persistent_storage = new PersistentStorage();
 
-        std::vector<DirectionalController *> *controllers =
-            new std::vector<DirectionalController *>();
-        std::vector<ActionController *> *action_controllers =
-            new std::vector<ActionController *>();
-
-        controllers->push_back(controller);
-        action_controllers->push_back(controller);
+        std::vector<DirectionalController *> controllers{controller};
+        std::vector<ActionController *> action_controllers{controller};
 
         LcdDisplay *display = new LcdDisplay();
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "../../common/point.hpp"
 #include "../../common/font_size.hpp"
-#include "color.hpp"
+#include "../../common/color.hpp"
 
 /*
  * @brief Display interface that needs to be implemented by classes that will be

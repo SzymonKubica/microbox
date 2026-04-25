@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
         client = new EmulatorHttpClient();
 
         Platform platform = {.display = display,
-                             .directional_controllers = &controllers,
-                             .action_controllers = &action_controllers,
+                             .directional_controllers = controllers,
+                             .action_controllers = action_controllers,
                              .time_provider = &time_provider,
                              .persistent_storage = &persistent_storage,
                              .wifi_provider = wifi_provider,

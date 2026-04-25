@@ -21,9 +21,7 @@
 - [ ] migrate 1.69 inch display to use the TFT library
 
 - [ ] add aliases for button to have something like 'exit button' instead of Action::BLUE
-
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
-- [ ] clean up all usages of raw pointers.
 - [ ] design a better logging utility to remove the c-style macros.
 - [ ] document patches required on esp32
 - [ ] add 'vendoring' for the TFT LCD display library to ensure users don't need to to
@@ -43,6 +41,8 @@
 - [ ] make color more readable (remove stupid 'LGGBRed' things)
 
 # In Progress
+
+- [ ] clean up all usages of raw pointers.
 
 - [ ] restore compatibility with arduino uno r4
 - [ ] add proper way of injecting default wifi ssid & password secrets

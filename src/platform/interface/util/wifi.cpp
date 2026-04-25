@@ -1,4 +1,4 @@
-#include "wifi.hpp"
+#include "../wifi.hpp"
 #include "stdio.h"
 
 /**

@@ -1,4 +1,4 @@
-#include "input.hpp"
+#include "../input.hpp"
 
 const char *direction_to_str(Direction direction)
 {
