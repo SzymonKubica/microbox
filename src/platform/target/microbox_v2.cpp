@@ -4,7 +4,6 @@
 #include "../boards/generic/time_provider.hpp"
 #include "../boards/esp32/wifi_provider.hpp"
 #include "../boards/esp32/http_client.hpp"
-#include "../boards/esp32/persistent_storage.hpp"
 #include "../interface/controller.hpp"
 #include "Adafruit_seesaw.h"
 #include "Arduino.h"
@@ -14,18 +13,34 @@ Adafruit_seesaw ss(&Wire);
 
 Platform *initialize_platform()
 {
-        MiniGamepadController *adafruit_controller;
-
+        LcdDisplay *display = new LcdDisplay();
         MiniGamepadController *controller = new MiniGamepadController(&ss);
-        TimeProvider *time_provider = new ArduinoTimeProvider();
-        WifiProvider *wifi_provider = new Esp32WifiProvider{};
-        Esp32HttpClient *client = new Esp32HttpClient();
-        PersistentStorage *persistent_storage = new PersistentStorage();
-
         std::vector<DirectionalController *> controllers{controller};
         std::vector<ActionController *> action_controllers{controller};
+        TimeProvider *time_provider = new ArduinoTimeProvider();
+        WifiProvider *wifi_provider = new Esp32WifiProvider();
+        Esp32HttpClient *client = new Esp32HttpClient();
 
-        LcdDisplay *display = new LcdDisplay();
+        /**
+         * Note that we are not importing the esp32-specific persistent storage
+         * directly here. This is because persistent storage relies on
+         * generic store/retrieve functions that need to be defined in header
+         * files. This means that we cannot have an 'abstract' interface class
+         * that then gets overridden by the platform-specific implementations
+         * because virtual functions cannot be templetized. Because of this, we
+         * need to use a more elaborate pattern with 'AbstractPersistentStorage'
+         * that uses the CRTP pattern to allow for switching of the
+         * implementation details.
+         *
+         * Because of this, we have made an exception here, whereby the
+         * PersistentStorage is the only platform component that gets resolved
+         * based on the target device outside of target definition files like
+         * this one. This is the only instance where this platform-specific
+         * resolution 'leaks out' of the target definition file. Refer to
+         * `interface/persistent_storage.hpp` to see how this resolution is
+         * performed.
+         */
+        PersistentStorage *persistent_storage = new PersistentStorage();
 
         Platform platform = {.display = display,
                              .directional_controllers = controllers,
