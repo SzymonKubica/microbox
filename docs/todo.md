@@ -31,7 +31,6 @@
       as the library depends on the global arduino installation structure.
       It migth be better to explain / clean-up the process of configuring the
       library with the correct pins and target device.
-- [ ] restore compatibility with arduino uno r4
 - [ ] add proper #define switching for esp32
 - [ ] clean up all imports to remove the indirect import warnings
 - [ ] separate games from applications
@@ -41,10 +40,13 @@
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] add config struct version validations
 - [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
+- [ ] make color more readable (remove stupid 'LGGBRed' things)
 
 # In Progress
 
+- [ ] restore compatibility with arduino uno r4
 - [ ] add proper way of injecting default wifi ssid & password secrets
+- [ ] fix state transitions on the light sleep functionality
 
 # Done
 - [x] design new platform separation and ensure that arduino uno r4 wifi/minima are separate from esp32

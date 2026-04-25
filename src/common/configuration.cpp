@@ -9,7 +9,7 @@
 #include "logging.hpp"
 #include "user_interface.hpp"
 #include "../platform/interface/controller.hpp"
-#include "../platform/interface/color.hpp"
+#include "../common/color.hpp"
 
 #define TAG "configuration"
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "../platform/interface/color.hpp"
+#include "../common/color.hpp"
 
 enum UserInterfaceRenderingMode {
         /**

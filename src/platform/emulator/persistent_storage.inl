@@ -26,18 +26,21 @@ template <typename T> T &EmulatorPersistentStorage::get(int offset, T &t)
         return t;
 }
 
-template <typename T> const T &EmulatorPersistentStorage::put(int offset, const T &t)
+template <typename T>
+const T &EmulatorPersistentStorage::put(int offset, const T &t)
 {
         std::fstream ofs;
-        // We need to specify both in and out to avoid having the truncate setting
-        // clear the file before writing to it.
+        // We need to specify both in and out to avoid having the truncate
+        // setting clear the file before writing to it.
         ofs = std::fstream("persistent_storage.bin",
-                         std::ios::in | std::ios::out | std::ios::binary);
+                           std::ios::in | std::ios::out | std::ios::binary);
 
         if (!ofs) {
-                std::cerr << "Error opening file for writing in append mode. falling back to write only mode" << std::endl;
+                std::cerr << "Error opening file for writing in append mode. "
+                             "falling back to write only mode"
+                          << std::endl;
                 ofs = std::fstream("persistent_storage.bin",
-                         std::ios::out | std::ios::binary);
+                                   std::ios::out | std::ios::binary);
         }
 
         if (!ofs) {

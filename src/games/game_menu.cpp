@@ -3,7 +3,7 @@
 #include "game_menu.hpp"
 #include "../common/configuration.hpp"
 #include "../common/logging.hpp"
-#include "../platform/interface/color.hpp"
+#include "../platform/common/color.hpp"
 #include "../common/constants.hpp"
 #include "2048.hpp"
 #include "application_executor.hpp"

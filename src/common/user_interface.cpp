@@ -4,12 +4,13 @@
 #include <cstring>
 #include <map>
 
-#include "user_interface.hpp"
-#include "configuration.hpp"
-#include "../platform/interface/color.hpp"
 #include "../platform/interface/display.hpp"
+#include "../common/color.hpp"
 #include "../common/logging.hpp"
 #include "../common/maths_utils.hpp"
+
+#include "user_interface.hpp"
+#include "configuration.hpp"
 #include "constants.hpp"
 #include "point.hpp"
 

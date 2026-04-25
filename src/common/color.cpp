@@ -47,6 +47,11 @@ const char *color_to_string(Color color)
         };
 }
 
+/**
+ * For a given background color, it returns the text color (Black/White) that
+ * will be clearly visible on that background. The idea is to return black for
+ * for lighter background colors and default to Black for everything else.
+ */
 Color get_good_contrast_text_color(Color color)
 {
 

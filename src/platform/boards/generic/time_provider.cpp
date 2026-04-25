@@ -1,4 +1,5 @@
-#if !defined(EMULATOR)
+#if defined(ARDUINO_ARCH_ESP32) | defined(ARDUINO_UNOR4_WIFI)
+#pragma once
 #include "time_provider.hpp"
 #include "Arduino.h"
 void ArduinoTimeProvider::delay_ms(int ms) { delay(ms); }
