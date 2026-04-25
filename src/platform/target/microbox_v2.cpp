@@ -38,6 +38,46 @@ Platform *initialize_platform()
         return new Platform(platform);
 }
 
+void rgb_blink_task(void *parameter)
+{
+        const int rgb_mode = 0;
+        const int off = 1;
+        const int flashlight = 2;
+        int current = 1;
+        while (true) {
+                if (digitalRead(38) == LOW) {
+                        current = (current + 1) % 3;
+                }
+#ifdef RGB_BUILTIN
+                switch (current) {
+                case rgb_mode:
+                        digitalWrite(RGB_BUILTIN,
+                                     HIGH); // Turn the RGB LED white
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        digitalWrite(RGB_BUILTIN, LOW); // Turn the RGB LED off
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+                        rgbLedWrite(RGB_BUILTIN, RGB_BRIGHTNESS, 0, 0); // Red
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        rgbLedWrite(RGB_BUILTIN, 0, RGB_BRIGHTNESS, 0); // Green
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        rgbLedWrite(RGB_BUILTIN, 0, 0, RGB_BRIGHTNESS); // Blue
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        rgbLedWrite(RGB_BUILTIN, 0, 0, 0); // Off / black
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        break;
+                case off:
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                        break;
+                case flashlight:
+                        digitalWrite(RGB_BUILTIN,
+                                     HIGH); // Turn the RGB LED white
+                        vTaskDelay(1000 / portTICK_PERIOD_MS);
+                }
+#endif
+        }
+}
+
 bool setup_adafruit_seesaw_i2c_connection()
 {
 
@@ -65,7 +105,16 @@ bool setup_adafruit_seesaw_i2c_connection()
 }
 void setup(Platform *platform)
 {
+
         platform->display->setup();
         platform->persistent_storage->setup();
         setup_adafruit_seesaw_i2c_connection();
+
+        xTaskCreate(rgb_blink_task,            // function
+                    "RGB diode blinking task", // name
+                    2048,                      // stack size
+                    NULL,                      // parameter
+                    1,                         // priority
+                    NULL                       // task handle
+        );
 }

@@ -4,7 +4,6 @@
  * A copy of the color enum from the library to avoid having an explicit
  * dependency on it in the generic user interface code.
  */
-#include <cstring>
 typedef enum Color : int {
         White = 0xFFFF,
         Black = 0x0000,

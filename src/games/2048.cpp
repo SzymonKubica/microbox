@@ -48,8 +48,6 @@ Game2048Configuration DEFAULT_2048_GAME_CONFIG = {
 
 static void copy_grid(int **source, int **destination, int size);
 
-void initialize_randomness_seed(int seed) { srand(seed); }
-
 static void handle_game_over(Display *display,
                              std::vector<DirectionalController *> *controllers,
                              GameState *state);

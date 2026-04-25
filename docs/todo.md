@@ -16,6 +16,11 @@
 
 - [ ] add a separate menu for all of the apps.
 
+- [ ] Feedback from Khemi: users don't care about the color / UI flavour between minimalistic/detailed / hints
+      this should be moved to the settings. The main screen should only show the selected game
+      and probably feature some cool graphic. The main menu can still remain in its current form
+      but should be moved to the settings.
+
 # TODO
 
 - [ ] migrate 1.69 inch display to use the TFT library
@@ -43,6 +48,8 @@
 # In Progress
 
 - [ ] clean up all usages of raw pointers.
+  - [ ] platform code
+  - [ ] configuration management code (this is large and messy)
 
 - [ ] restore compatibility with arduino uno r4
 - [ ] add proper way of injecting default wifi ssid & password secrets

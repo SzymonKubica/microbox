@@ -1,4 +1,5 @@
 #include "user_interface_customization.hpp"
+#include <cstring>
 
 const char *rendering_mode_to_str(UserInterfaceRenderingMode mode)
 {
