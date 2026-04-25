@@ -1,11 +1,13 @@
-#include <Wire.h>
-
-#include "src/platform/target/microbox_v2.hpp"
-
 #include "src/games/game_menu.hpp"
 #include "src/games/brightness.hpp"
 
-#define SERIAL_BAUD_RATE 115200
+#if defined(MICROBOX_1)
+#include "src/platform/target/microbox_v1.hpp"
+#elif defined(MICROBOX_2)
+#include "src/platform/target/microbox_v2.hpp"
+#else
+#error "Unrecognized target, please either MICROBOX_1 or MICROBOX_2 build flag."
+#endif
 
 /**
  * The platform object that bundles up all handles to the platform-specific
@@ -25,8 +27,9 @@ void setup(void)
         setup(platform);
 }
 
+#define SERIAL_BAUD_RATE 115200
 /**
- * Common setup functions that applies to all platforms (arduino / esp32)
+ * Common setup that applies to all platforms (regardless of arduino / esp32).
  */
 void common_setup(void)
 {
