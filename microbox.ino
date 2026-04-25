@@ -16,8 +16,6 @@
  */
 Platform *platform;
 
-SET_LOOP_TASK_STACK_SIZE(32 * 1024);
-
 void common_setup(void);
 void setup(void)
 {

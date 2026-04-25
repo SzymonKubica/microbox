@@ -118,3 +118,5 @@ void setup(Platform *platform)
                     NULL                       // task handle
         );
 }
+
+size_t getArduinoLoopTaskStackSize() { return 32 * 1024; }
