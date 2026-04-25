@@ -1,4 +1,4 @@
-#include "src/platform/interface/wifi.hpp"
+#include "../../interface/wifi.hpp"
 #if defined(ARDUINO_ARCH_ESP32)
 #include "./http_client.hpp"
 #include "../../../common/logging.hpp"

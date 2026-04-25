@@ -4,7 +4,7 @@
 #include <EEPROM.h>
 #include <nvs_flash.h>
 
-const bool ERASE_FLASH = true;
+const bool ERASE_FLASH = false;
 
 class Esp32PersistentStorage : AbstractPersistentStorage<Esp32PersistentStorage>
 {

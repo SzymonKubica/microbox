@@ -1,3 +1,4 @@
+#include <cstring>
 #include <cassert>
 #include <optional>
 #include "snake_common.hpp"

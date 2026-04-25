@@ -1,3 +1,4 @@
+#include <cstring>
 #include <cassert>
 #include <optional>
 #include "sudoku.hpp"
@@ -18,10 +19,16 @@
 
 #define TAG "sudoku"
 
+/**
+ * When compiling for Arduino R4, we get errors about non-trivial designated
+ * initializers not being supported. Because of this we need to assign all
+ * fields here using the 'trivial' way.
+ */
 SudokuConfiguration DEFAULT_SUDOKU_CONFIG = {
     .header = {.magic = CONFIGURATION_MAGIC, .version = 1},
     .difficulty = 1,
     .is_game_in_progress = false,
+    .saved_game = {},
     .accent_color = Color::Cyan};
 
 /**

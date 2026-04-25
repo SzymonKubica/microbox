@@ -9,7 +9,7 @@
 
 #define SUDOKU_GRID_SIZE 9
 
-typedef struct SudokuConfiguration : ConfigurationHeader {
+typedef struct SudokuConfiguration {
         ConfigurationHeader header;
         int difficulty;
         bool is_game_in_progress;

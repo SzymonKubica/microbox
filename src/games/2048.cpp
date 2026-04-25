@@ -41,6 +41,7 @@ const Color GRID_BG_COLOR = White;
 const Color TEXT_COLOR = Black;
 
 Game2048Configuration DEFAULT_2048_GAME_CONFIG = {
+    .header = ConfigurationHeader(),
     .grid_size = 4,
     .target_max_tile = 2048,
     .is_game_in_progress = false,

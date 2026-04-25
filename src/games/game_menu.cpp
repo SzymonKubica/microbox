@@ -1,3 +1,4 @@
+#include <cstring>
 #include <optional>
 #include <stdlib.h>
 #include "game_menu.hpp"

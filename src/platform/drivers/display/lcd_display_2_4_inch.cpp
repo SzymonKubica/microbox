@@ -1,4 +1,4 @@
-#if 1 || defined(WAVESHARE_2_4_INCH_LCD)
+#if defined(WAVESHARE_2_4_INCH_LCD)
 #include "lcd_display_2_4_inch.hpp"
 #include <Arduino.h>
 #include <cstdint>

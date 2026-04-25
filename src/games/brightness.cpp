@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstring>
 #include "brightness.hpp"
 
 #include "../common/configuration.hpp"
@@ -14,6 +15,7 @@
 #endif
 
 const BrightnessConfiguration DEFAULT_BRIGHTNESS_CONFIGURATION = {
+    .header = ConfigurationHeader(),
     .brightness = 50,
 };
 

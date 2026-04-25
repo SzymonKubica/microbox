@@ -246,4 +246,10 @@ bool LcdDisplay::refresh()
         // This is a no-op as the display does not require refreshing
         return true;
 }
+
+void LcdDisplay::sleep()
+{
+        // TODO: For now this is a no-op as we don't support display sleeping on
+        // the Arduino waveshare 1.69 inch LCD.
+}
 #endif

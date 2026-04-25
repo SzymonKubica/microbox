@@ -2,6 +2,7 @@
 #include <optional>
 #include <string>
 #include <stdlib.h>
+#include <cstring>
 
 #include "configuration.hpp"
 #include "maths_utils.hpp"

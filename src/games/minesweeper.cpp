@@ -1,3 +1,5 @@
+#include <cstring>
+#include <optional>
 #include "../platform/interface/platform.hpp"
 #include "game_menu.hpp"
 
@@ -7,7 +9,6 @@
 
 #include "common_transitions.hpp"
 #include "settings.hpp"
-#include <optional>
 #include "minesweeper.hpp"
 
 #define TAG "minesweeper"

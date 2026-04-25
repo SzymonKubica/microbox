@@ -15,7 +15,6 @@ class ArduinoPersistentStorage
         template <typename T> const T &put(int offset, const T &t)
         {
                 EEPROM.put(offset, t);
-                EEPROM.commit();
                 return t;
         }
 

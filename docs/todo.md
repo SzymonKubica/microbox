@@ -23,7 +23,6 @@
 
 # TODO
 
-- [ ] migrate 1.69 inch display to use the TFT library
 
 - [ ] add aliases for button to have something like 'exit button' instead of Action::BLUE
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
@@ -47,15 +46,21 @@
 
 # In Progress
 
+- [ ] restore compatibility with arduino uno r4
+  - [ ] wifi library port
+  - [ ] target wiring
+  - [ ] display overrides remove
+
 - [ ] clean up all usages of raw pointers.
   - [ ] platform code
   - [ ] configuration management code (this is large and messy)
 
-- [ ] restore compatibility with arduino uno r4
+
 - [ ] add proper way of injecting default wifi ssid & password secrets
 - [ ] fix state transitions on the light sleep functionality
 
 # Done
+- [x] migrate 1.69 inch display to use the TFT library (imposible as Arduino not supported)
 - [x] design new platform separation and ensure that arduino uno r4 wifi/minima are separate from esp32
 - [x] separate wifi and http client implementations for arduino uno r4 / esp32
 - [x] idea: instead of having 'target' folder with #defines, have the target folder

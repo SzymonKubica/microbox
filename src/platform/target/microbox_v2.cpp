@@ -1,3 +1,4 @@
+#if defined(MICROBOX_2)
 #include "microbox_v2.hpp"
 #include "../drivers/display/lcd_display_2_4_inch.hpp"
 #include "../drivers/input/adafruit_mini_gamepad.hpp"
@@ -135,3 +136,4 @@ void setup(Platform *platform)
 }
 
 size_t getArduinoLoopTaskStackSize() { return 32 * 1024; }
+#endif

@@ -1,2 +1,2 @@
-default_fqbn: esp32:esp32:adafruit_feather_esp32_v2
+default_fqbn: arduino:renesas_uno:unor4wifi
 default_port: /dev/ttyACM0

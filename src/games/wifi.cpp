@@ -6,7 +6,6 @@
 #include "wifi.hpp"
 
 #include "../common/logging.hpp"
-#include "../platform/boards/arduino_r4_wifi/wifi_provider.cpp"
 #include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
 #include "../platform/wifi_ssid_password_secrets.hpp"
