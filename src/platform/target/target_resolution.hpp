@@ -1,4 +1,6 @@
-#if defined(MICROBOX_1)
+#if defined(MICROBOX_0)
+#include "microbox_v0.hpp"
+#elif defined(MICROBOX_1)
 #include "microbox_v1.hpp"
 #elif defined(MICROBOX_2)
 #include "microbox_v2.hpp"

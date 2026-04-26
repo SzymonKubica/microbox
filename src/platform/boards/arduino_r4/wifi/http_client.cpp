@@ -1,6 +1,6 @@
 #if defined(ARDUINO_UNOR4_WIFI)
 #include "./http_client.hpp"
-#include "../../../common/logging.hpp"
+#include "../../../../common/logging.hpp"
 #include <WiFiS3.h>
 #include <Arduino.h>
 #include <cstdint>

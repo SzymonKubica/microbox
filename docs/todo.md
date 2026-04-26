@@ -21,6 +21,8 @@
       and probably feature some cool graphic. The main menu can still remain in its current form
       but should be moved to the settings.
 
+- [ ] check if there is a vim plugin for markdown rendering.
+
 # TODO
 
 

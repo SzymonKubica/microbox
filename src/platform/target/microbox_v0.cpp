@@ -1,10 +1,8 @@
-#if defined(MICROBOX_1)
-#include "microbox_v1.hpp"
+#if defined(MICROBOX_0)
+#include "microbox_v0.hpp"
 #include "../drivers/display/lcd_display_1_69_inch.hpp"
 #include "../drivers/input/input_shield.hpp"
 #include "../boards/generic/time_provider.hpp"
-#include "../boards/arduino_r4/wifi/wifi_provider.hpp"
-#include "../boards/arduino_r4/wifi/http_client.hpp"
 
 Platform *initialize_platform()
 {
@@ -14,8 +12,11 @@ Platform *initialize_platform()
         std::vector<ActionController *> action_controllers{controller};
 
         TimeProvider *time_provider = new ArduinoTimeProvider();
-        WifiProvider *wifi_provider = new ArduinoWifiProvider();
-        ArduinoHttpClient *client = new ArduinoHttpClient();
+        /**
+         * Arduino R4 Minima doesn't support wifi, hence we don't initialize the
+         * wifi provider and instead configure platform capabilities to
+         * indicate that we don't have wifi support.
+         */
 
         /**
          * Here we are not using the platform-specific persistent storage
@@ -25,13 +26,19 @@ Platform *initialize_platform()
          */
         PersistentStorage *persistent_storage = new PersistentStorage();
 
-        Platform platform = {.display = display,
-                             .directional_controllers = controllers,
-                             .action_controllers = action_controllers,
-                             .time_provider = time_provider,
-                             .persistent_storage = persistent_storage,
-                             .wifi_provider = wifi_provider,
-                             .client = client};
+        Platform platform = {
+            .display = display,
+            .directional_controllers = controllers,
+            .action_controllers = action_controllers,
+            .time_provider = time_provider,
+            .persistent_storage = persistent_storage,
+            // R4 Minima doesn't support wifi, hence we don't initialize the
+            // wifi provider and instead configure platform capabilities to
+            // indicate that we don't have wifi support.
+            .wifi_provider = nullptr,
+            .client = nullptr,
+            .capabilities = {.has_wifi = false, .can_sleep = false},
+        };
 
         return new Platform(platform);
 }

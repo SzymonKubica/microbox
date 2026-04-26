@@ -1,4 +1,4 @@
-#if defined(ARDUINO_UNOR4_WIFI)
+#if defined(ARDUINO_UNOR4_WIFI) || defined(ARDUINO_UNOR4_MINIMA)
 #pragma once
 #include "../../interface/persistent_storage.hpp"
 #include <EEPROM.h>

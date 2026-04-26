@@ -21,8 +21,8 @@ template <typename Impl> class AbstractPersistentStorage
 #if defined(EMULATOR)
 #include "../emulator/persistent_storage.hpp"
 using PersistentStorage = EmulatorPersistentStorage;
-#elif defined(ARDUINO_UNOR4_WIFI)
-#include "../boards/arduino_r4_wifi/persistent_storage.hpp"
+#elif defined(ARDUINO_UNOR4_WIFI) || defined(ARDUINO_UNOR4_MINIMA)
+#include "../boards/arduino_r4/persistent_storage.hpp"
 using PersistentStorage = ArduinoPersistentStorage;
 #elif defined(ARDUINO_ARCH_ESP32)
 #include "../boards/esp32/persistent_storage.hpp"

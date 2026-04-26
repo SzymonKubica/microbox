@@ -1,9 +1,9 @@
 #if defined(ARDUINO_UNOR4_WIFI)
 #pragma once
 #include <WiFiS3.h>
-#include "../../interface/wifi.hpp"
+#include "../../../interface/wifi.hpp"
 
-#include "../../wifi_ssid_password_secrets.hpp"
+#include "../../../wifi_ssid_password_secrets.hpp"
 
 class ArduinoWifiProvider : public WifiProvider
 {

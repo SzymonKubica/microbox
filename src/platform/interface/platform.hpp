@@ -8,6 +8,18 @@
 #include <vector>
 
 /**
+ * Bundles all features that are not available on every platform. The code
+ * then relies on that to conditionally enable certain features.
+ *
+ * For instance, if our platform doesn't have wifi support, we shouldn't
+ * make wifi settings avaialble to the users.
+ */
+struct PlatformCapabilities {
+        bool has_wifi = true;
+        bool can_sleep = true;
+};
+
+/**
  * A platform structure contains all components required to run our games
  * on that platform. The idea is that different target platforms (e.g. emulator
  * / ESP32 target device) will define their own implementations of the required
@@ -24,4 +36,6 @@ struct Platform {
         PersistentStorage *persistent_storage;
         WifiProvider *wifi_provider;
         HttpClient *client;
+        PlatformCapabilities capabilities;
 };
+
