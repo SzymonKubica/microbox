@@ -118,7 +118,7 @@ load_initial_game_of_life_config(PersistentStorage *storage)
 
         GameOfLifeConfiguration *output = new GameOfLifeConfiguration();
 
-        if (!config.header.is_valid()) {
+        if (!config.header.validate_against(DEFAULT_GAME_OF_LIFE_CONFIG)) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "game of life configuration, using default values.");

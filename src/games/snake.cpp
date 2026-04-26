@@ -407,8 +407,7 @@ SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
         storage->get(storage_offset, config);
 
         SnakeConfiguration *output = new SnakeConfiguration();
-
-        if (!config.header.is_valid()) {
+        if (!config.header.validate_against(DEFAULT_CONFIG)) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "snake configuration, using default values.");
                 memcpy(output, &DEFAULT_CONFIG, sizeof(SnakeConfiguration));

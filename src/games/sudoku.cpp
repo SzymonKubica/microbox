@@ -454,7 +454,7 @@ SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage)
 
         SudokuConfiguration *output = new SudokuConfiguration();
 
-        if (!config.header.is_valid()) {
+        if (!config.header.validate_against(DEFAULT_SUDOKU_CONFIG)) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "sudoku configuration, using default values.");
                 memcpy(output, &DEFAULT_SUDOKU_CONFIG,

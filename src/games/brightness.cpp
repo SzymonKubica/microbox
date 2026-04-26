@@ -88,7 +88,7 @@ load_initial_brightness_config(PersistentStorage *storage)
 
         BrightnessConfiguration *output = new BrightnessConfiguration();
 
-        if (!config.header.is_valid()) {
+        if (!config.header.validate_against(DEFAULT_BRIGHTNESS_CONFIGURATION)) {
                 LOG_DEBUG(
                     TAG, "The storage does not contain a valid "
                          "brightness app configuration, using default values.");

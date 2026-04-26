@@ -104,7 +104,7 @@ void LcdDisplay_1_69::draw_rounded_border(Color color)
 };
 
 void LcdDisplay_1_69::draw_circle(Point center, int radius, Color color,
-                             int border_width, bool filled)
+                                  int border_width, bool filled)
 {
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
 
@@ -121,8 +121,8 @@ void LcdDisplay_1_69::draw_circle(Point center, int radius, Color color,
                          static_cast<DRAW_FILL>(filled_repr));
 };
 
-void LcdDisplay_1_69::draw_rectangle(Point start, int width, int height, Color color,
-                                int border_width, bool filled)
+void LcdDisplay_1_69::draw_rectangle(Point start, int width, int height,
+                                     Color color, int border_width, bool filled)
 {
 
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
@@ -142,7 +142,7 @@ void LcdDisplay_1_69::draw_rectangle(Point start, int width, int height, Color c
 };
 
 void LcdDisplay_1_69::draw_rounded_rectangle(Point start, int width, int height,
-                                        int radius, Color color)
+                                             int radius, Color color)
 {
 
         Point top_left_corner = {.x = start.x + radius, .y = start.y + radius};
@@ -191,7 +191,8 @@ void LcdDisplay_1_69::draw_line(Point start, Point end, Color color)
 
 sFONT *map_font_size_1_69_specific(FontSize font_size);
 void LcdDisplay_1_69::draw_string(Point start, char *string_buffer,
-                             FontSize font_size, Color bg_color, Color fg_color)
+                                  FontSize font_size, Color bg_color,
+                                  Color fg_color)
 {
         /*
          * We need to add the adjustment because of the pixel-precision
@@ -202,11 +203,12 @@ void LcdDisplay_1_69::draw_string(Point start, char *string_buffer,
          */
         int adj = 1;
         Paint_DrawString_EN(start.x - 1, start.y - 1, string_buffer,
-                            map_font_size_1_69_specific(font_size), bg_color, fg_color);
+                            map_font_size_1_69_specific(font_size), bg_color,
+                            fg_color);
 };
 
 void LcdDisplay_1_69::clear_region(Point top_left, Point bottom_right,
-                              Color clear_color)
+                                   Color clear_color)
 
 {
         /*
@@ -240,7 +242,10 @@ int LcdDisplay_1_69::get_height() { return LCD_WIDTH; };
 // We return the height for the width as the display is mounted horizontally.
 int LcdDisplay_1_69::get_width() { return LCD_HEIGHT; };
 
-int LcdDisplay_1_69::get_display_corner_radius() { return DISPLAY_CORNER_RADIUS; }
+int LcdDisplay_1_69::get_display_corner_radius()
+{
+        return DISPLAY_CORNER_RADIUS;
+}
 bool LcdDisplay_1_69::refresh()
 {
         // This is a no-op as the display does not require refreshing

@@ -47,7 +47,7 @@ load_initial_menu_configuration(PersistentStorage *storage)
 
         GameMenuConfiguration *output = new GameMenuConfiguration();
 
-        if (!configuration.header.is_valid()) {
+        if (!configuration.header.has_valid_magic()) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "game menu configuration, using default values.");
@@ -69,29 +69,29 @@ load_initial_menu_configuration(PersistentStorage *storage)
 }
 
 Configuration *
-assemble_menu_selection_configuration(GameMenuConfiguration *initial_config)
+assemble_menu_selection_configuration(Platform *p,
+                                      GameMenuConfiguration *initial_config)
 {
 
+        std::vector<const char *> available_games = {
+            game_to_string(Game::Minesweeper),
+            game_to_string(Game::Clean2048),
+            game_to_string(Game::GameOfLife),
+            game_to_string(Game::Snake),
+            game_to_string(Game::SnakeDuel),
+            game_to_string(Game::Sudoku),
+            game_to_string(Game::Settings),
+            game_to_string(Game::RandomSeedPicker),
+            game_to_string(Game::Brightness),
+        };
+
+        if (p->capabilities.has_wifi)
+                available_games.push_back(game_to_string(Game::WifiApp));
+        if (p->capabilities.can_sleep)
+                available_games.push_back(game_to_string(Game::Sleep));
+
         auto *game = ConfigurationOption::of_strings(
-            "Game",
-            {
-                game_to_string(Game::Minesweeper),
-                game_to_string(Game::Clean2048),
-                game_to_string(Game::GameOfLife),
-                game_to_string(Game::Snake),
-                game_to_string(Game::SnakeDuel),
-                game_to_string(Game::Sudoku),
-        // Disable the WiFi app on the Uno R4 Minima
-#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR) ||                        \
-    defined(ARDUINO_ARCH_ESP32)
-                game_to_string(Game::WifiApp),
-#endif
-                game_to_string(Game::Sleep),
-                game_to_string(Game::Settings),
-                game_to_string(Game::RandomSeedPicker),
-                game_to_string(Game::Brightness),
-            },
-            game_to_string(initial_config->game));
+            "Game", available_games, game_to_string(initial_config->game));
 
         auto *accent_color = ConfigurationOption::of_colors(
             "Color", AVAILABLE_COLORS, initial_config->accent_color);
@@ -221,7 +221,7 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
         }
 
         Configuration *config =
-            assemble_menu_selection_configuration(initial_config);
+            assemble_menu_selection_configuration(p, initial_config);
 
         UserInterfaceCustomization customization = {
             .accent_color = initial_config->accent_color,

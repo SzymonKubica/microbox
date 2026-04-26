@@ -38,4 +38,3 @@ struct Platform {
         HttpClient *client;
         PlatformCapabilities capabilities;
 };
-

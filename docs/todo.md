@@ -14,58 +14,59 @@
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
-- [ ] add a separate menu for all of the apps.
 
-- [ ] Feedback from Khemi: users don't care about the color / UI flavour between minimalistic/detailed / hints
-      this should be moved to the settings. The main screen should only show the selected game
-      and probably feature some cool graphic. The main menu can still remain in its current form
-      but should be moved to the settings.
-
-- [ ] check if there is a vim plugin for markdown rendering.
 
 # TODO
 
-
+## Doable on the emulator
 - [ ] add aliases for button to have something like 'exit button' instead of Action::BLUE
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
-- [ ] design a better logging utility to remove the c-style macros.
 - [ ] document patches required on esp32
 - [ ] add 'vendoring' for the TFT LCD display library to ensure users don't need to to
       patching of the library code globally in their arduino libs. This is tricky
       as the library depends on the global arduino installation structure.
       It migth be better to explain / clean-up the process of configuring the
       library with the correct pins and target device.
-- [ ] add proper #define switching for esp32
-- [ ] clean up all imports to remove the indirect import warnings
 - [ ] separate games from applications
+- [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
+- [ ] make color enum variants more readable (remove stupid 'LGGBRed' things)
+- [ ] add a separate menu for all of the apps.
+- [ ] Feedback from Khemi: users don't care about the color / UI flavour between minimalistic/detailed / hints
+      this should be moved to the settings. The main screen should only show the selected game
+      and probably feature some cool graphic. The main menu can still remain in its current form
+      but should be moved to the settings.
+- [ ] fix state transitions on the light sleep functionality (do we even need
+      light sleep anymore?)
+## Require hardware testing
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
 - [ ] fix minesweeper crashing
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
-- [ ] add config struct version validations
-- [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
-- [ ] make color more readable (remove stupid 'LGGBRed' things)
+## Dev experience
+- [ ] fix treesitter crashing stupidly
+- [ ] check if there is a vim plugin for markdown rendering.
 
 # In Progress
-
-- [ ] restore compatibility with arduino r4 minima
-- [ ] add dummy wifi provider for the minima saying that there is no wifi and
-      then have the code react to that gracefully (e.g. the platform should be
-      able to say if it has wifi support and then based on that the code around
-      that should react (e.g. wifi app should not display if the microcontroller doesn't have support for the wifi)
-
-
-- [ ] remove all raw calls to Serial.println and replace those with proper logging.
 
 - [ ] clean up all usages of raw pointers.
   - [ ] platform code
   - [ ] configuration management code (this is large and messy)
 
-
 - [ ] add proper way of injecting default wifi ssid & password secrets
-- [ ] fix state transitions on the light sleep functionality
 
 # Done
+- [x] add config struct version validations
+- [x] design a better logging utility to remove the c-style macros. (won't do, macros are good enough)
+- [x] clean up all imports to remove the indirect import warnings
+- [x] add proper #define switching for esp32
+- [x] remove all raw calls to Serial.println and replace those with proper logging.
+- [x] restore compatibility with arduino r4 minima
+- [x] add dummy wifi provider for the minima saying that there is no wifi and
+      then have the code react to that gracefully (e.g. the platform should be
+      able to say if it has wifi support and then based on that the code around
+      that should react (e.g. wifi app should not display if the microcontroller doesn't have support for the wifi)
+- [x] update conditional wiring of the wifi stuff to ensure that it relies on platform
+      capabilities instead of #defines.
 - [x] clean up display-specific constants and remove the need for build flags
       to specify which display is to be used. (MICROBOX_1/2) flag should be
       sufficient. (this won't be done because display libs are heavyweight and

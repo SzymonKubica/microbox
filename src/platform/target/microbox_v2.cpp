@@ -6,9 +6,12 @@
 #include "../boards/esp32/wifi_provider.hpp"
 #include "../boards/esp32/http_client.hpp"
 #include "../interface/controller.hpp"
+#include "../../common/logging.hpp"
 #include "Adafruit_seesaw.h"
 #include "Arduino.h"
 #include <EEPROM.h>
+
+#define TAG "microbox_v2_platform_definition"
 
 Adafruit_seesaw ss(&Wire);
 
@@ -97,21 +100,21 @@ void rgb_blink_task(void *parameter)
 bool setup_adafruit_seesaw_i2c_connection()
 {
 
-        Serial.println("Setting up seesaw I2C interface...");
+        LOG_INFO(TAG, "Setting up seesaw I2C interface...");
 
         if (!ss.begin(0x50)) {
-                Serial.println("ERROR! seesaw not found");
+                LOG_INFO(TAG, "ERROR! seesaw not found");
                 return false;
         }
-        Serial.println("seesaw started");
+        LOG_INFO(TAG, "seesaw started");
         uint32_t version = ((ss.getVersion() >> 16) & 0xFFFF);
         if (version != 5743) {
-                Serial.print("Wrong firmware loaded? ");
-                Serial.println(version);
+                LOG_INFO(TAG, "Wrong firmware loaded? ");
+                LOG_INFO(TAG, version);
                 return false;
         }
 
-        Serial.println("Found Product 5743");
+        LOG_INFO(TAG, "Found Product 5743");
 
         ss.pinModeBulk(button_mask, INPUT_PULLUP);
         ss.setGPIOInterrupts(button_mask, 1);

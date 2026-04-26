@@ -1,6 +1,8 @@
 #if defined(ARDUINO_UNOR4_WIFI)
-#include "wifi_provider.hpp"
 #include <Arduino.h>
+#include "wifi_provider.hpp"
+#include "../../../../common/logging.hpp"
+#define TAG "wifi_provider"
 WifiData *ArduinoWifiProvider::get_wifi_data()
 {
         WifiData *data = new WifiData();
@@ -23,23 +25,23 @@ std::optional<WifiData *>
 ArduinoWifiProvider::connect_to_network(const char *ssid, const char *password)
 {
 
-        Serial.println("Starting network connection.");
+        LOG_INFO(TAG, "Starting network connection.");
         int status = WL_IDLE_STATUS;
 
         if (WiFi.status() == WL_NO_MODULE) {
-                Serial.println("Communication with WiFi module failed!");
+                LOG_INFO(TAG, "Communication with WiFi module failed!");
                 return std::nullopt;
         }
 
         String fv = WiFi.firmwareVersion();
         if (fv < WIFI_FIRMWARE_LATEST_VERSION) {
-                Serial.println("Please upgrade the firmware");
+                LOG_INFO(TAG, "Please upgrade the firmware");
         }
 
         // attempt to connect to WiFi network:
         while (status != WL_CONNECTED) {
-                Serial.print("Attempting to connect to WPA SSID: ");
-                Serial.println(ssid);
+                LOG_INFO(TAG, "Attempting to connect to WPA SSID: ");
+                LOG_INFO(TAG, ssid);
                 // Connect to WPA/WPA2 network:
                 // on arduino the begin is blocking so we do it here
                 status = WiFi.begin(ssid, password);
@@ -51,7 +53,7 @@ ArduinoWifiProvider::connect_to_network(const char *ssid, const char *password)
         }
 
         // you're connected now, so print out the data:
-        Serial.println("You're connected to the network");
+        LOG_INFO(TAG, "You're connected to the network");
         return get_wifi_data();
 }
 

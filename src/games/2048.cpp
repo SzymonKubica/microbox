@@ -221,7 +221,7 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
 
         Game2048Configuration *output = new Game2048Configuration();
 
-        if (!config.header.is_valid()) {
+        if (!config.header.validate_against(DEFAULT_2048_GAME_CONFIG)) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "2048 game configuration, using default values.");
@@ -246,16 +246,17 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
 }
 
 /**
- * Assembles the generic configuration struct that is needed to collect user
- * defined game configuration for 2048. Note that this is a declarative way of
- * defining what can be configured and the UI code then dynamically renders
- * selectors and handles switching between option values.
+ * Assembles the generic configuration struct that is needed to collect
+ * user defined game configuration for 2048. Note that this is a
+ * declarative way of defining what can be configured and the UI code
+ * then dynamically renders selectors and handles switching between
+ * option values.
  *
  * WARNING: This is tightly coupled with the
  * `extract_game_config` function. If you change the
- * structure of this config, make sure to make a corresponding update to that
- * function below to ensure that the specific game config can be successfully
- * extracted from the generic config struct.
+ * structure of this config, make sure to make a corresponding update to
+ * that function below to ensure that the specific game config can be
+ * successfully extracted from the generic config struct.
  */
 Configuration *
 assemble_2048_configuration(PersistentStorage *storage,
@@ -278,7 +279,8 @@ void extract_game_config(Game2048Configuration *game_config,
                          Configuration *config)
 {
 
-        // Grid size is the first config option in the game struct above.
+        // Grid size is the first config option in the game struct
+        // above.
         ConfigurationOption grid_size = *config->options[0];
         // Game target is the second config option above.
         ConfigurationOption game_target = *config->options[1];
@@ -397,13 +399,13 @@ static void merge_row(GameState *gs, int i, int direction);
 static void reverse(int *row, int row_size);
 // Transposes the game trid in place to allow for merging vertically.
 static void transpose(GameState *gs);
-// Returns the index of the next non-empty tile after the `current_index` in
-// the i-th row in of the grid.
+// Returns the index of the next non-empty tile after the
+// `current_index` in the i-th row in of the grid.
 static int get_successor_index(GameState *gs, int i, int current_index);
 /**
- * We only implement merging tiles left or right (row-wise), in order to merge
- * the tiles in a vertical direction we first transpose the grid, merge and then
- * transpose back.
+ * We only implement merging tiles left or right (row-wise), in order to
+ * merge the tiles in a vertical direction we first transpose the grid,
+ * merge and then transpose back.
  */
 static void merge(GameState *gs, int direction)
 {
@@ -431,8 +433,9 @@ static void merge_row(GameState *gs, int i, int direction)
 
         int size = gs->grid_size;
 
-        // We always merge to the left (or up if we have previously transposed
-        // the grid), in other cases we reverse the row, merge and reverse back.
+        // We always merge to the left (or up if we have previously
+        // transposed the grid), in other cases we reverse the row,
+        // merge and reverse back.
         if (direction == DOWN || direction == RIGHT) {
                 reverse(gs->grid[i], size);
         }
@@ -559,14 +562,14 @@ static bool grid_changed_from(GameState *gs, int **oldGrid)
 
 static bool no_move_possible(GameState *gs)
 {
-        /* A move is always possible if not all tiles are occupied. Hence,
-           we short-circuit here. */
+        /* A move is always possible if not all tiles are occupied.
+           Hence, we short-circuit here. */
         if (gs->occupied_tiles < gs->grid_size * gs->grid_size) {
                 return false;
         }
 
-        /* When the grid is full a move is possible as long as there exist some
-           adjacent tiles that have the same number */
+        /* When the grid is full a move is possible as long as there
+           exist some adjacent tiles that have the same number */
         for (int i = 0; i < gs->grid_size; i++) {
                 for (int j = 0; j < gs->grid_size - 1; j++) {
                         // row-wise adjacency
@@ -594,10 +597,10 @@ static void copy_grid(int **source, int **destination, int size)
 /* Grid Drawing */
 
 /**
- * Draws the background slots for the grid tiles, this takes a long time and
- * should only be called once at the start of the game to draw the grid. After
- * that `update_game_grid` should be called to update the contents of the grid
- * slots with the numbers.
+ * Draws the background slots for the grid tiles, this takes a long time
+ * and should only be called once at the start of the game to draw the
+ * grid. After that `update_game_grid` should be called to update the
+ * contents of the grid slots with the numbers.
  */
 static void draw_game_grid(Display *display, int grid_size,
                            UserInterfaceCustomization *customization);
@@ -669,15 +672,15 @@ GridDimensions *calculate_grid_dimensions(Display *display, int grid_size)
         int cell_x_spacing =
             (usable_width - cell_width * grid_size) / (grid_size + 1);
 
-        /* We need to calculate the remainder width and then add a half of it
-           to the starting point to make the grid centered in case the usable
-           height doesn't divide evenly into grid_size. */
+        /* We need to calculate the remainder width and then add a half
+           of it to the starting point to make the grid centered in case
+           the usable height doesn't divide evenly into grid_size. */
         int remainder_width = (usable_width - (grid_size + 1) * cell_x_spacing -
                                grid_size * cell_width);
 
-        /* We offset the grid downwards to allow it to overlap with the gap
-           between the two bottom corners and save space for the score at the
-           top of the grid. */
+        /* We offset the grid downwards to allow it to overlap with the
+           gap between the two bottom corners and save space for the
+           score at the top of the grid. */
         int corner_offset = corner_radius / 4;
 
         int grid_start_x =
@@ -714,8 +717,8 @@ static void draw_game_grid(Display *display, int grid_size,
         GridDimensions *gd = calculate_grid_dimensions(display, grid_size);
         LOG_DEBUG(TAG, "Calculated grid dimensions.");
 
-        // We need this lambda to have a reusable way of rendering game cells
-        // depending on the UI rendering mode.
+        // We need this lambda to have a reusable way of rendering game
+        // cells depending on the UI rendering mode.
         auto cell_renderer = [&](Point start, int width, int height) {
                 if (customization->rendering_mode == Minimalistic) {
                         display->draw_rectangle(start, width, height,
@@ -785,8 +788,9 @@ void update_game_grid(Display *display, GameState *gs,
         display->draw_string(score_start, score_buffer, Size16, GRID_BG_COLOR,
                              TEXT_COLOR);
 
-        // The maximum tile number in this version of 2048 is 4096, because of
-        // this the maximum width of the cell text area is given below.
+        // The maximum tile number in this version of 2048 is 4096,
+        // because of this the maximum width of the cell text area is
+        // given below.
         int max_cell_text_width = 4 * FONT_WIDTH;
 
         for (int i = 0; i < grid_size; i++) {
@@ -803,8 +807,8 @@ void update_game_grid(Display *display, GameState *gs,
                                 sprintf(buffer, "%4d", gs->grid[i][j]);
                                 str_replace(buffer, "   0", "    ");
 
-                                // We need to center the four characters of text
-                                // inside the cell.
+                                // We need to center the four characters
+                                // of text inside the cell.
                                 int x_margin =
                                     (gd->cell_width - max_cell_text_width) / 2;
                                 int y_margin =
@@ -814,13 +818,14 @@ void update_game_grid(Display *display, GameState *gs,
                                 int old_digit_text_width =
                                     old_digit_len * FONT_WIDTH;
 
-                                // We clear the region where the old number was
-                                // drawn, note that we need to be efficient, so
-                                // instead of clearing all 4 possible
-                                // characters, we only clear the characters of
-                                // the actual number. So if the number is
-                                // composed of two digits, we clear a region
-                                // that spans two digits.
+                                // We clear the region where the old
+                                // number was drawn, note that we need
+                                // to be efficient, so instead of
+                                // clearing all 4 possible characters,
+                                // we only clear the characters of the
+                                // actual number. So if the number is
+                                // composed of two digits, we clear a
+                                // region that spans two digits.
                                 Point clear_start = {.x = start.x + x_margin +
                                                           max_cell_text_width -
                                                           old_digit_text_width,

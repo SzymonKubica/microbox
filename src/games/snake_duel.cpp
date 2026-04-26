@@ -579,7 +579,7 @@ load_initial_snake_duel_config(PersistentStorage *storage)
 
         SnakeDuelConfiguration *output = new SnakeDuelConfiguration();
 
-        if (!config.header.is_valid()) {
+        if (!config.header.validate_against(DEFAULT_SNAKE_DUEL_CONFIG)) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "snake configuration, using default values.");
                 memcpy(output, &DEFAULT_SNAKE_DUEL_CONFIG,

@@ -5,6 +5,8 @@
 #include <Arduino.h>
 #include <cstdint>
 
+#define TAG "http_client"
+
 std::optional<std::string>
 ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
 {
@@ -50,7 +52,7 @@ ArduinoHttpClient::get(const ConnectionConfig &config, const std::string &url)
                 }
 
         } else {
-                Serial.println("Connection to host failed");
+                LOG_INFO(TAG, "Connection to host failed");
                 return std::nullopt;
         }
         return std::nullopt;

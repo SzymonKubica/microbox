@@ -568,7 +568,7 @@ load_initial_minesweeper_config(PersistentStorage *storage)
 
         MinesweeperConfiguration *output = new MinesweeperConfiguration();
 
-        if (!config.header.is_valid()) {
+        if (!config.header.validate_against(DEFAULT_MINESWEEPER_CONFIG)) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "minesweeper configuration, using default values.");

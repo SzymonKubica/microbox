@@ -17,7 +17,35 @@ struct ConfigurationHeader {
       public:
         uint32_t magic = CONFIGURATION_MAGIC;
         uint16_t version;
-        bool is_valid() const { return this->magic == CONFIGURATION_MAGIC; }
+        bool has_valid_magic() const
+        {
+                return this->magic == CONFIGURATION_MAGIC;
+        }
+        /**
+         * If we make a breaking change to a given configuration, we bump up the
+         * header version number on the default configuration instance. When
+         * we load the configs stored in the persistent storage, we validate
+         * that their version is not lower than that on the default config
+         * instance. If we detect that it is lower, we have detected a breaking
+         * change in the config struct, hence we need to overwrite the saved
+         * config with the new default to ensure schema compatibility.
+         */
+        bool is_outdated_compared_to(
+            const ConfigurationHeader &current_default_header) const
+        {
+                return this->version < current_default_header.version;
+        }
+
+        /**
+         * Validates that the configuration header has a valid magic and its
+         * version number is compatible with the latest version on the default
+         * configuration schema.
+         */
+        template <typename T> bool validate_against(T default_config) const
+        {
+                return has_valid_magic() &&
+                       !is_outdated_compared_to(default_config.header);
+        }
 };
 
 typedef enum ConfigurationOptionType {

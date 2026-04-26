@@ -266,7 +266,7 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
 
         WifiAppConfiguration *output = new WifiAppConfiguration();
 
-        if (!config.header.is_valid()) {
+        if (!config.header.validate_against(DEFAULT_WIFI_APP_CONFIG)) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "wifi app configuration, using default values.");
                 // We need to populate the defaults on the fly here as

@@ -1,6 +1,9 @@
 #include "src/games/game_menu.hpp"
 #include "src/games/brightness.hpp"
 #include "src/platform/target/target_resolution.hpp"
+#include "src/common/logging.hpp"
+
+#define TAG "microbox_entrypoint"
 
 
 /**
@@ -15,7 +18,7 @@ Platform *platform;
 void common_setup(void);
 void setup(void)
 {
-        Serial.println("Initializing platform...");
+        LOG_INFO(TAG, "Initializing platform...");
         common_setup();
         platform = initialize_platform();
         setup(platform);
@@ -35,7 +38,7 @@ void common_setup(void)
 
 void loop(void)
 {
-        Serial.println("MicroBox started!");
+        LOG_INFO(TAG, "MicroBox started!");
         set_brightness_from_storage(platform->persistent_storage);
 
         while (true) {

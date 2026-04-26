@@ -181,7 +181,8 @@ load_initial_seed_picker_config(PersistentStorage *storage)
         RandomSeedPickerConfiguration *output =
             new RandomSeedPickerConfiguration();
 
-        if (!config.header.is_valid()) {
+        if (!config.header.validate_against(
+                DEFAULT_RANDOM_SEED_PICKER_CONFIG)) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
                           "seed picker configuration, using default values.");
@@ -202,7 +203,7 @@ load_initial_seed_picker_config(PersistentStorage *storage)
 }
 
 Configuration *assemble_random_seed_picker_configuration(
-    RandomSeedPickerConfiguration *initial_config);
+    Platform *p, RandomSeedPickerConfiguration *initial_config);
 void extract_seed_picker_config(
     RandomSeedPickerConfiguration *random_seed_picker_config,
     Configuration *config);
@@ -215,7 +216,7 @@ RandomSeedPicker::collect_config(Platform *p,
         RandomSeedPickerConfiguration *initial_config =
             load_initial_seed_picker_config(p->persistent_storage);
         Configuration *config =
-            assemble_random_seed_picker_configuration(initial_config);
+            assemble_random_seed_picker_configuration(p, initial_config);
 
         auto maybe_interrupt_action =
             collect_configuration(p, config, customization);
@@ -232,20 +233,20 @@ RandomSeedPicker::collect_config(Platform *p,
 }
 
 Configuration *assemble_random_seed_picker_configuration(
-    RandomSeedPickerConfiguration *initial_config)
+    Platform *p, RandomSeedPickerConfiguration *initial_config)
 
 {
         auto *seed = ConfigurationOption::of_integers(
             "Seed", {initial_config->seed}, initial_config->seed);
 
-        auto available_actions = {
-        // Disable the download functionality on the Uno R4 Minima
-#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR) ||                        \
-    defined(ARDUINO_ARCH_ESP32)
-            selector_action_to_str(RandomSeedSelectorAction::Download),
-#endif
+        std::vector<const char *> available_actions = {
             selector_action_to_str(RandomSeedSelectorAction::Modify),
             selector_action_to_str(RandomSeedSelectorAction::Spin)};
+
+        if (p->capabilities.has_wifi) {
+                available_actions.push_back(
+                    selector_action_to_str(RandomSeedSelectorAction::Download));
+        }
 
         auto *app_action = ConfigurationOption::of_strings(
             "Action", available_actions,

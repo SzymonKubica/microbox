@@ -15,7 +15,7 @@
 
 #define TAG "settings"
 
-Configuration *assemble_settings_menu_configuration();
+Configuration *assemble_settings_menu_configuration(Platform *p);
 void extract_menu_setting(Game *selected_game, Configuration *config);
 
 std::optional<UserAction>
@@ -23,7 +23,8 @@ Settings::collect_config(Platform *p, UserInterfaceCustomization *customization,
                          SettingsConfiguration *game_config)
 
 {
-        Configuration *settings_config = assemble_settings_menu_configuration();
+        Configuration *settings_config =
+            assemble_settings_menu_configuration(p);
         auto maybe_interrupt =
             collect_configuration(p, settings_config, customization);
         if (maybe_interrupt) {
@@ -190,10 +191,10 @@ int get_settings_storage_offset(Game game)
         return get_settings_storage_offsets()[static_cast<int>(game)];
 }
 
-Configuration *assemble_settings_menu_configuration()
+Configuration *assemble_settings_menu_configuration(Platform *p)
 {
 
-        auto available_games = {
+        std::vector<const char *> available_games = {
             game_to_string(Game::MainMenu),
             game_to_string(Game::Minesweeper),
             game_to_string(Game::Clean2048),
@@ -202,12 +203,11 @@ Configuration *assemble_settings_menu_configuration()
             game_to_string(Game::SnakeDuel),
             game_to_string(Game::RandomSeedPicker),
             game_to_string(Game::Sudoku),
-#if defined(ARDUINO_UNOR4_WIFI) || defined(EMULATOR)
-            // Only enable the WiFi app on Arduino R4 for now.
-            // TODO: add support for esp32 and enable it here.
-            game_to_string(Game::WifiApp),
-#endif
         };
+
+        if (p->capabilities.has_wifi) {
+                available_games.push_back(game_to_string(Game::WifiApp));
+        }
 
         auto *menu = ConfigurationOption::of_strings(
             "Modify", available_games, game_to_string(Game::MainMenu));

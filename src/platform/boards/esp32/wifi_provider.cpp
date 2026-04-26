@@ -4,7 +4,7 @@
 #include "./wifi_provider.hpp"
 #include "../../interface/wifi.hpp"
 
-#include "../../wifi_ssid_password_secrets.hpp"
+#define TAG "wifi_provider"
 
 WifiData *Esp32WifiProvider::get_wifi_data()
 {
@@ -25,7 +25,7 @@ std::optional<WifiData *>
 Esp32WifiProvider::connect_to_network(const char *ssid, const char *password)
 {
 
-        Serial.println("Starting network connection.");
+        LOG_INFO(TAG, "Starting network connection.");
         int status = WL_IDLE_STATUS;
 
         // on esp32 begin is non-blocking an can only be done
@@ -34,7 +34,7 @@ Esp32WifiProvider::connect_to_network(const char *ssid, const char *password)
         unsigned long start = millis();
         while (WiFi.status() != WL_CONNECTED) {
                 if (millis() - start > 10000) {
-                        Serial.println("Retrying...");
+                        LOG_INFO(TAG, "Retrying...");
                         WiFi.disconnect(true);
                         delay(1000);
                         WiFi.begin(ssid, password);
@@ -44,7 +44,7 @@ Esp32WifiProvider::connect_to_network(const char *ssid, const char *password)
         }
 
         // you're connected now, so print out the data:
-        Serial.println("You're connected to the network");
+        LOG_INFO(TAG, "You're connected to the network");
         return get_wifi_data();
 }
 
