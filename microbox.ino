@@ -42,6 +42,6 @@ void loop(void)
         set_brightness_from_storage(platform->persistent_storage);
 
         while (true) {
-                select_game(platform);
+                select_app_and_run(platform);
         }
 }

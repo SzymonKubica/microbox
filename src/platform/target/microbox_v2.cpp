@@ -110,7 +110,7 @@ bool setup_adafruit_seesaw_i2c_connection()
         uint32_t version = ((ss.getVersion() >> 16) & 0xFFFF);
         if (version != 5743) {
                 LOG_INFO(TAG, "Wrong firmware loaded? ");
-                LOG_INFO(TAG, version);
+                LOG_INFO(TAG, "%d", version);
                 return false;
         }
 

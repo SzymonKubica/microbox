@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "./wifi_provider.hpp"
 #include "../../interface/wifi.hpp"
+#include "../../../common/logging.hpp"
 
 #define TAG "wifi_provider"
 
