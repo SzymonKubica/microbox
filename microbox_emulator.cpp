@@ -1,6 +1,7 @@
 #ifdef EMULATOR
 #include "emulator_config.h"
 
+#include "src/menu.hpp"
 #include "src/platform/interface/platform.hpp"
 #include "src/common/constants.hpp"
 #include "src/platform/emulator/sfml_display.hpp"
@@ -12,10 +13,8 @@
 #include "src/platform/emulator/sfml_hjkl_controller.hpp"
 #include "src/platform/emulator/sfml_action_controller.hpp"
 #include "src/platform/emulator/persistent_storage.hpp"
-
 #include "src/common/logging.hpp"
 
-#include "src/menu.hpp"
 
 #define TAG "emulator_entrypoint"
 
