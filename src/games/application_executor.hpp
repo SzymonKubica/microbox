@@ -4,10 +4,8 @@
 #include "../common/user_interface_customization.hpp"
 #include "../common/configuration.hpp"
 
-#include "game_menu.hpp"
+#include "../common/user_interface.hpp"
 #include "../common/configuration.hpp"
-#include "../common/constants.hpp"
-#include "../common/grid.hpp"
 #include "../common/logging.hpp"
 #include "common_transitions.hpp"
 

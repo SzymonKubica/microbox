@@ -69,8 +69,8 @@ load_initial_menu_configuration(PersistentStorage *storage)
 }
 
 Configuration *
-assemble_menu_selection_configuration(Platform *p,
-                                      GameMenuConfiguration *initial_config)
+assemble_menu_defaults_configuration(Platform *p,
+                                     GameMenuConfiguration *initial_config)
 {
 
         std::vector<const char *> available_games = {
@@ -110,11 +110,41 @@ assemble_menu_selection_configuration(Platform *p,
 
         auto options = {game, accent_color, rendering_mode, show_help_text};
 
+        return new Configuration("Menu Defaults", options);
+}
+
+Configuration *
+assemble_game_selector_configuration(Platform *p,
+                                     GameMenuConfiguration *initial_config)
+{
+
+        std::vector<const char *> available_games = {
+            game_to_string(Game::Minesweeper),
+            game_to_string(Game::Clean2048),
+            game_to_string(Game::GameOfLife),
+            game_to_string(Game::Snake),
+            game_to_string(Game::SnakeDuel),
+            game_to_string(Game::Sudoku),
+            game_to_string(Game::Settings),
+            game_to_string(Game::RandomSeedPicker),
+            game_to_string(Game::Brightness),
+        };
+
+        if (p->capabilities.has_wifi)
+                available_games.push_back(game_to_string(Game::WifiApp));
+        if (p->capabilities.can_sleep)
+                available_games.push_back(game_to_string(Game::Sleep));
+
+        auto *game = ConfigurationOption::of_strings(
+            "Game", available_games, game_to_string(initial_config->game));
+
+        auto options = {game};
+
         return new Configuration("MicroBox", options);
 }
 
-void extract_game_config(GameMenuConfiguration *menu_configuration,
-                         Configuration *config)
+void extract_defaults_config(GameMenuConfiguration *menu_configuration,
+                             Configuration *config)
 {
         ConfigurationOption *game_option = config->options[0];
         ConfigurationOption *accent_color = config->options[1];
@@ -131,11 +161,20 @@ void extract_game_config(GameMenuConfiguration *menu_configuration,
             extract_yes_or_no_option(show_help_text->get_current_str_value());
 }
 
-std::optional<UserAction> select_game(Platform *p)
+void extract_game_selection(GameMenuConfiguration *menu_configuration,
+                            Configuration *config)
+{
+        ConfigurationOption *game_option = config->options[0];
+
+        menu_configuration->game =
+            game_from_string(game_option->get_current_str_value());
+}
+
+std::optional<UserAction> select_app_and_run(Platform *p)
 {
         GameMenuConfiguration config;
 
-        auto maybe_interrupt = collect_game_menu_config(p, &config);
+        auto maybe_interrupt = main_menu_interaction_loop(p, &config);
 
         // This customization might not be initialized properly if the user
         // requests help message. The current version of the help text rendering
@@ -161,38 +200,90 @@ std::optional<UserAction> select_game(Platform *p)
                 return maybe_interrupt;
         }
 
+        /**
+         * Below we need to use this repeated pattern of calling `execute_app`
+         * in each branch of the switch statement, this is because this execute
+         * subroutine is a templated method and depending on what class we
+         * pass into it, it resolves the config struct that will be loaded
+         * from the configuration storage. Because of this, we cannot simply
+         * use a switch to get an instance of ApplicationExecutor<T> as this T
+         * would be different in each branch and so we then cannot pass that
+         * through a single call to `execute_app`.
+         */
         LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
-        auto maybe_action = [&]() -> std::optional<UserAction> {
-                switch (config.game) {
-                case Game::Clean2048:
-                        return execute_app(new Clean2048(), p, &c);
-                case Game::Minesweeper:
-                        return execute_app(new Minesweeper(), p, &c);
-                case Game::GameOfLife:
-                        return execute_app(new GameOfLife(), p, &c);
-                case Game::Settings:
-                        return execute_app(new Settings(), p, &c);
-                case Game::Snake:
-                        return execute_app(new SnakeGame(), p, &c);
-                case Game::SnakeDuel:
-                        return execute_app(new SnakeDuel(), p, &c);
-                case Game::WifiApp:
-                        return execute_app(new WifiApp(), p, &c);
-                case Game::RandomSeedPicker:
-                        return execute_app(new RandomSeedPicker(), p, &c);
-                case Game::Sudoku:
-                        return execute_app(new SudokuGame(), p, &c);
-                case Game::Sleep:
-                        return execute_app(new SleepApp(), p, &c);
-                case Game::Brightness:
-                        return execute_app(new BrightnessApp(), p, &c);
-                default:
-                        LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
-                        return UserAction::Exit;
-                }
-        }();
+        switch (config.game) {
+        case Game::Clean2048:
+                return execute_app(new Clean2048(), p, &c);
+        case Game::Minesweeper:
+                return execute_app(new Minesweeper(), p, &c);
+        case Game::GameOfLife:
+                return execute_app(new GameOfLife(), p, &c);
+        case Game::Settings:
+                return execute_app(new Settings(), p, &c);
+        case Game::Snake:
+                return execute_app(new SnakeGame(), p, &c);
+        case Game::SnakeDuel:
+                return execute_app(new SnakeDuel(), p, &c);
+        case Game::WifiApp:
+                return execute_app(new WifiApp(), p, &c);
+        case Game::RandomSeedPicker:
+                return execute_app(new RandomSeedPicker(), p, &c);
+        case Game::Sudoku:
+                return execute_app(new SudokuGame(), p, &c);
+        case Game::Sleep:
+                return execute_app(new SleepApp(), p, &c);
+        case Game::Brightness:
+                return execute_app(new BrightnessApp(), p, &c);
+        default:
+                LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
+                return UserAction::Exit;
+        }
+}
 
-        return maybe_action.value();
+/**
+ * Allows the user to set the default properties of the main menu. Note that
+ * by default this is not visible when you first start the console. Instead, we
+ * only expose this screen via the settings app.
+ *
+ * This design was implemented based on feedback from Khemi as he made a valid
+ * point that when you are using the console, you are unlikely to change the
+ * accent color / hints display / UI flavour each time you want to select the
+ * game. Instead, only the game should be selectable plus a special handle
+ * that will take the user to the settings menu.
+ *
+ */
+std::optional<UserAction>
+collect_game_menu_defaults_config(Platform *p,
+                                  GameMenuConfiguration *configuration)
+{
+
+        GameMenuConfiguration *initial_config =
+            load_initial_menu_configuration(p->persistent_storage);
+
+        LOG_DEBUG(TAG, "Initial configuration was loaded.");
+
+        Configuration *config =
+            assemble_menu_defaults_configuration(p, initial_config);
+
+        UserInterfaceCustomization customization = {
+            .accent_color = initial_config->accent_color,
+            .rendering_mode = initial_config->rendering_mode,
+            .show_help_text = initial_config->show_help_text,
+        };
+
+        auto maybe_interrupt =
+            collect_configuration(p, config, &customization, false, false);
+
+        if (maybe_interrupt) {
+                delete config;
+                delete initial_config;
+                return maybe_interrupt;
+        }
+        extract_defaults_config(configuration, config);
+
+        delete config;
+        delete initial_config;
+        return std::nullopt;
 }
 
 /**
@@ -204,7 +295,7 @@ std::optional<UserAction> select_game(Platform *p)
 static std::optional<Game> last_selected_game = std::nullopt;
 
 std::optional<UserAction>
-collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
+main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration)
 {
 
         GameMenuConfiguration *initial_config =
@@ -221,7 +312,7 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
         }
 
         Configuration *config =
-            assemble_menu_selection_configuration(p, initial_config);
+            assemble_game_selector_configuration(p, initial_config);
 
         UserInterfaceCustomization customization = {
             .accent_color = initial_config->accent_color,
@@ -237,7 +328,7 @@ collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration)
                 delete initial_config;
                 return maybe_interrupt;
         }
-        extract_game_config(configuration, config);
+        extract_game_selection(configuration, config);
         last_selected_game = configuration->game;
 
         delete config;

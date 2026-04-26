@@ -1,6 +1,6 @@
 #pragma once
 #include "../platform/interface/platform.hpp"
-#include "../common/user_interface.hpp"
+#include "../common/configuration.hpp"
 #include <optional>
 
 enum class Game : int {
@@ -33,7 +33,7 @@ extern Game game_from_string(const char *name);
 
 extern const char *game_to_string(Game game);
 
-std::optional<UserAction> select_game(Platform *p);
+std::optional<UserAction> select_app_and_run(Platform *p);
 
 /**
  * Similar to `collect_configuration` from `configuration.hpp`, it returns true
@@ -42,4 +42,12 @@ std::optional<UserAction> select_game(Platform *p);
  * to be handled by the main game loop.
  */
 std::optional<UserAction>
-collect_game_menu_config(Platform *p, GameMenuConfiguration *configuration);
+collect_game_menu_defaults_config(Platform *p,
+                                  GameMenuConfiguration *configuration);
+/**
+ * Responsible for getting input from the user when they first turn on the
+ * console. This allows for selecting the game and navigating to the setting
+ * apps if needed.
+ */
+std::optional<UserAction>
+main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration);

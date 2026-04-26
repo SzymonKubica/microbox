@@ -499,8 +499,13 @@ void render_config_menu(Display *display, Configuration *config,
                                  customization->rendering_mode, Black, White,
                                  HEADING_FONT_WIDTH, Size24);
 
+        // This is manually tweaked to make it look good.
+        int logo_x_margin = 35;
+        int logo_y_margin = 5;
         if (!text_update_only && should_render_logo) {
-                render_logo(display, customization, {.x = 12, .y = y_spacing});
+                render_logo(
+                    display, customization,
+                    {.x = logo_x_margin, .y = y_spacing + logo_y_margin});
         }
 
         int start_option_idx = 0;

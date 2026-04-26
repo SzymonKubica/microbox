@@ -42,6 +42,9 @@
 - [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
 - [ ] fix minesweeper crashing
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
+- [ ] clean up constants definiton file to remove platform- / display-specific
+      overrides
+- [ ] add detailed UI rendering for the 2.4 inch display driven by the TFT library
 ## Dev experience
 - [ ] fix treesitter crashing stupidly
 - [ ] check if there is a vim plugin for markdown rendering.

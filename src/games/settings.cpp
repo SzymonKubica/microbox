@@ -64,7 +64,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         switch (selected_game) {
         case Game::MainMenu: {
                 GameMenuConfiguration config;
-                auto action = collect_game_menu_config(p, &config);
+                auto action = collect_game_menu_defaults_config(p, &config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);

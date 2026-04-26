@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
                 // We need to loop forever here as the game loop exits when the
                 // game is over.
                 while (true) {
-                        auto maybe_action = select_game(&platform);
+                        auto maybe_action = select_app_and_run(&platform);
                         if (maybe_action.has_value() &&
                             maybe_action.value() == UserAction::CloseWindow) {
                                 LOG_DEBUG(TAG, "User requested to close the "
