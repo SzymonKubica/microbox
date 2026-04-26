@@ -159,6 +159,16 @@ main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration)
         extract_game_selection(configuration, config);
         last_selected_game = configuration->game;
 
+        /*
+         * Note that we are only extracting the selected game from the user
+         * input and we are not setting anything else. This causes the
+         * color and hints visibility settings to fall back to defaults and
+         * here we need to set those again from the initial config.
+         */
+        configuration->accent_color = initial_config->accent_color;
+        configuration->rendering_mode = initial_config->rendering_mode;
+        configuration->show_help_text = initial_config->show_help_text;
+
         delete config;
         delete initial_config;
         return std::nullopt;
