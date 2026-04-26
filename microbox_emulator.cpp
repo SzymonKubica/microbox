@@ -15,7 +15,7 @@
 
 #include "src/common/logging.hpp"
 
-#include "src/games/game_menu.hpp"
+#include "src/menu.hpp"
 
 #define TAG "emulator_entrypoint"
 

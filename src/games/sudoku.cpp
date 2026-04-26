@@ -3,7 +3,7 @@
 #include <optional>
 #include "sudoku.hpp"
 #include "settings.hpp"
-#include "game_menu.hpp"
+#include "../menu.hpp"
 
 #include "../common/configuration.hpp"
 #include "../common/configuration.hpp"

@@ -1,13 +1,13 @@
 #pragma once
 #include <cassert>
-#include "../platform/interface/platform.hpp"
-#include "../common/user_interface_customization.hpp"
-#include "../common/configuration.hpp"
+#include "platform/interface/platform.hpp"
+#include "common/user_interface_customization.hpp"
+#include "common/configuration.hpp"
 
-#include "../common/user_interface.hpp"
-#include "../common/configuration.hpp"
-#include "../common/logging.hpp"
-#include "common_transitions.hpp"
+#include "common/user_interface.hpp"
+#include "common/configuration.hpp"
+#include "common/logging.hpp"
+#include "common/common_transitions.hpp"
 
 #define EXECUTOR_TAG "executor"
 

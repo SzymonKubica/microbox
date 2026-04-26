@@ -1,7 +1,7 @@
 #pragma once
-#include "application_executor.hpp"
-#include "common_transitions.hpp"
-#include "game_menu.hpp"
+#include "../application_executor.hpp"
+#include "../common/common_transitions.hpp"
+#include "../menu.hpp"
 
 std::vector<int> get_settings_storage_offsets();
 int get_settings_storage_offset(Game game);

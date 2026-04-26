@@ -1,6 +1,6 @@
 #include "2048.hpp"
 #include "brightness.hpp"
-#include "game_menu.hpp"
+#include "../menu.hpp"
 #include "../common/configuration.hpp"
 #include "../common/logging.hpp"
 #include "settings.hpp"

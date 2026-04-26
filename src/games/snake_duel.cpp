@@ -8,7 +8,7 @@
 #include "snake_common.hpp"
 #include "snake_duel.hpp"
 #include "settings.hpp"
-#include "game_menu.hpp"
+#include "../menu.hpp"
 
 #include "../common/configuration.hpp"
 #include "../common/profiling.hpp"

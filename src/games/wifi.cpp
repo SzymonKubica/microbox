@@ -10,8 +10,8 @@
 #include "../common/configuration.hpp"
 #include "../platform/wifi_ssid_password_secrets.hpp"
 
-#include "game_menu.hpp"
-#include "common_transitions.hpp"
+#include "../menu.hpp"
+#include "../common/common_transitions.hpp"
 #include "settings.hpp"
 
 #define TAG "WifiApp"

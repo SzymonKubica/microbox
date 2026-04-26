@@ -1,6 +1,6 @@
 #pragma once
-#include "application_executor.hpp"
-#include "common_transitions.hpp"
+#include "../application_executor.hpp"
+#include "../common/common_transitions.hpp"
 #include "../common/configuration.hpp"
 
 enum class RandomSeedSelectorAction : uint8_t { Spin, Download, Modify };

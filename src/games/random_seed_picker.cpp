@@ -5,7 +5,7 @@
 #include "../common/maths_utils.hpp"
 #include "random_seed_picker.hpp"
 #include "settings.hpp"
-#include "game_menu.hpp"
+#include "../menu.hpp"
 
 #define TAG "random_seed_picker"
 

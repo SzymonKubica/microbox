@@ -46,7 +46,7 @@
       overrides
 - [ ] add detailed UI rendering for the 2.4 inch display driven by the TFT library
 ## Dev experience
-- [ ] fix treesitter crashing stupidly
+- [ ] fix treesitter crashing stupidly (each documentation lookup fails and treesitter highilghting is broken)
 - [ ] check if there is a vim plugin for markdown rendering.
 
 # In Progress

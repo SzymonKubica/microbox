@@ -1,8 +1,8 @@
-#include "../common/configuration.hpp"
+#include "configuration.hpp"
 #include "../platform/interface/display.hpp"
 #include "../platform/interface/controller.hpp"
 #include "../platform/interface/time_provider.hpp"
-#include "../common/user_interface_customization.hpp"
+#include "user_interface_customization.hpp"
 
 void display_game_over(Display *display,
                        UserInterfaceCustomization *customization);

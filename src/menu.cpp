@@ -1,23 +1,23 @@
 #include <cstring>
 #include <optional>
 #include <stdlib.h>
-#include "game_menu.hpp"
-#include "../common/configuration.hpp"
-#include "../common/logging.hpp"
-#include "../common/color.hpp"
-#include "../common/constants.hpp"
-#include "2048.hpp"
+#include "menu.hpp"
+#include "common/configuration.hpp"
+#include "common/logging.hpp"
+#include "common/color.hpp"
+#include "common/constants.hpp"
+#include "games/2048.hpp"
 #include "application_executor.hpp"
-#include "brightness.hpp"
-#include "minesweeper.hpp"
-#include "settings.hpp"
-#include "sudoku.hpp"
-#include "sleep.hpp"
-#include "wifi.hpp"
-#include "game_of_life.hpp"
-#include "random_seed_picker.hpp"
-#include "snake.hpp"
-#include "snake_duel.hpp"
+#include "games/brightness.hpp"
+#include "games/minesweeper.hpp"
+#include "games/settings.hpp"
+#include "games/sudoku.hpp"
+#include "games/sleep.hpp"
+#include "games/wifi.hpp"
+#include "games/game_of_life.hpp"
+#include "games/random_seed_picker.hpp"
+#include "games/snake.hpp"
+#include "games/snake_duel.hpp"
 
 #define TAG "game_menu"
 
@@ -30,145 +30,6 @@ GameMenuConfiguration DEFAULT_MENU_CONFIGURATION = {
 };
 
 const char *game_to_string(Game game);
-
-GameMenuConfiguration *
-load_initial_menu_configuration(PersistentStorage *storage)
-{
-
-        int storage_offset = get_settings_storage_offset(Game::MainMenu);
-
-        GameMenuConfiguration configuration{};
-
-        LOG_DEBUG(TAG,
-                  "Trying to load initial settings from the persistent storage "
-                  "at offset %d",
-                  storage_offset);
-        storage->get(storage_offset, configuration);
-
-        GameMenuConfiguration *output = new GameMenuConfiguration();
-
-        if (!configuration.header.has_valid_magic()) {
-                LOG_DEBUG(TAG,
-                          "The storage does not contain a valid "
-                          "game menu configuration, using default values.");
-                memcpy(output, &DEFAULT_MENU_CONFIGURATION,
-                       sizeof(GameMenuConfiguration));
-                storage->put(storage_offset, DEFAULT_MENU_CONFIGURATION);
-
-        } else {
-                LOG_DEBUG(TAG, "Using configuration from persistent storage.");
-                memcpy(output, &configuration, sizeof(GameMenuConfiguration));
-        }
-
-        LOG_DEBUG(TAG,
-                  "Loaded menu configuration: game=%d, "
-                  "accent_color=%d, show_help_text=%d",
-                  output->game, output->accent_color, output->show_help_text);
-
-        return output;
-}
-
-Configuration *
-assemble_menu_defaults_configuration(Platform *p,
-                                     GameMenuConfiguration *initial_config)
-{
-
-        std::vector<const char *> available_games = {
-            game_to_string(Game::Minesweeper),
-            game_to_string(Game::Clean2048),
-            game_to_string(Game::GameOfLife),
-            game_to_string(Game::Snake),
-            game_to_string(Game::SnakeDuel),
-            game_to_string(Game::Sudoku),
-            game_to_string(Game::Settings),
-            game_to_string(Game::RandomSeedPicker),
-            game_to_string(Game::Brightness),
-        };
-
-        if (p->capabilities.has_wifi)
-                available_games.push_back(game_to_string(Game::WifiApp));
-        if (p->capabilities.can_sleep)
-                available_games.push_back(game_to_string(Game::Sleep));
-
-        auto *game = ConfigurationOption::of_strings(
-            "Game", available_games, game_to_string(initial_config->game));
-
-        auto *accent_color = ConfigurationOption::of_colors(
-            "Color", AVAILABLE_COLORS, initial_config->accent_color);
-
-        auto available_modes = {
-            rendering_mode_to_str(UserInterfaceRenderingMode::Minimalistic),
-            rendering_mode_to_str(UserInterfaceRenderingMode::Detailed)};
-
-        auto *rendering_mode = ConfigurationOption::of_strings(
-            "UI", available_modes,
-            rendering_mode_to_str(initial_config->rendering_mode));
-
-        auto *show_help_text = ConfigurationOption::of_strings(
-            "Hints", {"Yes", "No"},
-            map_boolean_to_yes_or_no(initial_config->show_help_text));
-
-        auto options = {game, accent_color, rendering_mode, show_help_text};
-
-        return new Configuration("Menu Defaults", options);
-}
-
-Configuration *
-assemble_game_selector_configuration(Platform *p,
-                                     GameMenuConfiguration *initial_config)
-{
-
-        std::vector<const char *> available_games = {
-            game_to_string(Game::Minesweeper),
-            game_to_string(Game::Clean2048),
-            game_to_string(Game::GameOfLife),
-            game_to_string(Game::Snake),
-            game_to_string(Game::SnakeDuel),
-            game_to_string(Game::Sudoku),
-            game_to_string(Game::Settings),
-            game_to_string(Game::RandomSeedPicker),
-            game_to_string(Game::Brightness),
-        };
-
-        if (p->capabilities.has_wifi)
-                available_games.push_back(game_to_string(Game::WifiApp));
-        if (p->capabilities.can_sleep)
-                available_games.push_back(game_to_string(Game::Sleep));
-
-        auto *game = ConfigurationOption::of_strings(
-            "Game", available_games, game_to_string(initial_config->game));
-
-        auto options = {game};
-
-        return new Configuration("MicroBox", options);
-}
-
-void extract_defaults_config(GameMenuConfiguration *menu_configuration,
-                             Configuration *config)
-{
-        ConfigurationOption *game_option = config->options[0];
-        ConfigurationOption *accent_color = config->options[1];
-        ConfigurationOption *rendering_mode = config->options[2];
-        ConfigurationOption *show_help_text = config->options[3];
-
-        menu_configuration->game =
-            game_from_string(game_option->get_current_str_value());
-        menu_configuration->accent_color =
-            accent_color->get_current_color_value();
-        menu_configuration->rendering_mode =
-            rendering_mode_from_str(rendering_mode->get_current_str_value());
-        menu_configuration->show_help_text =
-            extract_yes_or_no_option(show_help_text->get_current_str_value());
-}
-
-void extract_game_selection(GameMenuConfiguration *menu_configuration,
-                            Configuration *config)
-{
-        ConfigurationOption *game_option = config->options[0];
-
-        menu_configuration->game =
-            game_from_string(game_option->get_current_str_value());
-}
 
 std::optional<UserAction> select_app_and_run(Platform *p)
 {
@@ -240,51 +101,13 @@ std::optional<UserAction> select_app_and_run(Platform *p)
         }
 }
 
-/**
- * Allows the user to set the default properties of the main menu. Note that
- * by default this is not visible when you first start the console. Instead, we
- * only expose this screen via the settings app.
- *
- * This design was implemented based on feedback from Khemi as he made a valid
- * point that when you are using the console, you are unlikely to change the
- * accent color / hints display / UI flavour each time you want to select the
- * game. Instead, only the game should be selectable plus a special handle
- * that will take the user to the settings menu.
- *
- */
-std::optional<UserAction>
-collect_game_menu_defaults_config(Platform *p,
-                                  GameMenuConfiguration *configuration)
-{
-
-        GameMenuConfiguration *initial_config =
-            load_initial_menu_configuration(p->persistent_storage);
-
-        LOG_DEBUG(TAG, "Initial configuration was loaded.");
-
-        Configuration *config =
-            assemble_menu_defaults_configuration(p, initial_config);
-
-        UserInterfaceCustomization customization = {
-            .accent_color = initial_config->accent_color,
-            .rendering_mode = initial_config->rendering_mode,
-            .show_help_text = initial_config->show_help_text,
-        };
-
-        auto maybe_interrupt =
-            collect_configuration(p, config, &customization, false, false);
-
-        if (maybe_interrupt) {
-                delete config;
-                delete initial_config;
-                return maybe_interrupt;
-        }
-        extract_defaults_config(configuration, config);
-
-        delete config;
-        delete initial_config;
-        return std::nullopt;
-}
+GameMenuConfiguration *
+load_initial_menu_configuration(PersistentStorage *storage);
+Configuration *
+assemble_game_selector_configuration(Platform *p,
+                                     GameMenuConfiguration *initial_config);
+void extract_game_selection(GameMenuConfiguration *menu_configuration,
+                            Configuration *config);
 
 /**
  * As a quality of life improvement, when the game console starts up, it will
@@ -294,6 +117,11 @@ collect_game_menu_defaults_config(Platform *p,
  */
 static std::optional<Game> last_selected_game = std::nullopt;
 
+/**
+ * Responsible for getting input from the user when they first turn on the
+ * console. This allows for selecting the game and navigating to the setting
+ * apps if needed.
+ */
 std::optional<UserAction>
 main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration)
 {
@@ -334,6 +162,82 @@ main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration)
         delete config;
         delete initial_config;
         return std::nullopt;
+}
+
+GameMenuConfiguration *
+load_initial_menu_configuration(PersistentStorage *storage)
+{
+
+        int storage_offset = get_settings_storage_offset(Game::MainMenu);
+
+        GameMenuConfiguration configuration{};
+
+        LOG_DEBUG(TAG,
+                  "Trying to load initial settings from the persistent storage "
+                  "at offset %d",
+                  storage_offset);
+        storage->get(storage_offset, configuration);
+
+        GameMenuConfiguration *output = new GameMenuConfiguration();
+
+        if (!configuration.header.has_valid_magic()) {
+                LOG_DEBUG(TAG,
+                          "The storage does not contain a valid "
+                          "game menu configuration, using default values.");
+                memcpy(output, &DEFAULT_MENU_CONFIGURATION,
+                       sizeof(GameMenuConfiguration));
+                storage->put(storage_offset, DEFAULT_MENU_CONFIGURATION);
+
+        } else {
+                LOG_DEBUG(TAG, "Using configuration from persistent storage.");
+                memcpy(output, &configuration, sizeof(GameMenuConfiguration));
+        }
+
+        LOG_DEBUG(TAG,
+                  "Loaded menu configuration: game=%d, "
+                  "accent_color=%d, show_help_text=%d",
+                  output->game, output->accent_color, output->show_help_text);
+
+        return output;
+}
+
+Configuration *
+assemble_game_selector_configuration(Platform *p,
+                                     GameMenuConfiguration *initial_config)
+{
+
+        std::vector<const char *> available_games = {
+            game_to_string(Game::Minesweeper),
+            game_to_string(Game::Clean2048),
+            game_to_string(Game::GameOfLife),
+            game_to_string(Game::Snake),
+            game_to_string(Game::SnakeDuel),
+            game_to_string(Game::Sudoku),
+            game_to_string(Game::Settings),
+            game_to_string(Game::RandomSeedPicker),
+            game_to_string(Game::Brightness),
+        };
+
+        if (p->capabilities.has_wifi)
+                available_games.push_back(game_to_string(Game::WifiApp));
+        if (p->capabilities.can_sleep)
+                available_games.push_back(game_to_string(Game::Sleep));
+
+        auto *game = ConfigurationOption::of_strings(
+            "Game", available_games, game_to_string(initial_config->game));
+
+        auto options = {game};
+
+        return new Configuration("MicroBox", options);
+}
+
+void extract_game_selection(GameMenuConfiguration *menu_configuration,
+                            Configuration *config)
+{
+        ConfigurationOption *game_option = config->options[0];
+
+        menu_configuration->game =
+            game_from_string(game_option->get_current_str_value());
 }
 
 Game game_from_string(const char *name)
@@ -414,4 +318,113 @@ const char *game_to_string(Game game)
         default:
                 return "Unknown";
         }
+}
+
+Configuration *
+assemble_menu_defaults_configuration(Platform *p,
+                                     GameMenuConfiguration *initial_config)
+{
+
+        std::vector<const char *> available_games = {
+            game_to_string(Game::Minesweeper),
+            game_to_string(Game::Clean2048),
+            game_to_string(Game::GameOfLife),
+            game_to_string(Game::Snake),
+            game_to_string(Game::SnakeDuel),
+            game_to_string(Game::Sudoku),
+            game_to_string(Game::Settings),
+            game_to_string(Game::RandomSeedPicker),
+            game_to_string(Game::Brightness),
+        };
+
+        if (p->capabilities.has_wifi)
+                available_games.push_back(game_to_string(Game::WifiApp));
+        if (p->capabilities.can_sleep)
+                available_games.push_back(game_to_string(Game::Sleep));
+
+        auto *game = ConfigurationOption::of_strings(
+            "Game", available_games, game_to_string(initial_config->game));
+
+        auto *accent_color = ConfigurationOption::of_colors(
+            "Color", AVAILABLE_COLORS, initial_config->accent_color);
+
+        auto available_modes = {
+            rendering_mode_to_str(UserInterfaceRenderingMode::Minimalistic),
+            rendering_mode_to_str(UserInterfaceRenderingMode::Detailed)};
+
+        auto *rendering_mode = ConfigurationOption::of_strings(
+            "UI", available_modes,
+            rendering_mode_to_str(initial_config->rendering_mode));
+
+        auto *show_help_text = ConfigurationOption::of_strings(
+            "Hints", {"Yes", "No"},
+            map_boolean_to_yes_or_no(initial_config->show_help_text));
+
+        auto options = {game, accent_color, rendering_mode, show_help_text};
+
+        return new Configuration("Menu Defaults", options);
+}
+
+void extract_defaults_config(GameMenuConfiguration *menu_configuration,
+                             Configuration *config)
+{
+        ConfigurationOption *game_option = config->options[0];
+        ConfigurationOption *accent_color = config->options[1];
+        ConfigurationOption *rendering_mode = config->options[2];
+        ConfigurationOption *show_help_text = config->options[3];
+
+        menu_configuration->game =
+            game_from_string(game_option->get_current_str_value());
+        menu_configuration->accent_color =
+            accent_color->get_current_color_value();
+        menu_configuration->rendering_mode =
+            rendering_mode_from_str(rendering_mode->get_current_str_value());
+        menu_configuration->show_help_text =
+            extract_yes_or_no_option(show_help_text->get_current_str_value());
+}
+
+/**
+ * Allows the user to set the default properties of the main menu. Note that
+ * by default this is not visible when you first start the console. Instead, we
+ * only expose this screen via the settings app.
+ *
+ * This design was implemented based on feedback from Khemi as he made a valid
+ * point that when you are using the console, you are unlikely to change the
+ * accent color / hints display / UI flavour each time you want to select the
+ * game. Instead, only the game should be selectable plus a special handle
+ * that will take the user to the settings menu.
+ *
+ */
+std::optional<UserAction>
+collect_game_menu_defaults_config(Platform *p,
+                                  GameMenuConfiguration *configuration)
+{
+
+        GameMenuConfiguration *initial_config =
+            load_initial_menu_configuration(p->persistent_storage);
+
+        LOG_DEBUG(TAG, "Initial configuration was loaded.");
+
+        Configuration *config =
+            assemble_menu_defaults_configuration(p, initial_config);
+
+        UserInterfaceCustomization customization = {
+            .accent_color = initial_config->accent_color,
+            .rendering_mode = initial_config->rendering_mode,
+            .show_help_text = initial_config->show_help_text,
+        };
+
+        auto maybe_interrupt =
+            collect_configuration(p, config, &customization, false, false);
+
+        if (maybe_interrupt) {
+                delete config;
+                delete initial_config;
+                return maybe_interrupt;
+        }
+        extract_defaults_config(configuration, config);
+
+        delete config;
+        delete initial_config;
+        return std::nullopt;
 }

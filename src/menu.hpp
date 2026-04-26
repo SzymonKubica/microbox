@@ -1,6 +1,6 @@
 #pragma once
-#include "../platform/interface/platform.hpp"
-#include "../common/configuration.hpp"
+#include "platform/interface/platform.hpp"
+#include "common/configuration.hpp"
 #include <optional>
 
 enum class Game : int {
@@ -29,9 +29,9 @@ typedef struct GameMenuConfiguration {
 
 bool is_valid_game(Game game);
 
-extern Game game_from_string(const char *name);
+Game game_from_string(const char *name);
 
-extern const char *game_to_string(Game game);
+const char *game_to_string(Game game);
 
 std::optional<UserAction> select_app_and_run(Platform *p);
 

@@ -3,8 +3,8 @@
 #include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
 
-#include "common_transitions.hpp"
-#include "application_executor.hpp"
+#include "../common/common_transitions.hpp"
+#include "../application_executor.hpp"
 
 #define AVAILABLE_CONFIGURATION_SLOTS 5
 #define INITIALIZATION_MAGIC_NUMBER 12345

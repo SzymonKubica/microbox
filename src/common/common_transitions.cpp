@@ -1,6 +1,6 @@
 #include <cstring>
-#include "common_transitions.hpp"
-#include "../common/constants.hpp"
+#include "../common/common_transitions.hpp"
+#include "constants.hpp"
 
 void display_input_clafification(Display *display)
 {

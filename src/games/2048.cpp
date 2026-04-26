@@ -13,8 +13,8 @@
 #include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
 
-#include "game_menu.hpp"
-#include "common_transitions.hpp"
+#include "../menu.hpp"
+#include "../common/common_transitions.hpp"
 #include "settings.hpp"
 
 #define TAG "2048"

@@ -1,13 +1,13 @@
 #include <cstring>
 #include <optional>
 #include "../platform/interface/platform.hpp"
-#include "game_menu.hpp"
+#include "../menu.hpp"
 
 #include "../common/configuration.hpp"
 #include "../common/logging.hpp"
 #include "../common/constants.hpp"
 
-#include "common_transitions.hpp"
+#include "../common/common_transitions.hpp"
 #include "settings.hpp"
 #include "minesweeper.hpp"
 

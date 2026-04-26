@@ -1,4 +1,4 @@
-#include "src/games/game_menu.hpp"
+#include "src/menu.hpp"
 #include "src/games/brightness.hpp"
 #include "src/platform/target/target_resolution.hpp"
 #include "src/common/logging.hpp"

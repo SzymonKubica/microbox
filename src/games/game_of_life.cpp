@@ -6,7 +6,7 @@
 #include "../common/maths_utils.hpp"
 #include "game_of_life.hpp"
 #include "settings.hpp"
-#include "game_menu.hpp"
+#include "../menu.hpp"
 
 #define TAG "game_of_life"
 #define GAME_CELL_WIDTH 8
