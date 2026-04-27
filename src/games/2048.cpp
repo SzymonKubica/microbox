@@ -15,7 +15,7 @@
 
 #include "../menu.hpp"
 #include "../common/common_transitions.hpp"
-#include "settings.hpp"
+#include "../apps/settings.hpp"
 
 #define TAG "2048"
 #define UP 0

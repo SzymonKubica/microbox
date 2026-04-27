@@ -5,7 +5,7 @@
 #include "../common/constants.hpp"
 #include "../common/maths_utils.hpp"
 #include "game_of_life.hpp"
-#include "settings.hpp"
+#include "../apps/settings.hpp"
 #include "../menu.hpp"
 
 #define TAG "game_of_life"

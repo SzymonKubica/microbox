@@ -8,7 +8,7 @@
 #include "../common/constants.hpp"
 
 #include "../common/common_transitions.hpp"
-#include "settings.hpp"
+#include "../apps/settings.hpp"
 #include "minesweeper.hpp"
 
 #define TAG "minesweeper"

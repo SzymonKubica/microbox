@@ -5,7 +5,7 @@
 #include "snake.hpp"
 #include "2048.hpp"
 #include "game_of_life.hpp"
-#include "settings.hpp"
+#include "../apps/settings.hpp"
 #include "../menu.hpp"
 
 #include "../common/configuration.hpp"

@@ -2,7 +2,7 @@
 #include <cassert>
 #include <optional>
 #include "sudoku.hpp"
-#include "settings.hpp"
+#include "../apps/settings.hpp"
 #include "../menu.hpp"
 
 #include "../common/configuration.hpp"

@@ -1,17 +1,18 @@
-#include "2048.hpp"
+#include <memory>
+
+#include "settings.hpp"
 #include "brightness.hpp"
+#include "random_seed_picker.hpp"
+#include "wifi.hpp"
 #include "../menu.hpp"
 #include "../common/configuration.hpp"
 #include "../common/logging.hpp"
-#include "settings.hpp"
-#include "game_of_life.hpp"
-#include "minesweeper.hpp"
-#include "random_seed_picker.hpp"
-#include "snake.hpp"
-#include "snake_duel.hpp"
-#include "sudoku.hpp"
-#include "wifi.hpp"
-#include <memory>
+#include "../games/game_of_life.hpp"
+#include "../games/minesweeper.hpp"
+#include "../games/2048.hpp"
+#include "../games/snake.hpp"
+#include "../games/snake_duel.hpp"
+#include "../games/sudoku.hpp"
 
 #define TAG "settings"
 

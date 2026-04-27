@@ -27,7 +27,6 @@
       as the library depends on the global arduino installation structure.
       It migth be better to explain / clean-up the process of configuring the
       library with the correct pins and target device.
-- [ ] separate games from applications
 - [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 - [ ] make color enum variants more readable (remove stupid 'LGGBRed' things)
 - [ ] add a separate menu for all of the apps.
@@ -37,6 +36,10 @@
       but should be moved to the settings.
 - [ ] fix state transitions on the light sleep functionality (do we even need
       light sleep anymore?)
+- [ ] clean up all usages of raw pointers.
+  - [ ] platform code
+  - [ ] configuration management code (this is large and messy)
+- [ ] add proper way of injecting default wifi ssid & password secrets
 ## Require hardware testing
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
@@ -51,12 +54,7 @@
 
 # In Progress
 
-- [ ] clean up all usages of raw pointers.
-  - [ ] platform code
-  - [ ] configuration management code (this is large and messy)
-
-- [ ] add proper way of injecting default wifi ssid & password secrets
-
+- [ ] separate games from applications
 # Done
 - [x] add config struct version validations
 - [x] design a better logging utility to remove the c-style macros. (won't do, macros are good enough)
