@@ -15,7 +15,6 @@
 #include "src/platform/emulator/persistent_storage.hpp"
 #include "src/common/logging.hpp"
 
-
 #define TAG "emulator_entrypoint"
 
 SfmlDisplay *display;

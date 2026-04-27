@@ -2,6 +2,7 @@
 #include <optional>
 #include <stdlib.h>
 #include "menu.hpp"
+#include "apps/app_menu.hpp"
 #include "common/configuration.hpp"
 #include "common/logging.hpp"
 #include "common/color.hpp"
@@ -80,7 +81,7 @@ std::optional<UserAction> select_app_and_run(Platform *p)
         case Game::GameOfLife:
                 return execute_app(new GameOfLife(), p, &c);
         case Game::Settings:
-                return execute_app(new Settings(), p, &c);
+                return execute_app(new UtilityApplicationMenu(), p, &c);
         case Game::Snake:
                 return execute_app(new SnakeGame(), p, &c);
         case Game::SnakeDuel:
@@ -106,8 +107,8 @@ load_initial_menu_configuration(PersistentStorage *storage);
 Configuration *
 assemble_game_selector_configuration(Platform *p,
                                      GameMenuConfiguration *initial_config);
-void extract_game_selection(GameMenuConfiguration *menu_configuration,
-                            Configuration *config);
+void extract_app_selection(GameMenuConfiguration *menu_configuration,
+                           Configuration *config);
 
 /**
  * As a quality of life improvement, when the game console starts up, it will
@@ -156,7 +157,7 @@ main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration)
                 delete initial_config;
                 return maybe_interrupt;
         }
-        extract_game_selection(configuration, config);
+        extract_app_selection(configuration, config);
         last_selected_game = configuration->game;
 
         /*
@@ -217,21 +218,11 @@ assemble_game_selector_configuration(Platform *p,
 {
 
         std::vector<const char *> available_games = {
-            game_to_string(Game::Minesweeper),
-            game_to_string(Game::Clean2048),
-            game_to_string(Game::GameOfLife),
-            game_to_string(Game::Snake),
-            game_to_string(Game::SnakeDuel),
-            game_to_string(Game::Sudoku),
+            game_to_string(Game::Clean2048),  game_to_string(Game::Minesweeper),
+            game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
+            game_to_string(Game::SnakeDuel),  game_to_string(Game::Sudoku),
             game_to_string(Game::Settings),
-            game_to_string(Game::RandomSeedPicker),
-            game_to_string(Game::Brightness),
         };
-
-        if (p->capabilities.has_wifi)
-                available_games.push_back(game_to_string(Game::WifiApp));
-        if (p->capabilities.can_sleep)
-                available_games.push_back(game_to_string(Game::Sleep));
 
         auto *game = ConfigurationOption::of_strings(
             "Game", available_games, game_to_string(initial_config->game));
@@ -241,8 +232,8 @@ assemble_game_selector_configuration(Platform *p,
         return new Configuration("MicroBox", options);
 }
 
-void extract_game_selection(GameMenuConfiguration *menu_configuration,
-                            Configuration *config)
+void extract_app_selection(GameMenuConfiguration *menu_configuration,
+                           Configuration *config)
 {
         ConfigurationOption *game_option = config->options[0];
 
@@ -276,6 +267,8 @@ Game game_from_string(const char *name)
                 return Game::Sleep;
         if (strcmp(name, game_to_string(Game::Brightness)) == 0)
                 return Game::Brightness;
+        if (strcmp(name, game_to_string(Game::DefaultsSetting)) == 0)
+                return Game::DefaultsSetting;
         return Game::Unknown;
 }
 
@@ -325,6 +318,8 @@ const char *game_to_string(Game game)
                 return "Sleep";
         case Game::Brightness:
                 return "Brightness";
+        case Game::DefaultsSetting:
+                return "Defaults";
         default:
                 return "Unknown";
         }

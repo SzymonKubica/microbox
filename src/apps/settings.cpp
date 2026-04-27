@@ -1,6 +1,7 @@
 #include <memory>
 
 #include "settings.hpp"
+#include "app_menu.hpp"
 #include "brightness.hpp"
 #include "random_seed_picker.hpp"
 #include "wifi.hpp"
@@ -134,6 +135,14 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
                         return action.value();
                 storage.put(offset, config);
         } break;
+        case Game::Settings: {
+                AppMenuConfiguration config;
+                auto game = std::make_unique<UtilityApplicationMenu>();
+                auto action = game->collect_config(p, custom, &config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
         default:
                 return UserAction::Exit;
         }
@@ -156,13 +165,14 @@ std::vector<int> get_settings_storage_offsets()
             {Game::WifiApp, sizeof(WifiAppConfiguration)},
             {Game::Sudoku, sizeof(SudokuConfiguration)},
             {Game::Brightness, sizeof(BrightnessConfiguration)},
+            {Game::Settings, sizeof(AppMenuConfiguration)},
         };
 
         std::vector<Game> games = {
             Game::MainMenu,   Game::Clean2048,        Game::Minesweeper,
             Game::GameOfLife, Game::RandomSeedPicker, Game::Snake,
             Game::SnakeDuel,  Game::WifiApp,          Game::Sudoku,
-            Game::Brightness,
+            Game::Brightness, Game::Settings,
         };
 
         // We make the offsets size a two element bigger as the game enum starts

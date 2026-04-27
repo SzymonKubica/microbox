@@ -1,29 +1,29 @@
 #pragma once
-
 #include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
-
-#include "../common/common_transitions.hpp"
+#include "../menu.hpp"
 #include "../application_executor.hpp"
+#include <optional>
 
-typedef struct BrightnessConfiguration {
+typedef struct AppMenuConfiguration {
         ConfigurationHeader header;
-        int brightness;
-} BrightnessConfiguration;
+        Game app;
+} AppMenuConfiguration;
 
-void set_brightness_from_storage(PersistentStorage *storage);
+std::optional<UserAction> select_utility_app_and_run(Platform *p);
 
-class BrightnessApp : public ApplicationExecutor<BrightnessConfiguration>
+class UtilityApplicationMenu : public ApplicationExecutor<AppMenuConfiguration>
 {
       public:
-        BrightnessApp() {}
+        UtilityApplicationMenu() {}
 
         UserAction app_loop(Platform *p,
                             UserInterfaceCustomization *customization,
-                            const BrightnessConfiguration &config) override;
+                            const AppMenuConfiguration &config) override;
         std::optional<UserAction>
         collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       BrightnessConfiguration *game_config) override;
+                       AppMenuConfiguration *game_config) override;
         const char *get_game_name() override;
         const char *get_help_text() override;
 };
+
