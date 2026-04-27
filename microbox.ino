@@ -1,5 +1,5 @@
 #include "src/menu.hpp"
-#include "src/games/brightness.hpp"
+#include "src/apps/brightness.hpp"
 #include "src/platform/target/target_resolution.hpp"
 #include "src/common/logging.hpp"
 
