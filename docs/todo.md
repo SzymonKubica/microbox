@@ -48,10 +48,10 @@
 
 # In Progress
 
-- [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 - [ ] reduce duplication in the controls explanations code
 
 # Done
+- [x] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 - [x] Feedback from Khemi: users don't care about the color / UI flavour between minimalistic/detailed / hints
       this should be moved to the settings. The main screen should only show the selected game
       and probably feature some cool graphic. The main menu can still remain in its current form
