@@ -6,10 +6,8 @@
 
 #include "../common/configuration.hpp"
 #include "../application_executor.hpp"
-#include "settings.hpp"
 #include "../common/logging.hpp"
-#include "../common/color.hpp"
-#include "../common/constants.hpp"
+#include "settings.hpp"
 #include "sleep.hpp"
 #include "wifi.hpp"
 #include "brightness.hpp"
@@ -43,7 +41,7 @@ load_initial_utility_menu_configuration(PersistentStorage *storage)
                 DEFAULT_APP_MENU_CONFIGURATION)) {
                 LOG_DEBUG(TAG,
                           "The storage does not contain a valid "
-                          "game menu configuration, using default values.");
+                          "app menu configuration, using default values.");
                 memcpy(output, &DEFAULT_APP_MENU_CONFIGURATION,
                        sizeof(AppMenuConfiguration));
                 storage->put(storage_offset, DEFAULT_APP_MENU_CONFIGURATION);
@@ -157,4 +155,8 @@ std::optional<UserAction> UtilityApplicationMenu::collect_config(
 }
 
 const char *UtilityApplicationMenu::get_game_name() { return "Utility Menu"; }
-const char *UtilityApplicationMenu::get_help_text() { return "TODO"; }
+const char *UtilityApplicationMenu::get_help_text()
+{
+        return "Move joystick left/right to select the utility app. Press red "
+               "(right) to enter the selected app.";
+}

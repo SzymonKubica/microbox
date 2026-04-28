@@ -8,6 +8,24 @@
 #include <vector>
 
 /**
+ * Different platforms have different ways of identifying the buttons used
+ * for the action controller. For instance, the Arduino input shield has
+ * colored buttons and so when rendering control hints in the UI, we can use
+ * those colors. On the other hand, if we are running on an emulator,
+ * we might want to use the letters that correspond to the user input keys.
+ * On top of that, MicroBox 2 doesn't have colored buttons, so we need to
+ * refer to them using directions (e.g. arrow up icon). Each platform
+ * is responsible for definint the flavour of the buttons that it relies on.
+ * Depending on this selection, the UI hints and help text will be adjusted
+ * accordingly.
+ */
+enum class ActionButtonKind {
+        Colors = 0,
+        Directions = 1,
+        Letters = 2,
+};
+
+/**
  * Bundles all features that are not available on every platform. The code
  * then relies on that to conditionally enable certain features.
  *
@@ -17,6 +35,7 @@
 struct PlatformCapabilities {
         bool has_wifi = true;
         bool can_sleep = true;
+        ActionButtonKind action_button_kind = ActionButtonKind::Colors;
 };
 
 /**

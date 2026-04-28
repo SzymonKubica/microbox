@@ -46,13 +46,18 @@ Platform *initialize_platform()
          */
         PersistentStorage *persistent_storage = new PersistentStorage();
 
-        Platform platform = {.display = display,
-                             .directional_controllers = controllers,
-                             .action_controllers = action_controllers,
-                             .time_provider = time_provider,
-                             .persistent_storage = persistent_storage,
-                             .wifi_provider = wifi_provider,
-                             .client = client};
+        Platform platform = {
+            .display = display,
+            .directional_controllers = controllers,
+            .action_controllers = action_controllers,
+            .time_provider = time_provider,
+            .persistent_storage = persistent_storage,
+            .wifi_provider = wifi_provider,
+            .client = client,
+            .capabilities = {.has_wifi = true,
+                             .can_sleep = true,
+                             .action_button_kind =
+                                 ActionButtonKind::Directions}};
 
         return new Platform(platform);
 }

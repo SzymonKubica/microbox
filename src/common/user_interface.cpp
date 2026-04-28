@@ -647,8 +647,8 @@ void render_config_menu(Display *display, Configuration *config,
         free(bar_positions);
 }
 
-void render_controls_explanations(Display *display,
-                                  std::map<Action, std::string> button_hints)
+void render_controls_explanations_colored_buttons(
+    Display *display, std::map<Action, std::string> button_hints)
 {
         std::vector<Color> button_colors(4);
         button_colors[Action::BLUE] = Blue;
@@ -720,9 +720,101 @@ void render_controls_explanations(Display *display,
 }
 
 /**
+ * Renders the explanations of the console action controls in terms of
+ * keyboard letters that trigger them. Note that this is only uesd on the
+ * emulator.
+ */
+void render_controls_explanations_letter_buttons(
+    Display *display, std::map<Action, std::string> button_hints)
+{
+        std::vector<const char *> button_keys(4);
+        button_keys[Action::BLUE] = "b";
+        button_keys[Action::YELLOW] = "y";
+        button_keys[Action::RED] = "r";
+        button_keys[Action::GREEN] = "g";
+
+        int h = display->get_height();
+        int w = display->get_width();
+        int fw = FONT_WIDTH;
+        int fh = FONT_SIZE;
+
+        // Dynamically find the total text length needed for even spacing
+        int total_text_len = 0;
+        for (auto textMapping : button_hints) {
+                total_text_len += textMapping.second.length();
+        }
+
+        // Given that the help text is rendred at the bottom and the screen
+        // has rounded corners, we need to set a fixed margin to ensure that
+        // nothing is cropped by the corners.
+        int x_margin = fw / 2;
+
+        int key_text_len = 1;
+
+        int total_len_to_render = fw * button_hints.size() * key_text_len +
+                                  fw * total_text_len + 2 * x_margin;
+
+        int remainder_width = w - total_len_to_render;
+        int gaps = button_hints.size() - 1;
+
+        int gap_size = remainder_width / gaps;
+
+        // This is empiricaly calibrated to look nice. It is set as a negative
+        // offset from the bottom of the screen and does not depend on what is
+        // rendered above.
+        int help_text_y = h - 3 * fh / 2;
+
+#ifndef EMULATOR
+        // The font on the emulator differs slightly from the target
+        // LCD display font, so we need to apply this vertical alignment
+        // override.
+        help_text_y += fh / 4;
+#endif
+
+        std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
+                                             Action::GREEN, Action::RED};
+
+        // We keep track of the current x position as we render hint items.
+        int x_pos = x_margin;
+        for (int i = 0; i < buttons_order.size(); i++) {
+                Action button = buttons_order[i];
+                std::string hint = button_hints[button];
+
+                display->draw_string({.x = x_pos, .y = help_text_y},
+                                     (char *)button_keys[button],
+                                     FontSize::Size16, Black, White);
+                x_pos += key_text_len * fw + 2;
+                display->draw_string({.x = x_pos, .y = help_text_y},
+                                     (char *)hint.c_str(), FontSize::Size16,
+                                     Black, Gray);
+
+                x_pos += hint.length() * fw;
+                x_pos += gap_size;
+        }
+}
+
+void render_controls_explanations(Display *display,
+                                  ActionButtonKind button_kind,
+                                  std::map<Action, std::string> button_hints)
+{
+
+        switch (button_kind) {
+        case ActionButtonKind::Directions:
+        case ActionButtonKind::Letters:
+                render_controls_explanations_letter_buttons(display,
+                                                            button_hints);
+                break;
+        case ActionButtonKind::Colors:
+                render_controls_explanations_colored_buttons(display,
+                                                             button_hints);
+                break;
+        }
+}
+
+/**
  * Renders the default explanation of console UI controls.
  */
-void render_controls_explanations(Display *display)
+void render_default_controls_explanations(Platform *p, Display *display)
 {
 
         std::map<Action, std::string> button_hints;
@@ -731,7 +823,8 @@ void render_controls_explanations(Display *display)
         button_hints[Action::RED] = "Next";
         button_hints[Action::GREEN] = "Toggle";
 
-        render_controls_explanations(display, button_hints);
+        render_controls_explanations(
+            display, p->capabilities.action_button_kind, button_hints);
 }
 
 void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
@@ -1138,7 +1231,9 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                 button_hints[Action::YELLOW] = "Caps";
                 button_hints[Action::RED] = "Done";
                 button_hints[Action::GREEN] = "Select";
-                render_controls_explanations(p->display, button_hints);
+                render_controls_explanations(p->display,
+                                             p->capabilities.action_button_kind,
+                                             button_hints);
         }
 
         bool input_confirmed = false;
@@ -1405,7 +1500,9 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                 button_hints[Action::YELLOW] = "Caps";
                 button_hints[Action::RED] = "Done";
                 button_hints[Action::GREEN] = "Select";
-                render_controls_explanations(p->display, button_hints);
+                render_controls_explanations(p->display,
+                                             p->capabilities.action_button_kind,
+                                             button_hints);
         }
 
         bool input_confirmed = false;

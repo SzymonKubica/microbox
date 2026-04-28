@@ -27,19 +27,15 @@
       as the library depends on the global arduino installation structure.
       It migth be better to explain / clean-up the process of configuring the
       library with the correct pins and target device.
-- [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 - [ ] make color enum variants more readable (remove stupid 'LGGBRed' things)
 - [ ] add a separate menu for all of the apps.
-- [ ] Feedback from Khemi: users don't care about the color / UI flavour between minimalistic/detailed / hints
-      this should be moved to the settings. The main screen should only show the selected game
-      and probably feature some cool graphic. The main menu can still remain in its current form
-      but should be moved to the settings.
 - [ ] fix state transitions on the light sleep functionality (do we even need
       light sleep anymore?)
 - [ ] clean up all usages of raw pointers.
   - [ ] platform code
   - [ ] configuration management code (this is large and messy)
 - [ ] add proper way of injecting default wifi ssid & password secrets
+- [ ] add game thumbnail rendering
 ## Require hardware testing
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
@@ -49,13 +45,19 @@
       overrides
 - [ ] add detailed UI rendering for the 2.4 inch display driven by the TFT library
 ## Dev experience
-- [ ] fix treesitter crashing stupidly (each documentation lookup fails and treesitter highilghting is broken)
-- [ ] check if there is a vim plugin for markdown rendering.
 
 # In Progress
 
-- [ ] separate games from applications
+- [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
+
 # Done
+- [x] Feedback from Khemi: users don't care about the color / UI flavour between minimalistic/detailed / hints
+      this should be moved to the settings. The main screen should only show the selected game
+      and probably feature some cool graphic. The main menu can still remain in its current form
+      but should be moved to the settings.
+- [x] separate games from applications
+- [x] check if there is a vim plugin for markdown rendering.
+- [x] fix treesitter crashing stupidly (each documentation lookup fails and treesitter highilghting is broken)
 - [x] add config struct version validations
 - [x] design a better logging utility to remove the c-style macros. (won't do, macros are good enough)
 - [x] clean up all imports to remove the indirect import warnings

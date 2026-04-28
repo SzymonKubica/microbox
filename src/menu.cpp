@@ -1,19 +1,23 @@
 #include <cstring>
 #include <optional>
 #include <stdlib.h>
+
 #include "menu.hpp"
-#include "apps/app_menu.hpp"
+#include "application_executor.hpp"
+
 #include "common/configuration.hpp"
 #include "common/logging.hpp"
 #include "common/color.hpp"
 #include "common/constants.hpp"
-#include "application_executor.hpp"
+
 #include "games/minesweeper.hpp"
 #include "games/sudoku.hpp"
 #include "games/game_of_life.hpp"
 #include "games/snake.hpp"
 #include "games/snake_duel.hpp"
 #include "games/2048.hpp"
+
+#include "apps/app_menu.hpp"
 #include "apps/sleep.hpp"
 #include "apps/wifi.hpp"
 #include "apps/brightness.hpp"
@@ -182,6 +186,12 @@ load_initial_menu_configuration(PersistentStorage *storage)
         int storage_offset = get_settings_storage_offset(Game::MainMenu);
 
         GameMenuConfiguration configuration{};
+        // When running on the emulator, if there is no persistent storage file,
+        // the storage retuns back the struct object and fails silently.
+        // This then tricks the magic validation below into thinking that our
+        // persistent storage is good. To avoid this, we are setting magic to be
+        // incorrect to detect the missing file.
+        configuration.header.magic = -1;
 
         LOG_DEBUG(TAG,
                   "Trying to load initial settings from the persistent storage "

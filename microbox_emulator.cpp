@@ -73,13 +73,17 @@ int main(int argc, char *argv[])
         wifi_provider = new EmulatedWifiProvider();
         client = new EmulatorHttpClient();
 
-        Platform platform = {.display = display,
-                             .directional_controllers = controllers,
-                             .action_controllers = action_controllers,
-                             .time_provider = &time_provider,
-                             .persistent_storage = &persistent_storage,
-                             .wifi_provider = wifi_provider,
-                             .client = client};
+        Platform platform = {
+            .display = display,
+            .directional_controllers = controllers,
+            .action_controllers = action_controllers,
+            .time_provider = &time_provider,
+            .persistent_storage = &persistent_storage,
+            .wifi_provider = wifi_provider,
+            .client = client,
+            .capabilities = {.has_wifi = true,
+                             .can_sleep = true,
+                             .action_button_kind = ActionButtonKind::Letters}};
 
         while (window.isOpen()) {
                 LOG_DEBUG(TAG, "Entering game loop...");

@@ -289,7 +289,7 @@ collect_configuration(Platform *p, Configuration *config,
         render_config_menu(p->display, config, diff, false, customization,
                            should_render_logo);
         if (customization->show_help_text) {
-                render_controls_explanations(p->display);
+                render_default_controls_explanations(p, p->display);
         }
         delete diff;
         while (true) {
