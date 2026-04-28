@@ -49,6 +49,7 @@
 # In Progress
 
 - [ ] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
+- [ ] reduce duplication in the controls explanations code
 
 # Done
 - [x] Feedback from Khemi: users don't care about the color / UI flavour between minimalistic/detailed / hints

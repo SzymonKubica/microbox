@@ -9,6 +9,7 @@ typedef struct Point {
 } Point;
 
 Point operator+(Point first, Point second);
+bool operator==(Point first, Point second);
 
 void translate(Point *p, Direction dir);
 /**

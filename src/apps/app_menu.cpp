@@ -39,9 +39,8 @@ load_initial_utility_menu_configuration(PersistentStorage *storage)
 
         if (!configuration.header.validate_against(
                 DEFAULT_APP_MENU_CONFIGURATION)) {
-                LOG_DEBUG(TAG,
-                          "The storage does not contain a valid "
-                          "app menu configuration, using default values.");
+                LOG_DEBUG(TAG, "The storage does not contain a valid "
+                               "app menu configuration, using default values.");
                 memcpy(output, &DEFAULT_APP_MENU_CONFIGURATION,
                        sizeof(AppMenuConfiguration));
                 storage->put(storage_offset, DEFAULT_APP_MENU_CONFIGURATION);

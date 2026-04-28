@@ -22,7 +22,8 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
 void render_logo(Display *display, UserInterfaceCustomization *customization,
                  Point position);
 void render_default_controls_explanations(Platform *p, Display *display);
-void render_controls_explanations(Display *display, ActionButtonKind button_kind,
+void render_controls_explanations(Display *display,
+                                  ActionButtonKind button_kind,
                                   std::map<Action, std::string> button_hints);
 
 void render_wrapped_help_text(Platform *p,

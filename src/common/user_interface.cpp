@@ -793,6 +793,94 @@ void render_controls_explanations_letter_buttons(
         }
 }
 
+void render_controls_explanations_directional_buttons(
+    Display *display, std::map<Action, std::string> button_hints)
+{
+        std::vector<Point> button_positions(4);
+        button_positions[Action::BLUE] = {-1, 0};
+        button_positions[Action::YELLOW] = {0, -1};
+        button_positions[Action::RED] = {1, 0};
+        button_positions[Action::GREEN] = {0, 1};
+
+        int h = display->get_height();
+        int w = display->get_width();
+        int fw = FONT_WIDTH;
+        int fh = FONT_SIZE;
+
+        // Dynamically find the total text length needed for even spacing
+        int total_text_len = 0;
+        for (auto textMapping : button_hints) {
+                total_text_len += textMapping.second.length();
+        }
+
+        int circle_radius = 2;
+
+        // Given that the help text is rendred at the bottom and the screen
+        // has rounded corners, we need to set a fixed margin to ensure that
+        // nothing is cropped by the corners.
+        int x_margin = 1 * fw;
+
+        int circle_text_gap_width = fw / 4;
+        int total_len_to_render =
+            button_hints.size() * (3 * circle_radius + circle_text_gap_width) +
+            fw * total_text_len + 2 * x_margin;
+
+        int remainder_width = w - total_len_to_render;
+        int gaps = button_hints.size() - 1;
+
+        int gap_size = remainder_width / gaps;
+
+        // This is empiricaly calibrated to look nice. It is set as a negative
+        // offset from the bottom of the screen and does not depend on what is
+        // rendered above.
+        int help_text_y = h - 3 * fh / 2;
+        // Also eye-callibrated, not much logic to the 3/4 * fh.
+        int circle_indicator_y = help_text_y + 3 * fh / 4;
+
+#ifndef EMULATOR
+        // The font on the emulator differs slightly from the target
+        // LCD display font, so we need to apply this vertical alignment
+        // override.
+        help_text_y += fh / 4;
+#endif
+
+        std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
+                                             Action::GREEN, Action::RED};
+
+        // We keep track of the current x position as we render hint items.
+        int x_pos = x_margin;
+        for (int i = 0; i < buttons_order.size(); i++) {
+                Action button = buttons_order[i];
+                std::string hint = button_hints[button];
+                // We first make all possible displacements in gray.
+                for (const auto &d : button_positions) {
+                        if (d != button_positions[button]) {
+                                display->draw_circle(
+                                    {.x = x_pos + 2 * d.x * circle_radius,
+                                     .y = circle_indicator_y +
+                                          2 * d.y * circle_radius},
+                                    circle_radius, Gray, 0, true);
+                        }
+                }
+
+                auto displacement = button_positions[button];
+                Color color = White;
+                display->draw_circle(
+                    {.x = x_pos + 2 * displacement.x * circle_radius,
+                     .y = circle_indicator_y +
+                          2 * displacement.y * circle_radius},
+                    circle_radius, color, 0, true);
+
+                x_pos += 4 * circle_radius + circle_text_gap_width;
+                display->draw_string({.x = x_pos, .y = help_text_y},
+                                     (char *)hint.c_str(), FontSize::Size16,
+                                     Black, White);
+
+                x_pos += hint.length() * fw;
+                x_pos += gap_size;
+        }
+}
+
 void render_controls_explanations(Display *display,
                                   ActionButtonKind button_kind,
                                   std::map<Action, std::string> button_hints)
@@ -800,6 +888,9 @@ void render_controls_explanations(Display *display,
 
         switch (button_kind) {
         case ActionButtonKind::Directions:
+                render_controls_explanations_directional_buttons(display,
+                                                                 button_hints);
+                break;
         case ActionButtonKind::Letters:
                 render_controls_explanations_letter_buttons(display,
                                                             button_hints);
@@ -832,16 +923,16 @@ void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
 {
         p->display->clear(Black);
 
-        // We exctract the display dimensions and font sizes into shorter
-        // variable names to make the code easier to read.
+        // We exctract the display dimensions and font sizes into
+        // shorter variable names to make the code easier to read.
         int h = p->display->get_height();
         int w = p->display->get_width();
         int margin = p->display->get_display_corner_radius();
         int fw = FONT_WIDTH;
         int fh = FONT_SIZE;
 
-        // We allow the text to go into 1/2 of the width of the display corner
-        // radius
+        // We allow the text to go into 1/2 of the width of the display
+        // corner radius
         int maximum_line_chars = (w - margin) / fw;
 
         int text_len = strlen(text);
@@ -852,8 +943,8 @@ void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
         int curr_word_x_offset = 0;
         bool first_word = true;
 
-        // We allocate dynamically a copy of the constant string as strtok
-        // needs a mutable reference.
+        // We allocate dynamically a copy of the constant string as
+        // strtok needs a mutable reference.
         char *text_copy = (char *)calloc(strlen(text) + 1, sizeof(char));
         // We need to properly null-terminate the other string.
         text_copy[strlen(text)] = '\0';
@@ -865,8 +956,8 @@ void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
                 if (curr_word_x_offset + strlen(word) + 1 <=
                     maximum_line_chars) {
                         if (first_word) {
-                                // We omit the space separator on the first
-                                // word.
+                                // We omit the space separator on the
+                                // first word.
                                 first_word = false;
                         } else {
                                 curr_word_x_offset += 1;
@@ -889,8 +980,8 @@ void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
 }
 
 /**
- * Renders a single block of wrapped text and a guide indicator saying that
- * pressing green will dismiss the help text.
+ * Renders a single block of wrapped text and a guide indicator saying
+ * that pressing green will dismiss the help text.
  */
 void render_wrapped_help_text(Platform *p,
                               UserInterfaceCustomization *customization,
@@ -898,8 +989,8 @@ void render_wrapped_help_text(Platform *p,
 {
         render_wrapped_text(p, customization, help_text);
 
-        // We exctract the display dimensions and font sizes into shorter
-        // variable names to make the code easier to read.
+        // We exctract the display dimensions and font sizes into
+        // shorter variable names to make the code easier to read.
         int h = p->display->get_height();
         int w = p->display->get_width();
         int margin = p->display->get_display_corner_radius();
@@ -941,9 +1032,9 @@ void draw_cube_perspective(Display *display, Point position, int size,
         display->draw_rectangle(position, size, size, color, 1, false);
 
         // When drawing rectangles and lines the positions are slightly
-        // misaligned and don't look pixel-accurate. We need to adjust the
-        // starting positions of the vertices to align with the rectangle
-        // vertices precisely.
+        // misaligned and don't look pixel-accurate. We need to adjust
+        // the starting positions of the vertices to align with the
+        // rectangle vertices precisely.
         int alignment_offset = 1;
 
         Point front_top_left_vertex = {position.x - alignment_offset,
@@ -977,9 +1068,9 @@ void draw_cube_perspective(Display *display, Point position, int size,
                            color);
 }
 /**
- * Draws a Greek mu letter (μ) contained inside of a square box with edge width
- * equal to `size`. Note that for pixel accuracy the size of the mu letter
- * should be divisible by 6.
+ * Draws a Greek mu letter (μ) contained inside of a square box with
+ * edge width equal to `size`. Note that for pixel accuracy the size of
+ * the mu letter should be divisible by 6.
  */
 void draw_mu_letter(Display *display, Point position, int size, Color color)
 {
@@ -988,16 +1079,16 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
         int v_margin = (size - height) / 2;
         int h_margin = width;
 
-        // First we draw the 'leg' which is the vertical long part of the μ
-        // letter
+        // First we draw the 'leg' which is the vertical long part of
+        // the μ letter
         Point letter_leg_start = {position.x + h_margin, position.y + v_margin};
         Point letter_leg_end = {letter_leg_start.x,
                                 letter_leg_start.y + height};
 
         display->draw_line(letter_leg_start, letter_leg_end, color);
 
-        // Controls how much the front of the μ letter sticks out from the round
-        // part.
+        // Controls how much the front of the μ letter sticks out from
+        // the round part.
         int letter_front_gap = width / 6;
         // Then we draw the front part of the letter
         Point letter_front_start = {position.x + h_margin + width,
@@ -1013,10 +1104,11 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
 #ifdef EMULATOR
         int adj = 0;
 #else
-        // In the target device the circle does not lign up nicely with the
-        // vertical lines, this is because of differences in how those shapes
-        // are rendered in SFML vs waveshare LCD display driver. We override
-        // here to make the logo look good on both platforms.
+        // In the target device the circle does not lign up nicely with
+        // the vertical lines, this is because of differences in how
+        // those shapes are rendered in SFML vs waveshare LCD display
+        // driver. We override here to make the logo look good on both
+        // platforms.
 #if defined(WAVESHARE_2_4_INCH_LCD)
         int adj = 2;
 #else
@@ -1025,12 +1117,12 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
 #endif
         Point center = {letter_leg_start.x + radius + adj,
                         letter_front_end.y - letter_front_gap};
-        // For pixel accuracy we decrease the diameter by 1 as the circle
-        // also has some thickness to it.
+        // For pixel accuracy we decrease the diameter by 1 as the
+        // circle also has some thickness to it.
         display->draw_circle(center, radius, color, 1, false);
 
-        // We now clear the top part of the circle to be left with the mu
-        // letter only.
+        // We now clear the top part of the circle to be left with the
+        // mu letter only.
 
         display->clear_region(
             {letter_leg_start.x + adj, letter_leg_start.y},
@@ -1039,11 +1131,11 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
 }
 
 /**
- * Draws an on-screen keyboard and allows the user to move around it using the
- * cursor. The text entered by the user will be returned in a heap-allocated
- * character array. The caller of this function is resposible for deallocating
- * this array once done processing the data. If the user cancels the input
- * process, an empty optional is returned.
+ * Draws an on-screen keyboard and allows the user to move around it
+ * using the cursor. The text entered by the user will be returned in a
+ * heap-allocated character array. The caller of this function is
+ * resposible for deallocating this array once done processing the data.
+ * If the user cancels the input process, an empty optional is returned.
  */
 std::optional<UserAction>
 collect_string_input(Platform *p, UserInterfaceCustomization *customization,
@@ -1090,9 +1182,9 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
         // Note how the bottom right part of the keyboard is filled with
         // spaces this is needed to ensure that the selection cursor is
         // translated within a rectangular area and we don't get ouside
-        // string buffer index errors. Also note that the 'x' character at the
-        // end is a placeholder for cancellation button. If the user selects
-        // that, the input process is aborted.
+        // string buffer index errors. Also note that the 'x' character
+        // at the end is a placeholder for cancellation button. If the
+        // user selects that, the input process is aborted.
         std::vector<const char *> base_char_map = {
             "`1234567890-=",
             "qwertyuiop[]\\",
@@ -1116,21 +1208,22 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                               .y = top_vertical_margin +
                                                    FONT_SIZE + 4};
 
-        // For now we only support up to two lines of user input. Longer strings
-        // are not supported.
+        // For now we only support up to two lines of user input. Longer
+        // strings are not supported.
         int max_input_len = max_cols * 2;
-        // We always itialize the buffer with size +1 to allow for the null
-        // terminator.
+        // We always itialize the buffer with size +1 to allow for the
+        // null terminator.
         char *output = (char *)malloc(sizeof(char) * (max_input_len + 1));
-        // This is only used for rendering if the length of output string is
-        // greater than `max_cols`. Unlike the main output,
-        // this buffer is freed at the end and is not returned to the user.
+        // This is only used for rendering if the length of output
+        // string is greater than `max_cols`. Unlike the main output,
+        // this buffer is freed at the end and is not returned to the
+        // user.
         char *output_line_1 =
             (char *)malloc(sizeof(char) * (max_input_len + 1));
         char *output_line_2 =
             (char *)malloc(sizeof(char) * (max_input_len + 1));
-        // If the user enters nothing we need to be safe and still write the
-        // null terminator.
+        // If the user enters nothing we need to be safe and still write
+        // the null terminator.
         output[0] = '\0';
 
         Point cursor = {0, 0};
@@ -1146,8 +1239,8 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                     int y = location.y;
                     const char *row = character_map[y];
                     int left_indent = left_indent_map[y];
-                    // we mutiply the index by two here to spread out the
-                    // keyboard characters a bit.
+                    // we mutiply the index by two here to spread out
+                    // the keyboard characters a bit.
                     Point start = {.x = (left_indent + 2 * x) * FONT_WIDTH,
                                    .y = keyboard_start_y + y * FONT_SIZE};
                     char buffer[2];
@@ -1160,8 +1253,8 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                          color);
             };
 
-        // We define this reusasble lambda so that we can easily re-render the
-        // grid when the capitalization setting changes.
+        // We define this reusasble lambda so that we can easily
+        // re-render the grid when the capitalization setting changes.
         auto render_keyboard = [&cursor, customization,
                                 render_character_at_location](
                                    std::vector<const char *> &character_map) {
@@ -1186,8 +1279,9 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                           max_cols, output, output_line_1,
                                           output_line_2](int output_idx) {
                 int line_1_end = std::min(output_idx, max_cols);
-                // We clear one past the end of the line to ensure that this
-                // function also works for re-rendering after backspace is hit.
+                // We clear one past the end of the line to ensure that
+                // this function also works for re-rendering after
+                // backspace is hit.
                 display->clear_region(
                     input_text_start,
                     {input_text_start.x + FONT_WIDTH * (line_1_end + 1),
@@ -1195,16 +1289,18 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                     Black);
 
                 strncpy(output_line_1, output, line_1_end);
-                // ensure that the rendered line 1 is properly null-terminated
+                // ensure that the rendered line 1 is properly
+                // null-terminated
                 output_line_1[line_1_end] = '\0';
                 display->draw_string(input_text_start, output_line_1,
                                      FontSize::Size16, Black, White);
                 // Only render second line if enough chars
                 int line_2_end = output_idx - max_cols;
                 if (output_idx >= max_cols) {
-                        // We clear even if it is equal to ensure that when this
-                        // function is used for re-rendering after backspace,
-                        // the last character from the second line disappears.
+                        // We clear even if it is equal to ensure that
+                        // when this function is used for re-rendering
+                        // after backspace, the last character from the
+                        // second line disappears.
                         display->clear_region(
                             input_text_start_second_line,
                             {input_text_start_second_line.x +
@@ -1268,10 +1364,10 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                         case GREEN: {
                                 if (cursor.x == cancellation_key_location.x &&
                                     cursor.y == cancellation_key_location.y) {
-                                        LOG_DEBUG(
-                                            TAG,
-                                            "User selected the cancellation "
-                                            "key, aborting input collection.");
+                                        LOG_DEBUG(TAG, "User selected the "
+                                                       "cancellation "
+                                                       "key, aborting input "
+                                                       "collection.");
                                         free(output);
                                         free(output_line_1);
                                         free(output_line_2);
@@ -1282,8 +1378,8 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                             extract_current_char(curr_char_map);
                                         output[output_idx] = selection;
                                         // We need to null-terminate the
-                                        // unfinished input to be able to print
-                                        // it.
+                                        // unfinished input to be able
+                                        // to print it.
                                         output[output_idx + 1] = '\0';
                                         output_idx++;
                                         render_current_input_text(output_idx);
@@ -1347,8 +1443,8 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
 
         p->display->clear(Black);
 
-        // TODO: this logic is the samse as above, we can extract it to a shared
-        // helper.
+        // TODO: this logic is the samse as above, we can extract it to
+        // a shared helper.
         int prompt_text_centering_margin =
             (w - strlen(input_prompt) * FONT_WIDTH) / 2;
         Point prompt_text_start = {.x = prompt_text_centering_margin,
@@ -1359,9 +1455,9 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
         // Note how the bottom right part of the keyboard is filled with
         // spaces this is needed to ensure that the selection cursor is
         // translated within a rectangular area and we don't get ouside
-        // string buffer index errors. Also note that the 'x' character at the
-        // end is a placeholder for cancellation button. If the user selects
-        // that, the input process is aborted.
+        // string buffer index errors. Also note that the 'x' character
+        // at the end is a placeholder for cancellation button. If the
+        // user selects that, the input process is aborted.
         std::vector<const char *> base_char_map = {
             "789",
             "456",
@@ -1385,21 +1481,22 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                                               .y = top_vertical_margin +
                                                    FONT_SIZE + 4};
 
-        // For now we only support up to two lines of user input. Longer strings
-        // are not supported.
+        // For now we only support up to two lines of user input. Longer
+        // strings are not supported.
         int max_input_len = max_cols * 2;
-        // We always itialize the buffer with size +1 to allow for the null
-        // terminator.
+        // We always itialize the buffer with size +1 to allow for the
+        // null terminator.
         char *output = (char *)malloc(sizeof(char) * (max_input_len + 1));
-        // This is only used for rendering if the length of output string is
-        // greater than `max_cols`. Unlike the main output,
-        // this buffer is freed at the end and is not returned to the user.
+        // This is only used for rendering if the length of output
+        // string is greater than `max_cols`. Unlike the main output,
+        // this buffer is freed at the end and is not returned to the
+        // user.
         char *output_line_1 =
             (char *)malloc(sizeof(char) * (max_input_len + 1));
         char *output_line_2 =
             (char *)malloc(sizeof(char) * (max_input_len + 1));
-        // If the user enters nothing we need to be safe and still write the
-        // null terminator.
+        // If the user enters nothing we need to be safe and still write
+        // the null terminator.
         output[0] = '\0';
 
         Point cursor = {0, 0};
@@ -1415,8 +1512,8 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                     int y = location.y;
                     const char *row = character_map[y];
                     int left_indent = left_indent_map[y];
-                    // we mutiply the index by two here to spread out the
-                    // keyboard characters a bit.
+                    // we mutiply the index by two here to spread out
+                    // the keyboard characters a bit.
                     Point start = {.x = (left_indent + 2 * x) * FONT_WIDTH,
                                    .y = keyboard_start_y + 2 * y * FONT_SIZE};
                     char buffer[2];
@@ -1429,8 +1526,8 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                                          color);
             };
 
-        // We define this reusasble lambda so that we can easily re-render the
-        // grid when the capitalization setting changes.
+        // We define this reusasble lambda so that we can easily
+        // re-render the grid when the capitalization setting changes.
         auto render_keyboard = [&cursor, customization,
                                 render_character_at_location](
                                    std::vector<const char *> &character_map) {
@@ -1455,8 +1552,9 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                                           max_cols, output, output_line_1,
                                           output_line_2](int output_idx) {
                 int line_1_end = std::min(output_idx, max_cols);
-                // We clear one past the end of the line to ensure that this
-                // function also works for re-rendering after backspace is hit.
+                // We clear one past the end of the line to ensure that
+                // this function also works for re-rendering after
+                // backspace is hit.
                 display->clear_region(
                     input_text_start,
                     {input_text_start.x + FONT_WIDTH * (line_1_end + 1),
@@ -1464,16 +1562,18 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                     Black);
 
                 strncpy(output_line_1, output, line_1_end);
-                // ensure that the rendered line 1 is properly null-terminated
+                // ensure that the rendered line 1 is properly
+                // null-terminated
                 output_line_1[line_1_end] = '\0';
                 display->draw_string(input_text_start, output_line_1,
                                      FontSize::Size16, Black, White);
                 // Only render second line if enough chars
                 int line_2_end = output_idx - max_cols;
                 if (output_idx >= max_cols) {
-                        // We clear even if it is equal to ensure that when this
-                        // function is used for re-rendering after backspace,
-                        // the last character from the second line disappears.
+                        // We clear even if it is equal to ensure that
+                        // when this function is used for re-rendering
+                        // after backspace, the last character from the
+                        // second line disappears.
                         display->clear_region(
                             input_text_start_second_line,
                             {input_text_start_second_line.x +
@@ -1529,10 +1629,10 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                         case GREEN: {
                                 if (cursor.x == cancellation_key_location.x &&
                                     cursor.y == cancellation_key_location.y) {
-                                        LOG_DEBUG(
-                                            TAG,
-                                            "User selected the cancellation "
-                                            "key, aborting input collection.");
+                                        LOG_DEBUG(TAG, "User selected the "
+                                                       "cancellation "
+                                                       "key, aborting input "
+                                                       "collection.");
                                         free(output);
                                         free(output_line_1);
                                         free(output_line_2);
@@ -1543,8 +1643,8 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                                             extract_current_char(base_char_map);
                                         output[output_idx] = selection;
                                         // We need to null-terminate the
-                                        // unfinished input to be able to print
-                                        // it.
+                                        // unfinished input to be able
+                                        // to print it.
                                         output[output_idx + 1] = '\0';
                                         output_idx++;
                                         render_current_input_text(output_idx);
