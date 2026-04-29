@@ -10,10 +10,7 @@ Point operator+(Point first, Point second)
         return {first.x + second.x, first.y + second.y};
 }
 
-Point Point::operator*(int scalar) const
-{
-        return {scalar * x, scalar * y};
-}
+Point Point::operator*(int scalar) const { return {scalar * x, scalar * y}; }
 
 bool operator==(Point first, Point second)
 {

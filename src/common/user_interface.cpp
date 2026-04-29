@@ -1043,9 +1043,9 @@ void render_wrapped_help_text(Platform *p,
                 }
         } else if (p->capabilities.action_button_kind ==
                    ActionButtonKind::Letters) {
-                p->display->draw_string({.x = ok_text_x - fw - 2, .y = ok_text_y},
-                                        (char *)"d", FontSize::Size16, Black,
-                                        White);
+                p->display->draw_string(
+                    {.x = ok_text_x - fw - 2, .y = ok_text_y}, (char *)"d",
+                    FontSize::Size16, Black, White);
 
         } else {
                 int circle_radius = 5;
