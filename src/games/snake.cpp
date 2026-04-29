@@ -75,7 +75,7 @@ const char *SnakeGame::get_help_text()
 {
         return "Use the joystick to control where the snake goes."
                "Consume apples to grow the snake. Avoid hitting the walls or "
-               "snake's tail. Press yellow to (un-)pause.";
+               "snake's tail. Press 'up' button to (un-)pause.";
 };
 
 void update_score(Platform *p, SquareCellGridDimensions *dimensions,

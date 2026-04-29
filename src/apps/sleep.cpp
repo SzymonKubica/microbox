@@ -16,11 +16,11 @@
 const char *SleepApp::get_game_name() { return "SleepApp"; };
 const char *SleepApp::get_help_text()
 {
-        return "Press green (down) button to enter the light sleep mode."
+        return "Press 'down' button to enter the light sleep mode."
                " The screen will turn off."
                " Press and hold any button for 10s to exit the sleep mode. "
                "Press"
-               " red (right) button to enter deep sleep. Reset the console to "
+               " the 'right' button to enter deep sleep. Reset the console to "
                "wake "
                "up.";
 };

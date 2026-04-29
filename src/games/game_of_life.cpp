@@ -141,7 +141,7 @@ load_initial_game_of_life_config(PersistentStorage *storage)
         return output;
 }
 /**
- * Returns true if the user wants to play again. If they press blue on the
+ * Returns true if the user wants to play again. If they press 'left' on the
  * configuration screen it means that they want to exit, in which case this
  * function would return false.
  */

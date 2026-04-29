@@ -51,10 +51,9 @@ std::optional<UserAction> select_app_and_run(Platform *p)
 
         const char *help_text =
             "Move joystick up/down to switch between menu options. Move "
-            "joystick left/right or press green to change the value of the "
-            "current option. Press green or move joystick left on the last "
-            "cell to start the game.";
-
+            "joystick left/right or press the 'down' button to change the "
+            "value of the "
+            "current option. Press the right button to start the game";
         if (maybe_interrupt.has_value() &&
             maybe_interrupt.value() == UserAction::ShowHelp) {
                 render_wrapped_help_text(p, &c, help_text);

@@ -6,7 +6,7 @@ void display_input_clafification(Display *display)
 {
 
         {
-                const char *msg = "Press blue to exit.";
+                const char *msg = "Press 'left' to exit.";
 
                 int height = display->get_height();
                 int width = display->get_width();

@@ -77,7 +77,7 @@ const char *Clean2048::get_help_text()
         return "Use the joystick to shift the tiles around the grid. The "
                "objective is to merge tiles of the same value to reach the "
                "2048 "
-               "tile. At any point in the game press blue to exit.";
+               "tile. At any point in the game press 'left' to exit.";
 }
 
 GameState *load_saved_game_state(Game2048Configuration config)
@@ -122,8 +122,9 @@ UserAction Clean2048::app_loop(Platform *p,
 
         if (config.is_game_in_progress) {
                 const char *help_text =
-                    "A game in progress was found. Press green to "
-                    "continue the previous game or red to start a "
+                    "A game in progress was found. Press the 'down' button to "
+                    "continue the previous game or the 'right' button to start "
+                    "a "
                     "new game.";
                 render_wrapped_text(p, customization, help_text);
                 Action action;
@@ -166,8 +167,10 @@ UserAction Clean2048::app_loop(Platform *p,
                                 LOG_DEBUG(TAG, "User requested to exit game.");
                                 const char *help_text =
                                     "Would you like to save your current game "
-                                    "state and resume it later? Press green to "
-                                    "save and exit, or blue to exit without "
+                                    "state and resume it later? Press down "
+                                    "button to "
+                                    "save and exit, or left button to exit "
+                                    "without "
                                     "saving.";
                                 render_wrapped_text(p, customization,
                                                     help_text);

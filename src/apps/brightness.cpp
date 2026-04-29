@@ -48,10 +48,11 @@ UserAction BrightnessApp::app_loop(Platform *p,
         bool valid_input = (0 < brightness && brightness <= 100);
 
         if (!valid_input) {
-                render_wrapped_help_text(p, customization,
-                                         "Invalid input, brightness must be an "
-                                         "integer between 1 and "
-                                         "100. Press green to try again.");
+                render_wrapped_help_text(
+                    p, customization,
+                    "Invalid input, brightness must be an "
+                    "integer between 1 and "
+                    "100. Press down button to try again.");
                 auto maybe_interrupt_action = wait_until_green_pressed(p);
                 if (maybe_interrupt_action.has_value()) {
                         return maybe_interrupt_action.value();

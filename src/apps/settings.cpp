@@ -43,8 +43,8 @@ Settings::collect_config(Platform *p, UserInterfaceCustomization *customization,
 const char *Settings::get_game_name() { return "Settings Menu"; }
 const char *Settings::get_help_text()
 {
-        return "Select the game/application and adjust the settings, press RED "
-               "(right) to proceed and save the settings. Press BLUE (left) at "
+        return "Select the game/application and adjust the settings, press "
+               "'right' to proceed and save the settings. Press 'left' at "
                "any point to exit.";
 }
 

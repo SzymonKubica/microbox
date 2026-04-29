@@ -156,6 +156,6 @@ std::optional<UserAction> UtilityApplicationMenu::collect_config(
 const char *UtilityApplicationMenu::get_game_name() { return "Utility Menu"; }
 const char *UtilityApplicationMenu::get_help_text()
 {
-        return "Move joystick left/right to select the utility app. Press red "
-               "(right) to enter the selected app.";
+        return "Move joystick left/right to select the utility app. Press "
+               "'right' to enter the selected app.";
 }
