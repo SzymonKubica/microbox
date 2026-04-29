@@ -49,8 +49,10 @@
 # In Progress
 
 - [ ] reduce duplication in the controls explanations code
+- [ ] remove all color-specific actoin button hints.
 
 # Done
+- [x] make the emulator controls more ergonomic
 - [x] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 - [x] Feedback from Khemi: users don't care about the color / UI flavour between minimalistic/detailed / hints
       this should be moved to the settings. The main screen should only show the selected game

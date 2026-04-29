@@ -6,6 +6,9 @@ typedef struct Point {
         int x;
         int y;
 
+      public:
+        Point operator*(int scalar) const;
+
 } Point;
 
 Point operator+(Point first, Point second);

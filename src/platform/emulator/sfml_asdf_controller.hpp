@@ -1,7 +1,7 @@
 #ifdef EMULATOR
 #include "../interface/controller.hpp"
 
-class SfmlAwsdInputController : public DirectionalController
+class SfmlAsdfInputController : public ActionController
 {
       public:
         /**
@@ -12,13 +12,13 @@ class SfmlAwsdInputController : public DirectionalController
          * this function should be called in a loop if we want the system to
          * wait for the user to provide input.
          *
-         * If an input is registered, it will be written into the `Direction
+         * If an input is registered, it will be written into the `Action
          * *input` parameter and `true` will be returned.
          *
          * If no input is registered, this function returns false and the
          * direction pointer remains unchanged.
          */
-        bool poll_for_input(Direction *input) override;
+        bool poll_for_input(Action *input) override;
 
         /**
          * Setup function used for e.g. initializing pins of the controller.

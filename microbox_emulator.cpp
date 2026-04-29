@@ -9,7 +9,7 @@
 #include "src/platform/emulator/emulator_http_client.hpp"
 #include "src/platform/emulator/emulator_time_provider.cpp"
 #include "src/platform/emulator/sfml_controller.hpp"
-#include "src/platform/emulator/sfml_awsd_controller.hpp"
+#include "src/platform/emulator/sfml_asdf_controller.hpp"
 #include "src/platform/emulator/sfml_hjkl_controller.hpp"
 #include "src/platform/emulator/sfml_action_controller.hpp"
 #include "src/platform/emulator/persistent_storage.hpp"
@@ -20,7 +20,7 @@
 SfmlDisplay *display;
 EmulatorTimeProvider time_provider;
 SfmlInputController controller;
-SfmlAwsdInputController awsd_controller;
+SfmlAsdfInputController asdf_controller;
 SfmlHjklInputController hjkl_controller;
 SfmlActionInputController action_controller;
 PersistentStorage persistent_storage;
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
         LOG_DEBUG(TAG, "Display initialized!");
 
         controller = SfmlInputController{};
-        awsd_controller = SfmlAwsdInputController{};
+        asdf_controller = SfmlAsdfInputController{};
         hjkl_controller = SfmlHjklInputController{};
         action_controller = SfmlActionInputController{};
 
@@ -62,12 +62,12 @@ int main(int argc, char *argv[])
 
         std::vector<DirectionalController *> controllers = {
             &controller,
-            &awsd_controller,
             &hjkl_controller,
         };
 
         std::vector<ActionController *> action_controllers = {
             &action_controller,
+            &asdf_controller,
         };
 
         wifi_provider = new EmulatedWifiProvider();
@@ -83,8 +83,7 @@ int main(int argc, char *argv[])
             .client = client,
             .capabilities = {.has_wifi = true,
                              .can_sleep = true,
-                             .action_button_kind =
-                                 ActionButtonKind::Directions}};
+                             .action_button_kind = ActionButtonKind::Letters}};
 
         while (window.isOpen()) {
                 LOG_DEBUG(TAG, "Entering game loop...");

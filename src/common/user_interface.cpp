@@ -728,10 +728,10 @@ void render_controls_explanations_letter_buttons(
     Display *display, std::map<Action, std::string> button_hints)
 {
         std::vector<const char *> button_keys(4);
-        button_keys[Action::BLUE] = "b";
-        button_keys[Action::YELLOW] = "y";
-        button_keys[Action::RED] = "r";
-        button_keys[Action::GREEN] = "g";
+        button_keys[Action::BLUE] = "a";
+        button_keys[Action::YELLOW] = "s";
+        button_keys[Action::RED] = "f";
+        button_keys[Action::GREEN] = "d";
 
         int h = display->get_height();
         int w = display->get_width();
@@ -1014,16 +1014,43 @@ void render_wrapped_help_text(Platform *p,
         ok_text_y += fh / 4;
 #endif
 
+        Color ok_color =
+            p->capabilities.action_button_kind == ActionButtonKind::Letters
+                ? Gray
+                : White;
         p->display->draw_string({.x = ok_text_x, .y = ok_text_y}, (char *)ok,
-                                FontSize::Size16, Black, White);
+                                FontSize::Size16, Black, ok_color);
 
         // This might need simplification in the future
         int radius = FONT_SIZE / 4;
         int d = 2 * radius;
-        int circle_radius = 5;
-        p->display->draw_circle(
-            {.x = ok_green_circle_x, .y = ok_green_circle_y}, circle_radius,
-            Green, 0, true);
+
+        Point center = {.x = ok_green_circle_x, .y = ok_green_circle_y};
+        if (p->capabilities.action_button_kind ==
+            ActionButtonKind::Directions) {
+                std::vector<Point> displacements = {
+                    {-1, 0},
+                    {0, -1},
+                    {1, 0},
+                    {0, 1},
+                };
+                int circle_radius = 2;
+                for (const auto &d : displacements) {
+                        Color color = d == Point{0, 1} ? White : Gray;
+                        p->display->draw_circle(center +
+                                                    (d * 2 * circle_radius),
+                                                circle_radius, color, 0, true);
+                }
+        } else if (p->capabilities.action_button_kind ==
+                   ActionButtonKind::Letters) {
+                p->display->draw_string({.x = ok_text_x - fw - 2, .y = ok_text_y},
+                                        (char *)"d", FontSize::Size16, Black,
+                                        White);
+
+        } else {
+                int circle_radius = 5;
+                p->display->draw_circle(center, circle_radius, Green, 0, true);
+        }
 }
 
 void draw_cube_perspective(Display *display, Point position, int size,
