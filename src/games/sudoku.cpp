@@ -168,9 +168,9 @@ class SudokuState
 const char *SudokuGame::get_game_name() { return "Sudoku"; }
 const char *SudokuGame::get_help_text()
 {
-        return "Use the left/right buttons to select which digit you are "
+        return "Use the up/down buttons to select which digit you are "
                "inserting. Use the joystick to control the cursor. Press "
-               "'down' "
+               "'right' "
                "to (re-)place the current digit.";
 }
 
