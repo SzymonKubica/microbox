@@ -153,10 +153,11 @@ const char *GameOfLife::get_help_text()
 {
 
         return "Use the joystick to move the caret around the grid. Press "
-               "green "
-               "to toggle the cell between alive/dead, yellow to pause, blue "
+               "'down' "
+               "to toggle the cell between alive/dead, 'up' to pause, 'left' "
                "to "
-               "rewind back in time, red to exit. There is no aim, you stare "
+               "rewind back in time, 'right' to exit. There is no aim, you "
+               "stare "
                "at "
                "the simulation";
 }
