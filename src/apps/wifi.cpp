@@ -273,10 +273,10 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
                 // we cannot simply use assignemnt with SECRET_SSID/PASS
                 // directly (those are fixed size arrays.)
                 sprintf(DEFAULT_WIFI_APP_CONFIG.saved_configurations[0].ssid,
-                        "%s", SECRET_SSID);
+                        "%s", WIFI_SSID);
                 sprintf(
                     DEFAULT_WIFI_APP_CONFIG.saved_configurations[0].password,
-                    "%s", SECRET_PASS);
+                    "%s", WIFI_PASSWORD);
                 DEFAULT_WIFI_APP_CONFIG.curr_config_idx = 0;
                 DEFAULT_WIFI_APP_CONFIG.occupied_config_slots = 1;
                 DEFAULT_WIFI_APP_CONFIG.connect_on_startup = false;

@@ -13,6 +13,11 @@ Direction get_opposite(const Direction direction);
  */
 typedef enum Action { YELLOW = 0, RED = 1, GREEN = 2, BLUE = 3 } Action;
 
+const Action CONFIRM_ACTION = Action::GREEN;
+const Action BACK_ACTION = Action::BLUE;
+const Action HELP_ACTION = Action::YELLOW;
+const Action FORWARD_ACTION = Action::RED;
+
 const char *direction_to_str(Direction direction);
 const char *action_to_str(Action action);
 const Direction action_to_direction(Action action);

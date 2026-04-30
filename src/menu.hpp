@@ -15,7 +15,7 @@ enum class Game : int {
         SnakeDuel = 8,
         WifiApp = 9,
         Sudoku = 10,
-        Sleep = 11,
+        Power = 11,
         Brightness = 12,
         DefaultsSetting = 13,
 };

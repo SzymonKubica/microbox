@@ -614,6 +614,8 @@ void draw_game_canvas(Display *display, GameState *state,
         display->initialize();
         display->clear(Black);
 
+        // TODO: change this to render like this only if the display has rounded
+        // edges (new platform capability)
         if (customization->rendering_mode == Detailed)
                 display->draw_rounded_border(customization->accent_color);
 
@@ -763,6 +765,35 @@ static void draw_game_grid(Display *display, int grid_size,
 static void str_replace(char *str, const char *oldWord, const char *newWord);
 static int number_string_length(int number);
 
+Color get_number_color_coding(int number)
+{
+        switch (number) {
+        case 2:
+                return Black;
+        case 4:
+                return Gray;
+        case 8:
+                return DarkBlue;
+        case 16:
+                return MediumBlue;
+        case 32:
+                return Blue;
+        case 64:
+                return Brown;
+        case 128:
+                return BrownRed;
+        case 256:
+                return Red;
+        case 512:
+        case 1024:
+        case 2048:
+                return Magenta;
+        default:
+                // Right now this is unreachable as the max game target is 2048
+                return Black;
+        }
+}
+
 void update_game_grid(Display *display, GameState *gs,
                       UserInterfaceCustomization *customization)
 {
@@ -804,7 +835,8 @@ void update_game_grid(Display *display, GameState *gs,
                             .y = gd->grid_start_y +
                                  i * (gd->cell_height + gd->cell_y_spacing)};
 
-                        if (gs->grid[i][j] != gs->old_grid[i][j]) {
+                        int current = gs->grid[i][j];
+                        if (current != gs->old_grid[i][j]) {
 
                                 char buffer[5];
                                 sprintf(buffer, "%4d", gs->grid[i][j]);
@@ -843,9 +875,10 @@ void update_game_grid(Display *display, GameState *gs,
                                 Point start_with_margin = {
                                     .x = start.x + x_margin,
                                     .y = start.y + y_margin};
-                                display->draw_string(start_with_margin, buffer,
-                                                     Size16, GRID_BG_COLOR,
-                                                     TEXT_COLOR);
+                                display->draw_string(
+                                    start_with_margin, buffer, Size16,
+                                    GRID_BG_COLOR,
+                                    get_number_color_coding(current));
                                 gs->old_grid[i][j] = gs->grid[i][j];
                         }
                 }

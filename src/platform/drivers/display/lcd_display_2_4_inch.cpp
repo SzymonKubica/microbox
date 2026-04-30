@@ -71,7 +71,9 @@ void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
 void LcdDisplay::draw_rounded_rectangle(Point start, int width, int height,
                                         int radius, Color color)
 {
-        draw_rectangle(start, width, height, color, 1, false);
+        int adj = 1;
+        tft.fillRoundRect(start.x - adj, start.y - adj, width + adj,
+                          height + adj, radius, to_tft_color(color));
 };
 
 void LcdDisplay::draw_line(Point start, Point end, Color color)
@@ -116,6 +118,9 @@ bool LcdDisplay::refresh()
 
 void LcdDisplay::sleep()
 {
+        // Turn display backlight off.
+#define DEV_BL_PIN 4
+        analogWrite(DEV_BL_PIN, 0);
         tft.writecommand(0x10); // ILI9341 SLEEP IN
 }
 #endif

@@ -18,7 +18,7 @@
 #include "games/2048.hpp"
 
 #include "apps/app_menu.hpp"
-#include "apps/sleep.hpp"
+#include "apps/power.hpp"
 #include "apps/wifi.hpp"
 #include "apps/brightness.hpp"
 #include "apps/settings.hpp"
@@ -95,8 +95,8 @@ std::optional<UserAction> select_app_and_run(Platform *p)
                 return execute_app(new RandomSeedPicker(), p, &c);
         case Game::Sudoku:
                 return execute_app(new SudokuGame(), p, &c);
-        case Game::Sleep:
-                return execute_app(new SleepApp(), p, &c);
+        case Game::Power:
+                return execute_app(new PowerManagementApp(), p, &c);
         case Game::Brightness:
                 return execute_app(new BrightnessApp(), p, &c);
         default:
@@ -230,7 +230,7 @@ assemble_game_selector_configuration(Platform *p,
             game_to_string(Game::Clean2048),  game_to_string(Game::Minesweeper),
             game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
             game_to_string(Game::SnakeDuel),  game_to_string(Game::Sudoku),
-            game_to_string(Game::Settings),
+            game_to_string(Game::Settings), game_to_string(Game::Power)
         };
 
         auto *game = ConfigurationOption::of_strings(
@@ -272,8 +272,8 @@ Game game_from_string(const char *name)
                 return Game::RandomSeedPicker;
         if (strcmp(name, game_to_string(Game::Sudoku)) == 0)
                 return Game::Sudoku;
-        if (strcmp(name, game_to_string(Game::Sleep)) == 0)
-                return Game::Sleep;
+        if (strcmp(name, game_to_string(Game::Power)) == 0)
+                return Game::Power;
         if (strcmp(name, game_to_string(Game::Brightness)) == 0)
                 return Game::Brightness;
         if (strcmp(name, game_to_string(Game::DefaultsSetting)) == 0)
@@ -323,8 +323,8 @@ const char *game_to_string(Game game)
                 return "Sudoku";
         case Game::RandomSeedPicker:
                 return "Randomness";
-        case Game::Sleep:
-                return "Sleep";
+        case Game::Power:
+                return "Power Off";
         case Game::Brightness:
                 return "Brightness";
         case Game::DefaultsSetting:
@@ -354,7 +354,7 @@ assemble_menu_defaults_configuration(Platform *p,
         if (p->capabilities.has_wifi)
                 available_games.push_back(game_to_string(Game::WifiApp));
         if (p->capabilities.can_sleep)
-                available_games.push_back(game_to_string(Game::Sleep));
+                available_games.push_back(game_to_string(Game::Power));
 
         auto *game = ConfigurationOption::of_strings(
             "Game", available_games, game_to_string(initial_config->game));

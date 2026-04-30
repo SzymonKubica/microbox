@@ -12,8 +12,8 @@ const char *color_to_string(Color color)
                 return "Blue";
         case Magenta:
                 return "Magenta";
-        case Gblue:
-                return "Gblue";
+        case GrayBlue:
+                return "GrayBlue";
         case Red:
                 return "Red";
         case Green:
@@ -24,24 +24,24 @@ const char *color_to_string(Color color)
                 return "Yellow";
         case Brown:
                 return "Brown";
-        case BRRed:
-                return "BRRed";
+        case BrownRed:
+                return "BrownRed";
         case Gray:
                 return "Gray";
         case DarkBlue:
                 return "DarkBlue";
         case LightBlue:
                 return "LightBlue";
-        case GrayBlue:
-                return "GrayBlue";
         case LightGreen:
                 return "LightGreen";
-        case LGray:
-                return "LGray";
-        case LGrayBlue:
-                return "LGrayBlue";
-        case LBBlue:
-                return "LBBlue";
+        case LightGray:
+                return "LightGray";
+        case LightGrayBlue:
+                return "GrayishBlue";
+        case MediumBlue:
+                return "MediumBlue";
+        case GreenBlue:
+                return "GreenBlue";
         default:
                 return "UNKNOWN";
         };
@@ -57,11 +57,11 @@ Color get_good_contrast_text_color(Color color)
 
         switch (color) {
         case White:
-        case Gblue:
+        case GreenBlue:
         case Green:
         case Cyan:
         case Yellow:
-        case LGray:
+        case LightGray:
                 return Black;
         default:
                 return White;

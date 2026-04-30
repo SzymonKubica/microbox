@@ -5,18 +5,22 @@
 #include "../common/common_transitions.hpp"
 #include "../application_executor.hpp"
 
+/**
+ * For now we only support the deep sleep mode on esp32. Because of this there
+ * is nothing to configure here. Yet we still need the configuration struct
+ * to conform to the application interface.
+ */
 typedef struct SleepConfiguration {
-        bool deep_sleep;
 } SleepConfiguration;
 
 std::optional<UserAction>
 collect_snake_config(Platform *p, SleepConfiguration *game_config,
                      UserInterfaceCustomization *customization);
 
-class SleepApp : public ApplicationExecutor<SleepConfiguration>
+class PowerManagementApp : public ApplicationExecutor<SleepConfiguration>
 {
       public:
-        SleepApp() {}
+        PowerManagementApp() {}
 
         UserAction app_loop(Platform *p,
                             UserInterfaceCustomization *customization,

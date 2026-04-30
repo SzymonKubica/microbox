@@ -310,7 +310,7 @@ collect_configuration(Platform *p, Configuration *config,
                         /* To make the UI more intuitive, we also allow users to
                         cycle configuration options. This change was inspired by
                         initial play testing by Tomek. */
-                        if (act == Action::GREEN) {
+                        if (act == CONFIRM_ACTION) {
                                 /*
                                  Note that we re-render before peforming the
                                  move_registered_delay to ensure that the UI is
@@ -327,13 +327,13 @@ collect_configuration(Platform *p, Configuration *config,
                                 continue;
                         }
                         move_registered_delay();
-                        if (act == Action::BLUE && allow_exit) {
+                        if (act == BACK_ACTION && allow_exit) {
                                 return UserAction::Exit;
                         }
-                        if (act == Action::YELLOW) {
+                        if (act == HELP_ACTION) {
                                 return UserAction::ShowHelp;
                         }
-                        if (act == Action::RED) {
+                        if (act == FORWARD_ACTION) {
                                 break;
                         }
                 }

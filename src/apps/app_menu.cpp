@@ -8,7 +8,7 @@
 #include "../application_executor.hpp"
 #include "../common/logging.hpp"
 #include "settings.hpp"
-#include "sleep.hpp"
+#include "power.hpp"
 #include "wifi.hpp"
 #include "brightness.hpp"
 #include "settings.hpp"
@@ -74,8 +74,8 @@ UtilityApplicationMenu::app_loop(Platform *p,
         case Game::RandomSeedPicker:
                 execute_app(new RandomSeedPicker(), p, customization).value();
                 break;
-        case Game::Sleep:
-                execute_app(new SleepApp(), p, customization).value();
+        case Game::Power:
+                execute_app(new PowerManagementApp(), p, customization).value();
                 break;
         case Game::Brightness:
                 execute_app(new BrightnessApp(), p, customization).value();
@@ -107,7 +107,7 @@ assemble_utility_selector_configuration(Platform *p,
         if (p->capabilities.has_wifi)
                 available_apps.push_back(game_to_string(Game::WifiApp));
         if (p->capabilities.can_sleep)
-                available_apps.push_back(game_to_string(Game::Sleep));
+                available_apps.push_back(game_to_string(Game::Power));
 
         auto *app = ConfigurationOption::of_strings(
             "Configure", available_apps, game_to_string(initial_config->app));
@@ -125,6 +125,13 @@ void extract_app_selection(AppMenuConfiguration *menu_configuration,
         menu_configuration->app =
             game_from_string(app_option->get_current_str_value());
 }
+
+/**
+ * We use this mechanism similar to the main menu to 'remember' the last app
+ * that the user has selected so that if they enter the app and then exit out of
+ * it, the application menu shows this app at the top.
+ */
+std::optional<Game> last_selected_app = std::nullopt;
 
 std::optional<UserAction> UtilityApplicationMenu::collect_config(
     Platform *p, UserInterfaceCustomization *customization,
@@ -147,6 +154,12 @@ std::optional<UserAction> UtilityApplicationMenu::collect_config(
                 return maybe_interrupt;
         }
         extract_app_selection(game_config, config);
+
+        if (last_selected_app) {
+                game_config->app = last_selected_app.value();
+        } else {
+                last_selected_app = game_config->app;
+        }
 
         delete config;
         delete initial_config;

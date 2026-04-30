@@ -3,8 +3,6 @@
 #include <WiFiS3.h>
 #include "../../../interface/wifi.hpp"
 
-#include "../../../wifi_ssid_password_secrets.hpp"
-
 class ArduinoWifiProvider : public WifiProvider
 {
       public:

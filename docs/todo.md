@@ -19,7 +19,6 @@
 # TODO
 
 ## Doable on the emulator
-- [ ] add aliases for button to have something like 'exit button' instead of Action::BLUE
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] document patches required on esp32
 - [ ] add 'vendoring' for the TFT LCD display library to ensure users don't need to to
@@ -27,15 +26,10 @@
       as the library depends on the global arduino installation structure.
       It migth be better to explain / clean-up the process of configuring the
       library with the correct pins and target device.
-- [ ] make color enum variants more readable (remove stupid 'LGGBRed' things)
-- [ ] add a separate menu for all of the apps.
-- [ ] fix state transitions on the light sleep functionality (do we even need
-      light sleep anymore?)
+- [ ] add game thumbnail rendering
 - [ ] clean up all usages of raw pointers.
   - [ ] platform code
   - [ ] configuration management code (this is large and messy)
-- [ ] add proper way of injecting default wifi ssid & password secrets
-- [ ] add game thumbnail rendering
 ## Require hardware testing
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
@@ -43,15 +37,25 @@
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] clean up constants definiton file to remove platform- / display-specific
       overrides
-- [ ] add detailed UI rendering for the 2.4 inch display driven by the TFT library
 ## Dev experience
 
 # In Progress
 
-- [ ] reduce duplication in the controls explanations code
-- [ ] remove all color-specific actoin button hints.
+- [ ] instrument color-coded rendering for 2048 to only run on platforms that 'have fast display' i.e. add new PlatformCapability
 
 # Done
+- [x] add color-coded rendering for 2048
+- [x] add detailed UI rendering for the 2.4 inch display driven by the TFT library
+- [x] make sleep into an option available on the main menu
+- [x] rename sleep into 'power'
+- [x] add proper way of injecting default wifi ssid & password secrets
+- [x] add a separate menu for all of the apps.
+- [x] fix state transitions on the light sleep functionality (do we even need
+      light sleep anymore?)
+- [x] make color enum variants more readable (remove stupid 'LGGBRed' things)
+- [x] reduce duplication in the controls explanations code
+- [x] add aliases for button to have something like 'exit button' instead of Action::BLUE
+- [x] remove all color-specific actoin button hints.
 - [x] make the emulator controls more ergonomic
 - [x] ensure that esp32 doesn't use color coding for the buttons (or 3d print buttons in different colors)
 - [x] Feedback from Khemi: users don't care about the color / UI flavour between minimalistic/detailed / hints
