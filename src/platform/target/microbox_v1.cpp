@@ -31,7 +31,11 @@ Platform *initialize_platform()
                              .time_provider = time_provider,
                              .persistent_storage = persistent_storage,
                              .wifi_provider = wifi_provider,
-                             .client = client};
+                             .client = client.capabilities = {
+                                 .has_wifi = true,
+                                 .can_sleep = true,
+                                 .action_button_kind = ActionButtonKind::Colors,
+                                 .has_fast_display = false}};
 
         return new Platform(platform);
 }

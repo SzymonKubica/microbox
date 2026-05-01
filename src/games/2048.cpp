@@ -53,10 +53,6 @@ static void handle_game_over(Display *display,
                              std::vector<DirectionalController *> *controllers,
                              GameState *state);
 
-static void
-handle_game_finished(Display *display,
-                     std::vector<DirectionalController *> *controllers,
-                     GameState *state);
 static void draw_game_canvas(Display *display, GameState *state,
                              UserInterfaceCustomization *customization);
 
@@ -146,7 +142,7 @@ UserAction Clean2048::app_loop(Platform *p,
         }
 
         draw_game_canvas(p->display, state, customization);
-        update_game_grid(p->display, state, customization);
+        update_game_grid(p, state, customization);
 
         if (!p->display->refresh()) {
                 free_game_state(state);
@@ -160,7 +156,7 @@ UserAction Clean2048::app_loop(Platform *p,
                         LOG_DEBUG(TAG, "Input received: %s",
                                   direction_to_str(dir));
                         take_turn(state, (int)dir);
-                        update_game_grid(p->display, state, customization);
+                        update_game_grid(p, state, customization);
                         p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 } else if (poll_action_input(p->action_controllers, &act)) {
                         if (act == Action::BLUE) {
@@ -769,9 +765,9 @@ Color get_number_color_coding(int number)
 {
         switch (number) {
         case 2:
-                return Black;
-        case 4:
                 return Gray;
+        case 4:
+                return Black;
         case 8:
                 return DarkBlue;
         case 16:
@@ -794,11 +790,11 @@ Color get_number_color_coding(int number)
         }
 }
 
-void update_game_grid(Display *display, GameState *gs,
+void update_game_grid(Platform *p, GameState *gs,
                       UserInterfaceCustomization *customization)
 {
         int grid_size = gs->grid_size;
-        GridDimensions *gd = calculate_grid_dimensions(display, grid_size);
+        GridDimensions *gd = calculate_grid_dimensions(p->display, grid_size);
 
         int score_title_length = 6 * FONT_WIDTH;
         char score_buffer[20];
@@ -813,14 +809,14 @@ void update_game_grid(Display *display, GameState *gs,
                                 score_rounding_radius,
                            .y = gd->score_title_y + FONT_SIZE};
 
-        display->clear_region(clear_start, clear_end, GRID_BG_COLOR);
+        p->display->clear_region(clear_start, clear_end, GRID_BG_COLOR);
 
         Point score_start = {.x = gd->score_title_x + score_title_length +
                                   FONT_WIDTH,
                              .y = gd->score_title_y};
 
-        display->draw_string(score_start, score_buffer, Size16, GRID_BG_COLOR,
-                             TEXT_COLOR);
+        p->display->draw_string(score_start, score_buffer, Size16,
+                                GRID_BG_COLOR, TEXT_COLOR);
 
         // The maximum tile number in this version of 2048 is 4096,
         // because of this the maximum width of the cell text area is
@@ -869,16 +865,21 @@ void update_game_grid(Display *display, GameState *gs,
                                                         max_cell_text_width,
                                                    .y = start.y + y_margin +
                                                         FONT_SIZE};
-                                display->clear_region(clear_start, clear_end,
-                                                      GRID_BG_COLOR);
+                                p->display->clear_region(clear_start, clear_end,
+                                                         GRID_BG_COLOR);
 
+                                // We only use nice color rendering on platforms
+                                // that can hanle that.
+                                Color color =
+                                    p->capabilities.has_fast_display
+                                        ? get_number_color_coding(current)
+                                        : White;
                                 Point start_with_margin = {
                                     .x = start.x + x_margin,
                                     .y = start.y + y_margin};
-                                display->draw_string(
-                                    start_with_margin, buffer, Size16,
-                                    GRID_BG_COLOR,
-                                    get_number_color_coding(current));
+                                p->display->draw_string(start_with_margin,
+                                                        buffer, Size16,
+                                                        GRID_BG_COLOR, color);
                                 gs->old_grid[i][j] = gs->grid[i][j];
                         }
                 }

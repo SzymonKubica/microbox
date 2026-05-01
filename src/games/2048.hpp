@@ -44,7 +44,7 @@ class GameState
 GameState *initialize_game_state(int gridSize, int target_max_tile);
 
 void draw(Display *display, GameState *state);
-void update_game_grid(Display *display, GameState *gs,
+void update_game_grid(Platform *p, GameState *gs,
                       UserInterfaceCustomization *customization);
 
 bool is_game_over(GameState *gs);

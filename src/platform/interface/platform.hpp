@@ -36,6 +36,16 @@ struct PlatformCapabilities {
         bool has_wifi = true;
         bool can_sleep = true;
         ActionButtonKind action_button_kind = ActionButtonKind::Colors;
+        /**
+         * Certain rendering features only work well on displays that can render
+         * reasonably quickly. For instance, in 2048 game, we might want to
+         * render numbers using different colors depending on how large the
+         * number is. This is generally a good idea but on 1.69 LCD display
+         * rendering is slow and it gets slower if you are rendering colors
+         * other than black/white. Because of this, we enable those nice
+         * rendering features on platforms that can handle that.
+         */
+        bool has_fast_display = true;
 };
 
 /**

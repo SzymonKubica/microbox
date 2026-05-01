@@ -37,6 +37,7 @@ void display_game_over(Display *display,
 {
         if (customization->rendering_mode == Detailed) {
                 display->draw_rounded_border(Red);
+                display->clear(Black);
         } else {
                 // In the minimialistic UI mode we only clear the screen.
                 display->clear(Black);

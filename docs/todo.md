@@ -41,10 +41,10 @@
 
 # In Progress
 
-- [ ] instrument color-coded rendering for 2048 to only run on platforms that 'have fast display' i.e. add new PlatformCapability
-- [ ] fix sudoku game-over rendering on the TFT_eSPI display
 
 # Done
+- [x] fix sudoku game-over rendering on the TFT_eSPI display
+- [x] instrument color-coded rendering for 2048 to only run on platforms that 'have fast display' i.e. add new PlatformCapability
 - [x] add color-coded rendering for 2048
 - [x] add detailed UI rendering for the 2.4 inch display driven by the TFT library
 - [x] make sleep into an option available on the main menu
