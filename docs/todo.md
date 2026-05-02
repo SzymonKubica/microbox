@@ -1,6 +1,6 @@
 # Ideas
 
-- game of life based puzzle game:
+- game of life based 'puzzle game':
   - you have a limited number of seeds
   - you need to clear a given pattern on the grid
   - the pattern is constructed of cells that become cleared whenever at least
@@ -13,6 +13,8 @@
   - actual animated joystick
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
+
+- rename the console as microbox already exists
 
 
 
@@ -31,12 +33,14 @@
   - [ ] platform code
   - [ ] configuration management code (this is large and messy)
 ## Require hardware testing
-- [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
-- [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
-- [ ] fix minesweeper crashing
+### any platform
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] clean up constants definiton file to remove platform- / display-specific
       overrides
+### Arduino-specific
+- [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
+- [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
+- [ ] fix minesweeper crashing
 ## Dev experience
 
 # In Progress
