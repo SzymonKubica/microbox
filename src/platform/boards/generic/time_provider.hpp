@@ -4,7 +4,7 @@
 #include "../../interface/time_provider.hpp"
 class ArduinoTimeProvider : public TimeProvider
 {
-        void delay_ms(int ms) override;
-        long milliseconds() override;
+        void delay_ms(int ms) const override;
+        long milliseconds() const override;
 };
 #endif

@@ -3,6 +3,6 @@
 #pragma once
 #include "time_provider.hpp"
 #include "Arduino.h"
-void ArduinoTimeProvider::delay_ms(int ms) { delay(ms); }
-long ArduinoTimeProvider::milliseconds() { return millis(); }
+void ArduinoTimeProvider::delay_ms(int ms) const { delay(ms); }
+long ArduinoTimeProvider::milliseconds() const { return millis(); }
 #endif

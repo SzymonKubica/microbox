@@ -61,5 +61,5 @@ class WifiProvider
         virtual bool is_connected() = 0;
 };
 
-extern char *get_wifi_data_string(WifiData *data);
-extern char *get_wifi_data_string_single_line(WifiData *data);
+char *get_wifi_data_string(WifiData *data);
+char *get_wifi_data_string_single_line(WifiData *data);

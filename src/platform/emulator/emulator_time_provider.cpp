@@ -8,12 +8,12 @@
  */
 class EmulatorTimeProvider : public TimeProvider
 {
-        void delay_ms(int ms) override
+        void delay_ms(int ms) const override
         {
                 std::this_thread::sleep_for(std::chrono::milliseconds(ms));
         }
 
-        long milliseconds() override
+        long milliseconds() const override
         {
                 return std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch())

@@ -151,7 +151,7 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                         Action act;
                         auto maybe_event = pause_until_input(
                             p->directional_controllers, p->action_controllers,
-                            &dir, &act, p->time_provider, p->display);
+                            &dir, &act, *p->time_provider, *p->display);
 
                         if (close_window_requested(maybe_event)) {
                                 delete executor;

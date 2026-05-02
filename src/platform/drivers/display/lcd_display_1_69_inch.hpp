@@ -22,18 +22,18 @@ class LcdDisplay_1_69 : public Display
          * the `setup` Arduino function and is intended to be executed only
          * once.
          */
-        virtual void setup() override;
+        virtual void setup() const override;
         /**
          * Initializes the display, this is for actions such as erasing the
          * previously rendered shapes in a physical Arduino display. Intended
          * for use in the body of the `loop` Aruino function.
          */
-        virtual void initialize() override;
+        virtual void initialize() const override;
         /**
          * Clears the display. This is done by redrawing the entire screen with
          * the specified color.
          */
-        virtual void clear(Color color) override;
+        virtual void clear(Color color) const override;
         /**
          * Draws a rounded border around the screen. This is needed due to the
          * specifics of the physical display used by the game console: the LCD
@@ -42,36 +42,38 @@ class LcdDisplay_1_69 : public Display
          * implementations of the display do not necessarily need to provide
          * this functionality.
          */
-        virtual void draw_rounded_border(Color color) override;
+        virtual void draw_rounded_border(Color color) const override;
         /**
          * Draws a circle with specified color, border width and fill.
          */
         virtual void draw_circle(Point center, int radius, Color color,
-                                 int border_width, bool filled) override;
+                                 int border_width, bool filled) const override;
         /**
          * Draws a rectangle with specified color, border width and fill.
          */
         virtual void draw_rectangle(Point start, int width, int height,
                                     Color color, int border_width,
-                                    bool filled) override;
+                                    bool filled) const override;
         /**
          * Draws a rounded rectangle with specified color. This is useful for
          * drawing nicely-looking game menu items.
          */
         virtual void draw_rounded_rectangle(Point start, int width, int height,
-                                            int radius, Color color) override;
+                                            int radius,
+                                            Color color) const override;
         /**
          * Draws a line from a start point to the end point with specified
          * color. Note that fill and thickness are not controllable yet.
          */
-        virtual void draw_line(Point start, Point end, Color color) override;
+        virtual void draw_line(Point start, Point end,
+                               Color color) const override;
         /**
          * Prints a string on the display, allows for specifying the font size,
          * color and background color.
          */
         virtual void draw_string(Point start, char *string_buffer,
                                  FontSize font_size, Color bg_color,
-                                 Color fg_color) override;
+                                 Color fg_color) const override;
         /**
          * Clears a rectangular region of the display. This is done by redrawing
          * the rectangle using the specified color. Note that on the physical
@@ -79,24 +81,24 @@ class LcdDisplay_1_69 : public Display
          * small regions at a time if we want the game to remain usable.
          */
         virtual void clear_region(Point top_left, Point bottom_right,
-                                  Color clear_color) override;
+                                  Color clear_color) const override;
 
         /**
          * Returns the height of the display.
          */
-        virtual int get_height() override;
+        virtual int get_height() const override;
 
         /**
          * Returns the width of the display.
          */
-        virtual int get_width() override;
+        virtual int get_width() const override;
 
         /**
          * For displays with rounded corners it returns the radius in pixels.
          * This is needed for drawing borders with rounded corners around the
          * display.
          */
-        virtual int get_display_corner_radius() override;
+        virtual int get_display_corner_radius() const override;
 
         /**
          * For displays that require redrawing every frame, we need to provide
@@ -113,7 +115,7 @@ class LcdDisplay_1_69 : public Display
          * emulator-specific exception handling code behind conditional
          * compilation which would make the code ugly and cluttered.
          */
-        virtual bool refresh() override;
-        virtual void sleep() override;
+        virtual bool refresh() const override;
+        virtual void sleep() const override;
 };
 #endif

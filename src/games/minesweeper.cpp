@@ -306,14 +306,14 @@ UserAction Minesweeper::app_loop(Platform *p,
                         }
                 }
 
-                pause_until_any_directional_input(p->directional_controllers,
-                                                  p->time_provider, p->display);
-                display_game_over(p->display, customization);
+                pause_until_any_directional_input(
+                    p->directional_controllers, *p->time_provider, *p->display);
+                display_game_over(*p->display, *customization);
                 p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
         } else {
-                pause_until_any_directional_input(p->directional_controllers,
-                                                  p->time_provider, p->display);
-                display_game_won(p->display, customization);
+                pause_until_any_directional_input(
+                    p->directional_controllers, *p->time_provider, *p->display);
+                display_game_won(*p->display, *customization);
                 p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
         if (!p->display->refresh()) {

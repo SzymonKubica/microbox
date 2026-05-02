@@ -21,7 +21,6 @@
 # TODO
 
 ## Doable on the emulator
-- [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 - [ ] document patches required on esp32
 - [ ] add 'vendoring' for the TFT LCD display library to ensure users don't need to to
       patching of the library code globally in their arduino libs. This is tricky
@@ -31,6 +30,10 @@
 - [ ] add game thumbnail rendering
 - [ ] clean up all usages of raw pointers.
   - [ ] platform code
+    - [ ] remove raw pointers from the wifi data utils
+    - [ ] refactor the controller interface to use proper optionals instead of output parameters and boolean
+          success flag
+    - [x] common transitions code
   - [ ] configuration management code (this is large and messy)
 ## Require hardware testing
 ### any platform
@@ -41,6 +44,8 @@
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
 - [ ] fix minesweeper crashing
+### uno q / raspberry pi
+- [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 ## Dev experience
 
 # In Progress

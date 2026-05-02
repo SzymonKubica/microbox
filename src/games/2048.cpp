@@ -196,14 +196,14 @@ UserAction Clean2048::app_loop(Platform *p,
         }
 
         if (is_game_over(state)) {
-                display_game_over(p->display, customization);
+                display_game_over(*p->display, *customization);
         }
         if (is_game_finished(state)) {
-                display_game_won(p->display, customization);
+                display_game_won(*p->display, *customization);
         }
 
         pause_until_any_directional_input(p->directional_controllers,
-                                          p->time_provider, p->display);
+                                          *p->time_provider, *p->display);
         return UserAction::PlayAgain;
 }
 

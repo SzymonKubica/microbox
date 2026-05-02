@@ -6,14 +6,14 @@
 
 #define SCREEN_BORDER_WIDTH 3
 
-void SfmlDisplay::setup() {};
+void SfmlDisplay::setup() const {};
 
-void SfmlDisplay::initialize() {}
+void SfmlDisplay::initialize() const {}
 
-void SfmlDisplay::sleep() {};
+void SfmlDisplay::sleep() const {};
 
 sf::Color map_to_sf_color(Color color);
-void SfmlDisplay::clear(Color color)
+void SfmlDisplay::clear(Color color) const
 {
         texture->clear(map_to_sf_color(color));
         texture->display();
@@ -24,7 +24,7 @@ void SfmlDisplay::clear(Color color)
  * efficient solution using the SFML API, but it uses the same logic as the
  * LCD display implementation for consistency.
  */
-void SfmlDisplay::draw_rounded_border(Color color)
+void SfmlDisplay::draw_rounded_border(Color color) const
 {
         int rounding_radius = DISPLAY_CORNER_RADIUS;
         int margin = SCREEN_BORDER_WIDTH;
@@ -127,7 +127,7 @@ void SfmlDisplay::draw_rounded_border(Color color)
 }
 
 void SfmlDisplay::draw_circle(Point center, int radius, Color color,
-                              int border_width, bool filled)
+                              int border_width, bool filled) const
 {
         // Note: the circle is always filled, given the current use cases this
         // is fine, but we need to tighten up the API in the future as we
@@ -149,7 +149,8 @@ void SfmlDisplay::draw_circle(Point center, int radius, Color color,
 };
 
 void SfmlDisplay::draw_rectangle(Point start, int width, int height,
-                                 Color color, int border_width, bool filled)
+                                 Color color, int border_width,
+                                 bool filled) const
 {
         sf::RectangleShape rectangle({(float)width, (float)height});
         rectangle.setPosition({(float)start.x, (float)start.y});
@@ -164,7 +165,7 @@ void SfmlDisplay::draw_rectangle(Point start, int width, int height,
         texture->display();
 };
 void SfmlDisplay::draw_rounded_rectangle(Point start, int width, int height,
-                                         int radius, Color color)
+                                         int radius, Color color) const
 {
         Point top_left_corner = {.x = start.x + radius, .y = start.y + radius};
 
@@ -195,7 +196,7 @@ void SfmlDisplay::draw_rounded_rectangle(Point start, int width, int height,
                        width - 2 * radius, radius + 1, color, 0, true);
 };
 
-void SfmlDisplay::draw_line(Point start, Point end, Color color)
+void SfmlDisplay::draw_line(Point start, Point end, Color color) const
 {
         sf::Vertex line[] = {
             sf::Vertex(sf::Vector2f(start.x, start.y), map_to_sf_color(color)),
@@ -206,7 +207,7 @@ void SfmlDisplay::draw_line(Point start, Point end, Color color)
 }
 void SfmlDisplay::draw_string(Point start, char *string_buffer,
                               FontSize font_size, Color bg_color,
-                              Color fg_color)
+                              Color fg_color) const
 {
         const sf::Font font = get_emulator_font();
         sf::Text text(font, string_buffer, font_size);
@@ -217,19 +218,19 @@ void SfmlDisplay::draw_string(Point start, char *string_buffer,
         texture->display();
 };
 void SfmlDisplay::clear_region(Point top_left, Point bottom_right,
-                               Color clear_color)
+                               Color clear_color) const
 {
         draw_rectangle(top_left, bottom_right.x - top_left.x,
                        bottom_right.y - top_left.y, clear_color, 0, true);
 };
 
-int SfmlDisplay::get_height() { return DISPLAY_HEIGHT; }
+int SfmlDisplay::get_height() const { return DISPLAY_HEIGHT; }
 
-int SfmlDisplay::get_width() { return DISPLAY_WIDTH; }
+int SfmlDisplay::get_width() const { return DISPLAY_WIDTH; }
 
-int SfmlDisplay::get_display_corner_radius() { return 40; };
+int SfmlDisplay::get_display_corner_radius() const { return 40; };
 
-bool SfmlDisplay::refresh()
+bool SfmlDisplay::refresh() const
 {
         /* We need this polling when refreshing the display. Without it, linux
         desktop environments (e.g. gnome) think that the game window is not
