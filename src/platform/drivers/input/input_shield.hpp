@@ -27,20 +27,16 @@ class ArduinoInputShield : public DirectionalController, public ActionController
 {
       public:
         /**
-         * For a given controllers, this function will inspect its state to
+         * For a given controller, this function will inspect its state to
          * determine if an input is being entered. Note that for physical
          * controllers, this function only tests for the state of the controller
          * right now (it doesn't poll for a period of time). Becuase of this,
          * this function should be called in a loop if we want the system to
          * wait for the user to provide input.
          *
-         * If an input is registered, it will be written into the `Direction
-         * *input` parameter and `true` will be returned.
-         *
-         * If no input is registered, this function returns false and the
-         * direction pointer remains unchanged.
+         * If no output is registered, an empty optional will be returned.
          */
-        bool poll_for_input(Direction *input) override;
+        std::optional<Direction> poll_for_direction() override;
 
         /**
          * For a given controller, this function will inspect its state to
@@ -50,13 +46,9 @@ class ArduinoInputShield : public DirectionalController, public ActionController
          * this function should be called in a loop if we want the system to
          * wait for the user to provide input.
          *
-         * If an input is registered, it will be written into the `Direction
-         * *input` parameter and `true` will be returned.
-         *
-         * If no input is registered, this function returns false and the
-         * direction pointer remains unchanged.
+         * If no output is registered, an empty optional will be returned.
          */
-        bool poll_for_input(Action *input) override;
+        std::optional<Action> poll_for_action() override;
 
         /**
          * Setup function used for e.g. initializing pins of the controller.

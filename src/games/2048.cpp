@@ -150,15 +150,18 @@ UserAction Clean2048::app_loop(Platform *p,
         }
 
         while (!(is_game_over(state) || is_game_finished(state))) {
-                Direction dir;
-                Action act;
-                if (poll_directional_input(p->directional_controllers, &dir)) {
+                auto maybe_direction =
+                    poll_directional_input(p->directional_controllers);
+                auto maybe_action = poll_action_input(p->action_controllers);
+                if (maybe_direction.has_value()) {
+                        Direction dir = maybe_direction.value();
                         LOG_DEBUG(TAG, "Input received: %s",
                                   direction_to_str(dir));
                         take_turn(state, (int)dir);
                         update_game_grid(p, state, customization);
                         p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
-                } else if (poll_action_input(p->action_controllers, &act)) {
+                } else if (maybe_action.has_value()) {
+                        Action act = maybe_action.value();
                         if (act == Action::BLUE) {
                                 LOG_DEBUG(TAG, "User requested to exit game.");
                                 const char *help_text =

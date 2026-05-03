@@ -190,18 +190,20 @@ UserAction SnakeGame::app_loop(Platform *p,
         Direction chosen_snake_direction = snake.direction;
         int game_score = 0;
         while (!state.is_game_over) {
-                Direction dir;
-                Action act;
-                if (poll_directional_input(p->directional_controllers, &dir) &&
-                    !is_opposite(dir, snake.direction)) {
+
+                auto maybe_direction =
+                    poll_directional_input(p->directional_controllers);
+                if (maybe_direction.has_value() &&
+                    !is_opposite(maybe_direction.value(), snake.direction)) {
                         // We prevent instant game-over when user presses the
                         // direction that is opposite to the current direction
                         // of the snake.
-                        chosen_snake_direction = dir;
+                        chosen_snake_direction = maybe_direction.value();
                 }
 
-                bool action_taken =
-                    poll_action_input(p->action_controllers, &act);
+                Action act;
+                auto maybe_action = poll_action_input(p->action_controllers);
+                bool action_taken = maybe_action.has_value();
 
                 if (config.allow_pause && action_taken && act == YELLOW &&
                     !state.action_input_on_last_iteration) {

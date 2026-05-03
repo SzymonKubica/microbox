@@ -287,9 +287,10 @@ UserAction SudokuGame::app_loop(Platform *p,
                                 return maybe_interrupt.value();
                         return UserAction::Exit;
                 }
-                Direction dir;
-                Action act;
-                if (poll_directional_input(p->directional_controllers, &dir)) {
+                auto maybe_direction =
+                    poll_directional_input(p->directional_controllers);
+                if (maybe_direction.has_value()) {
+                        Direction dir = maybe_direction.value();
                         Point previous = caret;
                         translate_toroidal_array(&caret, dir, 9, 9);
                         view.move_caret(previous, caret);
@@ -297,11 +298,14 @@ UserAction SudokuGame::app_loop(Platform *p,
                         // good.
                         p->time_provider->delay_ms(GAME_LOOP_DELAY * 3 / 2);
                 }
-                if (!poll_action_input(p->action_controllers, &act)) {
+                Action act;
+                auto maybe_action = poll_action_input(p->action_controllers);
+                if (!maybe_action.has_value()) {
                         input_registered_last_iteration = false;
                         p->time_provider->delay_ms(CONTROL_POLLING_DELAY);
                         continue;
                 }
+                act = maybe_action.value();
                 // If the user holds the button depressed, we still only act
                 // once to avoid double-processing of slow presses caused by
                 // button debounce issues.

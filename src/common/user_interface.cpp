@@ -1364,9 +1364,10 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
         auto curr_char_map = base_char_map;
         int output_idx = 0;
         while (!input_confirmed) {
-                Direction dir;
-                Action act;
-                if (poll_directional_input(p->directional_controllers, &dir)) {
+                auto maybe_direction =
+                    poll_directional_input(p->directional_controllers);
+                if (maybe_direction.has_value()) {
+                        Direction dir = maybe_direction.value();
                         render_character_at_location(cursor, White,
                                                      curr_char_map);
                         translate_toroidal_array(&cursor, dir,
@@ -1376,7 +1377,9 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                             cursor, customization->accent_color, curr_char_map);
                         p->time_provider->delay_ms(INPUT_POLLING_DELAY);
                 }
-                if (poll_action_input(p->action_controllers, &act)) {
+                auto maybe_action = poll_action_input(p->action_controllers);
+                if (maybe_action) {
+                        Action act = maybe_action.value();
                         switch (act) {
                         case YELLOW: {
                                 is_capitalized = !is_capitalized;
@@ -1636,9 +1639,10 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
         bool is_capitalized = false;
         int output_idx = 0;
         while (!input_confirmed) {
-                Direction dir;
-                Action act;
-                if (poll_directional_input(p->directional_controllers, &dir)) {
+                auto maybe_direction =
+                    poll_directional_input(p->directional_controllers);
+                if (maybe_direction.has_value()) {
+                        Direction dir = maybe_direction.value();
                         render_character_at_location(cursor, White,
                                                      base_char_map);
                         translate_toroidal_array(&cursor, dir,
@@ -1648,7 +1652,9 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                             cursor, customization->accent_color, base_char_map);
                         p->time_provider->delay_ms(INPUT_POLLING_DELAY);
                 }
-                if (poll_action_input(p->action_controllers, &act)) {
+                auto maybe_action = poll_action_input(p->action_controllers);
+                if (maybe_action.has_value()) {
+                        Action act = maybe_action.value();
                         switch (act) {
                         case RED:
                                 input_confirmed = true;
@@ -1715,8 +1721,9 @@ void render_logo(Display *display, UserInterfaceCustomization *customization,
 std::optional<UserAction> wait_until_green_pressed(Platform *p)
 {
         while (true) {
-                Action act;
-                if (poll_action_input(p->action_controllers, &act)) {
+                auto maybe_action = poll_action_input(p->action_controllers);
+                if (maybe_action.has_value()) {
+                        Action act = maybe_action.value();
                         if (act == Action::GREEN) {
                                 LOG_DEBUG(TAG, "User confirmed 'OK'");
                                 p->time_provider->delay_ms(
@@ -1735,7 +1742,8 @@ std::optional<UserAction> wait_until_green_pressed(Platform *p)
 std::optional<UserAction> wait_until_action_input(Platform *p, Action *action)
 {
         while (true) {
-                if (poll_action_input(p->action_controllers, action)) {
+                auto maybe_action = poll_action_input(p->action_controllers);
+                if (maybe_action.has_value()) {
                         p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         return std::nullopt;
                 }

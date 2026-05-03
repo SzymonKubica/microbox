@@ -2,26 +2,23 @@
 #ifdef EMULATOR
 #include "sfml_action_controller.hpp"
 #include <SFML/Graphics.hpp>
+#include <optional>
 
-bool SfmlActionInputController::poll_for_input(Action *input)
+std::optional<Action> SfmlActionInputController::poll_for_action()
 {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
-                *input = Action::RED;
-                return true;
+                return Action::RED;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G)) {
-                *input = Action::GREEN;
-                return true;
+                return Action::GREEN;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::B)) {
-                *input = Action::BLUE;
-                return true;
+                return Action::BLUE;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Y)) {
-                *input = Action::YELLOW;
-                return true;
+                return Action::YELLOW;
         }
-        return false;
+        return std::nullopt;
 };
 
 void SfmlActionInputController::setup() {};

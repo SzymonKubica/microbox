@@ -284,17 +284,20 @@ UserAction SnakeDuel::app_loop(Platform *p,
         Direction new_second_snake_direction = second_snake.direction;
         while (!state.is_game_over()) {
                 long frame_start = current_time();
-                Direction dir;
-                Action act;
                 // The `!is_opposite` check prevents instant game-over when user
                 // presses the direction that is opposite to the current
                 // direction of the snake.
-                if (poll_directional_input(p->directional_controllers, &dir)) {
+                auto maybe_direction =
+                    poll_directional_input(p->directional_controllers);
+                if (maybe_direction.has_value()) {
+                        Direction dir = maybe_direction.value();
                         if (!is_opposite(dir, snake.direction)) {
                                 new_snake_direction = dir;
                         }
                 }
-                if (poll_action_input(p->action_controllers, &act)) {
+                auto maybe_action = poll_action_input(p->action_controllers);
+                if (maybe_action.has_value()) {
+                        Action act = maybe_action.value();
                         Direction second_dir = action_to_direction(act);
                         if (!is_opposite(second_dir, second_snake.direction)) {
                                 new_second_snake_direction = second_dir;

@@ -3,6 +3,7 @@
 #include "input.hpp"
 #include <stdlib.h>
 #include <vector>
+#include <optional>
 
 class DirectionalController
 {
@@ -15,13 +16,9 @@ class DirectionalController
          * this function should be called in a loop if we want the system to
          * wait for the user to provide input.
          *
-         * If an input is registered, it will be written into the `Direction
-         * *input` parameter and `true` will be returned.
-         *
-         * If no input is registered, this function returns false and the
-         * direction pointer remains unchanged.
+         * If no output is registered, an empty optional will be returned.
          */
-        virtual bool poll_for_input(Direction *input) = 0;
+        virtual std::optional<Direction> poll_for_direction() = 0;
 
         /**
          * Setup function used for e.g. initializing pins of the controller.
@@ -42,13 +39,9 @@ class ActionController
          * this function should be called in a loop if we want the system to
          * wait for the user to provide input.
          *
-         * If an input is registered, it will be written into the `Action
-         * *input` parameter and `true` will be returned.
-         *
-         * If no input is registered, this function returns false and the
-         * direction pointer remains unchanged.
+         * If no output is registered, an empty optional will be returned.
          */
-        virtual bool poll_for_input(Action *input) = 0;
+        virtual std::optional<Action> poll_for_action() = 0;
 
         /**
          * Setup function used for e.g. initializing pins of the controller.
@@ -59,16 +52,17 @@ class ActionController
 };
 
 /**
- * Checks if any of the controllers has recorded user input. If so, the input
- * direction will be written into the `registered_dir` output parameter.
+ * Checks if any of the controllers has recorded user input.
+ * If multiple controllers have registered an input during the execution of this
+ * function, the `Direction` reported by the first one will take precedence
  */
-bool poll_directional_input(
-    const std::vector<DirectionalController *> &controllers,
-    Direction *registered_dir);
+std::optional<Direction>
+poll_directional_input(const std::vector<DirectionalController *> &controllers);
 
 /**
- * Checks if any of the controllers has recorded user action input. If so, the
- * input action will be written into the `registered_action` output parameter.
+ * Checks if any of the controllers has recorded user action input.
+ * If multiple controllers have registered an input during the execution of this
+ * function, the `Action` reported by the first one will take precedence
  */
-bool poll_action_input(const std::vector<ActionController *> &controllers,
-                       Action *registered_action);
+std::optional<Action>
+poll_action_input(const std::vector<ActionController *> &controllers);

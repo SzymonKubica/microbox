@@ -3,25 +3,21 @@
 #include "sfml_asdf_controller.hpp"
 #include <SFML/Graphics.hpp>
 
-bool SfmlAsdfInputController::poll_for_input(Action *input)
+std::optional<Action> SfmlAsdfInputController::poll_for_action()
 {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-                *input = Action::BLUE;
-                return true;
+                return Action::BLUE;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-                *input = Action::GREEN;
-                return true;
+                return Action::GREEN;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-                *input = Action::YELLOW;
-                return true;
+                return Action::YELLOW;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::F)) {
-                *input = Action::RED;
-                return true;
+                return Action::RED;
         }
-        return false;
+        return std::nullopt;
 };
 
 void SfmlAsdfInputController::setup() {};

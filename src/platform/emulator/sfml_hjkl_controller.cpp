@@ -2,26 +2,23 @@
 #ifdef EMULATOR
 #include "sfml_hjkl_controller.hpp"
 #include <SFML/Graphics.hpp>
+#include <optional>
 
-bool SfmlHjklInputController::poll_for_input(Direction *input)
+std::optional<Direction> SfmlHjklInputController::poll_for_direction()
 {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::H)) {
-                *input = Direction::LEFT;
-                return true;
+                return Direction::LEFT;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L)) {
-                *input = Direction::RIGHT;
-                return true;
+                return Direction::RIGHT;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::K)) {
-                *input = Direction::UP;
-                return true;
+                return Direction::UP;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::J)) {
-                *input = Direction::DOWN;
-                return true;
+                return Direction::DOWN;
         }
-        return false;
+        return std::nullopt;
 };
 
 void SfmlHjklInputController::setup() {};

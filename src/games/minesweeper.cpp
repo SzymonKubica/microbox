@@ -149,9 +149,10 @@ UserAction Minesweeper::app_loop(Platform *p,
         bool is_game_over = false;
         while (!is_game_over &&
                !(total_uncovered == cols * rows - config.mines_num)) {
-                Direction dir;
-                Action act;
-                if (poll_directional_input(p->directional_controllers, &dir)) {
+                auto maybe_direction =
+                    poll_directional_input(p->directional_controllers);
+                if (maybe_direction) {
+                        Direction dir = maybe_direction.value();
                         LOG_DEBUG(TAG, "Directional input received: %s",
                                   direction_to_str(dir));
 
@@ -207,8 +208,10 @@ UserAction Minesweeper::app_loop(Platform *p,
                            the input snappy. */
                         continue;
                 }
-                if (poll_action_input(p->action_controllers, &act) &&
+                auto maybe_action = poll_action_input(p->action_controllers);
+                if (maybe_action.has_value() &&
                     !action_input_on_last_iteration) {
+                        Action act = maybe_action.value();
                         action_input_on_last_iteration = true;
                         LOG_DEBUG(TAG, "Action input received: %s",
                                   action_to_str(act));

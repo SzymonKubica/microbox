@@ -1,36 +1,33 @@
 #include <Arduino.h>
 #include "input_shield.hpp"
+#include <optional>
 
 /** Pins controlling the joystick */
 #define STICK_Y_PIN 16
 #define STICK_X_PIN 17
 
-bool ArduinoInputShield::poll_for_input(Direction *input)
+std::optional<Direction> ArduinoInputShield::poll_for_input()
 {
 
         int x_val = analogRead(STICK_X_PIN);
         int y_val = analogRead(STICK_Y_PIN);
 
         if (x_val < LOW_THRESHOLD) {
-                *input = Direction::RIGHT;
-                return true;
+                return Direction::RIGHT;
         }
         if (x_val > HIGH_THRESHOLD) {
-                *input = Direction::LEFT;
-                return true;
+                return Direction::LEFT;
         }
         if (y_val < LOW_THRESHOLD) {
-                *input = Direction::UP;
-                return true;
+                return Direction::UP;
         }
         if (y_val > HIGH_THRESHOLD) {
-                *input = Direction::DOWN;
-                return true;
+                return Direction::DOWN;
         }
-        return false;
+        return std::nullptr;
 }
 
-bool ArduinoInputShield::poll_for_input(Action *input)
+std::optional<Action> ArduinoInputShield::poll_for_input()
 {
         int leftButton = digitalRead(LEFT_BUTTON_PIN);
         int downButton = digitalRead(DOWN_BUTTON_PIN);
@@ -38,22 +35,18 @@ bool ArduinoInputShield::poll_for_input(Action *input)
         int rightButton = digitalRead(RIGHT_BUTTON_PIN);
 
         if (!leftButton) {
-                *input = Action::BLUE;
-                return true;
+                return Action::BLUE;
         }
         if (!downButton) {
-                *input = Action::GREEN;
-                return true;
+                return Action::GREEN;
         }
         if (!upButton) {
-                *input = Action::YELLOW;
-                return true;
+                return Action::YELLOW;
         }
         if (!rightButton) {
-                *input = Action::RED;
-                return true;
+                return Action::RED;
         }
-        return false;
+        return std::nullptr;
 }
 
 void ArduinoInputShield::setup()

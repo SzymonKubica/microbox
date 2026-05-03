@@ -4,30 +4,28 @@
  * Checks if any of the controllers has recorded user input. If so, the input
  * direction will be written into the `registered_dir` output parameter.
  */
-bool poll_directional_input(
-    const std::vector<DirectionalController *> &controllers,
-    Direction *registered_dir)
+std::optional<Direction>
+poll_directional_input(const std::vector<DirectionalController *> &controllers)
 {
-        bool input_registered = false;
-        // If multiple  controllers register input, the last one takes
-        // precedence as it's registered direction will override what was set by
-        // the previous controllers.
+        // If multiple controllers register input, the first one takes
+        // precedence.
         for (DirectionalController *controller : controllers) {
-                input_registered |= controller->poll_for_input(registered_dir);
+                auto maybe_value = controller->poll_for_direction();
+                if (maybe_value.has_value())
+                        return maybe_value;
         }
-        return input_registered;
+        return std::nullopt;
 }
 
-bool poll_action_input(const std::vector<ActionController *> &controllers,
-                       Action *registered_action)
+std::optional<Action>
+poll_action_input(const std::vector<ActionController *> &controllers)
 {
-        bool input_registered = false;
-        // If multiple  controllers register input, the last one takes
-        // precedence as it's registered action will override what was set by
-        // the previous controllers.
+        // If multiple controllers register input, the first one takes
+        // precedence.
         for (ActionController *controller : controllers) {
-                input_registered |=
-                    controller->poll_for_input(registered_action);
+                auto maybe_value = controller->poll_for_action();
+                if (maybe_value.has_value())
+                        return maybe_value;
         }
-        return input_registered;
+        return std::nullopt;
 }

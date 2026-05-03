@@ -293,8 +293,6 @@ collect_configuration(Platform *p, Configuration *config,
         }
         delete diff;
         while (true) {
-                Action act;
-                Direction dir;
                 // We get a fresh, empty diff during each iteration to avoid
                 // option value text rerendering when they are not modified.
                 ConfigurationDiff diff = ConfigurationDiff{};
@@ -306,7 +304,9 @@ collect_configuration(Platform *p, Configuration *config,
                         p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 };
 
-                if (poll_action_input(p->action_controllers, &act)) {
+                auto maybe_action = poll_action_input(p->action_controllers);
+                if (maybe_action.has_value()) {
+                        Action act = maybe_action.value();
                         /* To make the UI more intuitive, we also allow users to
                         cycle configuration options. This change was inspired by
                         initial play testing by Tomek. */
@@ -337,7 +337,11 @@ collect_configuration(Platform *p, Configuration *config,
                                 break;
                         }
                 }
-                if (poll_directional_input(p->directional_controllers, &dir)) {
+                auto maybe_direction =
+                    poll_directional_input(p->directional_controllers);
+                Direction dir;
+                if (maybe_direction.has_value()) {
+                        dir = maybe_direction.value();
                         switch (dir) {
                         case DOWN:
                                 switch_edited_config_option_down(config, &diff);
