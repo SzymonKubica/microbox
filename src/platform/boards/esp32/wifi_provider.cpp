@@ -7,9 +7,9 @@
 
 #define TAG "wifi_provider"
 
-WifiData *Esp32WifiProvider::get_wifi_data()
+std::unique_ptr<WifiData> Esp32WifiProvider::get_wifi_data()
 {
-        WifiData *data = new WifiData();
+        std::unique_ptr<WifiData> data = std::make_unique<WifiData>();
         WiFi.BSSID(data->bssid);
         WiFi.macAddress(data->mac_address);
         data->rssi = WiFi.RSSI();
@@ -22,7 +22,7 @@ WifiData *Esp32WifiProvider::get_wifi_data()
         return data;
 }
 
-std::optional<WifiData *>
+std::optional<std::unique_ptr<WifiData>>
 Esp32WifiProvider::connect_to_network(const char *ssid, const char *password)
 {
 

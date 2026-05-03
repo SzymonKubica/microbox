@@ -31,7 +31,7 @@
 - [ ] clean up all usages of raw pointers.
   - [ ] platform code
     - [ ] remove raw pointers from the wifi data utils
-    - [ ] refactor the controller interface to use proper optionals instead of output parameters and boolean
+    - [x] refactor the controller interface to use proper optionals instead of output parameters and boolean
           success flag
     - [x] common transitions code
   - [ ] configuration management code (this is large and messy)

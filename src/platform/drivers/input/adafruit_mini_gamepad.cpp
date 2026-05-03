@@ -15,58 +15,46 @@ uint32_t button_mask = (1UL << BUTTON_X) | (1UL << BUTTON_Y) |
                        (1UL << BUTTON_START) | (1UL << BUTTON_A) |
                        (1UL << BUTTON_B) | (1UL << BUTTON_SELECT);
 
-bool MiniGamepadController::poll_for_input(Direction *input)
+std::optional<Direction> MiniGamepadController::poll_for_direction(Direction *input)
 {
         // Reverse x/y values to match joystick orientation
         int x = ss->analogRead(14);
         int y = ss->analogRead(15);
 
-        if (x < LOW_THRESHOLD) {
-                *input = Direction::RIGHT;
-                return true;
-        }
-        if (x > HIGH_THRESHOLD) {
-                *input = Direction::LEFT;
-                return true;
-        }
-        if (y < LOW_THRESHOLD) {
-                *input = Direction::UP;
-                return true;
-        }
-        if (y > HIGH_THRESHOLD) {
-                *input = Direction::DOWN;
-                return true;
-        }
-        return false;
+        if (x < LOW_THRESHOLD)
+                return Direction::RIGHT;
+        if (x > HIGH_THRESHOLD)
+                return Direction::LEFT;
+        if (y < LOW_THRESHOLD)
+                return Direction::UP;
+        if (y > HIGH_THRESHOLD)
+                return Direction::DOWN;
+        return std::nullopt;
 };
 
-bool MiniGamepadController::poll_for_input(Action *input)
+std::optional<Action> MiniGamepadController::poll_for_action(Action *input)
 {
 
         uint32_t buttons = ss->digitalReadBulk(button_mask);
         // reject impossible results due to I2C delays caused by heavy SPI load.
         if (buttons == 0 || buttons == 0xFFFFFFFF)
-                return false;
+                return std::nullopt;
 
         if (!(buttons & (1UL << BUTTON_A))) {
                 LOG_DEBUG(TAG, "A button pressed.");
-                *input = Action::RED;
-                return true;
+                return Action::RED;
         }
         if (!(buttons & (1UL << BUTTON_B))) {
                 LOG_DEBUG(TAG, "B button pressed.");
-                *input = Action::GREEN;
-                return true;
+                return Action::GREEN;
         }
         if (!(buttons & (1UL << BUTTON_Y))) {
                 LOG_DEBUG(TAG, "Y button pressed.");
-                *input = Action::BLUE;
-                return true;
+                return Action::BLUE;
         }
         if (!(buttons & (1UL << BUTTON_X))) {
                 LOG_DEBUG(TAG, "X button pressed.");
-                *input = Action::YELLOW;
-                return true;
+                return Action::YELLOW;
         }
         // Ignore the extra buttons for now
         if (!(buttons & (1UL << BUTTON_SELECT))) {
@@ -75,7 +63,7 @@ bool MiniGamepadController::poll_for_input(Action *input)
         if (!(buttons & (1UL << BUTTON_START))) {
                 LOG_DEBUG(TAG, "Button START pressed, but we ignore it.");
         }
-        return false;
+        return std::nullopt;
 }
 
 void MiniGamepadController::setup() {}

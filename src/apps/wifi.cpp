@@ -1,3 +1,4 @@
+#include <memory>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -199,7 +200,7 @@ handle_connect(WifiAppConfiguration &config, Platform *p,
                  "Trying to connect to Wi-Fi using network %s and "
                  "password %s",
                  credentials.ssid, credentials.password);
-        std::optional<WifiData *> wifi_data =
+        std::optional<std::unique_ptr<WifiData>> wifi_data =
             p->wifi_provider->connect_to_network(credentials.ssid,
                                                  credentials.password);
 
@@ -207,13 +208,12 @@ handle_connect(WifiAppConfiguration &config, Platform *p,
 
         char display_text_buffer[256];
         if (wifi_data.has_value()) {
-                WifiData *data = p->wifi_provider->get_wifi_data();
-                char *data_string = get_wifi_data_string_single_line(data);
+                std::unique_ptr<WifiData> data =
+                    p->wifi_provider->get_wifi_data();
+                char *data_string = get_wifi_data_string_single_line(*data);
                 LOG_DEBUG("%s\n", data_string);
                 sprintf(display_text_buffer,
                         "Successfully connected to Wi-Fi!  %s", data_string);
-                delete data;
-                delete wifi_data.value();
 
         } else {
                 sprintf(display_text_buffer, "Unable to connect to Wi-Fi!");

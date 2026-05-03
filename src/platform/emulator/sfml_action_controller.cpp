@@ -6,18 +6,14 @@
 
 std::optional<Action> SfmlActionInputController::poll_for_action()
 {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::R))
                 return Action::RED;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::G))
                 return Action::GREEN;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::B)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::B))
                 return Action::BLUE;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Y)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Y))
                 return Action::YELLOW;
-        }
         return std::nullopt;
 };
 

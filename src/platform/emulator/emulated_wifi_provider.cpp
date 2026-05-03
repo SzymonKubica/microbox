@@ -53,9 +53,9 @@ class EmulatedWifiProvider : public WifiProvider
                 return std::nullopt;
         }
 
-        WifiData *read_wifi_data()
+        std::unique_ptr<WifiData> read_wifi_data()
         {
-                WifiData *data = new WifiData();
+                std::unique_ptr<WifiData> data = std::make_unique<WifiData>();
 
                 if (interface.empty()) {
                         auto maybe_interface = detect_interface();
@@ -130,13 +130,16 @@ class EmulatedWifiProvider : public WifiProvider
       public:
         EmulatedWifiProvider() {}
 
-        WifiData *get_wifi_data() override { return read_wifi_data(); }
+        std::unique_ptr<WifiData> get_wifi_data() override
+        {
+                return read_wifi_data();
+        }
 
-        std::optional<WifiData *>
+        std::optional<std::unique_ptr<WifiData>>
         connect_to_network(const char *ssid, const char *password) override
         {
                 // Emulator does not connect—only checks if host is on that SSID
-                WifiData *data = read_wifi_data();
+                std::unique_ptr<WifiData> data = read_wifi_data();
                 if (!connected) {
                         LOG_DEBUG("wifi_emulator",
                                   "Returning empty optional as we are not "

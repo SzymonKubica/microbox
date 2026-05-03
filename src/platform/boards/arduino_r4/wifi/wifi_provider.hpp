@@ -7,19 +7,19 @@ class ArduinoWifiProvider : public WifiProvider
 {
       public:
         /**
-         * Returns the WiFi data of the network that we are currently connected
-         * to.
+         * Returns a unique pointer to the newly created WiFi data of the
+         * network that we are currently connected to.
          */
-        WifiData *get_wifi_data() override;
-
+        std::unique_ptr<WifiData> get_wifi_data() override;
         /**
          * Tries to connect to the network with the given ssid and password.
          * If successful, it will return a pointer to the WifiData struct with
-         * the connection details. If failed, the optional will be empty.
+         * the connection details. If failed, the optional will be empty. This
+         * is a blocking call that will ont return unitl connection is
+         * established or failed.
          */
-        std::optional<WifiData *>
+        std::optional<std::unique_ptr<WifiData>>
         connect_to_network(const char *ssid, const char *password) override;
-
         bool is_connected() override;
 };
 #endif

@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <optional>
+#include <memory>
 
 /**
  * Encapsulates all information we might want to know about the current network
@@ -42,10 +43,10 @@ class WifiProvider
 {
       public:
         /**
-         * Returns the WiFi data of the network that we are currently connected
-         * to.
+         * Returns a unique pointer to the newly created WiFi data of the
+         * network that we are currently connected to.
          */
-        virtual WifiData *get_wifi_data() = 0;
+        virtual std::unique_ptr<WifiData> get_wifi_data() = 0;
         /**
          * Tries to connect to the network with the given ssid and password.
          * If successful, it will return a pointer to the WifiData struct with
@@ -53,7 +54,7 @@ class WifiProvider
          * is a blocking call that will ont return unitl connection is
          * established or failed.
          */
-        virtual std::optional<WifiData *>
+        virtual std::optional<std::unique_ptr<WifiData>>
         connect_to_network(const char *ssid, const char *password) = 0;
         /**
          * Returns true if we are currently connected to a WiFi network,
@@ -61,5 +62,5 @@ class WifiProvider
         virtual bool is_connected() = 0;
 };
 
-char *get_wifi_data_string(WifiData *data);
-char *get_wifi_data_string_single_line(WifiData *data);
+char *get_wifi_data_string(const WifiData &data);
+char *get_wifi_data_string_single_line(const WifiData &data);

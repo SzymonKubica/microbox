@@ -6,18 +6,14 @@
 
 std::optional<Direction> SfmlHjklInputController::poll_for_direction()
 {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::H)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::H))
                 return Direction::LEFT;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L))
                 return Direction::RIGHT;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::K)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::K))
                 return Direction::UP;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::J)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::J))
                 return Direction::DOWN;
-        }
         return std::nullopt;
 };
 
