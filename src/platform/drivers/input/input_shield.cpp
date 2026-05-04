@@ -20,7 +20,7 @@ std::optional<Direction> ArduinoInputShield::poll_for_direction()
                 return Direction::UP;
         if (y_val > HIGH_THRESHOLD)
                 return Direction::DOWN;
-        return std::nullptr;
+        return std::nullopt;
 }
 
 std::optional<Action> ArduinoInputShield::poll_for_action()
@@ -38,7 +38,7 @@ std::optional<Action> ArduinoInputShield::poll_for_action()
                 return Action::YELLOW;
         if (!rightButton)
                 return Action::RED;
-        return std::nullptr;
+        return std::nullopt;
 }
 
 void ArduinoInputShield::setup()

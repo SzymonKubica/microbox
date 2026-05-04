@@ -26,21 +26,21 @@ int map_font_size(FontSize font_size)
 // TODO: ensure that this can be set to 0 without bricking the console.
 #define DISPLAY_CORNER_RADIUS 40
 #define SCREEN_BORDER_WIDTH 3
-void LcdDisplay::setup()
+void LcdDisplay::setup() const
 {
         tft.init();
         tft.setRotation(3);
         analogWrite(DEV_BL_PIN, 140);
         tft.fillScreen(TFT_BLACK);
 }
-void LcdDisplay::initialize() {};
+void LcdDisplay::initialize() const {};
 
-void LcdDisplay::clear(Color color) { tft.fillScreen(TFT_BLACK); };
+void LcdDisplay::clear(Color color) const { tft.fillScreen(TFT_BLACK); };
 
-void LcdDisplay::draw_rounded_border(Color color) {};
+void LcdDisplay::draw_rounded_border(Color color) const {};
 
 void LcdDisplay::draw_circle(Point center, int radius, Color color,
-                             int border_width, bool filled)
+                             int border_width, bool filled) const
 {
 
         int adj = 1;
@@ -55,7 +55,7 @@ void LcdDisplay::draw_circle(Point center, int radius, Color color,
 };
 
 void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
-                                int border_width, bool filled)
+                                int border_width, bool filled) const
 {
 
         int adj = 1;
@@ -69,21 +69,22 @@ void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
 };
 
 void LcdDisplay::draw_rounded_rectangle(Point start, int width, int height,
-                                        int radius, Color color)
+                                        int radius, Color color) const
 {
         int adj = 1;
         tft.fillRoundRect(start.x - adj, start.y - adj, width + adj,
                           height + adj, radius, to_tft_color(color));
 };
 
-void LcdDisplay::draw_line(Point start, Point end, Color color)
+void LcdDisplay::draw_line(Point start, Point end, Color color) const
 {
         tft.drawLine(start.x, start.y - 2, end.x, end.y - 2,
                      to_tft_color(color));
 }
 
 void LcdDisplay::draw_string(Point start, char *string_buffer,
-                             FontSize font_size, Color bg_color, Color fg_color)
+                             FontSize font_size, Color bg_color,
+                             Color fg_color) const
 {
         tft.setTextColor(to_tft_color(fg_color), to_tft_color(bg_color));
         tft.setTextFont(map_font_size(font_size));
@@ -93,7 +94,7 @@ void LcdDisplay::draw_string(Point start, char *string_buffer,
 };
 
 void LcdDisplay::clear_region(Point top_left, Point bottom_right,
-                              Color clear_color)
+                              Color clear_color) const
 
 {
         int adj = 0;
@@ -103,20 +104,23 @@ void LcdDisplay::clear_region(Point top_left, Point bottom_right,
 };
 
 // We return the width for the height as the display is mounted horizontally.
-int LcdDisplay::get_height() { return TFT_WIDTH; };
+int LcdDisplay::get_height() const { return TFT_WIDTH; };
 
 // We return the height for the width as the display is mounted horizontally.
-int LcdDisplay::get_width() { return TFT_HEIGHT; };
+int LcdDisplay::get_width() const { return TFT_HEIGHT; };
 
-int LcdDisplay::get_display_corner_radius() { return DISPLAY_CORNER_RADIUS; }
+int LcdDisplay::get_display_corner_radius() const
+{
+        return DISPLAY_CORNER_RADIUS;
+}
 
-bool LcdDisplay::refresh()
+bool LcdDisplay::refresh() const
 {
         // This is a no-op as the display does not require refreshing
         return true;
 }
 
-void LcdDisplay::sleep()
+void LcdDisplay::sleep() const
 {
         // Turn display backlight off.
 #define DEV_BL_PIN 4

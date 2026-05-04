@@ -1,5 +1,6 @@
 #include "adafruit_mini_gamepad.hpp"
 #include "../../../common/logging.hpp"
+#include <optional>
 
 /**
  * The joystick reports the current position using two potentiometers. Those
@@ -15,7 +16,7 @@ uint32_t button_mask = (1UL << BUTTON_X) | (1UL << BUTTON_Y) |
                        (1UL << BUTTON_START) | (1UL << BUTTON_A) |
                        (1UL << BUTTON_B) | (1UL << BUTTON_SELECT);
 
-std::optional<Direction> MiniGamepadController::poll_for_direction(Direction *input)
+std::optional<Direction> MiniGamepadController::poll_for_direction()
 {
         // Reverse x/y values to match joystick orientation
         int x = ss->analogRead(14);
@@ -32,7 +33,7 @@ std::optional<Direction> MiniGamepadController::poll_for_direction(Direction *in
         return std::nullopt;
 };
 
-std::optional<Action> MiniGamepadController::poll_for_action(Action *input)
+std::optional<Action> MiniGamepadController::poll_for_action()
 {
 
         uint32_t buttons = ss->digitalReadBulk(button_mask);
