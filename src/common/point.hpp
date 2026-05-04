@@ -12,7 +12,7 @@ typedef struct Point {
 } Point;
 
 Point operator+(Point first, Point second);
-bool operator==(Point first, Point second);
+bool operator==(const Point &first, const Point &second);
 
 void translate(Point *p, Direction dir);
 /**

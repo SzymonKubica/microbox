@@ -12,7 +12,7 @@ Point operator+(Point first, Point second)
 
 Point Point::operator*(int scalar) const { return {scalar * x, scalar * y}; }
 
-bool operator==(Point first, Point second)
+bool operator==(const Point &first, const Point &second)
 {
         return first.x == second.x && first.y == second.y;
 }

@@ -854,7 +854,7 @@ void render_controls_explanations_directional_buttons(
                 std::string hint = button_hints[button];
                 // We first make all possible displacements in gray.
                 for (const auto &d : button_positions) {
-                        if (d != button_positions[button]) {
+                        if (!(d == (const Point &)button_positions[button])) {
                                 display->draw_circle(
                                     {.x = x_pos + 2 * d.x * circle_radius,
                                      .y = circle_indicator_y +

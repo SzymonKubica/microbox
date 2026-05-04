@@ -3,9 +3,9 @@
 #include "wifi_provider.hpp"
 #include "../../../../common/logging.hpp"
 #define TAG "wifi_provider"
-WifiData *ArduinoWifiProvider::get_wifi_data()
+std::unique_ptr<WifiData> ArduinoWifiProvider::get_wifi_data()
 {
-        WifiData *data = new WifiData();
+        std::unique_ptr<WifiData> data = std::make_unique<WifiData>();
 
         WiFi.BSSID(data->bssid);
         WiFi.macAddress(data->mac_address);
@@ -21,7 +21,7 @@ WifiData *ArduinoWifiProvider::get_wifi_data()
         return data;
 }
 
-std::optional<WifiData *>
+std::optional<std::unique_ptr<WifiData>>
 ArduinoWifiProvider::connect_to_network(const char *ssid, const char *password)
 {
 

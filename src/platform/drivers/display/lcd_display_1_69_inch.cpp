@@ -5,7 +5,7 @@
 
 #define DISPLAY_CORNER_RADIUS 40
 #define SCREEN_BORDER_WIDTH 3
-void LcdDisplay_1_69::setup()
+void LcdDisplay_1_69::setup() const
 {
         Config_Init();
         LCD_Init();
@@ -13,14 +13,14 @@ void LcdDisplay_1_69::setup()
         Paint_Clear(BLACK);
 };
 
-void LcdDisplay_1_69::initialize()
+void LcdDisplay_1_69::initialize() const
 {
         Paint_NewImage(LCD_WIDTH, LCD_HEIGHT, 270, WHITE);
 };
 
-void LcdDisplay_1_69::clear(Color color) { Paint_Clear(color); };
+void LcdDisplay_1_69::clear(Color color) const { Paint_Clear(color); };
 
-void LcdDisplay_1_69::draw_rounded_border(Color color)
+void LcdDisplay_1_69::draw_rounded_border(Color color) const
 {
         int rounding_radius = DISPLAY_CORNER_RADIUS;
         int margin = SCREEN_BORDER_WIDTH;
@@ -104,7 +104,7 @@ void LcdDisplay_1_69::draw_rounded_border(Color color)
 };
 
 void LcdDisplay_1_69::draw_circle(Point center, int radius, Color color,
-                                  int border_width, bool filled)
+                                  int border_width, bool filled) const
 {
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
 
@@ -122,7 +122,7 @@ void LcdDisplay_1_69::draw_circle(Point center, int radius, Color color,
 };
 
 void LcdDisplay_1_69::draw_rectangle(Point start, int width, int height,
-                                     Color color, int border_width, bool filled)
+                                     Color color, int border_width, bool filled) const
 {
 
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
@@ -142,7 +142,7 @@ void LcdDisplay_1_69::draw_rectangle(Point start, int width, int height,
 };
 
 void LcdDisplay_1_69::draw_rounded_rectangle(Point start, int width, int height,
-                                             int radius, Color color)
+                                             int radius, Color color) const
 {
 
         Point top_left_corner = {.x = start.x + radius, .y = start.y + radius};
@@ -175,7 +175,7 @@ void LcdDisplay_1_69::draw_rounded_rectangle(Point start, int width, int height,
                             color, DOT_PIXEL_1X1, DRAW_FILL_FULL);
 };
 
-void LcdDisplay_1_69::draw_line(Point start, Point end, Color color)
+void LcdDisplay_1_69::draw_line(Point start, Point end, Color color) const
 {
         /*
          * We need to add the adjustment because of the pixel-precision
@@ -192,7 +192,7 @@ void LcdDisplay_1_69::draw_line(Point start, Point end, Color color)
 sFONT *map_font_size_1_69_specific(FontSize font_size);
 void LcdDisplay_1_69::draw_string(Point start, char *string_buffer,
                                   FontSize font_size, Color bg_color,
-                                  Color fg_color)
+                                  Color fg_color) const
 {
         /*
          * We need to add the adjustment because of the pixel-precision
@@ -208,7 +208,7 @@ void LcdDisplay_1_69::draw_string(Point start, char *string_buffer,
 };
 
 void LcdDisplay_1_69::clear_region(Point top_left, Point bottom_right,
-                                   Color clear_color)
+                                   Color clear_color) const
 
 {
         /*
@@ -237,22 +237,22 @@ sFONT *map_font_size_1_69_specific(FontSize font_size)
 }
 
 // We return the width for the height as the display is mounted horizontally.
-int LcdDisplay_1_69::get_height() { return LCD_WIDTH; };
+int LcdDisplay_1_69::get_height() const { return LCD_WIDTH; };
 
 // We return the height for the width as the display is mounted horizontally.
-int LcdDisplay_1_69::get_width() { return LCD_HEIGHT; };
+int LcdDisplay_1_69::get_width() const { return LCD_HEIGHT; };
 
-int LcdDisplay_1_69::get_display_corner_radius()
+int LcdDisplay_1_69::get_display_corner_radius() const
 {
         return DISPLAY_CORNER_RADIUS;
 }
-bool LcdDisplay_1_69::refresh()
+bool LcdDisplay_1_69::refresh() const
 {
         // This is a no-op as the display does not require refreshing
         return true;
 }
 
-void LcdDisplay_1_69::sleep()
+void LcdDisplay_1_69::sleep() const
 {
         // TODO: For now this is a no-op as we don't support display sleeping on
         // the Arduino waveshare 1.69 inch LCD.
