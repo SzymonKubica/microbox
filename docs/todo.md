@@ -55,7 +55,10 @@
   - [ ] user interface rendering code
 
 
+
 # Done
+- [x] debug 2048 game saving functionality (this was caused by a regression in the
+      `wait_until_action_input` function)
 - [x] fix sudoku game-over rendering on the TFT_eSPI display
 - [x] instrument color-coded rendering for 2048 to only run on platforms that 'have fast display' i.e. add new PlatformCapability
 - [x] add color-coded rendering for 2048

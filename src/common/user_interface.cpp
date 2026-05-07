@@ -1747,6 +1747,7 @@ std::optional<UserAction> wait_until_action_input(Platform *p, Action *action)
                 auto maybe_action = poll_action_input(p->action_controllers);
                 if (maybe_action.has_value()) {
                         p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        *action = maybe_action.value();
                         return std::nullopt;
                 }
                 p->time_provider->delay_ms(INPUT_POLLING_DELAY);
