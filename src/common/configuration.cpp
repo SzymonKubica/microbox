@@ -96,7 +96,7 @@ void shift_edited_config_option(Configuration *config, ConfigurationDiff *diff,
 {
         LOG_DEBUG(TAG, "Config option index before switching: %d",
                   config->curr_selected_option);
-        int config_len = config->options_len;
+        int config_len = config->options.size();
         diff->previously_edited_option = config->curr_selected_option;
         config->curr_selected_option = mathematical_modulo(
             config->curr_selected_option + steps, config_len);
@@ -131,7 +131,7 @@ void decrement_current_option_value(Configuration *config,
 void shift_current_config_option_value(Configuration *config,
                                        ConfigurationDiff *diff, int steps)
 {
-        assert(config->curr_selected_option != config->options_len);
+        assert(config->curr_selected_option != config->options.size());
 
         int curr_idx = config->curr_selected_option;
         ConfigurationOption *current = config->options[curr_idx];
@@ -157,7 +157,7 @@ void shift_current_config_option_value(Configuration *config,
 int find_max_config_option_value_text_length(Configuration *config)
 {
         int max_length = 0;
-        for (int i = 0; i < config->options_len; i++) {
+        for (int i = 0; i < config->options.size(); i++) {
                 int current_option_value_length;
                 ConfigurationOption *current = config->options[i];
                 max_length =
@@ -169,7 +169,7 @@ int find_max_config_option_value_text_length(Configuration *config)
 int find_max_config_option_name_text_length(Configuration *config)
 {
         int max_length = 0;
-        for (int i = 0; i < config->options_len; i++) {
+        for (int i = 0; i < config->options.size(); i++) {
                 ConfigurationOption *current = config->options[i];
                 max_length = std::max(max_length, (int)strlen(current->name));
         }
@@ -223,19 +223,6 @@ void populate_color_option_values(ConfigurationOption *value,
         value->available_values = values;
         value->max_config_value_len =
             find_max_color_str_length(available_values);
-}
-
-void populate_options(Configuration *config,
-                      std::vector<ConfigurationOption *> options,
-                      int currently_selected)
-{
-        config->options_len = options.size();
-        config->options = new ConfigurationOption *[config->options_len];
-
-        for (int i = 0; i < options.size(); i++) {
-                config->options[i] = options[i];
-        }
-        config->curr_selected_option = currently_selected;
 }
 
 int find_max_number_length(std::vector<int> numbers)
@@ -297,7 +284,7 @@ collect_configuration(Platform *p, Configuration *config,
                 // option value text rerendering when they are not modified.
                 ConfigurationDiff diff = ConfigurationDiff{};
                 bool confirmation_bar_selected =
-                    config->curr_selected_option == config->options_len;
+                    config->curr_selected_option == config->options.size();
 
                 // Abstract out the repeatable delay functionality.
                 auto move_registered_delay = [&] {
@@ -392,10 +379,13 @@ Configuration::~Configuration()
         // entire container. This is because the container stores pointers,
         // hence the destructor is not automatically invoked on each of the
         // options pointed to by the pointers.
-        for (int i = 0; i < options_len; i++) {
-                delete options[i];
-        }
-        delete[] options;
+        for (const auto &option : options) {
+                delete option;
+        };
+        // We don't need to manually free the memory allocated for the vector
+        // itself because it's a stack-allocated object and its destructor will
+        // be automatically invoked when the Configuration object goes out of
+        // scope.
 }
 ConfigurationOption::~ConfigurationOption()
 {

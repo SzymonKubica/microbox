@@ -22,7 +22,7 @@
 // Maximum length of config option value text in characters.
 // This is needed to ensure that the config bars don't overflow the display.
 #define MAX_CONFIG_OPTION_VALUE_LENGTH 13
-#define MAX_RENDERED_OPTION_NUM 4
+const size_t MAX_RENDERED_OPTION_NUM = 4;
 
 /* User Interface */
 
@@ -464,8 +464,8 @@ void render_config_menu(Display *display, Configuration *config,
 
         LOG_DEBUG(TAG, "Found max text length across all config bars: %d",
                   text_max_length);
-        int spacing = (display->get_height() - config->options_len * FONT_SIZE -
-                       HEADING_FONT_SIZE) /
+        int spacing = (display->get_height() -
+                       config->options.size() * FONT_SIZE - HEADING_FONT_SIZE) /
                       3;
 
         const char *heading_text = config->name;
@@ -478,7 +478,8 @@ void render_config_menu(Display *display, Configuration *config,
         int fh = FONT_SIZE;
         int left_margin = get_centering_margin(w, fw, text_max_length);
 
-        int bars_num = std::min(config->options_len, MAX_RENDERED_OPTION_NUM);
+        int bars_num =
+            std::min(config->options.size(), MAX_RENDERED_OPTION_NUM);
 
         int bar_height = 2 * fh;
         int bar_gap_height = fh * 3 / 4;
@@ -509,7 +510,7 @@ void render_config_menu(Display *display, Configuration *config,
         }
 
         int start_option_idx = 0;
-        int end_option_idx = config->options_len - 1;
+        int end_option_idx = config->options.size() - 1;
         // If we are in the scrolling mode we set those overrides to true to
         // ensure that both the option names and their values are always re-
         // rendered.
@@ -518,18 +519,19 @@ void render_config_menu(Display *display, Configuration *config,
         // is supposed to go there. Note that if there is less than 5 bars,
         // this is an identity map.
         std::map<int, int> bar_idx_to_option_idx;
-        if (config->options_len > MAX_RENDERED_OPTION_NUM) {
+        if (config->options.size() > MAX_RENDERED_OPTION_NUM) {
                 update_option_names = diff->currently_edited_option !=
                                       diff->previously_edited_option;
                 // We iterate and wrap
                 int curr = config->curr_selected_option;
-                int prev = mathematical_modulo(curr - 1, config->options_len);
+                int prev =
+                    mathematical_modulo(curr - 1, config->options.size());
                 bar_idx_to_option_idx[0] = prev;
                 bar_idx_to_option_idx[1] = curr;
                 bar_idx_to_option_idx[2] =
-                    mathematical_modulo(curr + 1, config->options_len);
+                    mathematical_modulo(curr + 1, config->options.size());
                 bar_idx_to_option_idx[3] =
-                    mathematical_modulo(curr + 2, config->options_len);
+                    mathematical_modulo(curr + 2, config->options.size());
 
         } else {
                 for (int i = 0; i < bars_num; i++) {
@@ -632,7 +634,7 @@ void render_config_menu(Display *display, Configuration *config,
         // mode. In this case the option names and values toggle and get
         // rerendered in the config bars but the circle selector stays at the
         // top and this is the option that gets edited.
-        if (config->options_len > MAX_RENDERED_OPTION_NUM) {
+        if (config->options.size() > MAX_RENDERED_OPTION_NUM) {
                 render_circle_selector(display, text_update_only, circle_x,
                                        circle_ys, 1, 1, SELECTOR_CIRCLE_RADIUS,
                                        Black, customization->accent_color);

@@ -27,14 +27,7 @@
       as the library depends on the global arduino installation structure.
       It migth be better to explain / clean-up the process of configuring the
       library with the correct pins and target device.
-- [ ] add game thumbnail rendering
-- [ ] clean up all usages of raw pointers.
-  - [ ] platform code
-    - [ ] remove raw pointers from the wifi data utils
-    - [x] refactor the controller interface to use proper optionals instead of output parameters and boolean
-          success flag
-    - [x] common transitions code
-  - [ ] configuration management code (this is large and messy)
+- [ ] design & add game thumbnail rendering
 ## Require hardware testing
 ### any platform
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
@@ -49,6 +42,14 @@
 ## Dev experience
 
 # In Progress
+
+- [ ] clean up all usages of raw pointers.
+  - [x] platform code
+    - [x] remove raw pointers from the wifi data utils
+    - [x] refactor the controller interface to use proper optionals instead of output parameters and boolean
+          success flag
+    - [x] common transitions code
+  - [ ] configuration management code (this is large and messy, plus will likely require a redesign)
 
 
 # Done

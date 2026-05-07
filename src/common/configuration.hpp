@@ -162,11 +162,6 @@ int get_config_option_value_index(ConfigurationOption *option, T value)
 int get_config_option_string_value_index(ConfigurationOption *option,
                                          const char *value);
 
-struct Configuration;
-void populate_options(Configuration *config,
-                      std::vector<ConfigurationOption *> options,
-                      int currently_selected);
-
 /**
  * A generic container for game configuration values. It allows for storing
  * an arbitrary number of configuration values of type int or string. The idea
@@ -182,9 +177,7 @@ struct Configuration {
          * configuration object. Each option has a set of values from which the
          * user can select.
          */
-        ConfigurationOption **options;
-        /// Stores the number of configurable options.
-        int options_len;
+        std::vector<ConfigurationOption *> options;
         /**
          * Represents the configuration value that is currently selected in the
          * UI and is being edited by the user.
@@ -200,26 +193,24 @@ struct Configuration {
         std::map<int, std::vector<int>> linked_options;
 
         Configuration()
-            : name(nullptr), options(nullptr), options_len(0),
-              curr_selected_option(0), linked_options({})
+            : name(nullptr), options({}), curr_selected_option(0),
+              linked_options({})
         {
         }
 
         Configuration(const char *name,
                       std::vector<ConfigurationOption *> options)
-            : name(name), options(nullptr), options_len(options.size()),
-              curr_selected_option(0), linked_options({})
+            : name(name), options(options), curr_selected_option(0),
+              linked_options({})
         {
-                populate_options(this, options, 0);
         }
 
         Configuration(const char *name,
                       std::vector<ConfigurationOption *> options,
                       std::map<int, std::vector<int>> linked_options)
-            : name(name), options(nullptr), options_len(options.size()),
-              curr_selected_option(0), linked_options(linked_options)
+            : name(name), options(options), curr_selected_option(0),
+              linked_options(linked_options)
         {
-                populate_options(this, options, 0);
         }
 
         ~Configuration();
@@ -292,10 +283,6 @@ void populate_string_option_values(ConfigurationOption *value,
                                    std::vector<const char *> available_values);
 void populate_color_option_values(ConfigurationOption *value,
                                   std::vector<Color> available_values);
-
-void populate_options(Configuration *config,
-                      std::vector<ConfigurationOption *> options,
-                      int currently_selected);
 
 /**
  * Maps from 'Yes', 'No' config option values to boolean.
