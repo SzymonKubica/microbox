@@ -110,34 +110,19 @@ typedef struct ConfigurationOption {
 
       public:
         static ConfigurationOption *of_integers(const char *name,
-                                                std::vector<int> values,
+                                                const std::vector<int> &values,
                                                 int initial_value);
-        static ConfigurationOption *of_strings(const char *name,
-                                               std::vector<const char *> values,
-                                               const char *initial_value);
+        static ConfigurationOption *
+        of_strings(const char *name, const std::vector<const char *> &values,
+                   const char *initial_value);
         static ConfigurationOption *of_colors(const char *name,
-                                              std::vector<Color> values,
+                                              const std::vector<Color> &values,
                                               Color initial_value);
 
-        int get_curr_int_value()
-        {
-                return static_cast<int *>(available_values)[currently_selected];
-        }
-
-        char *get_current_str_value()
-        {
-                return static_cast<char **>(
-                    available_values)[currently_selected];
-        }
-
-        Color get_current_color_value()
-        {
-                return static_cast<Color *>(
-                    available_values)[currently_selected];
-        }
-
+        int get_curr_int_value();
+        char *get_current_str_value();
+        Color get_current_color_value();
         ~ConfigurationOption();
-
         ConfigurationOption(const ConfigurationOption &other);
 
 } ConfigurationOption;
@@ -149,17 +134,17 @@ typedef struct ConfigurationOption {
  * configuration menu.
  */
 template <typename T>
-int get_config_option_value_index(ConfigurationOption *option, T value)
+int get_config_option_value_index(const ConfigurationOption &option, T value)
 {
-        for (int i = 0; i < option->available_values_len; i++) {
-                if (static_cast<T *>(option->available_values)[i] == value) {
+        for (int i = 0; i < option.available_values_len; i++) {
+                if (static_cast<T *>(option.available_values)[i] == value) {
                         return i;
                 }
         }
         return -1;
 }
 
-int get_config_option_string_value_index(ConfigurationOption *option,
+int get_config_option_string_value_index(const ConfigurationOption &option,
                                          const char *value);
 
 /**
@@ -243,17 +228,17 @@ struct ConfigurationDiff {
         std::vector<int> modified_options;
 };
 
-void switch_edited_config_option_down(Configuration *config,
-                                      ConfigurationDiff *diff);
-void switch_edited_config_option_up(Configuration *config,
-                                    ConfigurationDiff *diff);
+void switch_edited_config_option_down(Configuration &config,
+                                      ConfigurationDiff &diff);
+void switch_edited_config_option_up(Configuration &config,
+                                    ConfigurationDiff &diff);
 
-void increment_current_option_value(Configuration *config,
-                                    ConfigurationDiff *diff);
-void decrement_current_option_value(Configuration *config,
-                                    ConfigurationDiff *diff);
-int find_max_config_option_name_text_length(Configuration *config);
-int find_max_config_option_value_text_length(Configuration *config);
+void increment_current_option_value(Configuration &config,
+                                    ConfigurationDiff &diff);
+void decrement_current_option_value(Configuration &config,
+                                    ConfigurationDiff &diff);
+int find_max_config_option_name_text_length(const Configuration &config);
+int find_max_config_option_value_text_length(const Configuration &config);
 
 /**
  * Given a platform providing the display and controllers implementation
@@ -277,12 +262,13 @@ collect_configuration(Platform *p, Configuration *config,
                       UserInterfaceCustomization *customization,
                       bool allow_exit = true, bool should_render_logo = false);
 
-void populate_int_option_values(ConfigurationOption *value,
-                                std::vector<int> available_values);
-void populate_string_option_values(ConfigurationOption *value,
-                                   std::vector<const char *> available_values);
-void populate_color_option_values(ConfigurationOption *value,
-                                  std::vector<Color> available_values);
+void populate_int_option_values(ConfigurationOption &value,
+                                const std::vector<int> &available_values);
+void populate_string_option_values(
+    ConfigurationOption &value,
+    const std::vector<const char *> &available_values);
+void populate_color_option_values(ConfigurationOption &value,
+                                  const std::vector<Color> &available_values);
 
 /**
  * Maps from 'Yes', 'No' config option values to boolean.

@@ -49,7 +49,10 @@
     - [x] refactor the controller interface to use proper optionals instead of output parameters and boolean
           success flag
     - [x] common transitions code
-  - [ ] configuration management code (this is large and messy, plus will likely require a redesign)
+  - [x] configuration management code (this is large and messy, plus will likely require a redesign)
+  - [ ] change `collect_configuration` API to take in references and const references
+        instead of raw pointers
+  - [ ] user interface rendering code
 
 
 # Done

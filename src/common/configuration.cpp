@@ -14,51 +14,49 @@
 
 #define TAG "configuration"
 
-ConfigurationOption *ConfigurationOption::of_integers(const char *name,
-                                                      std::vector<int> values,
-                                                      int initial_value)
+ConfigurationOption *ConfigurationOption::of_integers(
+    const char *name, const std::vector<int> &values, int initial_value)
 {
         ConfigurationOption *option = new ConfigurationOption();
         option->name = name;
-        populate_int_option_values(option, values);
+        populate_int_option_values(*option, values);
         option->currently_selected =
-            get_config_option_value_index(option, initial_value);
+            get_config_option_value_index(*option, initial_value);
         return option;
 }
 ConfigurationOption *
 ConfigurationOption::of_strings(const char *name,
-                                std::vector<const char *> values,
+                                const std::vector<const char *> &values,
                                 const char *initial_value)
 {
         ConfigurationOption *option = new ConfigurationOption();
         option->name = name;
-        populate_string_option_values(option, values);
+        populate_string_option_values(*option, values);
         // We need to use this elaborate mechanism of getting the index of the
         // initial value because the config value is also saved in persistent
         // storage without its index. Hence we need to map from the actual value
         // to its index in the options array.
         option->currently_selected =
-            get_config_option_string_value_index(option, initial_value);
+            get_config_option_string_value_index(*option, initial_value);
         return option;
 }
 
-ConfigurationOption *ConfigurationOption::of_colors(const char *name,
-                                                    std::vector<Color> values,
-                                                    Color initial_value)
+ConfigurationOption *ConfigurationOption::of_colors(
+    const char *name, const std::vector<Color> &values, Color initial_value)
 {
         ConfigurationOption *option = new ConfigurationOption();
         option->name = name;
-        populate_color_option_values(option, values);
+        populate_color_option_values(*option, values);
         // We need to use this elaborate mechanism of getting the index of the
         // initial value because the config value is also saved in persistent
         // storage without its index. Hence we need to map from the actual value
         // to its index in the options array.
         option->currently_selected =
-            get_config_option_value_index(option, initial_value);
+            get_config_option_value_index(*option, initial_value);
         return option;
 }
 
-void shift_edited_config_option(Configuration *config, ConfigurationDiff *diff,
+void shift_edited_config_option(Configuration &config, ConfigurationDiff &diff,
                                 int steps);
 
 /**
@@ -68,8 +66,8 @@ void shift_edited_config_option(Configuration *config, ConfigurationDiff *diff,
  * decrements the index of the currently edited config option. The modification
  * that is applied to the config is encoded in the `ConfigurationDiff` object
  * which is then used to partially re-render the menu. */
-void switch_edited_config_option_up(Configuration *config,
-                                    ConfigurationDiff *diff)
+void switch_edited_config_option_up(Configuration &config,
+                                    ConfigurationDiff &diff)
 {
         shift_edited_config_option(config, diff, -1);
 }
@@ -81,8 +79,8 @@ void switch_edited_config_option_up(Configuration *config,
  * increments the index of the currently edited config option. The modification
  * that is applied to the config is encoded in the `ConfigurationDiff` object
  * which is then used to partially re-render the menu. */
-void switch_edited_config_option_down(Configuration *config,
-                                      ConfigurationDiff *diff)
+void switch_edited_config_option_down(Configuration &config,
+                                      ConfigurationDiff &diff)
 {
         shift_edited_config_option(config, diff, 1);
 }
@@ -91,29 +89,29 @@ void switch_edited_config_option_down(Configuration *config,
  * Shifts the currently edited config option. We wrap modulo
  * `config->config_values_len`
  */
-void shift_edited_config_option(Configuration *config, ConfigurationDiff *diff,
+void shift_edited_config_option(Configuration &config, ConfigurationDiff &diff,
                                 int steps)
 {
         LOG_DEBUG(TAG, "Config option index before switching: %d",
-                  config->curr_selected_option);
-        int config_len = config->options.size();
-        diff->previously_edited_option = config->curr_selected_option;
-        config->curr_selected_option = mathematical_modulo(
-            config->curr_selected_option + steps, config_len);
-        diff->currently_edited_option = config->curr_selected_option;
+                  config.curr_selected_option);
+        int config_len = config.options.size();
+        diff.previously_edited_option = config.curr_selected_option;
+        config.curr_selected_option = mathematical_modulo(
+            config.curr_selected_option + steps, config_len);
+        diff.currently_edited_option = config.curr_selected_option;
         LOG_DEBUG(TAG, "Config option index after switching: %d",
-                  config->curr_selected_option);
+                  config.curr_selected_option);
 }
 
-void shift_current_config_option_value(Configuration *config,
-                                       ConfigurationDiff *diff, int steps);
+void shift_current_config_option_value(Configuration &config,
+                                       ConfigurationDiff &diff, int steps);
 
 /**
  * Modifies the currently selected configuration bar by incrementing the
  * index of the value of the configuration controlled by this setting.
  */
-void increment_current_option_value(Configuration *config,
-                                    ConfigurationDiff *diff)
+void increment_current_option_value(Configuration &config,
+                                    ConfigurationDiff &diff)
 {
         shift_current_config_option_value(config, diff, 1);
 }
@@ -122,110 +120,110 @@ void increment_current_option_value(Configuration *config,
  * Modifies the currently selected configuration bar by decrementing the
  * index of the value of the configuration controlled by this setting.
  */
-void decrement_current_option_value(Configuration *config,
-                                    ConfigurationDiff *diff)
+void decrement_current_option_value(Configuration &config,
+                                    ConfigurationDiff &diff)
 {
         shift_current_config_option_value(config, diff, -1);
 }
 
-void shift_current_config_option_value(Configuration *config,
-                                       ConfigurationDiff *diff, int steps)
+void shift_current_config_option_value(Configuration &config,
+                                       ConfigurationDiff &diff, int steps)
 {
-        assert(config->curr_selected_option != config->options.size());
+        assert(config.curr_selected_option != config.options.size());
 
-        int curr_idx = config->curr_selected_option;
-        ConfigurationOption *current = config->options[curr_idx];
+        int curr_idx = config.curr_selected_option;
+        ConfigurationOption *current = config.options[curr_idx];
 
         current->currently_selected = mathematical_modulo(
             current->currently_selected + steps, current->available_values_len);
 
-        if (config->linked_options.find(curr_idx) !=
-            config->linked_options.end()) {
-                for (int linked_idx : config->linked_options[curr_idx]) {
+        if (config.linked_options.find(curr_idx) !=
+            config.linked_options.end()) {
+                for (int linked_idx : config.linked_options[curr_idx]) {
                         ConfigurationOption *linked =
-                            config->options[linked_idx];
+                            config.options[linked_idx];
                         linked->currently_selected = mathematical_modulo(
                             linked->currently_selected + steps,
                             linked->available_values_len);
-                        diff->modified_options.push_back(linked_idx);
+                        diff.modified_options.push_back(linked_idx);
                 }
         }
 
-        diff->modified_options.push_back(config->curr_selected_option);
+        diff.modified_options.push_back(config.curr_selected_option);
 }
 
-int find_max_config_option_value_text_length(Configuration *config)
+int find_max_config_option_value_text_length(const Configuration &config)
 {
         int max_length = 0;
-        for (int i = 0; i < config->options.size(); i++) {
+        for (int i = 0; i < config.options.size(); i++) {
                 int current_option_value_length;
-                ConfigurationOption *current = config->options[i];
-                max_length =
-                    std::max(max_length, current->max_config_value_len);
+                ConfigurationOption &current = *config.options[i];
+                max_length = std::max(max_length, current.max_config_value_len);
         }
         return max_length;
 }
 
-int find_max_config_option_name_text_length(Configuration *config)
+int find_max_config_option_name_text_length(const Configuration &config)
 {
         int max_length = 0;
-        for (int i = 0; i < config->options.size(); i++) {
-                ConfigurationOption *current = config->options[i];
-                max_length = std::max(max_length, (int)strlen(current->name));
+        for (int i = 0; i < config.options.size(); i++) {
+                ConfigurationOption &current = *config.options[i];
+                max_length = std::max(max_length, (int)strlen(current.name));
         }
         return max_length;
 }
 
-int find_max_number_length(std::vector<int> numbers);
+int find_max_number_length(const std::vector<int> &numbers);
 
 /**
  * Given a vector of available integer values for a configuration option,
  * it encodes the type information and the maximum number string representation
  * length that is required for rendering in the UI.
  */
-void populate_int_option_values(ConfigurationOption *value,
-                                std::vector<int> available_values)
+void populate_int_option_values(ConfigurationOption &value,
+                                const std::vector<int> &available_values)
 {
-        value->type = ConfigurationOptionType::INT,
-        value->available_values_len = available_values.size();
-        int *values = new int[value->available_values_len];
-        for (int i = 0; i < value->available_values_len; i++) {
+        value.type = ConfigurationOptionType::INT,
+        value.available_values_len = available_values.size();
+        int *values = new int[value.available_values_len];
+        for (int i = 0; i < value.available_values_len; i++) {
                 values[i] = available_values[i];
         }
-        value->available_values = values;
-        value->max_config_value_len = find_max_number_length(available_values);
+        value.available_values = values;
+        value.max_config_value_len = find_max_number_length(available_values);
 }
 
-int find_max_string_length(std::vector<const char *> strings);
-void populate_string_option_values(ConfigurationOption *value,
-                                   std::vector<const char *> available_values)
+int find_max_string_length(const std::vector<const char *> &strings);
+void populate_string_option_values(
+    ConfigurationOption &value,
+    const std::vector<const char *> &available_values)
 {
-        value->type = ConfigurationOptionType::STRING,
-        value->available_values_len = available_values.size();
-        const char **values = new const char *[value->available_values_len];
-        for (int i = 0; i < value->available_values_len; i++) {
+        value.type = ConfigurationOptionType::STRING,
+        value.available_values_len = available_values.size();
+        const char **values = new const char *[value.available_values_len];
+        for (int i = 0; i < value.available_values_len; i++) {
                 values[i] = available_values[i];
         }
-        value->available_values = values;
-        value->max_config_value_len = find_max_string_length(available_values);
+        value.available_values = values;
+        value.max_config_value_len = find_max_string_length(available_values);
 }
 
-int find_max_color_str_length(std::vector<Color> available_values);
-void populate_color_option_values(ConfigurationOption *value,
-                                  std::vector<Color> available_values)
+int find_max_color_str_length(const std::vector<Color> &available_values);
+void populate_color_option_values(ConfigurationOption &value,
+                                  const std::vector<Color> &available_values)
 {
-        value->type = ConfigurationOptionType::COLOR,
-        value->available_values_len = available_values.size();
-        Color *values = new Color[value->available_values_len];
-        for (int i = 0; i < value->available_values_len; i++) {
+        value.type = ConfigurationOptionType::COLOR,
+        value.available_values_len = available_values.size();
+        Color *values = new Color[value.available_values_len];
+        for (int i = 0; i < value.available_values_len; i++) {
                 values[i] = available_values[i];
         }
-        value->available_values = values;
-        value->max_config_value_len =
+        value.available_values = values;
+        value.max_config_value_len =
             find_max_color_str_length(available_values);
 }
 
-int find_max_number_length(std::vector<int> numbers)
+int find_max_number_length(const std::vector<int> &numbers)
 {
         int max_len = 0;
         for (int value : numbers) {
@@ -235,7 +233,7 @@ int find_max_number_length(std::vector<int> numbers)
         return max_len;
 }
 
-int find_max_string_length(std::vector<const char *> strings)
+int find_max_string_length(const std::vector<const char *> &strings)
 {
         int max_len = 0;
         for (const char *value : strings) {
@@ -244,7 +242,7 @@ int find_max_string_length(std::vector<const char *> strings)
         return max_len;
 }
 
-int find_max_color_str_length(std::vector<Color> colors)
+int find_max_color_str_length(const std::vector<Color> &colors)
 {
         int max_len = 0;
         for (Color value : colors) {
@@ -254,12 +252,12 @@ int find_max_color_str_length(std::vector<Color> colors)
         return max_len;
 }
 
-int get_config_option_string_value_index(ConfigurationOption *option,
+int get_config_option_string_value_index(const ConfigurationOption &option,
                                          const char *value)
 {
-        for (int i = 0; i < option->available_values_len; i++) {
+        for (int i = 0; i < option.available_values_len; i++) {
                 if (strcmp(
-                        static_cast<const char **>(option->available_values)[i],
+                        static_cast<const char **>(option.available_values)[i],
                         value) == 0) {
                         return i;
                 }
@@ -303,7 +301,7 @@ collect_configuration(Platform *p, Configuration *config,
                                  move_registered_delay to ensure that the UI is
                                  snappy.
                                  */
-                                increment_current_option_value(config, &diff);
+                                increment_current_option_value(*config, diff);
                                 render_config_menu(p->display, config, &diff,
                                                    true, customization,
                                                    should_render_logo);
@@ -331,16 +329,16 @@ collect_configuration(Platform *p, Configuration *config,
                         dir = maybe_direction.value();
                         switch (dir) {
                         case DOWN:
-                                switch_edited_config_option_down(config, &diff);
+                                switch_edited_config_option_down(*config, diff);
                                 break;
                         case UP:
-                                switch_edited_config_option_up(config, &diff);
+                                switch_edited_config_option_up(*config, diff);
                                 break;
                         case LEFT:
-                                decrement_current_option_value(config, &diff);
+                                decrement_current_option_value(*config, diff);
                                 break;
                         case RIGHT:
-                                increment_current_option_value(config, &diff);
+                                increment_current_option_value(*config, diff);
                                 break;
                         }
 
@@ -443,4 +441,19 @@ ConfigurationOption::ConfigurationOption(const ConfigurationOption &other)
                 break;
         }
         }
+}
+
+int ConfigurationOption::get_curr_int_value()
+{
+        return static_cast<int *>(available_values)[currently_selected];
+}
+
+char *ConfigurationOption::get_current_str_value()
+{
+        return static_cast<char **>(available_values)[currently_selected];
+}
+
+Color ConfigurationOption::get_current_color_value()
+{
+        return static_cast<Color *>(available_values)[currently_selected];
 }

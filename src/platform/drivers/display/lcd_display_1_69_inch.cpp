@@ -122,7 +122,8 @@ void LcdDisplay_1_69::draw_circle(Point center, int radius, Color color,
 };
 
 void LcdDisplay_1_69::draw_rectangle(Point start, int width, int height,
-                                     Color color, int border_width, bool filled) const
+                                     Color color, int border_width,
+                                     bool filled) const
 {
 
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;

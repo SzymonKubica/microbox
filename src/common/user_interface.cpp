@@ -455,9 +455,9 @@ void render_config_menu(Display *display, Configuration *config,
                         bool should_render_logo)
 {
         int max_option_name_length =
-            find_max_config_option_name_text_length(config);
+            find_max_config_option_name_text_length(*config);
         int max_option_value_length =
-            std::min(find_max_config_option_value_text_length(config),
+            std::min(find_max_config_option_value_text_length(*config),
                      MAX_CONFIG_OPTION_VALUE_LENGTH);
         int text_max_length =
             max_option_name_length + max_option_value_length + 1;
