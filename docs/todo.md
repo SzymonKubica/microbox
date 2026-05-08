@@ -50,9 +50,10 @@
           success flag
     - [x] common transitions code
   - [x] configuration management code (this is large and messy, plus will likely require a redesign)
-  - [ ] change `collect_configuration` API to take in references and const references
+  - [x] change `collect_configuration` API to take in references and const references
         instead of raw pointers
-  - [ ] user interface rendering code
+  - [x] user interface rendering code
+  - [ ] application executor & individual application implementations
 
 
 
