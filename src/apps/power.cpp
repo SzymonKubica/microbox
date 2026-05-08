@@ -50,9 +50,9 @@ PowerManagementApp::collect_config(Platform *p,
                                    UserInterfaceCustomization *customization,
                                    SleepConfiguration *game_config)
 {
-        render_wrapped_text(p, customization, get_help_text());
+        render_wrapped_text(*p, *customization, get_help_text());
         Action act;
-        wait_until_action_input(p, &act);
+        wait_until_action_input(*p, act);
 
         if (act == BACK_ACTION)
                 return UserAction::Exit;

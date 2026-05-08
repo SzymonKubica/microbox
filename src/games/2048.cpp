@@ -122,9 +122,9 @@ UserAction Clean2048::app_loop(Platform *p,
                     "continue the previous game or the 'right' button to start "
                     "a "
                     "new game.";
-                render_wrapped_text(p, customization, help_text);
+                render_wrapped_text(*p, *customization, help_text);
                 Action action;
-                auto maybe_interrupt = wait_until_action_input(p, &action);
+                auto maybe_interrupt = wait_until_action_input(*p, action);
                 if (maybe_interrupt.has_value()) {
                         assert(maybe_interrupt.value() ==
                                UserAction::CloseWindow);
@@ -171,11 +171,11 @@ UserAction Clean2048::app_loop(Platform *p,
                                     "save and exit, or left button to exit "
                                     "without "
                                     "saving.";
-                                render_wrapped_text(p, customization,
+                                render_wrapped_text(*p, *customization,
                                                     help_text);
                                 Action action;
                                 auto maybe_interrupt =
-                                    wait_until_action_input(p, &action);
+                                    wait_until_action_input(*p, action);
                                 if (maybe_interrupt.has_value()) {
                                         assert(maybe_interrupt.value() ==
                                                UserAction::CloseWindow);
@@ -308,7 +308,7 @@ Clean2048::collect_config(Platform *p,
             assemble_2048_configuration(p->persistent_storage, initial_config);
 
         auto maybe_interrupt_action =
-            collect_configuration(p, config, customization);
+            collect_configuration(*p, *config, *customization);
         if (maybe_interrupt_action) {
                 delete config;
                 delete initial_config;

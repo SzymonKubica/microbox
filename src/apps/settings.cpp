@@ -28,7 +28,7 @@ Settings::collect_config(Platform *p, UserInterfaceCustomization *customization,
         Configuration *settings_config =
             assemble_settings_menu_configuration(p);
         auto maybe_interrupt =
-            collect_configuration(p, settings_config, customization);
+            collect_configuration(*p, *settings_config, *customization);
         if (maybe_interrupt) {
                 delete settings_config;
                 return maybe_interrupt;

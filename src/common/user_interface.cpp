@@ -30,13 +30,12 @@ const size_t MAX_RENDERED_OPTION_NUM = 4;
 
 inline int get_centering_margin(int screen_width, int text_length,
                                 int font_width);
-void render_config_bar_centered(Display *display, int y_start,
-                                int option_text_max_len, int value_text_max_len,
-                                const char *option_text, const char *value_text,
-                                bool is_already_rendered,
-                                bool update_value_cell, bool update_option_name,
-                                UserInterfaceCustomization *customization);
-void render_text_bar_centered(Display *display, int y_start,
+void render_config_bar_centered(
+    const Display &display, int y_start, int option_text_max_len,
+    int value_text_max_len, const char *option_text, const char *value_text,
+    bool is_already_rendered, bool update_value_cell, bool update_option_name,
+    const UserInterfaceCustomization &customization);
+void render_text_bar_centered(const Display &display, int y_start,
                               int option_text_max_len, int value_text_max_len,
                               const char *text, bool is_already_rendered,
                               UserInterfaceRenderingMode rendering_mode,
@@ -44,9 +43,9 @@ void render_text_bar_centered(Display *display, int y_start,
                               Color text_color = White,
                               int font_width = FONT_WIDTH,
                               FontSize font_size = Size16);
-void render_circle_selector(Display *display, bool already_rendered, int x_axis,
-                            std::vector<int> y_positions, int prev_pos_idx,
-                            int curr_pos_idx, int radius,
+void render_circle_selector(const Display &display, bool already_rendered,
+                            int x_axis, std::vector<int> y_positions,
+                            int prev_pos_idx, int curr_pos_idx, int radius,
                             Color bg_color = Black,
                             Color circle_color = DarkBlue);
 int calculate_section_spacing(int display_height, int config_bar_num,
@@ -106,12 +105,12 @@ int *calculate_config_bar_positions(int y_spacing, FontSize heading_font_size,
  * will use regular rectangles with no fill instead of the default filled
  * rounded rectangles.
  */
-void render_config_bar_centered(Display *display, int y_start,
+void render_config_bar_centered(const Display &display, int y_start,
                                 int option_text_max_len, int value_text_max_len,
                                 const char *option_text, const char *value_text,
                                 bool is_already_rendered,
                                 bool update_value_cell, bool update_option_name,
-                                UserInterfaceCustomization *customization)
+                                const UserInterfaceCustomization &customization)
 {
 
         // For all selector buttons we need to find the one that has the longest
@@ -127,8 +126,8 @@ void render_config_bar_centered(Display *display, int y_start,
         int text_len =
             option_text_max_len + option_value_gap_len + value_text_max_len;
 
-        int h = display->get_height();
-        int w = display->get_width();
+        int h = display.get_height();
+        int w = display.get_width();
         int fw = FONT_WIDTH;
         int fh = FONT_SIZE;
 
@@ -158,27 +157,27 @@ void render_config_bar_centered(Display *display, int y_start,
         int value_cell_y = y_start - value_cell_v_padding;
         Point value_cell_start = {.x = value_cell_x, .y = value_cell_y};
 
-        Color accent_color = customization->accent_color;
+        Color accent_color = customization.accent_color;
 
         if (!is_already_rendered) {
                 Point bar_name_str_start = {.x = left_margin, .y = y_start};
 
-                if (customization->rendering_mode == Detailed) {
+                if (customization.rendering_mode == Detailed) {
                         // Draw the background for the two configuration cells.
-                        display->draw_rounded_rectangle(
+                        display.draw_rounded_rectangle(
                             bar_start, bar_width, fh * 2, fh, accent_color);
                 } else {
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
-                        display->draw_rectangle(bar_start, bar_width, fh * 2,
-                                                accent_color, 1, false);
+                        display.draw_rectangle(bar_start, bar_width, fh * 2,
+                                               accent_color, 1, false);
                 }
         }
 
         if (!is_already_rendered || update_option_name) {
                 Point bar_name_str_start = {.x = left_margin, .y = y_start};
 
-                if (customization->rendering_mode == Detailed) {
+                if (customization.rendering_mode == Detailed) {
 
                         if (update_option_name) {
 #ifdef EMULATOR
@@ -186,14 +185,14 @@ void render_config_bar_centered(Display *display, int y_start,
 #else
                                 int border = 1;
 #endif
-                                display->draw_rectangle(
-                                    bar_name_str_start,
-                                    option_text_max_len * fw,
-                                    fh + v_padding / 2 - 1, accent_color,
-                                    border, true);
+                                display.draw_rectangle(bar_name_str_start,
+                                                       option_text_max_len * fw,
+                                                       fh + v_padding / 2 - 1,
+                                                       accent_color, border,
+                                                       true);
                         }
                         // Draw the actual name of the config bar.
-                        display->draw_string(
+                        display.draw_string(
                             bar_name_str_start, (char *)option_text, Size16,
                             accent_color,
                             get_good_contrast_text_color(accent_color));
@@ -217,16 +216,16 @@ void render_config_bar_centered(Display *display, int y_start,
                                 int adj = 0;
 #endif
 #endif
-                                display->draw_rectangle(
-                                    bar_name_str_start,
-                                    option_text_max_len * fw,
-                                    fh + v_padding - adj, Black, border, true);
+                                display.draw_rectangle(bar_name_str_start,
+                                                       option_text_max_len * fw,
+                                                       fh + v_padding - adj,
+                                                       Black, border, true);
                         }
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
-                        display->draw_string(bar_name_str_start,
-                                             (char *)option_text, Size16, Black,
-                                             White);
+                        display.draw_string(bar_name_str_start,
+                                            (char *)option_text, Size16, Black,
+                                            White);
                 }
         }
 
@@ -238,11 +237,11 @@ void render_config_bar_centered(Display *display, int y_start,
                 // background so it is quite fast) If we need to render more
                 // text we could make it more optimised to only redraw over the
                 // place where actual characters are printed.
-                if (customization->rendering_mode == Detailed) {
-                        display->draw_rounded_rectangle(
+                if (customization.rendering_mode == Detailed) {
+                        display.draw_rounded_rectangle(
                             value_cell_start, value_cell_width,
                             value_cell_height, value_cell_height / 2, White);
-                        display->draw_string(
+                        display.draw_string(
                             {.x = value_cell_start.x + h_padding,
                              .y = value_cell_start.y + value_cell_v_padding},
                             (char *)value_text, Size16, White, Black);
@@ -254,14 +253,14 @@ void render_config_bar_centered(Display *display, int y_start,
                         // is the previous text is erased. Note that this is
                         // only required on the emulator as the actual LCD
                         // display always clears the background of the text.
-                        display->draw_rectangle(
+                        display.draw_rectangle(
                             value_cell_start, value_cell_width,
                             value_cell_height, Black, 0, true);
 #endif
-                        display->draw_rectangle(
+                        display.draw_rectangle(
                             value_cell_start, value_cell_width,
                             value_cell_height, accent_color, 1, false);
-                        display->draw_string(
+                        display.draw_string(
                             {.x = value_cell_start.x + h_padding,
                              .y = value_cell_start.y + value_cell_v_padding},
                             (char *)value_text, Size16, Black, White);
@@ -281,7 +280,7 @@ void render_config_bar_centered(Display *display, int y_start,
  * is that since this text bar doesn't change, it makes no sense to re-render it
  * every time.
  */
-void render_text_bar_centered(Display *display, int y_start,
+void render_text_bar_centered(const Display &display, int y_start,
                               int option_text_max_len, int value_text_max_len,
                               const char *text, bool is_already_rendered,
                               UserInterfaceRenderingMode rendering_mode,
@@ -297,8 +296,8 @@ void render_text_bar_centered(Display *display, int y_start,
         int text_len =
             option_text_max_len + option_value_gap_len + value_text_max_len;
 
-        int h = display->get_height();
-        int w = display->get_width();
+        int h = display.get_height();
+        int w = display.get_width();
         int fw = font_width;
         int fh = font_size;
 
@@ -322,11 +321,11 @@ void render_text_bar_centered(Display *display, int y_start,
                 Point text_start = {.x = text_x, .y = y_start};
                 if (rendering_mode == Detailed) {
                         // Draw the background for the two configuration cells.
-                        display->draw_rounded_rectangle(
+                        display.draw_rounded_rectangle(
                             bar_start, bar_width, fh * 2, fh, background_color);
                         // Draw the actual text of the text bar. Note that it
                         // will be centered inside of the large bar.
-                        display->draw_string(
+                        display.draw_string(
                             text_start, (char *)text, font_size,
                             background_color,
                             get_good_contrast_text_color(background_color));
@@ -337,7 +336,7 @@ void render_text_bar_centered(Display *display, int y_start,
                         // is the previous text is erased. Note that this is
                         // only required on the emulator as the actual LCD
                         // display always clears the background of the text.
-                        display->clear_region(
+                        display.clear_region(
                             bar_start,
                             {bar_start.x + bar_width, bar_start.y + fh * 2},
                             Black);
@@ -345,13 +344,13 @@ void render_text_bar_centered(Display *display, int y_start,
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
                         // Draw the background for the two configuration cells.
-                        display->draw_rectangle(bar_start, bar_width, fh * 2,
-                                                background_color, 1, false);
+                        display.draw_rectangle(bar_start, bar_width, fh * 2,
+                                               background_color, 1, false);
 
                         // Draw the actual text of the text bar. Note that it
                         // will be centered inside of the large bar.
-                        display->draw_string(text_start, (char *)text,
-                                             font_size, Black, text_color);
+                        display.draw_string(text_start, (char *)text, font_size,
+                                            Black, text_color);
                 }
         }
 }
@@ -366,10 +365,10 @@ void render_text_bar_centered(Display *display, int y_start,
  * match the supplied pointer to the `y_positions`, otherwise the function will
  * error with invalid array access.
  */
-void render_circle_selector(Display *display, bool already_rendered, int x_axis,
-                            std::vector<int> y_positions, int prev_pos_idx,
-                            int curr_pos_idx, int radius, Color bg_color,
-                            Color circle_color)
+void render_circle_selector(const Display &display, bool already_rendered,
+                            int x_axis, std::vector<int> y_positions,
+                            int prev_pos_idx, int curr_pos_idx, int radius,
+                            Color bg_color, Color circle_color)
 {
         // We ignore the array overflow.
         if (prev_pos_idx >= y_positions.size() ||
@@ -379,11 +378,11 @@ void render_circle_selector(Display *display, bool already_rendered, int x_axis,
         if (!already_rendered || prev_pos_idx != curr_pos_idx) {
                 // First clear the old circle
                 Point clear_pos = {.x = x_axis, .y = y_positions[prev_pos_idx]};
-                display->draw_circle(clear_pos, radius, bg_color, 0, true);
+                display.draw_circle(clear_pos, radius, bg_color, 0, true);
 
                 // Draw the new circle
                 Point new_pos = {.x = x_axis, .y = y_positions[curr_pos_idx]};
-                display->draw_circle(new_pos, radius, circle_color, 0, true);
+                display.draw_circle(new_pos, radius, circle_color, 0, true);
         }
 }
 
@@ -449,37 +448,36 @@ inline int get_centering_margin(int screen_width, int font_width,
  * is required on the physical lcd display because redrawing the entire menu
  * every time is too slow so we need to be efficient about it.
  */
-void render_config_menu(Display *display, Configuration *config,
-                        ConfigurationDiff *diff, bool text_update_only,
-                        UserInterfaceCustomization *customization,
+void render_config_menu(const Display &display, const Configuration &config,
+                        const ConfigurationDiff &diff, bool text_update_only,
+                        const UserInterfaceCustomization &customization,
                         bool should_render_logo)
 {
         int max_option_name_length =
-            find_max_config_option_name_text_length(*config);
+            find_max_config_option_name_text_length(config);
         int max_option_value_length =
-            std::min(find_max_config_option_value_text_length(*config),
+            std::min(find_max_config_option_value_text_length(config),
                      MAX_CONFIG_OPTION_VALUE_LENGTH);
         int text_max_length =
             max_option_name_length + max_option_value_length + 1;
 
         LOG_DEBUG(TAG, "Found max text length across all config bars: %d",
                   text_max_length);
-        int spacing = (display->get_height() -
-                       config->options.size() * FONT_SIZE - HEADING_FONT_SIZE) /
+        int spacing = (display.get_height() -
+                       config.options.size() * FONT_SIZE - HEADING_FONT_SIZE) /
                       3;
 
-        const char *heading_text = config->name;
+        const char *heading_text = config.name;
 
         // We exctract the display dimensions and font sizes into shorter
         // variable names to make the code easier to read.
-        int h = display->get_height();
-        int w = display->get_width();
+        int h = display.get_height();
+        int w = display.get_width();
         int fw = FONT_WIDTH;
         int fh = FONT_SIZE;
         int left_margin = get_centering_margin(w, fw, text_max_length);
 
-        int bars_num =
-            std::min(config->options.size(), MAX_RENDERED_OPTION_NUM);
+        int bars_num = std::min(config.options.size(), MAX_RENDERED_OPTION_NUM);
 
         int bar_height = 2 * fh;
         int bar_gap_height = fh * 3 / 4;
@@ -487,8 +485,8 @@ void render_config_menu(Display *display, Configuration *config,
                                                   bar_gap_height, Size24);
 
         if (!text_update_only) {
-                display->initialize();
-                display->clear(Black);
+                display.initialize();
+                display.clear(Black);
         }
 
         int *bar_positions = calculate_config_bar_positions(
@@ -497,7 +495,7 @@ void render_config_menu(Display *display, Configuration *config,
         // Render the config menu heading.
         render_text_bar_centered(display, y_spacing, text_max_length, 0,
                                  heading_text, text_update_only,
-                                 customization->rendering_mode, Black, White,
+                                 customization.rendering_mode, Black, White,
                                  HEADING_FONT_WIDTH, Size24);
 
         // This is manually tweaked to make it look good.
@@ -510,7 +508,7 @@ void render_config_menu(Display *display, Configuration *config,
         }
 
         int start_option_idx = 0;
-        int end_option_idx = config->options.size() - 1;
+        int end_option_idx = config.options.size() - 1;
         // If we are in the scrolling mode we set those overrides to true to
         // ensure that both the option names and their values are always re-
         // rendered.
@@ -519,19 +517,18 @@ void render_config_menu(Display *display, Configuration *config,
         // is supposed to go there. Note that if there is less than 5 bars,
         // this is an identity map.
         std::map<int, int> bar_idx_to_option_idx;
-        if (config->options.size() > MAX_RENDERED_OPTION_NUM) {
-                update_option_names = diff->currently_edited_option !=
-                                      diff->previously_edited_option;
+        if (config.options.size() > MAX_RENDERED_OPTION_NUM) {
+                update_option_names = diff.currently_edited_option !=
+                                      diff.previously_edited_option;
                 // We iterate and wrap
-                int curr = config->curr_selected_option;
-                int prev =
-                    mathematical_modulo(curr - 1, config->options.size());
+                int curr = config.curr_selected_option;
+                int prev = mathematical_modulo(curr - 1, config.options.size());
                 bar_idx_to_option_idx[0] = prev;
                 bar_idx_to_option_idx[1] = curr;
                 bar_idx_to_option_idx[2] =
-                    mathematical_modulo(curr + 1, config->options.size());
+                    mathematical_modulo(curr + 1, config.options.size());
                 bar_idx_to_option_idx[3] =
-                    mathematical_modulo(curr + 2, config->options.size());
+                    mathematical_modulo(curr + 2, config.options.size());
 
         } else {
                 for (int i = 0; i < bars_num; i++) {
@@ -546,7 +543,7 @@ void render_config_menu(Display *display, Configuration *config,
                 char option_value_buff[max_option_value_length + 1];
 
                 ConfigurationOption *value =
-                    config->options[bar_idx_to_option_idx[i]];
+                    config.options[bar_idx_to_option_idx[i]];
                 const char *option_text = value->name;
 
                 switch (value->type) {
@@ -602,10 +599,10 @@ void render_config_menu(Display *display, Configuration *config,
                     max_option_value_length, option_text, option_value_buff,
                     text_update_only,
                     update_option_names ||
-                        std::find(diff->modified_options.begin(),
-                                  diff->modified_options.end(),
+                        std::find(diff.modified_options.begin(),
+                                  diff.modified_options.end(),
                                   bar_idx_to_option_idx[i]) !=
-                            diff->modified_options.end(),
+                            diff.modified_options.end(),
                     update_option_names, customization);
                 LOG_DEBUG(TAG,
                           "Rendered config bar %d with option text '%s' and "
@@ -621,7 +618,7 @@ void render_config_menu(Display *display, Configuration *config,
         // pattern is not crystalized enough to abstract it.
         int padding = 1; // 0.5 fw on either side
         int bar_width = (text_max_length + padding) * fw;
-        int right_margin = display->get_width() - (left_margin + bar_width);
+        int right_margin = display.get_width() - (left_margin + bar_width);
         int circle_x = left_margin + bar_width + right_margin / 2;
         int v_padding = fh / 2;
         int circle_ys_len = bars_num;
@@ -634,23 +631,22 @@ void render_config_menu(Display *display, Configuration *config,
         // mode. In this case the option names and values toggle and get
         // rerendered in the config bars but the circle selector stays at the
         // top and this is the option that gets edited.
-        if (config->options.size() > MAX_RENDERED_OPTION_NUM) {
+        if (config.options.size() > MAX_RENDERED_OPTION_NUM) {
                 render_circle_selector(display, text_update_only, circle_x,
                                        circle_ys, 1, 1, SELECTOR_CIRCLE_RADIUS,
-                                       Black, customization->accent_color);
+                                       Black, customization.accent_color);
         } else {
                 render_circle_selector(
                     display, text_update_only, circle_x, circle_ys,
-                    diff->previously_edited_option,
-                    diff->currently_edited_option, SELECTOR_CIRCLE_RADIUS,
-                    Black, customization->accent_color);
+                    diff.previously_edited_option, diff.currently_edited_option,
+                    SELECTOR_CIRCLE_RADIUS, Black, customization.accent_color);
         }
 
         free(bar_positions);
 }
 
 void render_controls_explanations_colored_buttons(
-    Display *display, std::map<Action, std::string> button_hints)
+    const Display &display, std::map<Action, std::string> button_hints)
 {
         std::vector<Color> button_colors(4);
         button_colors[Action::BLUE] = Blue;
@@ -658,8 +654,8 @@ void render_controls_explanations_colored_buttons(
         button_colors[Action::RED] = Red;
         button_colors[Action::GREEN] = Green;
 
-        int h = display->get_height();
-        int w = display->get_width();
+        int h = display.get_height();
+        int w = display.get_width();
         int fw = FONT_WIDTH;
         int fh = FONT_SIZE;
 
@@ -709,12 +705,12 @@ void render_controls_explanations_colored_buttons(
                 Action button = buttons_order[i];
                 std::string hint = button_hints[button];
                 Color color = button_colors[button];
-                display->draw_circle({.x = x_pos, .y = circle_indicator_y},
-                                     circle_radius, color, 0, true);
+                display.draw_circle({.x = x_pos, .y = circle_indicator_y},
+                                    circle_radius, color, 0, true);
                 x_pos += circle_radius + circle_text_gap_width;
-                display->draw_string({.x = x_pos, .y = help_text_y},
-                                     (char *)hint.c_str(), FontSize::Size16,
-                                     Black, White);
+                display.draw_string({.x = x_pos, .y = help_text_y},
+                                    (char *)hint.c_str(), FontSize::Size16,
+                                    Black, White);
 
                 x_pos += hint.length() * fw;
                 x_pos += gap_size;
@@ -727,7 +723,7 @@ void render_controls_explanations_colored_buttons(
  * emulator.
  */
 void render_controls_explanations_letter_buttons(
-    Display *display, std::map<Action, std::string> button_hints)
+    const Display &display, std::map<Action, std::string> button_hints)
 {
         std::vector<const char *> button_keys(4);
         button_keys[Action::BLUE] = "a";
@@ -735,8 +731,8 @@ void render_controls_explanations_letter_buttons(
         button_keys[Action::RED] = "f";
         button_keys[Action::GREEN] = "d";
 
-        int h = display->get_height();
-        int w = display->get_width();
+        int h = display.get_height();
+        int w = display.get_width();
         int fw = FONT_WIDTH;
         int fh = FONT_SIZE;
 
@@ -782,13 +778,13 @@ void render_controls_explanations_letter_buttons(
                 Action button = buttons_order[i];
                 std::string hint = button_hints[button];
 
-                display->draw_string({.x = x_pos, .y = help_text_y},
-                                     (char *)button_keys[button],
-                                     FontSize::Size16, Black, White);
+                display.draw_string({.x = x_pos, .y = help_text_y},
+                                    (char *)button_keys[button],
+                                    FontSize::Size16, Black, White);
                 x_pos += key_text_len * fw + 2;
-                display->draw_string({.x = x_pos, .y = help_text_y},
-                                     (char *)hint.c_str(), FontSize::Size16,
-                                     Black, Gray);
+                display.draw_string({.x = x_pos, .y = help_text_y},
+                                    (char *)hint.c_str(), FontSize::Size16,
+                                    Black, Gray);
 
                 x_pos += hint.length() * fw;
                 x_pos += gap_size;
@@ -796,7 +792,7 @@ void render_controls_explanations_letter_buttons(
 }
 
 void render_controls_explanations_directional_buttons(
-    Display *display, std::map<Action, std::string> button_hints)
+    const Display &display, std::map<Action, std::string> button_hints)
 {
         std::vector<Point> button_positions(4);
         button_positions[Action::BLUE] = {-1, 0};
@@ -804,8 +800,8 @@ void render_controls_explanations_directional_buttons(
         button_positions[Action::RED] = {1, 0};
         button_positions[Action::GREEN] = {0, 1};
 
-        int h = display->get_height();
-        int w = display->get_width();
+        int h = display.get_height();
+        int w = display.get_width();
         int fw = FONT_WIDTH;
         int fh = FONT_SIZE;
 
@@ -857,7 +853,7 @@ void render_controls_explanations_directional_buttons(
                 // We first make all possible displacements in gray.
                 for (const auto &d : button_positions) {
                         if (!(d == (const Point &)button_positions[button])) {
-                                display->draw_circle(
+                                display.draw_circle(
                                     {.x = x_pos + 2 * d.x * circle_radius,
                                      .y = circle_indicator_y +
                                           2 * d.y * circle_radius},
@@ -867,23 +863,23 @@ void render_controls_explanations_directional_buttons(
 
                 auto displacement = button_positions[button];
                 Color color = White;
-                display->draw_circle(
+                display.draw_circle(
                     {.x = x_pos + 2 * displacement.x * circle_radius,
                      .y = circle_indicator_y +
                           2 * displacement.y * circle_radius},
                     circle_radius, color, 0, true);
 
                 x_pos += 4 * circle_radius + circle_text_gap_width;
-                display->draw_string({.x = x_pos, .y = help_text_y},
-                                     (char *)hint.c_str(), FontSize::Size16,
-                                     Black, White);
+                display.draw_string({.x = x_pos, .y = help_text_y},
+                                    (char *)hint.c_str(), FontSize::Size16,
+                                    Black, White);
 
                 x_pos += hint.length() * fw;
                 x_pos += gap_size;
         }
 }
 
-void render_controls_explanations(Display *display,
+void render_controls_explanations(const Display &display,
                                   ActionButtonKind button_kind,
                                   std::map<Action, std::string> button_hints)
 {
@@ -907,7 +903,7 @@ void render_controls_explanations(Display *display,
 /**
  * Renders the default explanation of console UI controls.
  */
-void render_default_controls_explanations(Platform *p, Display *display)
+void render_default_controls_explanations(const Platform &p)
 {
 
         std::map<Action, std::string> button_hints;
@@ -917,19 +913,20 @@ void render_default_controls_explanations(Platform *p, Display *display)
         button_hints[Action::GREEN] = "Toggle";
 
         render_controls_explanations(
-            display, p->capabilities.action_button_kind, button_hints);
+            *p.display, p.capabilities.action_button_kind, button_hints);
 }
 
-void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
+void render_wrapped_text(const Platform &p,
+                         const UserInterfaceCustomization &customization,
                          const char *text)
 {
-        p->display->clear(Black);
+        p.display->clear(Black);
 
         // We exctract the display dimensions and font sizes into
         // shorter variable names to make the code easier to read.
-        int h = p->display->get_height();
-        int w = p->display->get_width();
-        int margin = p->display->get_display_corner_radius();
+        int h = p.display->get_height();
+        int w = p.display->get_width();
+        int margin = p.display->get_display_corner_radius();
         int fw = FONT_WIDTH;
         int fh = FONT_SIZE;
 
@@ -970,7 +967,7 @@ void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
                         curr_y = text_start_y + fh * lines_drawn;
                 }
 
-                p->display->draw_string(
+                p.display->draw_string(
                     {.x = text_x + fw * curr_word_x_offset, .y = curr_y},
                     (char *)word, FontSize::Size16, Black, White);
                 curr_word_x_offset += strlen(word);
@@ -985,17 +982,17 @@ void render_wrapped_text(Platform *p, UserInterfaceCustomization *customization,
  * Renders a single block of wrapped text and a guide indicator saying
  * that pressing green will dismiss the help text.
  */
-void render_wrapped_help_text(Platform *p,
-                              UserInterfaceCustomization *customization,
+void render_wrapped_help_text(const Platform &p,
+                              const UserInterfaceCustomization &customization,
                               const char *help_text)
 {
         render_wrapped_text(p, customization, help_text);
 
         // We exctract the display dimensions and font sizes into
         // shorter variable names to make the code easier to read.
-        int h = p->display->get_height();
-        int w = p->display->get_width();
-        int margin = p->display->get_display_corner_radius();
+        int h = p.display->get_height();
+        int w = p.display->get_width();
+        int margin = p.display->get_display_corner_radius();
         int fw = FONT_WIDTH;
         int fh = FONT_SIZE;
 
@@ -1017,19 +1014,18 @@ void render_wrapped_help_text(Platform *p,
 #endif
 
         Color ok_color =
-            p->capabilities.action_button_kind == ActionButtonKind::Letters
+            p.capabilities.action_button_kind == ActionButtonKind::Letters
                 ? Gray
                 : White;
-        p->display->draw_string({.x = ok_text_x, .y = ok_text_y}, (char *)ok,
-                                FontSize::Size16, Black, ok_color);
+        p.display->draw_string({.x = ok_text_x, .y = ok_text_y}, (char *)ok,
+                               FontSize::Size16, Black, ok_color);
 
         // This might need simplification in the future
         int radius = FONT_SIZE / 4;
         int d = 2 * radius;
 
         Point center = {.x = ok_green_circle_x, .y = ok_green_circle_y};
-        if (p->capabilities.action_button_kind ==
-            ActionButtonKind::Directions) {
+        if (p.capabilities.action_button_kind == ActionButtonKind::Directions) {
                 std::vector<Point> displacements = {
                     {-1, 0},
                     {0, -1},
@@ -1039,26 +1035,25 @@ void render_wrapped_help_text(Platform *p,
                 int circle_radius = 2;
                 for (const auto &d : displacements) {
                         Color color = d == Point{0, 1} ? White : Gray;
-                        p->display->draw_circle(center +
-                                                    (d * 2 * circle_radius),
-                                                circle_radius, color, 0, true);
+                        p.display->draw_circle(center + (d * 2 * circle_radius),
+                                               circle_radius, color, 0, true);
                 }
-        } else if (p->capabilities.action_button_kind ==
+        } else if (p.capabilities.action_button_kind ==
                    ActionButtonKind::Letters) {
-                p->display->draw_string(
+                p.display->draw_string(
                     {.x = ok_text_x - fw - 2, .y = ok_text_y}, (char *)"d",
                     FontSize::Size16, Black, White);
 
         } else {
                 int circle_radius = 5;
-                p->display->draw_circle(center, circle_radius, Green, 0, true);
+                p.display->draw_circle(center, circle_radius, Green, 0, true);
         }
 }
 
-void draw_cube_perspective(Display *display, Point position, int size,
+void draw_cube_perspective(const Display &display, Point position, int size,
                            Color color)
 {
-        display->draw_rectangle(position, size, size, color, 1, false);
+        display.draw_rectangle(position, size, size, color, 1, false);
 
         // When drawing rectangles and lines the positions are slightly
         // misaligned and don't look pixel-accurate. We need to adjust
@@ -1083,7 +1078,7 @@ void draw_cube_perspective(Display *display, Point position, int size,
         };
 
         for (Point vertex : front_vertices) {
-                display->draw_line(vertex, translate_to_back(vertex), color);
+                display.draw_line(vertex, translate_to_back(vertex), color);
         }
 
         // Draw the two visible back edges
@@ -1092,16 +1087,17 @@ void draw_cube_perspective(Display *display, Point position, int size,
         Point back_bottom_right_vertex =
             translate_to_back(front_bottom_right_vertex);
 
-        display->draw_line(back_top_left_vertex, back_top_right_vertex, color);
-        display->draw_line(back_top_right_vertex, back_bottom_right_vertex,
-                           color);
+        display.draw_line(back_top_left_vertex, back_top_right_vertex, color);
+        display.draw_line(back_top_right_vertex, back_bottom_right_vertex,
+                          color);
 }
 /**
  * Draws a Greek mu letter (μ) contained inside of a square box with
  * edge width equal to `size`. Note that for pixel accuracy the size of
  * the mu letter should be divisible by 6.
  */
-void draw_mu_letter(Display *display, Point position, int size, Color color)
+void draw_mu_letter(const Display &display, Point position, int size,
+                    Color color)
 {
         int width = size / 3;
         int height = 2 * width;
@@ -1114,7 +1110,7 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
         Point letter_leg_end = {letter_leg_start.x,
                                 letter_leg_start.y + height};
 
-        display->draw_line(letter_leg_start, letter_leg_end, color);
+        display.draw_line(letter_leg_start, letter_leg_end, color);
 
         // Controls how much the front of the μ letter sticks out from
         // the round part.
@@ -1126,7 +1122,7 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
                                                             height / 2 +
                                                             letter_front_gap};
 
-        display->draw_line(letter_front_start, letter_front_end, color);
+        display.draw_line(letter_front_start, letter_front_end, color);
 
         // Now we connect the two parts with a semi-circle
         int radius = width / 2 - 1;
@@ -1148,12 +1144,12 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
                         letter_front_end.y - letter_front_gap};
         // For pixel accuracy we decrease the diameter by 1 as the
         // circle also has some thickness to it.
-        display->draw_circle(center, radius, color, 1, false);
+        display.draw_circle(center, radius, color, 1, false);
 
         // We now clear the top part of the circle to be left with the
         // mu letter only.
 
-        display->clear_region(
+        display.clear_region(
             {letter_leg_start.x + adj, letter_leg_start.y},
             {letter_front_end.x - 1, letter_front_end.y - letter_front_gap},
             Black);
@@ -1167,10 +1163,11 @@ void draw_mu_letter(Display *display, Point position, int size, Color color)
  * If the user cancels the input process, an empty optional is returned.
  */
 std::optional<UserAction>
-collect_string_input(Platform *p, UserInterfaceCustomization *customization,
+collect_string_input(const Platform &p,
+                     const UserInterfaceCustomization &customization,
                      const char *input_prompt, char **input)
 {
-        Display *display = p->display;
+        Display *display = p.display;
         LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
 
         // Bind input params to short names for improved readability.
@@ -1199,14 +1196,14 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
 
         LOG_DEBUG(TAG, "Keyboard grid area has %d available columns", max_cols);
 
-        p->display->clear(Black);
+        p.display->clear(Black);
 
         int prompt_text_centering_margin =
             (w - strlen(input_prompt) * FONT_WIDTH) / 2;
         Point prompt_text_start = {.x = prompt_text_centering_margin,
                                    .y = FONT_WIDTH};
-        p->display->draw_string(prompt_text_start, (char *)input_prompt,
-                                FontSize::Size16, Black, White);
+        p.display->draw_string(prompt_text_start, (char *)input_prompt,
+                               FontSize::Size16, Black, White);
 
         // Note how the bottom right part of the keyboard is filled with
         // spaces this is needed to ensure that the selection cursor is
@@ -1290,7 +1287,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                 for (int y = 0; y < character_map.size(); y++) {
                         for (int x = 0; x < strlen(character_map[y]); x++) {
                                 Color color = (cursor.x == x && cursor.y == y)
-                                                  ? customization->accent_color
+                                                  ? customization.accent_color
                                                   : White;
                                 render_character_at_location({x, y}, color,
                                                              character_map);
@@ -1350,14 +1347,14 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
 
         render_keyboard(base_char_map);
 
-        if (customization->show_help_text) {
+        if (customization.show_help_text) {
                 std::map<Action, std::string> button_hints;
                 button_hints[Action::BLUE] = "Erase";
                 button_hints[Action::YELLOW] = "Caps";
                 button_hints[Action::RED] = "Done";
                 button_hints[Action::GREEN] = "Select";
-                render_controls_explanations(p->display,
-                                             p->capabilities.action_button_kind,
+                render_controls_explanations(*p.display,
+                                             p.capabilities.action_button_kind,
                                              button_hints);
         }
 
@@ -1367,7 +1364,7 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
         int output_idx = 0;
         while (!input_confirmed) {
                 auto maybe_direction =
-                    poll_directional_input(p->directional_controllers);
+                    poll_directional_input(p.directional_controllers);
                 if (maybe_direction.has_value()) {
                         Direction dir = maybe_direction.value();
                         render_character_at_location(cursor, White,
@@ -1376,10 +1373,10 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                                  curr_char_map.size(),
                                                  strlen(base_char_map[0]));
                         render_character_at_location(
-                            cursor, customization->accent_color, curr_char_map);
-                        p->time_provider->delay_ms(INPUT_POLLING_DELAY);
+                            cursor, customization.accent_color, curr_char_map);
+                        p.time_provider->delay_ms(INPUT_POLLING_DELAY);
                 }
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_action) {
                         Action act = maybe_action.value();
                         switch (act) {
@@ -1426,10 +1423,10 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
                                 }
                                 break;
                         }
-                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
-                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
-                if (!p->display->refresh()) {
+                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
+                if (!p.display->refresh()) {
                         return UserAction::CloseWindow;
                 }
         }
@@ -1441,10 +1438,11 @@ collect_string_input(Platform *p, UserInterfaceCustomization *customization,
 }
 
 std::optional<UserAction>
-collect_number_input(Platform *p, UserInterfaceCustomization *customization,
+collect_number_input(const Platform &p,
+                     const UserInterfaceCustomization &customization,
                      const char *input_prompt, int *input)
 {
-        Display *display = p->display;
+        Display *display = p.display;
         LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
 
         // Bind input params to short names for improved readability.
@@ -1473,7 +1471,7 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
 
         LOG_DEBUG(TAG, "Keyboard grid area has %d available columns", max_cols);
 
-        p->display->clear(Black);
+        p.display->clear(Black);
 
         // TODO: this logic is the samse as above, we can extract it to
         // a shared helper.
@@ -1481,8 +1479,8 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
             (w - strlen(input_prompt) * FONT_WIDTH) / 2;
         Point prompt_text_start = {.x = prompt_text_centering_margin,
                                    .y = FONT_WIDTH};
-        p->display->draw_string(prompt_text_start, (char *)input_prompt,
-                                FontSize::Size16, Black, White);
+        p.display->draw_string(prompt_text_start, (char *)input_prompt,
+                               FontSize::Size16, Black, White);
 
         // Note how the bottom right part of the keyboard is filled with
         // spaces this is needed to ensure that the selection cursor is
@@ -1566,7 +1564,7 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                 for (int y = 0; y < character_map.size(); y++) {
                         for (int x = 0; x < strlen(character_map[y]); x++) {
                                 Color color = (cursor.x == x && cursor.y == y)
-                                                  ? customization->accent_color
+                                                  ? customization.accent_color
                                                   : White;
                                 render_character_at_location({x, y}, color,
                                                              character_map);
@@ -1626,14 +1624,14 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
 
         render_keyboard(base_char_map);
 
-        if (customization->show_help_text) {
+        if (customization.show_help_text) {
                 std::map<Action, std::string> button_hints;
                 button_hints[Action::BLUE] = "Erase";
                 button_hints[Action::YELLOW] = "Caps";
                 button_hints[Action::RED] = "Done";
                 button_hints[Action::GREEN] = "Select";
-                render_controls_explanations(p->display,
-                                             p->capabilities.action_button_kind,
+                render_controls_explanations(*p.display,
+                                             p.capabilities.action_button_kind,
                                              button_hints);
         }
 
@@ -1642,7 +1640,7 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
         int output_idx = 0;
         while (!input_confirmed) {
                 auto maybe_direction =
-                    poll_directional_input(p->directional_controllers);
+                    poll_directional_input(p.directional_controllers);
                 if (maybe_direction.has_value()) {
                         Direction dir = maybe_direction.value();
                         render_character_at_location(cursor, White,
@@ -1651,10 +1649,10 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                                                  base_char_map.size(),
                                                  strlen(base_char_map[0]));
                         render_character_at_location(
-                            cursor, customization->accent_color, base_char_map);
-                        p->time_provider->delay_ms(INPUT_POLLING_DELAY);
+                            cursor, customization.accent_color, base_char_map);
+                        p.time_provider->delay_ms(INPUT_POLLING_DELAY);
                 }
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_action.has_value()) {
                         Action act = maybe_action.value();
                         switch (act) {
@@ -1696,10 +1694,10 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
                         case YELLOW:
                                 break;
                         }
-                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
-                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
-                if (!p->display->refresh()) {
+                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
+                if (!p.display->refresh()) {
                         return UserAction::CloseWindow;
                 }
         }
@@ -1710,48 +1708,50 @@ collect_number_input(Platform *p, UserInterfaceCustomization *customization,
         return std::nullopt;
 }
 
-void render_logo(Display *display, UserInterfaceCustomization *customization,
+void render_logo(const Display &display,
+                 const UserInterfaceCustomization &customization,
                  Point position)
 {
 
         int size = 24;
         draw_cube_perspective(display, position, size,
-                              customization->accent_color);
-        draw_mu_letter(display, position, size, customization->accent_color);
+                              customization.accent_color);
+        draw_mu_letter(display, position, size, customization.accent_color);
 }
 
-std::optional<UserAction> wait_until_green_pressed(Platform *p)
+std::optional<UserAction> wait_until_green_pressed(const Platform &p)
 {
         while (true) {
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_action.has_value()) {
                         Action act = maybe_action.value();
                         if (act == Action::GREEN) {
                                 LOG_DEBUG(TAG, "User confirmed 'OK'");
-                                p->time_provider->delay_ms(
+                                p.time_provider->delay_ms(
                                     MOVE_REGISTERED_DELAY);
                                 return std::nullopt;
                         }
                 }
-                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
+                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
 
-                if (!p->display->refresh()) {
+                if (!p.display->refresh()) {
                         return UserAction::CloseWindow;
                 }
         }
 }
 
-std::optional<UserAction> wait_until_action_input(Platform *p, Action *action)
+std::optional<UserAction> wait_until_action_input(const Platform &p,
+                                                  Action &action)
 {
         while (true) {
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_action.has_value()) {
-                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
-                        *action = maybe_action.value();
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        action = maybe_action.value();
                         return std::nullopt;
                 }
-                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
-                if (!p->display->refresh()) {
+                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
+                if (!p.display->refresh()) {
                         return UserAction::CloseWindow;
                 }
         }

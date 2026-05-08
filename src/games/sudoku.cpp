@@ -224,9 +224,9 @@ UserAction SudokuGame::app_loop(Platform *p,
                     "A game in progress was found. Press 'down' to "
                     "continue the previous game or 'right' to start a "
                     "new game.";
-                render_wrapped_text(p, customization, help_text);
+                render_wrapped_text(*p, *customization, help_text);
                 Action action;
-                auto maybe_interrupt = wait_until_action_input(p, &action);
+                auto maybe_interrupt = wait_until_action_input(*p, action);
                 if (maybe_interrupt.has_value()) {
                         assert(maybe_interrupt.value() ==
                                UserAction::CloseWindow);
@@ -280,8 +280,8 @@ UserAction SudokuGame::app_loop(Platform *p,
                     SudokuEngine::validate(state.grid)) {
                         auto help_text = "Congratulations, you solved "
                                          "the sudoku successfully!";
-                        render_wrapped_help_text(p, customization, help_text);
-                        auto maybe_interrupt = wait_until_green_pressed(p);
+                        render_wrapped_help_text(*p, *customization, help_text);
+                        auto maybe_interrupt = wait_until_green_pressed(*p);
 
                         if (maybe_interrupt.has_value())
                                 return maybe_interrupt.value();
@@ -374,10 +374,10 @@ UserAction SudokuGame::app_loop(Platform *p,
                             "button to "
                             "save and exit, or 'left' to exit without "
                             "saving.";
-                        render_wrapped_text(p, customization, help_text);
+                        render_wrapped_text(*p, *customization, help_text);
                         Action action;
                         auto maybe_interrupt =
-                            wait_until_action_input(p, &action);
+                            wait_until_action_input(*p, action);
                         if (maybe_interrupt.has_value()) {
                                 assert(maybe_interrupt.value() ==
                                        UserAction::CloseWindow);
@@ -420,7 +420,8 @@ SudokuGame::collect_config(Platform *p,
 
         Configuration *config = assemble_sudoku_configuration(initial_config);
 
-        auto maybe_interrupt = collect_configuration(p, config, customization);
+        auto maybe_interrupt =
+            collect_configuration(*p, *config, *customization);
         if (maybe_interrupt) {
                 delete initial_config;
                 delete config;

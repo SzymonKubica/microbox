@@ -102,9 +102,9 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
 
                 if (help_requested(maybe_event)) {
                         log_help_requested(executor->get_game_name());
-                        render_wrapped_help_text(p, customization,
+                        render_wrapped_help_text(*p, *customization,
                                                  executor->get_help_text());
-                        auto maybe_event = wait_until_green_pressed(p);
+                        auto maybe_event = wait_until_green_pressed(*p);
 
                         /*
                          * Here things get a bit complex on the emulator:

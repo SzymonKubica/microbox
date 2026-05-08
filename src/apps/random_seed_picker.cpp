@@ -77,14 +77,15 @@ RandomSeedPicker::app_loop(Platform *p,
                 char display_text_buffer[256];
                 sprintf(display_text_buffer,
                         "Generated a new randomness seed: %d", new_seed);
-                render_wrapped_help_text(p, customization, display_text_buffer);
-                wait_until_green_pressed(p);
+                render_wrapped_help_text(*p, *customization,
+                                         display_text_buffer);
+                wait_until_green_pressed(*p);
                 break;
         }
         case RandomSeedSelectorAction::Download: {
                 LOG_DEBUG(TAG, "Download option selected");
                 const char *downloading_text = "Fetching new random seed...";
-                render_wrapped_text(p, customization, downloading_text);
+                render_wrapped_text(*p, *customization, downloading_text);
 
                 const char *host = "www.randomnumberapi.com";
                 std::string host_string(host);
@@ -116,9 +117,10 @@ RandomSeedPicker::app_loop(Platform *p,
                 char display_text_buffer[256];
                 sprintf(display_text_buffer, "Fetched new randomness seed: %d",
                         new_seed);
-                render_wrapped_help_text(p, customization, display_text_buffer);
+                render_wrapped_help_text(*p, *customization,
+                                         display_text_buffer);
 
-                wait_until_green_pressed(p);
+                wait_until_green_pressed(*p);
                 break;
         }
         case RandomSeedSelectorAction::Modify:
@@ -126,7 +128,7 @@ RandomSeedPicker::app_loop(Platform *p,
 
                 int new_seed = 0;
                 auto maybe_interrupt = collect_number_input(
-                    p, customization, "Enter new seed value", &new_seed);
+                    *p, *customization, "Enter new seed value", &new_seed);
 
                 if (maybe_interrupt.has_value()) {
                         UserAction action = maybe_interrupt.value();
@@ -155,8 +157,9 @@ RandomSeedPicker::app_loop(Platform *p,
                 sprintf(display_text_buffer,
                         "Saved the new, manually-entered randomness seed: %d",
                         new_seed);
-                render_wrapped_help_text(p, customization, display_text_buffer);
-                wait_until_green_pressed(p);
+                render_wrapped_help_text(*p, *customization,
+                                         display_text_buffer);
+                wait_until_green_pressed(*p);
                 break;
         }
 
@@ -219,7 +222,7 @@ RandomSeedPicker::collect_config(Platform *p,
             assemble_random_seed_picker_configuration(p, initial_config);
 
         auto maybe_interrupt_action =
-            collect_configuration(p, config, customization);
+            collect_configuration(*p, *config, *customization);
         if (maybe_interrupt_action) {
                 delete config;
                 delete initial_config;

@@ -266,15 +266,15 @@ int get_config_option_string_value_index(const ConfigurationOption &option,
 }
 
 std::optional<UserAction>
-collect_configuration(Platform *p, Configuration *config,
-                      UserInterfaceCustomization *customization,
+collect_configuration(const Platform &p, Configuration &config,
+                      const UserInterfaceCustomization &customization,
                       bool allow_exit, bool should_render_logo)
 {
         ConfigurationDiff *diff = new ConfigurationDiff;
-        render_config_menu(p->display, config, diff, false, customization,
+        render_config_menu(*p.display, config, *diff, false, customization,
                            should_render_logo);
-        if (customization->show_help_text) {
-                render_default_controls_explanations(p, p->display);
+        if (customization.show_help_text) {
+                render_default_controls_explanations(p);
         }
         delete diff;
         while (true) {
@@ -282,14 +282,14 @@ collect_configuration(Platform *p, Configuration *config,
                 // option value text rerendering when they are not modified.
                 ConfigurationDiff diff = ConfigurationDiff{};
                 bool confirmation_bar_selected =
-                    config->curr_selected_option == config->options.size();
+                    config.curr_selected_option == config.options.size();
 
                 // Abstract out the repeatable delay functionality.
                 auto move_registered_delay = [&] {
-                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 };
 
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_action.has_value()) {
                         Action act = maybe_action.value();
                         /* To make the UI more intuitive, we also allow users to
@@ -301,11 +301,11 @@ collect_configuration(Platform *p, Configuration *config,
                                  move_registered_delay to ensure that the UI is
                                  snappy.
                                  */
-                                increment_current_option_value(*config, diff);
-                                render_config_menu(p->display, config, &diff,
+                                increment_current_option_value(config, diff);
+                                render_config_menu(*p.display, config, diff,
                                                    true, customization,
                                                    should_render_logo);
-                                if (!p->display->refresh()) {
+                                if (!p.display->refresh()) {
                                         return UserAction::CloseWindow;
                                 }
                                 move_registered_delay();
@@ -323,37 +323,37 @@ collect_configuration(Platform *p, Configuration *config,
                         }
                 }
                 auto maybe_direction =
-                    poll_directional_input(p->directional_controllers);
+                    poll_directional_input(p.directional_controllers);
                 Direction dir;
                 if (maybe_direction.has_value()) {
                         dir = maybe_direction.value();
                         switch (dir) {
                         case DOWN:
-                                switch_edited_config_option_down(*config, diff);
+                                switch_edited_config_option_down(config, diff);
                                 break;
                         case UP:
-                                switch_edited_config_option_up(*config, diff);
+                                switch_edited_config_option_up(config, diff);
                                 break;
                         case LEFT:
-                                decrement_current_option_value(*config, diff);
+                                decrement_current_option_value(config, diff);
                                 break;
                         case RIGHT:
-                                increment_current_option_value(*config, diff);
+                                increment_current_option_value(config, diff);
                                 break;
                         }
 
-                        render_config_menu(p->display, config, &diff, true,
+                        render_config_menu(*p.display, config, diff, true,
                                            customization, should_render_logo);
-                        if (!p->display->refresh()) {
+                        if (!p.display->refresh()) {
                                 return UserAction::CloseWindow;
                         }
 
-                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 }
-                if (!p->display->refresh()) {
+                if (!p.display->refresh()) {
                         return UserAction::CloseWindow;
                 }
-                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
+                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
         }
         return std::nullopt;
 }

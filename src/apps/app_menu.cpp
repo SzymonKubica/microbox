@@ -150,7 +150,7 @@ std::optional<UserAction> UtilityApplicationMenu::collect_config(
             assemble_utility_selector_configuration(p, initial_config);
 
         auto maybe_interrupt =
-            collect_configuration(p, config, customization, true, false);
+            collect_configuration(*p, *config, *customization, true, false);
 
         if (maybe_interrupt) {
                 delete config;

@@ -56,8 +56,8 @@ std::optional<UserAction> select_app_and_run(Platform *p)
             "current option. Press the right button to start the game";
         if (maybe_interrupt.has_value() &&
             maybe_interrupt.value() == UserAction::ShowHelp) {
-                render_wrapped_help_text(p, &c, help_text);
-                return wait_until_green_pressed(p);
+                render_wrapped_help_text(*p, c, help_text);
+                return wait_until_green_pressed(*p);
         }
 
         // This is needed to handle the 'close window' action.
@@ -153,7 +153,7 @@ main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration)
         };
 
         auto maybe_interrupt =
-            collect_configuration(p, config, &customization, false, true);
+            collect_configuration(*p, *config, customization, false, true);
 
         if (maybe_interrupt) {
                 delete config;
@@ -428,7 +428,7 @@ collect_game_menu_defaults_config(Platform *p,
         };
 
         auto maybe_interrupt =
-            collect_configuration(p, config, &customization, false, false);
+            collect_configuration(*p, *config, customization, false, false);
 
         if (maybe_interrupt) {
                 delete config;

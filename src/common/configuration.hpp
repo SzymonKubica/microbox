@@ -258,8 +258,8 @@ int find_max_config_option_value_text_length(const Configuration &config);
  * started collecting the configuration.
  */
 std::optional<UserAction>
-collect_configuration(Platform *p, Configuration *config,
-                      UserInterfaceCustomization *customization,
+collect_configuration(const Platform &p, Configuration &config,
+                      const UserInterfaceCustomization &customization,
                       bool allow_exit = true, bool should_render_logo = false);
 
 void populate_int_option_values(ConfigurationOption &value,

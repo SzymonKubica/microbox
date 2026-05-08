@@ -545,7 +545,8 @@ Minesweeper::collect_config(Platform *p,
         Configuration *config =
             assemble_minesweeper_configuration(p->persistent_storage);
 
-        auto maybe_interrupt = collect_configuration(p, config, customization);
+        auto maybe_interrupt =
+            collect_configuration(*p, *config, *customization);
         if (maybe_interrupt) {
                 delete config;
                 return maybe_interrupt;

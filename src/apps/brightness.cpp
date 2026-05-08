@@ -41,7 +41,7 @@ UserAction BrightnessApp::app_loop(Platform *p,
 
         int brightness;
         auto maybe_interrupt = collect_number_input(
-            p, customization, "Enter brightness 0-100%", &brightness);
+            *p, *customization, "Enter brightness 0-100%", &brightness);
         if (maybe_interrupt.has_value()) {
                 return maybe_interrupt.value();
         }
@@ -49,11 +49,11 @@ UserAction BrightnessApp::app_loop(Platform *p,
 
         if (!valid_input) {
                 render_wrapped_help_text(
-                    p, customization,
+                    *p, *customization,
                     "Invalid input, brightness must be an "
                     "integer between 1 and "
                     "100. Press down button to try again.");
-                auto maybe_interrupt_action = wait_until_green_pressed(p);
+                auto maybe_interrupt_action = wait_until_green_pressed(*p);
                 if (maybe_interrupt_action.has_value()) {
                         return maybe_interrupt_action.value();
                 }
@@ -139,7 +139,7 @@ BrightnessApp::collect_config(Platform *p,
             assemble_brightness_configuration(initial_config);
 
         auto maybe_interrupt_action =
-            collect_configuration(p, config, customization);
+            collect_configuration(*p, *config, *customization);
         if (maybe_interrupt_action) {
                 delete config;
                 delete initial_config;

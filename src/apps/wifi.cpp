@@ -120,8 +120,8 @@ handle_add_new(WifiAppConfiguration &config, Platform *p,
                     "configuration slots. Please modify one of the "
                     "existing configurations instead of creating a new "
                     "one.";
-                render_wrapped_help_text(p, customization, help_text);
-                return wait_until_green_pressed(p);
+                render_wrapped_help_text(*p, *customization, help_text);
+                return wait_until_green_pressed(*p);
         }
 
         char *ssid;
@@ -194,7 +194,7 @@ handle_connect(WifiAppConfiguration &config, Platform *p,
 {
 
         const char *connecting_text = "Connecting to Wi-Fi network...";
-        render_wrapped_text(p, customization, connecting_text);
+        render_wrapped_text(*p, *customization, connecting_text);
         auto credentials = config.saved_configurations[config.curr_config_idx];
         LOG_INFO(TAG,
                  "Trying to connect to Wi-Fi using network %s and "
@@ -218,8 +218,8 @@ handle_connect(WifiAppConfiguration &config, Platform *p,
         } else {
                 sprintf(display_text_buffer, "Unable to connect to Wi-Fi!");
         }
-        render_wrapped_help_text(p, customization, display_text_buffer);
-        return wait_until_green_pressed(p);
+        render_wrapped_help_text(*p, *customization, display_text_buffer);
+        return wait_until_green_pressed(*p);
 }
 
 std::optional<UserAction>
@@ -229,8 +229,8 @@ get_ssid_and_password_input(Platform *p,
 {
         LOG_DEBUG(TAG, "Getting user input for SSID...");
         {
-                auto maybe_interrupt =
-                    collect_string_input(p, customization, "Enter SSID", ssid);
+                auto maybe_interrupt = collect_string_input(*p, *customization,
+                                                            "Enter SSID", ssid);
                 if (maybe_interrupt.has_value()) {
                         return maybe_interrupt;
                 }
@@ -239,7 +239,7 @@ get_ssid_and_password_input(Platform *p,
         LOG_DEBUG(TAG, "Getting user input for password...");
         {
                 auto maybe_interrupt = collect_string_input(
-                    p, customization, "Enter password", password);
+                    *p, *customization, "Enter password", password);
                 if (maybe_interrupt.has_value()) {
                         return maybe_interrupt;
                 }
@@ -408,7 +408,7 @@ WifiApp::collect_config(Platform *p, UserInterfaceCustomization *customization,
         Configuration *config = assemble_wifi_app_configuration(initial_config);
 
         auto maybe_interrupt_action =
-            collect_configuration(p, config, customization);
+            collect_configuration(*p, *config, *customization);
         if (maybe_interrupt_action) {
                 delete config;
                 delete initial_config;
