@@ -6,7 +6,7 @@
 #include "../common/common_transitions.hpp"
 #include "../application_executor.hpp"
 
-typedef struct SnakeConfiguration {
+struct SnakeConfiguration {
         ConfigurationHeader header;
         /**
          * Speed of the snake in cells travelled per second.
@@ -29,7 +29,7 @@ typedef struct SnakeConfiguration {
          * yellow button.
          */
         bool allow_pause;
-} SnakeConfiguration;
+};
 
 std::optional<UserAction>
 collect_snake_config(Platform *p, SnakeConfiguration *game_config,

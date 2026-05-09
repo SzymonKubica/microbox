@@ -131,7 +131,7 @@ BrightnessApp::collect_config(const Platform &p,
                               BrightnessConfiguration &game_config) const
 {
         BrightnessConfiguration *initial_config =
-            load_initial_brightness_config(p.persistent_storage);
+            load_initial_brightness_config(*p.persistent_storage);
         Configuration *config =
             assemble_brightness_configuration(*initial_config);
 

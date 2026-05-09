@@ -79,7 +79,7 @@ enum class UserAction {
         PauseAndPlayAgain,
 };
 
-typedef struct ConfigurationOption {
+struct ConfigurationOption {
         /**
          * The type of the configurable values. Based on this type we know
          * how to cast the `available_values`.
@@ -124,8 +124,7 @@ typedef struct ConfigurationOption {
         Color get_current_color_value();
         ~ConfigurationOption();
         ConfigurationOption(const ConfigurationOption &other);
-
-} ConfigurationOption;
+};
 
 /**
  * Given a value that is specifiable by the `ConfigurationOption` it returns the

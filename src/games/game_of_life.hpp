@@ -5,7 +5,7 @@
 #include "../common/grid.hpp"
 #include <optional>
 
-typedef struct GameOfLifeConfiguration {
+struct GameOfLifeConfiguration {
         ConfigurationHeader header;
         bool prepopulate_grid;
         bool use_toroidal_array;
@@ -17,7 +17,7 @@ typedef struct GameOfLifeConfiguration {
          * Controls how many steps the user is allowed to rewind the simulation
          */
         int rewind_buffer_size;
-} GameOfLifeConfiguration;
+};
 
 /**
  * Collects the game of life configuration from the user.

@@ -25,7 +25,7 @@ enum UserInterfaceRenderingMode {
 const char *rendering_mode_to_str(UserInterfaceRenderingMode mode);
 UserInterfaceRenderingMode rendering_mode_from_str(const char *mode_str);
 
-typedef struct UserInterfaceCustomization {
+struct UserInterfaceCustomization {
         /**
          * Accent color of the UI elements. This applies to the menu selectors,
          * rounded borders and user input carets.
@@ -38,4 +38,4 @@ typedef struct UserInterfaceCustomization {
          * do.
          */
         bool show_help_text;
-} UserInterfaceCustomization;
+};

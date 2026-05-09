@@ -5,7 +5,7 @@
 #include "../common/common_transitions.hpp"
 #include "../application_executor.hpp"
 
-typedef struct SnakeDuelConfiguration {
+struct SnakeDuelConfiguration {
         ConfigurationHeader header;
         /**
          * Speed of the snake in cells travelled per second.
@@ -28,7 +28,7 @@ typedef struct SnakeDuelConfiguration {
          */
         Color secondary_player_color;
         bool enable_ai = true;
-} SnakeDuelConfiguration;
+};
 
 std::optional<UserAction>
 collect_snake_duel_config(Platform *p, SnakeDuelConfiguration *game_config,

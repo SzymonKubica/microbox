@@ -4,10 +4,10 @@
 #include "../common/configuration.hpp"
 #include <optional>
 
-typedef struct MinesweeperConfiguration {
+struct MinesweeperConfiguration {
         ConfigurationHeader header;
         int mines_num;
-} MinesweeperConfiguration;
+};
 
 /**
  * Similar to `collect_configuration` from `configuration.hpp`, it returns true

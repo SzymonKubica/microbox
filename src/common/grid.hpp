@@ -6,7 +6,7 @@
  * Stores all dimension information required for rendering a grid with square
  * cells.
  */
-typedef struct SquareCellGridDimensions {
+struct SquareCellGridDimensions {
         int rows;
         int cols;
         int top_vertical_margin;
@@ -19,7 +19,7 @@ typedef struct SquareCellGridDimensions {
               left_horizontal_margin(lhm), actual_width(aw), actual_height(ah)
         {
         }
-} SquareCellGridDimensions;
+};
 
 constexpr int grid_max_cols(int display_width,
                             int display_rounded_corner_radius, int cell_width)

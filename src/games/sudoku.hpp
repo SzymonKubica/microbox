@@ -8,13 +8,13 @@
 
 #define SUDOKU_GRID_SIZE 9
 
-typedef struct SudokuConfiguration {
+struct SudokuConfiguration {
         ConfigurationHeader header;
         int difficulty;
         bool is_game_in_progress;
         SudokuCell saved_game[SUDOKU_GRID_SIZE][SUDOKU_GRID_SIZE];
         Color accent_color;
-} SudokuConfiguration;
+};
 
 std::optional<UserAction>
 collect_sudoku_config(Platform *p, SudokuConfiguration *game_config,

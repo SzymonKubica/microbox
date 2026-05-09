@@ -2,14 +2,14 @@
 #include "../platform/interface/input.hpp"
 #include <optional>
 #include <vector>
-typedef struct Point {
+
+struct Point {
         int x;
         int y;
 
       public:
         Point operator*(int scalar) const;
-
-} Point;
+};
 
 Point operator+(Point first, Point second);
 bool operator==(const Point &first, const Point &second);

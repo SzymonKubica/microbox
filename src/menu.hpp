@@ -20,13 +20,13 @@ enum class Game : int {
         DefaultsSetting = 13,
 };
 
-typedef struct GameMenuConfiguration {
+struct GameMenuConfiguration {
         ConfigurationHeader header;
         Game game;
         Color accent_color;
         UserInterfaceRenderingMode rendering_mode;
         bool show_help_text;
-} GameMenuConfiguration;
+};
 
 bool is_valid_game(Game game);
 

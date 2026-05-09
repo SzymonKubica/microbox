@@ -7,7 +7,7 @@
 #include "../common/common_transitions.hpp"
 #include "../application_executor.hpp"
 
-typedef struct Game2048Configuration {
+struct Game2048Configuration {
         ConfigurationHeader header;
         int grid_size;
         int target_max_tile;
@@ -20,7 +20,7 @@ typedef struct Game2048Configuration {
         int saved_grid[5][5];
         int saved_grid_size;
         int saved_target_max_tile;
-} Game2048Configuration;
+};
 
 class GameState
 {

@@ -732,7 +732,7 @@ std::optional<Direction> next_step(Snake &snake,
  * and y is within [0,19], because of this we need 5 bits to encode each of the
  * coordinates.
  */
-typedef struct CompactPoint {
+struct CompactPoint {
         uint8_t x;
         uint8_t y;
 
@@ -743,8 +743,7 @@ typedef struct CompactPoint {
                 return {static_cast<uint8_t>(point.x),
                         static_cast<uint8_t>(point.y)};
         }
-
-} CompactPoint;
+};
 
 /*
  * To optimize memory usage and avoid fragmentation we statically preallocate

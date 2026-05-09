@@ -8,7 +8,7 @@
  * Encapsulates all information we might want to know about the current network
  * that we are connected to.
  */
-typedef struct WifiData {
+struct WifiData {
         /**
          * MAC Address of the current device (e.g. Arduino board running the
          * game console or the PC running the emulator).
@@ -33,7 +33,7 @@ typedef struct WifiData {
         uint8_t encryption_type;
 
         ~WifiData() { free((char *)ssid); }
-} WifiData;
+};
 
 /**
  * Interface responsible for allowing to connect to Wi-Fi network, and retrieve

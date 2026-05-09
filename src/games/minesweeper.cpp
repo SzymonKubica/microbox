@@ -16,7 +16,7 @@
 MinesweeperConfiguration DEFAULT_MINESWEEPER_CONFIG = {
     .header = {.magic = CONFIGURATION_MAGIC, .version = 1}, .mines_num = 25};
 
-typedef struct MinesweeperGridDimensions {
+struct MinesweeperGridDimensions {
         int rows;
         int cols;
         int top_vertical_margin;
@@ -30,9 +30,9 @@ typedef struct MinesweeperGridDimensions {
               left_horizontal_margin(lhm), actual_width(aw), actual_height(ah)
         {
         }
-} MinesweeperGridDimensions;
+};
 
-typedef struct MinesweeperGridCell {
+struct MinesweeperGridCell {
         bool is_bomb;
         bool is_flagged;
         bool is_uncovered;
@@ -43,8 +43,7 @@ typedef struct MinesweeperGridCell {
               adjacent_bombs(0)
         {
         }
-
-} MinesweeperGridCell;
+};
 
 static MinesweeperGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
