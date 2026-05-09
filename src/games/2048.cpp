@@ -23,6 +23,13 @@
 #define DOWN 2
 #define LEFT 3
 
+GameState *initialize_game_state(int gridSize, int target_max_tile);
+void update_game_grid(const Platform &p, GameState &gs,
+                      const UserInterfaceCustomization &customization);
+bool is_game_over(const GameState &gs);
+bool is_game_finished(const GameState &gs);
+void take_turn(GameState &gs, int direction);
+
 /**
  *  We always render white on black. This is because of the rendering
  *  speed constraints. 2048 required a lot of re-rendering and the UI
@@ -49,22 +56,10 @@ Game2048Configuration DEFAULT_2048_GAME_CONFIG = {
 
 static void copy_grid(int **source, int **destination, int size);
 
-static void handle_game_over(Display *display,
-                             std::vector<DirectionalController *> *controllers,
-                             GameState *state);
-
-static void draw_game_canvas(Display *display, GameState *state,
+static void draw_game_canvas(const Display &display, GameState *state,
                              const UserInterfaceCustomization &customization);
 
 void free_game_state(GameState *gs);
-
-/**
- * Returns the action that the user wants to take after the game loop is
- * complete. This can either be 'PlayAgain' or they can request to exit or show
- * the help screen. This needs to be appropriately handled by the caller.
- */
-UserAction enter_2048_loop(Platform *platform,
-                           UserInterfaceCustomization *customization);
 
 const char *Clean2048::get_game_name() const { return "2048"; }
 const char *Clean2048::get_help_text() const
@@ -141,15 +136,15 @@ UserAction Clean2048::app_loop(const Platform &p,
                                               config.target_max_tile);
         }
 
-        draw_game_canvas(p.display, state, customization);
-        update_game_grid(p, state, customization);
+        draw_game_canvas(*p.display, state, customization);
+        update_game_grid(p, *state, customization);
 
         if (!p.display->refresh()) {
                 free_game_state(state);
                 return UserAction::CloseWindow;
         }
 
-        while (!(is_game_over(state) || is_game_finished(state))) {
+        while (!(is_game_over(*state) || is_game_finished(*state))) {
                 auto maybe_direction =
                     poll_directional_input(p.directional_controllers);
                 auto maybe_action = poll_action_input(p.action_controllers);
@@ -157,8 +152,8 @@ UserAction Clean2048::app_loop(const Platform &p,
                         Direction dir = maybe_direction.value();
                         LOG_DEBUG(TAG, "Input received: %s",
                                   direction_to_str(dir));
-                        take_turn(state, (int)dir);
-                        update_game_grid(p, state, customization);
+                        take_turn(*state, (int)dir);
+                        update_game_grid(p, *state, customization);
                         p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 } else if (maybe_action.has_value()) {
                         Action act = maybe_action.value();
@@ -198,10 +193,10 @@ UserAction Clean2048::app_loop(const Platform &p,
                 }
         }
 
-        if (is_game_over(state)) {
+        if (is_game_over(*state)) {
                 display_game_over(*p.display, customization);
         }
-        if (is_game_finished(state)) {
+        if (is_game_finished(*state)) {
                 display_game_won(*p.display, customization);
         }
 
@@ -210,7 +205,7 @@ UserAction Clean2048::app_loop(const Platform &p,
         return UserAction::PlayAgain;
 }
 
-Game2048Configuration *load_initial_config(PersistentStorage *storage)
+Game2048Configuration *load_initial_config(const PersistentStorage &storage)
 {
         int storage_offset = get_settings_storage_offset(Game::Clean2048);
 
@@ -219,7 +214,7 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
                   "Trying to load initial settings from the persistent storage "
                   "at offset %d",
                   storage_offset);
-        storage->get(storage_offset, config);
+        storage.get(storage_offset, config);
 
         Game2048Configuration *output = new Game2048Configuration();
 
@@ -229,7 +224,7 @@ Game2048Configuration *load_initial_config(PersistentStorage *storage)
                           "2048 game configuration, using default values.");
                 memcpy(output, &DEFAULT_2048_GAME_CONFIG,
                        sizeof(Game2048Configuration));
-                storage->put(storage_offset, DEFAULT_2048_GAME_CONFIG);
+                storage.put(storage_offset, DEFAULT_2048_GAME_CONFIG);
 
         } else {
                 LOG_DEBUG(TAG, "Using configuration from persistent storage.");
@@ -303,7 +298,7 @@ Clean2048::collect_config(const Platform &p,
                           Game2048Configuration &game_config) const
 {
         Game2048Configuration *initial_config =
-            load_initial_config(p.persistent_storage);
+            load_initial_config(*p.persistent_storage);
         Configuration *config =
             assemble_2048_configuration(p.persistent_storage, initial_config);
 
@@ -323,7 +318,7 @@ Clean2048::collect_config(const Platform &p,
 
 /* Initialization Code */
 
-static void spawn_tile(GameState *gs);
+static void spawn_tile(GameState &gs);
 
 int **create_game_grid(int size);
 GameState *initialize_game_state(int size, int target_max_tile)
@@ -332,7 +327,7 @@ GameState *initialize_game_state(int size, int target_max_tile)
             new GameState(create_game_grid(size), create_game_grid(size), 0, 0,
                           size, target_max_tile);
 
-        spawn_tile(gs);
+        spawn_tile(*gs);
         return gs;
 }
 
@@ -376,19 +371,19 @@ static int generate_new_tile_value()
 }
 static int get_random_coordinate(int grid_size) { return rand() % grid_size; }
 
-static void spawn_tile(GameState *gs)
+static void spawn_tile(GameState &gs)
 {
         bool success = false;
         while (!success) {
-                int x = get_random_coordinate(gs->grid_size);
-                int y = get_random_coordinate(gs->grid_size);
+                int x = get_random_coordinate(gs.grid_size);
+                int y = get_random_coordinate(gs.grid_size);
 
-                if (gs->grid[x][y] == 0) {
-                        gs->grid[x][y] = generate_new_tile_value();
+                if (gs.grid[x][y] == 0) {
+                        gs.grid[x][y] = generate_new_tile_value();
                         success = true;
                 }
         }
-        gs->occupied_tiles++;
+        gs.occupied_tiles++;
 }
 
 /* Tile Merging Logic */
@@ -396,26 +391,26 @@ static void spawn_tile(GameState *gs)
 /* Helper functions for tile merging */
 
 // Merges the i-th row of tiles in the given direction (left/right).
-static void merge_row(GameState *gs, int i, int direction);
+static void merge_row(GameState &gs, int i, int direction);
 // Reverses a given row of `row_size` elements in place.
 static void reverse(int *row, int row_size);
 // Transposes the game trid in place to allow for merging vertically.
-static void transpose(GameState *gs);
+static void transpose(GameState &gs);
 // Returns the index of the next non-empty tile after the
 // `current_index` in the i-th row in of the grid.
-static int get_successor_index(GameState *gs, int i, int current_index);
+static int get_successor_index(const GameState &gs, int i, int current_index);
 /**
  * We only implement merging tiles left or right (row-wise), in order to
  * merge the tiles in a vertical direction we first transpose the grid,
  * merge and then transpose back.
  */
-static void merge(GameState *gs, int direction)
+static void merge(GameState &gs, int direction)
 {
         if (direction == UP || direction == DOWN) {
                 transpose(gs);
         }
 
-        for (int i = 0; i < gs->grid_size; i++) {
+        for (int i = 0; i < gs.grid_size; i++) {
                 merge_row(gs, i, direction);
         }
 
@@ -424,22 +419,22 @@ static void merge(GameState *gs, int direction)
         }
 }
 
-static void merge_row(GameState *gs, int i, int direction)
+static void merge_row(GameState &gs, int i, int direction)
 {
         int curr = 0;
-        int *merged_row = (int *)malloc(gs->grid_size * sizeof(int));
-        for (int j = 0; j < gs->grid_size; j++) {
+        int *merged_row = (int *)malloc(gs.grid_size * sizeof(int));
+        for (int j = 0; j < gs.grid_size; j++) {
                 merged_row[j] = 0; // Initialize the merged row
         }
         int merged_num = 0;
 
-        int size = gs->grid_size;
+        int size = gs.grid_size;
 
         // We always merge to the left (or up if we have previously
         // transposed the grid), in other cases we reverse the row,
         // merge and reverse back.
         if (direction == DOWN || direction == RIGHT) {
-                reverse(gs->grid[i], size);
+                reverse(gs.grid[i], size);
         }
 
         // We find the first non-empty tile.
@@ -455,11 +450,11 @@ static void merge_row(GameState *gs, int i, int direction)
         while (curr < size) {
                 int succ = get_successor_index(gs, i, curr);
                 // Two matching tiles found, we perform a merge.
-                int curr_val = gs->grid[i][curr];
-                if (succ < size && curr_val == gs->grid[i][succ]) {
-                        int sum = curr_val + gs->grid[i][succ];
-                        gs->score += sum;
-                        gs->occupied_tiles--;
+                int curr_val = gs.grid[i][curr];
+                if (succ < size && curr_val == gs.grid[i][succ]) {
+                        int sum = curr_val + gs.grid[i][succ];
+                        gs.score += sum;
+                        gs.occupied_tiles--;
                         merged_row[merged_num] = sum;
                         curr = get_successor_index(gs, i, succ);
                 } else {
@@ -471,9 +466,9 @@ static void merge_row(GameState *gs, int i, int direction)
 
         for (int j = 0; j < size; j++) {
                 if (direction == DOWN || direction == RIGHT) {
-                        gs->grid[i][gs->grid_size - 1 - j] = merged_row[j];
+                        gs.grid[i][gs.grid_size - 1 - j] = merged_row[j];
                 } else {
-                        gs->grid[i][j] = merged_row[j];
+                        gs.grid[i][j] = merged_row[j];
                 }
         }
         free(merged_row);
@@ -489,22 +484,22 @@ static void reverse(int *row, int row_size)
         }
 }
 
-static int get_successor_index(GameState *gs, int i, int current_index)
+static int get_successor_index(const GameState &gs, int i, int current_index)
 {
         int succ = current_index + 1;
-        while (succ < gs->grid_size && gs->grid[i][succ] == 0) {
+        while (succ < gs.grid_size && gs.grid[i][succ] == 0) {
                 succ++;
         }
         return succ;
 }
 
-static void transpose(GameState *gs)
+static void transpose(GameState &gs)
 {
-        for (int i = 0; i < gs->grid_size; i++) {
-                for (int j = i; j < gs->grid_size; j++) {
-                        int temp = gs->grid[i][j];
-                        gs->grid[i][j] = gs->grid[j][i];
-                        gs->grid[j][i] = temp;
+        for (int i = 0; i < gs.grid_size; i++) {
+                for (int j = i; j < gs.grid_size; j++) {
+                        int temp = gs.grid[i][j];
+                        gs.grid[i][j] = gs.grid[j][i];
+                        gs.grid[j][i] = temp;
                 }
         }
 }
@@ -512,20 +507,20 @@ static void transpose(GameState *gs)
 /* Game Loop Logic */
 
 /* Helper functions for the game loop */
-static bool grid_changed_from(GameState *gs, int **oldGrid);
-static bool is_board_full(GameState *gs);
-static bool no_move_possible(GameState *gs);
+static bool grid_changed_from(const GameState &gs, int **oldGrid);
+static bool is_board_full(const GameState &gs);
+static bool no_move_possible(const GameState &gs);
 
-bool is_game_over(GameState *gs)
+bool is_game_over(const GameState &gs)
 {
         return is_board_full(gs) && no_move_possible(gs);
 }
 
-bool is_game_finished(GameState *gs)
+bool is_game_finished(const GameState &gs)
 {
-        for (int i = 0; i < gs->grid_size; i++) {
-                for (int j = 0; j < gs->grid_size; j++) {
-                        if (gs->grid[i][j] == gs->target_max_tile) {
+        for (int i = 0; i < gs.grid_size; i++) {
+                for (int j = 0; j < gs.grid_size; j++) {
+                        if (gs.grid[i][j] == gs.target_max_tile) {
                                 return true;
                         }
                 }
@@ -533,28 +528,28 @@ bool is_game_finished(GameState *gs)
         return false;
 }
 
-static bool is_board_full(GameState *gs)
+static bool is_board_full(const GameState &gs)
 {
-        return gs->occupied_tiles >= gs->grid_size * gs->grid_size;
+        return gs.occupied_tiles >= gs.grid_size * gs.grid_size;
 }
 
-void take_turn(GameState *gs, int direction)
+void take_turn(GameState &gs, int direction)
 {
-        int **oldGrid = create_game_grid(gs->grid_size);
-        copy_grid(gs->grid, oldGrid, gs->grid_size);
+        int **oldGrid = create_game_grid(gs.grid_size);
+        copy_grid(gs.grid, oldGrid, gs.grid_size);
         merge(gs, direction);
 
         if (grid_changed_from(gs, oldGrid)) {
                 spawn_tile(gs);
         }
-        free_game_grid(oldGrid, gs->grid_size);
+        free_game_grid(oldGrid, gs.grid_size);
 }
 
-static bool grid_changed_from(GameState *gs, int **oldGrid)
+static bool grid_changed_from(const GameState &gs, int **oldGrid)
 {
-        for (int i = 0; i < gs->grid_size; i++) {
-                for (int j = 0; j < gs->grid_size; j++) {
-                        if (gs->grid[i][j] != oldGrid[i][j]) {
+        for (int i = 0; i < gs.grid_size; i++) {
+                for (int j = 0; j < gs.grid_size; j++) {
+                        if (gs.grid[i][j] != oldGrid[i][j]) {
                                 return true;
                         }
                 }
@@ -562,24 +557,24 @@ static bool grid_changed_from(GameState *gs, int **oldGrid)
         return false;
 }
 
-static bool no_move_possible(GameState *gs)
+static bool no_move_possible(const GameState &gs)
 {
         /* A move is always possible if not all tiles are occupied.
            Hence, we short-circuit here. */
-        if (gs->occupied_tiles < gs->grid_size * gs->grid_size) {
+        if (gs.occupied_tiles < gs.grid_size * gs.grid_size) {
                 return false;
         }
 
         /* When the grid is full a move is possible as long as there
            exist some adjacent tiles that have the same number */
-        for (int i = 0; i < gs->grid_size; i++) {
-                for (int j = 0; j < gs->grid_size - 1; j++) {
+        for (int i = 0; i < gs.grid_size; i++) {
+                for (int j = 0; j < gs.grid_size - 1; j++) {
                         // row-wise adjacency
-                        if (gs->grid[i][j] == gs->grid[i][j + 1]) {
+                        if (gs.grid[i][j] == gs.grid[i][j + 1]) {
                                 return false;
                         }
                         // colunm-wise adjacency
-                        if (gs->grid[j][i] == gs->grid[j + 1][i]) {
+                        if (gs.grid[j][i] == gs.grid[j + 1][i]) {
                                 return false;
                         }
                 }
@@ -604,19 +599,19 @@ static void copy_grid(int **source, int **destination, int size)
  * grid. After that `update_game_grid` should be called to update the
  * contents of the grid slots with the numbers.
  */
-static void draw_game_grid(Display *display, int grid_size,
+static void draw_game_grid(const Display &display, int grid_size,
                            const UserInterfaceCustomization &customization);
 
-void draw_game_canvas(Display *display, GameState *state,
+void draw_game_canvas(const Display &display, GameState *state,
                       const UserInterfaceCustomization &customization)
 {
-        display->initialize();
-        display->clear(Black);
+        display.initialize();
+        display.clear(Black);
 
         // TODO: change this to render like this only if the display has rounded
         // edges (new platform capability)
         if (customization.rendering_mode == Detailed)
-                display->draw_rounded_border(customization.accent_color);
+                display.draw_rounded_border(customization.accent_color);
 
         draw_game_grid(display, state->grid_size, customization);
 }
@@ -660,11 +655,11 @@ class GridDimensions
         }
 };
 
-GridDimensions *calculate_grid_dimensions(Display *display, int grid_size)
+GridDimensions *calculate_grid_dimensions(const Display &display, int grid_size)
 {
-        int height = display->get_height();
-        int width = display->get_width();
-        int corner_radius = display->get_display_corner_radius();
+        int height = display.get_height();
+        int width = display.get_width();
+        int corner_radius = display.get_display_corner_radius();
         int usable_width = width - 2 * SCREEN_BORDER_WIDTH;
         int usable_height = height - 2 * corner_radius;
 
@@ -714,7 +709,7 @@ GridDimensions *calculate_grid_dimensions(Display *display, int grid_size)
                                   score_start.y, score_title_x, score_title_y);
 }
 
-static void draw_game_grid(Display *display, int grid_size,
+static void draw_game_grid(const Display &display, int grid_size,
                            const UserInterfaceCustomization &customization)
 {
 
@@ -725,13 +720,13 @@ static void draw_game_grid(Display *display, int grid_size,
         // cells depending on the UI rendering mode.
         auto cell_renderer = [&](Point start, int width, int height) {
                 if (customization.rendering_mode == Minimalistic) {
-                        display->draw_rectangle(start, width, height,
-                                                GRID_BG_COLOR, 1, true);
-                        display->draw_rectangle(start, width, height,
-                                                customization.accent_color, 2,
-                                                false);
+                        display.draw_rectangle(start, width, height,
+                                               GRID_BG_COLOR, 1, true);
+                        display.draw_rectangle(start, width, height,
+                                               customization.accent_color, 2,
+                                               false);
                 } else {
-                        display->draw_rounded_rectangle(
+                        display.draw_rounded_rectangle(
                             start, width, height, height / 2, GRID_BG_COLOR);
                 }
         };
@@ -742,8 +737,8 @@ static void draw_game_grid(Display *display, int grid_size,
         const char *buffer = "Score:";
 
         Point score_title = {.x = gd->score_title_x, .y = gd->score_title_y};
-        display->draw_string(score_title, (char *)buffer, Size16, GRID_BG_COLOR,
-                             TEXT_COLOR);
+        display.draw_string(score_title, (char *)buffer, Size16, GRID_BG_COLOR,
+                            TEXT_COLOR);
 
         int cell_width_and_spacing = gd->cell_width + gd->cell_x_spacing;
         int cell_height_and_spacing = gd->cell_height + gd->cell_y_spacing;
@@ -793,15 +788,20 @@ Color get_number_color_coding(int number)
         }
 }
 
-void update_game_grid(const Platform &p, GameState *gs,
+/**
+ * Note that the game state is modified: the new grid state gets copied
+ * over into the `old_state` variable. TODO: figure out why Szymon from 2 years
+ * ago decided to handle this mutation in this place.
+ */
+void update_game_grid(const Platform &p, GameState &gs,
                       const UserInterfaceCustomization &customization)
 {
-        int grid_size = gs->grid_size;
-        GridDimensions *gd = calculate_grid_dimensions(p.display, grid_size);
+        int grid_size = gs.grid_size;
+        GridDimensions *gd = calculate_grid_dimensions(*p.display, grid_size);
 
         int score_title_length = 6 * FONT_WIDTH;
         char score_buffer[20];
-        sprintf(score_buffer, "%d", gs->score);
+        sprintf(score_buffer, "%d", gs.score);
 
         int score_rounding_radius = gd->score_cell_height / 2;
 
@@ -834,11 +834,11 @@ void update_game_grid(const Platform &p, GameState *gs,
                             .y = gd->grid_start_y +
                                  i * (gd->cell_height + gd->cell_y_spacing)};
 
-                        int current = gs->grid[i][j];
-                        if (current != gs->old_grid[i][j]) {
+                        int current = gs.grid[i][j];
+                        if (current != gs.old_grid[i][j]) {
 
                                 char buffer[5];
-                                sprintf(buffer, "%4d", gs->grid[i][j]);
+                                sprintf(buffer, "%4d", gs.grid[i][j]);
                                 str_replace(buffer, "   0", "    ");
 
                                 // We need to center the four characters
@@ -848,7 +848,7 @@ void update_game_grid(const Platform &p, GameState *gs,
                                 int y_margin =
                                     (gd->cell_height - FONT_SIZE) / 2;
                                 int old_digit_len =
-                                    number_string_length(gs->old_grid[i][j]);
+                                    number_string_length(gs.old_grid[i][j]);
                                 int old_digit_text_width =
                                     old_digit_len * FONT_WIDTH;
 
@@ -883,7 +883,7 @@ void update_game_grid(const Platform &p, GameState *gs,
                                 p.display->draw_string(start_with_margin,
                                                        buffer, Size16,
                                                        GRID_BG_COLOR, color);
-                                gs->old_grid[i][j] = gs->grid[i][j];
+                                gs.old_grid[i][j] = gs.grid[i][j];
                         }
                 }
         }

@@ -41,16 +41,6 @@ class GameState
         }
 };
 
-GameState *initialize_game_state(int gridSize, int target_max_tile);
-
-void draw(Display *display, GameState *state);
-void update_game_grid(const Platform &p, GameState *gs,
-                      const UserInterfaceCustomization &customization);
-
-bool is_game_over(GameState *gs);
-bool is_game_finished(GameState *gs);
-void take_turn(GameState *gs, int direction);
-
 class Clean2048 : public ApplicationExecutor<Game2048Configuration>
 {
       public:

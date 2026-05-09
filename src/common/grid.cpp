@@ -145,10 +145,9 @@ int render_centered_above_frame(const Platform &p,
         return toggle_text_x + text_pixel_len;
 }
 
-int render_text_above_frame_starting_from(const Platform &p,
-                                          const SquareCellGridDimensions &dimensions,
-                                          char *text, int position,
-                                          bool erase_previous)
+int render_text_above_frame_starting_from(
+    const Platform &p, const SquareCellGridDimensions &dimensions, char *text,
+    int position, bool erase_previous)
 {
         // We need to ensure that the border is slightly larger than the
         // drawable grid area so that the border edges don't overlap with the

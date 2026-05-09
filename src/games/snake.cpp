@@ -104,7 +104,8 @@ UserAction SnakeGame::app_loop(const Platform &p,
         // subtract them from score_end pixel position. The function above
         // returns the ending position of the score text so that we can render
         // the score appropriately.
-        int score_text_end_x = render_centered_above_frame(p, *gd, "Score:    ");
+        int score_text_end_x =
+            render_centered_above_frame(p, *gd, "Score:    ");
 
         /*
          * Helper lambda expressions to avoid passing platform / context
