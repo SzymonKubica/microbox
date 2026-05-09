@@ -10,12 +10,8 @@
  * is nothing to configure here. Yet we still need the configuration struct
  * to conform to the application interface.
  */
-typedef struct SleepConfiguration {
-} SleepConfiguration;
-
-std::optional<UserAction>
-collect_snake_config(Platform *p, SleepConfiguration *game_config,
-                     UserInterfaceCustomization *customization);
+struct SleepConfiguration {
+};
 
 class PowerManagementApp : public ApplicationExecutor<SleepConfiguration>
 {

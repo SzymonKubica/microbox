@@ -5,10 +5,10 @@
 #include "../application_executor.hpp"
 #include <optional>
 
-typedef struct AppMenuConfiguration {
+struct AppMenuConfiguration {
         ConfigurationHeader header;
         Game app;
-} AppMenuConfiguration;
+};
 
 std::optional<UserAction> select_utility_app_and_run(Platform *p);
 

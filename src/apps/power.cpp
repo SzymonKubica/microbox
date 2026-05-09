@@ -2,7 +2,6 @@
 #include "power.hpp"
 
 #include "../common/configuration.hpp"
-#include "../common/grid.hpp"
 
 #define INPUT_REGISTERED_DELAY 150
 
@@ -22,9 +21,6 @@ const char *PowerManagementApp::get_help_text() const
         return "Press any button to enter deep sleep. Press 'back' to cancel. "
                "Reset the console using the power button to wake up.";
 };
-
-void update_score(Platform *p, SquareCellGridDimensions *dimensions,
-                  int score_text_end_location, int score);
 
 UserAction
 PowerManagementApp::app_loop(const Platform &p,

@@ -49,18 +49,16 @@ template <typename ConfigStruct> class ApplicationExecutor
         collect_config(const Platform &p,
                        const UserInterfaceCustomization &customization,
                        ConfigStruct &game_config) const = 0;
-
-        /**
-         * Static text that will be rendered when the user requests the help
-         * screen.
-         */
-        virtual const char *get_help_text() const = 0;
-
         /**
          * This is required to customize the logs in `execute_app` function
          * to customize the logs to align with the application.
          */
         virtual const char *get_game_name() const = 0;
+        /**
+         * Static text that will be rendered when the user requests the help
+         * screen.
+         */
+        virtual const char *get_help_text() const = 0;
         virtual ~ApplicationExecutor() {}
 };
 

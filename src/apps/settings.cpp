@@ -18,7 +18,7 @@
 #define TAG "settings"
 
 Configuration *assemble_settings_menu_configuration(const Platform &p);
-void extract_menu_setting(Game *selected_game, Configuration *config);
+void extract_menu_setting(Game &selection, const Configuration &config);
 
 std::optional<UserAction>
 Settings::collect_config(const Platform &p,
@@ -36,7 +36,7 @@ Settings::collect_config(const Platform &p,
         }
 
         Game selected_game;
-        extract_menu_setting(&selected_game, settings_config);
+        extract_menu_setting(selected_game, *settings_config);
         game_config.selected_game = selected_game;
         delete settings_config;
         return std::nullopt;
@@ -58,7 +58,7 @@ UserAction Settings::app_loop(const Platform &p,
         LOG_DEBUG(TAG, "Computed configuration storage offset for game %s: %d",
                   game_to_string(selected_game), offset);
 
-        PersistentStorage storage = *(p.persistent_storage);
+        const PersistentStorage &storage = *(p.persistent_storage);
 
         auto is_exit_action = [](std::optional<UserAction> action) {
                 return action.value() == UserAction::Exit ||
@@ -228,8 +228,8 @@ Configuration *assemble_settings_menu_configuration(const Platform &p)
         return new Configuration("Set Defaults", {menu});
 }
 
-void extract_menu_setting(Game *selected_menu, Configuration *config)
+void extract_menu_setting(Game &selection, const Configuration &config)
 {
-        ConfigurationOption menu_option = *config->options[0];
-        *selected_menu = game_from_string(menu_option.get_current_str_value());
+        ConfigurationOption menu_option = *config.options[0];
+        selection = game_from_string(menu_option.get_current_str_value());
 }

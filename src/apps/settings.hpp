@@ -6,10 +6,10 @@
 std::vector<int> get_settings_storage_offsets();
 int get_settings_storage_offset(Game game);
 
-typedef struct SettingsConfiguration {
+struct SettingsConfiguration {
         ConfigurationHeader header;
         Game selected_game;
-} SettingsConfiguration;
+};
 
 /**
  * This 'game' is a settings menu responsible for setting the default values of

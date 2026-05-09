@@ -6,12 +6,12 @@
 #include "../common/common_transitions.hpp"
 #include "../application_executor.hpp"
 
-typedef struct BrightnessConfiguration {
+struct BrightnessConfiguration {
         ConfigurationHeader header;
         int brightness;
-} BrightnessConfiguration;
+};
 
-void set_brightness_from_storage(PersistentStorage *storage);
+void set_brightness_from_storage(const PersistentStorage &storage);
 
 class BrightnessApp : public ApplicationExecutor<BrightnessConfiguration>
 {

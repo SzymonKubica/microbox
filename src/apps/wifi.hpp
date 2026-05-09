@@ -24,10 +24,10 @@ WifiAppAction action_from_string(char *string);
  * it to/from persistent memory only saves down pointers and not the actual
  * strings.
  */
-typedef struct WifiCredentials {
+struct WifiCredentials {
         char ssid[100];
         char password[100];
-} WifiCredentials;
+};
 
 /**
  * We need to store the WiFI parameters in fixed-size arrays, otherwise saving
@@ -35,7 +35,7 @@ typedef struct WifiCredentials {
  * strings.
  */
 
-typedef struct WifiAppConfiguration {
+struct WifiAppConfiguration {
         ConfigurationHeader header;
         /**
          * Required to detect if the wifi app configuration struct has not
@@ -54,18 +54,7 @@ typedef struct WifiAppConfiguration {
         const char *get_currently_selected_ssid() const;
         const char *get_currently_selected_password() const;
         bool is_initialized() const;
-
-} WifiAppConfiguration;
-
-/**
- * Similar to `collect_configuration` from `configuration.hpp`, it returns empty
- * optional if the configuration was successfully collected. Otherwise, if the
- * user requested exit by pressing the blue button, it returns the Exit action
- * and this needs to be handled by the main game loop.
- */
-std::optional<UserAction>
-collect_wifi_app_config(Platform *p, WifiAppConfiguration *game_config,
-                        UserInterfaceCustomization *customization);
+};
 
 class WifiApp : public ApplicationExecutor<WifiAppConfiguration>
 {

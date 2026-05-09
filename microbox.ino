@@ -39,7 +39,7 @@ void common_setup(void)
 void loop(void)
 {
         LOG_INFO(TAG, "MicroBox started!");
-        set_brightness_from_storage(platform->persistent_storage);
+        set_brightness_from_storage(*platform->persistent_storage);
 
         while (true) {
                 select_app_and_run(platform);

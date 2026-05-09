@@ -25,9 +25,6 @@ const char *BrightnessApp::get_help_text() const
         return "Press right to adjust the brightness.";
 };
 
-void update_score(Platform *p, SquareCellGridDimensions *dimensions,
-                  int score_text_end_location, int score);
-
 int convert_brightness_to_analog_signal(int brightness)
 {
         assert(0 < brightness && brightness <= 100);
@@ -75,7 +72,7 @@ BrightnessApp::app_loop(const Platform &p,
 }
 
 BrightnessConfiguration *
-load_initial_brightness_config(PersistentStorage *storage)
+load_initial_brightness_config(const PersistentStorage &storage)
 {
 
         int storage_offset = get_settings_storage_offset(Game::Brightness);
@@ -83,10 +80,9 @@ load_initial_brightness_config(PersistentStorage *storage)
         BrightnessConfiguration config{};
         LOG_DEBUG(TAG,
                   "Trying to load initial settings from the persistent "
-                  "storage "
-                  "at offset %d",
+                  "storage at offset %d",
                   storage_offset);
-        storage->get(storage_offset, config);
+        storage.get(storage_offset, config);
 
         BrightnessConfiguration *output = new BrightnessConfiguration();
 
@@ -97,7 +93,7 @@ load_initial_brightness_config(PersistentStorage *storage)
 
                 memcpy(output, &DEFAULT_BRIGHTNESS_CONFIGURATION,
                        sizeof(BrightnessConfiguration));
-                storage->put(storage_offset, DEFAULT_BRIGHTNESS_CONFIGURATION);
+                storage.put(storage_offset, DEFAULT_BRIGHTNESS_CONFIGURATION);
         } else {
                 LOG_DEBUG(TAG, "Using configuration from persistent storage.");
                 memcpy(output, &config, sizeof(BrightnessConfiguration));
@@ -108,7 +104,7 @@ load_initial_brightness_config(PersistentStorage *storage)
         return output;
 }
 
-void set_brightness_from_storage(PersistentStorage *storage)
+void set_brightness_from_storage(const PersistentStorage &storage)
 {
         auto config = load_initial_brightness_config(storage);
 #if defined(WAVESHARE_2_4_INCH_LCD)
@@ -119,10 +115,10 @@ void set_brightness_from_storage(PersistentStorage *storage)
 }
 
 Configuration *
-assemble_brightness_configuration(BrightnessConfiguration *initial_config)
+assemble_brightness_configuration(const BrightnessConfiguration &initial_config)
 {
         auto *brightness = ConfigurationOption::of_integers(
-            "0-100", {initial_config->brightness}, initial_config->brightness);
+            "0-100", {initial_config.brightness}, initial_config.brightness);
 
         auto options = {brightness};
 
@@ -137,7 +133,7 @@ BrightnessApp::collect_config(const Platform &p,
         BrightnessConfiguration *initial_config =
             load_initial_brightness_config(p.persistent_storage);
         Configuration *config =
-            assemble_brightness_configuration(initial_config);
+            assemble_brightness_configuration(*initial_config);
 
         auto maybe_interrupt_action =
             collect_configuration(p, *config, customization);
