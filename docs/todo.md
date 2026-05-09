@@ -14,7 +14,7 @@
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
-- rename the console as microbox already exists
+- rename the console as microbox already exists (first find a better name)
 
 
 
@@ -28,6 +28,7 @@
       It migth be better to explain / clean-up the process of configuring the
       library with the correct pins and target device.
 - [ ] design & add game thumbnail rendering
+- [ ] understand the cool cube rendering code for the 2.4 display and implement something like this.
 ## Require hardware testing
 ### any platform
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
@@ -52,8 +53,11 @@
   - [x] configuration management code (this is large and messy, plus will likely require a redesign)
   - [x] change `collect_configuration` API to take in references and const references
         instead of raw pointers
-  - [x] user interface rendering code
-  - [ ] application executor & individual application implementations
+  - [x] user interface rendering codx
+  - [x] change `collect_configuration` API to take in references and const references
+        instead of raw pointers
+  - [x] application executor & individual application implementations
+  - [ ] all helper functions in all applications
 
 
 

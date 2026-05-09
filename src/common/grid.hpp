@@ -43,7 +43,8 @@ calculate_grid_dimensions(int display_width, int display_height,
                           int display_rounded_corner_radius, int rows, int cols,
                           bool square_cells);
 
-void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
+void draw_grid_frame(const Platform &p,
+                     const UserInterfaceCustomization &customization,
                      SquareCellGridDimensions *dimensions);
 
 /**
@@ -52,13 +53,13 @@ void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
  * @return pixel location of the end of the text. Useful for rendering other
  * things behind the centered text (e.g. incrementable score count).
  */
-int render_centered_above_frame(Platform *p,
+int render_centered_above_frame(const Platform &p,
                                 SquareCellGridDimensions *dimensions,
                                 std::string text);
 /**
  * Renders text above the grid frame starting from the supplied pixel position
  */
-int render_text_above_frame_starting_from(Platform *p,
+int render_text_above_frame_starting_from(const Platform &p,
                                           SquareCellGridDimensions *dimensions,
                                           char *text, int position,
                                           bool erase_previous = false);

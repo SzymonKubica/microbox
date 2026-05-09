@@ -165,8 +165,8 @@ class SudokuState
         }
 };
 
-const char *SudokuGame::get_game_name() { return "Sudoku"; }
-const char *SudokuGame::get_help_text()
+const char *SudokuGame::get_game_name() const { return "Sudoku"; }
+const char *SudokuGame::get_help_text() const
 {
         return "Use the up/down buttons to select which digit you are "
                "inserting. Use the joystick to control the cursor. Press "
@@ -187,7 +187,7 @@ load_game_state(const SudokuConfiguration &config)
         return grid;
 }
 
-void save_game_state(Platform *p, SudokuConfiguration &config,
+void save_game_state(const Platform &p, SudokuConfiguration &config,
                      std::vector<std::vector<SudokuCell>> &grid)
 {
         config.is_game_in_progress = true;
@@ -203,20 +203,20 @@ void save_game_state(Platform *p, SudokuConfiguration &config,
                   "Saving current Sudoku game state to persistent storage at "
                   "offset %d",
                   storage_offset);
-        p->persistent_storage->put(storage_offset, config);
+        p.persistent_storage->put(storage_offset, config);
 }
 
-UserAction SudokuGame::app_loop(Platform *p,
-                                UserInterfaceCustomization *customization,
-                                const SudokuConfiguration &config)
+UserAction SudokuGame::app_loop(const Platform &p,
+                                const UserInterfaceCustomization &customization,
+                                const SudokuConfiguration &config) const
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
 
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
-            p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius(), 9, 9, true);
+            p.display->get_width(), p.display->get_height(),
+            p.display->get_display_corner_radius(), 9, 9, true);
 
-        SimpleSudokuView view{*customization, *gd, p->display};
+        SimpleSudokuView view{customization, *gd, p.display};
 
         std::vector<std::vector<SudokuCell>> grid;
         if (config.is_game_in_progress) {
@@ -224,9 +224,9 @@ UserAction SudokuGame::app_loop(Platform *p,
                     "A game in progress was found. Press 'down' to "
                     "continue the previous game or 'right' to start a "
                     "new game.";
-                render_wrapped_text(*p, *customization, help_text);
+                render_wrapped_text(p, customization, help_text);
                 Action action;
-                auto maybe_interrupt = wait_until_action_input(*p, action);
+                auto maybe_interrupt = wait_until_action_input(p, action);
                 if (maybe_interrupt.has_value()) {
                         assert(maybe_interrupt.value() ==
                                UserAction::CloseWindow);
@@ -272,7 +272,7 @@ UserAction SudokuGame::app_loop(Platform *p,
         bool input_registered_last_iteration = false;
 
         while (true) {
-                if (!p->display->refresh()) {
+                if (!p.display->refresh()) {
                         delete gd;
                         return UserAction::CloseWindow;
                 }
@@ -280,15 +280,15 @@ UserAction SudokuGame::app_loop(Platform *p,
                     SudokuEngine::validate(state.grid)) {
                         auto help_text = "Congratulations, you solved "
                                          "the sudoku successfully!";
-                        render_wrapped_help_text(*p, *customization, help_text);
-                        auto maybe_interrupt = wait_until_green_pressed(*p);
+                        render_wrapped_help_text(p, customization, help_text);
+                        auto maybe_interrupt = wait_until_green_pressed(p);
 
                         if (maybe_interrupt.has_value())
                                 return maybe_interrupt.value();
                         return UserAction::Exit;
                 }
                 auto maybe_direction =
-                    poll_directional_input(p->directional_controllers);
+                    poll_directional_input(p.directional_controllers);
                 if (maybe_direction.has_value()) {
                         Direction dir = maybe_direction.value();
                         Point previous = caret;
@@ -296,13 +296,13 @@ UserAction SudokuGame::app_loop(Platform *p,
                         view.move_caret(previous, caret);
                         // The delay below was hand-tweaked to feel
                         // good.
-                        p->time_provider->delay_ms(GAME_LOOP_DELAY * 3 / 2);
+                        p.time_provider->delay_ms(GAME_LOOP_DELAY * 3 / 2);
                 }
                 Action act;
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (!maybe_action.has_value()) {
                         input_registered_last_iteration = false;
-                        p->time_provider->delay_ms(CONTROL_POLLING_DELAY);
+                        p.time_provider->delay_ms(CONTROL_POLLING_DELAY);
                         continue;
                 }
                 act = maybe_action.value();
@@ -310,7 +310,7 @@ UserAction SudokuGame::app_loop(Platform *p,
                 // once to avoid double-processing of slow presses caused by
                 // button debounce issues.
                 if (input_registered_last_iteration) {
-                        p->time_provider->delay_ms(CONTROL_POLLING_DELAY);
+                        p.time_provider->delay_ms(CONTROL_POLLING_DELAY);
                         continue;
                 }
                 // Before processing the input we record that we handled it on
@@ -374,10 +374,10 @@ UserAction SudokuGame::app_loop(Platform *p,
                             "button to "
                             "save and exit, or 'left' to exit without "
                             "saving.";
-                        render_wrapped_text(*p, *customization, help_text);
+                        render_wrapped_text(p, customization, help_text);
                         Action action;
                         auto maybe_interrupt =
-                            wait_until_action_input(*p, action);
+                            wait_until_action_input(p, action);
                         if (maybe_interrupt.has_value()) {
                                 assert(maybe_interrupt.value() ==
                                        UserAction::CloseWindow);
@@ -387,14 +387,14 @@ UserAction SudokuGame::app_loop(Platform *p,
                                 SudokuConfiguration copy = config;
                                 save_game_state(p, copy, state.grid);
                         }
-                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         delete gd;
                         return UserAction::Exit;
                 }
                 }
                 // We wait slightly longer after an action is
                 // selected.
-                p->time_provider->delay_ms(2 * GAME_LOOP_DELAY);
+                p.time_provider->delay_ms(2 * GAME_LOOP_DELAY);
         }
         return UserAction::PlayAgain;
 }
@@ -411,24 +411,23 @@ void extract_game_config(SudokuConfiguration *game_config,
                          SudokuConfiguration *initial_config);
 
 std::optional<UserAction>
-SudokuGame::collect_config(Platform *p,
-                           UserInterfaceCustomization *customization,
-                           SudokuConfiguration *game_config)
+SudokuGame::collect_config(const Platform &p,
+                           const UserInterfaceCustomization &customization,
+                           SudokuConfiguration &game_config) const
 {
         SudokuConfiguration *initial_config =
-            load_initial_sudoku_config(p->persistent_storage);
+            load_initial_sudoku_config(p.persistent_storage);
 
         Configuration *config = assemble_sudoku_configuration(initial_config);
 
-        auto maybe_interrupt =
-            collect_configuration(*p, *config, *customization);
+        auto maybe_interrupt = collect_configuration(p, *config, customization);
         if (maybe_interrupt) {
                 delete initial_config;
                 delete config;
                 return maybe_interrupt;
         }
 
-        extract_game_config(game_config, config, initial_config);
+        extract_game_config(&game_config, config, initial_config);
         delete initial_config;
         delete config;
         return std::nullopt;

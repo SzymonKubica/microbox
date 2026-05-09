@@ -23,12 +23,13 @@ typedef struct SettingsConfiguration {
 class Settings : public ApplicationExecutor<SettingsConfiguration>
 {
       public:
-        UserAction app_loop(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            const SettingsConfiguration &config) override;
+        UserAction app_loop(const Platform &p,
+                            const UserInterfaceCustomization &customization,
+                            const SettingsConfiguration &config) const override;
         std::optional<UserAction>
-        collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       SettingsConfiguration *game_config) override;
-        const char *get_game_name() override;
-        const char *get_help_text() override;
+        collect_config(const Platform &p,
+                       const UserInterfaceCustomization &customization,
+                       SettingsConfiguration &game_config) const override;
+        const char *get_game_name() const override;
+        const char *get_help_text() const override;
 };

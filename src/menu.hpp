@@ -34,7 +34,7 @@ Game game_from_string(const char *name);
 
 const char *game_to_string(Game game);
 
-std::optional<UserAction> select_app_and_run(Platform *p);
+std::optional<UserAction> select_app_and_run(const Platform &p);
 
 /**
  * Similar to `collect_configuration` from `configuration.hpp`, it returns true
@@ -43,7 +43,7 @@ std::optional<UserAction> select_app_and_run(Platform *p);
  * to be handled by the main game loop.
  */
 std::optional<UserAction>
-collect_game_menu_defaults_config(Platform *p,
+collect_game_menu_defaults_config(const Platform &p,
                                   GameMenuConfiguration *configuration);
 /**
  * Responsible for getting input from the user when they first turn on the
@@ -51,4 +51,5 @@ collect_game_menu_defaults_config(Platform *p,
  * apps if needed.
  */
 std::optional<UserAction>
-main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration);
+main_menu_interaction_loop(const Platform &p,
+                           GameMenuConfiguration *configuration);

@@ -23,14 +23,15 @@ collect_sudoku_config(Platform *p, SudokuConfiguration *game_config,
 class SudokuGame : public ApplicationExecutor<SudokuConfiguration>
 {
       public:
-        UserAction app_loop(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            const SudokuConfiguration &config) override;
+        UserAction app_loop(const Platform &p,
+                            const UserInterfaceCustomization &customization,
+                            const SudokuConfiguration &config) const override;
         std::optional<UserAction>
-        collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       SudokuConfiguration *game_config) override;
-        const char *get_game_name() override;
-        const char *get_help_text() override;
+        collect_config(const Platform &p,
+                       const UserInterfaceCustomization &customization,
+                       SudokuConfiguration &game_config) const override;
+        const char *get_game_name() const override;
+        const char *get_help_text() const override;
 
         SudokuGame() {}
 };

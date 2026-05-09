@@ -37,14 +37,16 @@ collect_snake_duel_config(Platform *p, SnakeDuelConfiguration *game_config,
 class SnakeDuel : public ApplicationExecutor<SnakeDuelConfiguration>
 {
       public:
-        UserAction app_loop(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            const SnakeDuelConfiguration &config) override;
+        UserAction
+        app_loop(const Platform &p,
+                 const UserInterfaceCustomization &customization,
+                 const SnakeDuelConfiguration &config) const override;
         std::optional<UserAction>
-        collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       SnakeDuelConfiguration *game_config) override;
-        const char *get_game_name() override;
-        const char *get_help_text() override;
+        collect_config(const Platform &p,
+                       const UserInterfaceCustomization &customization,
+                       SnakeDuelConfiguration &game_config) const override;
+        const char *get_game_name() const override;
+        const char *get_help_text() const override;
 
         SnakeDuel() {}
 };

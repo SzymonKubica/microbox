@@ -97,15 +97,15 @@ struct SnakeDuelLoopState {
 UserAction snake_duel_loop(Platform *p,
                            UserInterfaceCustomization *customization);
 
-const char *SnakeDuel::get_game_name() { return "Snake Duel"; }
-const char *SnakeDuel::get_help_text()
+const char *SnakeDuel::get_game_name() const { return "Snake Duel"; }
+const char *SnakeDuel::get_help_text() const
 {
         return "Use the joystick to control where the snake goes."
                "Consume apples to grow the snake. Avoid hitting the walls or "
                "snake's tail. Second player: use keypad to control the snake.";
 }
 
-void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
+void update_duel_score(const Platform &p, SquareCellGridDimensions *dimensions,
                        int score_text_end_location, int score,
                        bool is_secondary = false);
 
@@ -136,23 +136,23 @@ std::optional<Direction>
 find_fallback_next_safe_step(Snake &snake, std::vector<std::vector<Cell>> &grid,
                              SquareCellGridDimensions *gd);
 void take_snake_step(
-    Platform *p, UserInterfaceCustomization *customization,
+    const Platform &p, const UserInterfaceCustomization &customization,
     const SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
     std::function<void(Point &point, Color color)> &render_cell,
     SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary);
 
-UserAction SnakeDuel::app_loop(Platform *p,
-                               UserInterfaceCustomization *customization,
-                               const SnakeDuelConfiguration &config)
+UserAction SnakeDuel::app_loop(const Platform &p,
+                               const UserInterfaceCustomization &customization,
+                               const SnakeDuelConfiguration &config) const
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
 
         int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
         std::unique_ptr<SquareCellGridDimensions> gd(calculate_grid_dimensions(
-            p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius(), game_cell_width));
+            p.display->get_width(), p.display->get_height(),
+            p.display->get_display_corner_radius(), game_cell_width));
         int rows = gd->rows;
         int cols = gd->cols;
 
@@ -198,7 +198,7 @@ UserAction SnakeDuel::app_loop(Platform *p,
         // re-renders that single cell in the display.
         std::function<void(Point & location, Color color)> render_cell =
             [p, &gd, &grid, customization](Point &location, Color color) {
-                    refresh_grid_cell(p->display, color, gd.get(), &grid,
+                    refresh_grid_cell(p.display, color, gd.get(), &grid,
                                       location);
             };
         // Renders the snake's head including the neck (2nd segment right behind
@@ -206,20 +206,20 @@ UserAction SnakeDuel::app_loop(Platform *p,
         std::function<void(ColoredSnake & snake)> render_head =
             [p, &gd, &grid, customization](ColoredSnake &snake) {
                     auto neck = snake.get_neck();
-                    render_segment_connection(p->display, snake.color, gd.get(),
+                    render_segment_connection(p.display, snake.color, gd.get(),
                                               &grid, neck, snake.head);
-                    render_snake_head(p->display, snake.color, gd.get(), &grid,
+                    render_snake_head(p.display, snake.color, gd.get(), &grid,
                                       snake);
             };
 
         render_player_1_score(0);
         render_player_2_score(0);
 
-        if (!p->display->refresh()) {
+        if (!p.display->refresh()) {
                 return UserAction::CloseWindow;
         }
 
-        auto primary_color = customization->accent_color;
+        auto primary_color = customization.accent_color;
         auto secondary_color = config.secondary_player_color;
 
         int mid_x = cols / 2;
@@ -255,9 +255,9 @@ UserAction SnakeDuel::app_loop(Platform *p,
         /*
          Time-related shorthand functions
          */
-        auto current_time = [&]() { return p->time_provider->milliseconds(); };
+        auto current_time = [&]() { return p.time_provider->milliseconds(); };
         auto delay_millis = [&](int duration_millis) {
-                p->time_provider->delay_ms(duration_millis);
+                p.time_provider->delay_ms(duration_millis);
         };
         SnakeDuelLoopState state{config.speed};
 
@@ -269,7 +269,7 @@ UserAction SnakeDuel::app_loop(Platform *p,
                 long elapsed = current_time() - frame_start_millis;
                 if (GAME_LOOP_DELAY > elapsed)
                         delay_millis(GAME_LOOP_DELAY - elapsed);
-                if (!p->display->refresh())
+                if (!p.display->refresh())
                         return UserAction::CloseWindow;
                 return std::nullopt;
         };
@@ -288,14 +288,14 @@ UserAction SnakeDuel::app_loop(Platform *p,
                 // presses the direction that is opposite to the current
                 // direction of the snake.
                 auto maybe_direction =
-                    poll_directional_input(p->directional_controllers);
+                    poll_directional_input(p.directional_controllers);
                 if (maybe_direction.has_value()) {
                         Direction dir = maybe_direction.value();
                         if (!is_opposite(dir, snake.direction)) {
                                 new_snake_direction = dir;
                         }
                 }
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_action.has_value()) {
                         Action act = maybe_action.value();
                         Direction second_dir = action_to_direction(act);
@@ -313,14 +313,14 @@ UserAction SnakeDuel::app_loop(Platform *p,
 
                 // If we are paused or it is not the time to move yet, we finish
                 // processing early.
-                if (state.is_waiting(p->time_provider)) {
+                if (state.is_waiting(p.time_provider)) {
                         if (wait_for_next_move(frame_start).has_value())
                                 return UserAction::CloseWindow;
                         continue;
                 }
                 state.last_step_timestamp = current_time();
 
-                TimeProvider *timer = p->time_provider;
+                TimeProvider *timer = p.time_provider;
                 {
                         // Logs the elapsed time upon destruction at the end of
                         // the enclosing block.
@@ -363,14 +363,14 @@ UserAction SnakeDuel::app_loop(Platform *p,
                 LOG_DEBUG(TAG, "Iteration took %d milliseconds.", elapsed);
         }
 
-        if (!p->display->refresh()) {
+        if (!p.display->refresh()) {
                 return UserAction::CloseWindow;
         }
         return UserAction::PauseAndPlayAgain;
 }
 
 void take_snake_step(
-    Platform *p, UserInterfaceCustomization *customization,
+    const Platform &p, const UserInterfaceCustomization &customization,
     const SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
@@ -487,7 +487,7 @@ void take_snake_step(
  * @param is_secondary If set, the score of the second player (P2) will be
  * updated.
  */
-void update_duel_score(Platform *p, SquareCellGridDimensions *dimensions,
+void update_duel_score(const Platform &p, SquareCellGridDimensions *dimensions,
                        int score_text_end_location, int score,
                        bool is_secondary)
 {
@@ -521,21 +521,20 @@ SnakeDuelConfiguration *
 load_initial_snake_duel_config(PersistentStorage *storage);
 
 std::optional<UserAction>
-SnakeDuel::collect_config(Platform *p,
-                          UserInterfaceCustomization *customization,
-                          SnakeDuelConfiguration *game_config)
+SnakeDuel::collect_config(const Platform &p,
+                          const UserInterfaceCustomization &customization,
+                          SnakeDuelConfiguration &game_config) const
 {
         Configuration *config =
-            assemble_snake_duel_configuration(p->persistent_storage);
+            assemble_snake_duel_configuration(p.persistent_storage);
 
-        auto maybe_interrupt =
-            collect_configuration(*p, *config, *customization);
+        auto maybe_interrupt = collect_configuration(p, *config, customization);
         if (maybe_interrupt) {
                 delete config;
                 return maybe_interrupt;
         }
 
-        extract_game_config(game_config, config);
+        extract_game_config(&game_config, config);
         delete config;
         return std::nullopt;
 }

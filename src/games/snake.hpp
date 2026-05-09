@@ -40,12 +40,13 @@ class SnakeGame : public ApplicationExecutor<SnakeConfiguration>
       public:
         SnakeGame() {}
 
-        UserAction app_loop(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            const SnakeConfiguration &config) override;
+        UserAction app_loop(const Platform &p,
+                            const UserInterfaceCustomization &customization,
+                            const SnakeConfiguration &config) const override;
         std::optional<UserAction>
-        collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       SnakeConfiguration *game_config) override;
-        const char *get_game_name() override;
-        const char *get_help_text() override;
+        collect_config(const Platform &p,
+                       const UserInterfaceCustomization &customization,
+                       SnakeConfiguration &game_config) const override;
+        const char *get_game_name() const override;
+        const char *get_help_text() const override;
 };

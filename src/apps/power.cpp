@@ -13,11 +13,11 @@
 #include "Arduino.h"
 #endif
 
-const char *PowerManagementApp::get_game_name()
+const char *PowerManagementApp::get_game_name() const
 {
         return "PowerManagementApp";
 };
-const char *PowerManagementApp::get_help_text()
+const char *PowerManagementApp::get_help_text() const
 {
         return "Press any button to enter deep sleep. Press 'back' to cancel. "
                "Reset the console using the power button to wake up.";
@@ -27,16 +27,16 @@ void update_score(Platform *p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score);
 
 UserAction
-PowerManagementApp::app_loop(Platform *p,
-                             UserInterfaceCustomization *customization,
-                             const SleepConfiguration &config)
+PowerManagementApp::app_loop(const Platform &p,
+                             const UserInterfaceCustomization &customization,
+                             const SleepConfiguration &config) const
 {
 #if defined(ARDUINO_ARCH_ESP32)
 #define DEV_BL_PIN 4
         // We are entering deep sleep and shutting down the main CPU.
         // The intent is that resetting the console is the only way to
         // wake up now.
-        p->display->sleep();
+        p.display->sleep();
         gpio_hold_en((gpio_num_t)DEV_BL_PIN);
         gpio_deep_sleep_hold_en();
         esp_deep_sleep_start();
@@ -45,14 +45,13 @@ PowerManagementApp::app_loop(Platform *p,
         return UserAction::Exit;
 }
 
-std::optional<UserAction>
-PowerManagementApp::collect_config(Platform *p,
-                                   UserInterfaceCustomization *customization,
-                                   SleepConfiguration *game_config)
+std::optional<UserAction> PowerManagementApp::collect_config(
+    const Platform &p, const UserInterfaceCustomization &customization,
+    SleepConfiguration &game_config) const
 {
-        render_wrapped_text(*p, *customization, get_help_text());
+        render_wrapped_text(p, customization, get_help_text());
         Action act;
-        wait_until_action_input(*p, act);
+        wait_until_action_input(p, act);
 
         if (act == BACK_ACTION)
                 return UserAction::Exit;

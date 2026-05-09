@@ -81,13 +81,14 @@ calculate_grid_dimensions(int display_width, int display_height,
                                             actual_width, actual_height);
 }
 
-void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
+void draw_grid_frame(const Platform &p,
+                     const UserInterfaceCustomization &customization,
                      SquareCellGridDimensions *dimensions)
 
 {
         LOG_DEBUG(TAG, "Rendering rectangular game area.");
-        p->display->initialize();
-        p->display->clear(Black);
+        p.display->initialize();
+        p.display->clear(Black);
 
         int x_margin = dimensions->left_horizontal_margin;
         int y_margin = dimensions->top_vertical_margin;
@@ -105,14 +106,14 @@ void draw_grid_frame(Platform *p, UserInterfaceCustomization *customization,
 
         // We draw the border at the end to ensure that it doesn't get cropped
         // by draw string operations above.
-        p->display->draw_rectangle(
+        p.display->draw_rectangle(
             {.x = x_margin - border_offset, .y = y_margin - border_offset},
             actual_width + 2 * border_offset, actual_height + 2 * border_offset,
-            customization->accent_color, border_width, false);
+            customization.accent_color, border_width, false);
         LOG_DEBUG(TAG, "Rectangular game area drawn.");
 }
 
-int render_centered_above_frame(Platform *p,
+int render_centered_above_frame(const Platform &p,
                                 SquareCellGridDimensions *dimensions,
                                 std::string text)
 {
@@ -120,7 +121,7 @@ int render_centered_above_frame(Platform *p,
         int y_margin = dimensions->top_vertical_margin;
         int x_margin = dimensions->left_horizontal_margin;
 
-        int available_width = p->display->get_width() - 2 * x_margin;
+        int available_width = p.display->get_width() - 2 * x_margin;
         // We need to ensure that the border is slightly larger than the
         // drawable grid area so that the border edges don't overlap with the
         // grid area. Otherwise, rendering items in the grid could 'clip' parts
@@ -137,14 +138,14 @@ int render_centered_above_frame(Platform *p,
         int centering_margin = (available_width - text_pixel_len) / 2;
 
         int toggle_text_x = x_margin + centering_margin;
-        p->display->draw_string({.x = toggle_text_x, .y = text_above_grid_y},
-                                (char *)text.c_str(), FontSize::Size16, Black,
-                                White);
+        p.display->draw_string({.x = toggle_text_x, .y = text_above_grid_y},
+                               (char *)text.c_str(), FontSize::Size16, Black,
+                               White);
 
         return toggle_text_x + text_pixel_len;
 }
 
-int render_text_above_frame_starting_from(Platform *p,
+int render_text_above_frame_starting_from(const Platform &p,
                                           SquareCellGridDimensions *dimensions,
                                           char *text, int position,
                                           bool erase_previous)
@@ -162,14 +163,13 @@ int render_text_above_frame_starting_from(Platform *p,
 
         int text_pixel_len = strlen(text) * FONT_WIDTH;
         if (erase_previous) {
-                p->display->clear_region(
-                    {.x = position, .y = text_above_grid_y},
-                    {.x = position + text_pixel_len,
-                     .y = text_above_grid_y + FONT_SIZE},
-                    Black);
+                p.display->clear_region({.x = position, .y = text_above_grid_y},
+                                        {.x = position + text_pixel_len,
+                                         .y = text_above_grid_y + FONT_SIZE},
+                                        Black);
         }
-        p->display->draw_string({.x = position, .y = text_above_grid_y},
-                                (char *)text, FontSize::Size16, Black, White);
+        p.display->draw_string({.x = position, .y = text_above_grid_y},
+                               (char *)text, FontSize::Size16, Black, White);
 
         return position + text_pixel_len;
 }

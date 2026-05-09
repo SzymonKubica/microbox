@@ -22,14 +22,16 @@ collect_minesweeper_config(Platform *p, MinesweeperConfiguration *game_config,
 class Minesweeper : public ApplicationExecutor<MinesweeperConfiguration>
 {
       public:
-        UserAction app_loop(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            const MinesweeperConfiguration &config) override;
+        UserAction
+        app_loop(const Platform &p,
+                 const UserInterfaceCustomization &customization,
+                 const MinesweeperConfiguration &config) const override;
         std::optional<UserAction>
-        collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       MinesweeperConfiguration *game_config) override;
-        const char *get_game_name() override;
-        const char *get_help_text() override;
+        collect_config(const Platform &p,
+                       const UserInterfaceCustomization &customization,
+                       MinesweeperConfiguration &game_config) const override;
+        const char *get_game_name() const override;
+        const char *get_help_text() const override;
 
         Minesweeper() {}
 };

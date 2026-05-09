@@ -22,12 +22,13 @@ class PowerManagementApp : public ApplicationExecutor<SleepConfiguration>
       public:
         PowerManagementApp() {}
 
-        UserAction app_loop(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            const SleepConfiguration &config) override;
+        UserAction app_loop(const Platform &p,
+                            const UserInterfaceCustomization &customization,
+                            const SleepConfiguration &config) const override;
         std::optional<UserAction>
-        collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       SleepConfiguration *game_config) override;
-        const char *get_game_name() override;
-        const char *get_help_text() override;
+        collect_config(const Platform &p,
+                       const UserInterfaceCustomization &customization,
+                       SleepConfiguration &game_config) const override;
+        const char *get_game_name() const override;
+        const char *get_help_text() const override;
 };

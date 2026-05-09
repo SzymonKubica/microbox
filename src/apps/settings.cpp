@@ -17,18 +17,19 @@
 
 #define TAG "settings"
 
-Configuration *assemble_settings_menu_configuration(Platform *p);
+Configuration *assemble_settings_menu_configuration(const Platform &p);
 void extract_menu_setting(Game *selected_game, Configuration *config);
 
 std::optional<UserAction>
-Settings::collect_config(Platform *p, UserInterfaceCustomization *customization,
-                         SettingsConfiguration *game_config)
+Settings::collect_config(const Platform &p,
+                         const UserInterfaceCustomization &customization,
+                         SettingsConfiguration &game_config) const
 
 {
         Configuration *settings_config =
             assemble_settings_menu_configuration(p);
         auto maybe_interrupt =
-            collect_configuration(*p, *settings_config, *customization);
+            collect_configuration(p, *settings_config, customization);
         if (maybe_interrupt) {
                 delete settings_config;
                 return maybe_interrupt;
@@ -36,27 +37,28 @@ Settings::collect_config(Platform *p, UserInterfaceCustomization *customization,
 
         Game selected_game;
         extract_menu_setting(&selected_game, settings_config);
-        game_config->selected_game = selected_game;
+        game_config.selected_game = selected_game;
         delete settings_config;
         return std::nullopt;
 }
-const char *Settings::get_game_name() { return "Settings Menu"; }
-const char *Settings::get_help_text()
+const char *Settings::get_game_name() const { return "Settings Menu"; }
+const char *Settings::get_help_text() const
 {
         return "Select the game/application and adjust the settings, press "
                "'right' to proceed and save the settings. Press 'left' at "
                "any point to exit.";
 }
 
-UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
-                              const SettingsConfiguration &config)
+UserAction Settings::app_loop(const Platform &p,
+                              const UserInterfaceCustomization &custom,
+                              const SettingsConfiguration &config) const
 {
         Game selected_game = config.selected_game;
         int offset = get_settings_storage_offset(selected_game);
         LOG_DEBUG(TAG, "Computed configuration storage offset for game %s: %d",
                   game_to_string(selected_game), offset);
 
-        PersistentStorage storage = *(p->persistent_storage);
+        PersistentStorage storage = *(p.persistent_storage);
 
         auto is_exit_action = [](std::optional<UserAction> action) {
                 return action.value() == UserAction::Exit ||
@@ -74,7 +76,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         case Game::Clean2048: {
                 Game2048Configuration config;
                 auto game = std::make_unique<Clean2048>();
-                auto action = game->collect_config(p, custom, &config);
+                auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);
@@ -82,7 +84,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         case Game::Minesweeper: {
                 MinesweeperConfiguration config;
                 auto game = std::make_unique<Minesweeper>();
-                auto action = game->collect_config(p, custom, &config);
+                auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);
@@ -90,7 +92,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         case Game::GameOfLife: {
                 GameOfLifeConfiguration config;
                 auto game = std::make_unique<GameOfLife>();
-                auto action = game->collect_config(p, custom, &config);
+                auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);
@@ -98,7 +100,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         case Game::Snake: {
                 SnakeConfiguration config;
                 auto game = std::make_unique<SnakeGame>();
-                auto action = game->collect_config(p, custom, &config);
+                auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);
@@ -106,7 +108,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         case Game::SnakeDuel: {
                 SnakeDuelConfiguration config;
                 auto game = std::make_unique<SnakeDuel>();
-                auto action = game->collect_config(p, custom, &config);
+                auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);
@@ -114,7 +116,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         case Game::WifiApp: {
                 WifiAppConfiguration config;
                 auto game = std::make_unique<WifiApp>();
-                auto action = game->collect_config(p, custom, &config);
+                auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);
@@ -122,7 +124,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         case Game::RandomSeedPicker: {
                 RandomSeedPickerConfiguration config;
                 auto game = std::make_unique<RandomSeedPicker>();
-                auto action = game->collect_config(p, custom, &config);
+                auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);
@@ -130,7 +132,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         case Game::Sudoku: {
                 SudokuConfiguration config;
                 auto game = std::make_unique<SudokuGame>();
-                auto action = game->collect_config(p, custom, &config);
+                auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);
@@ -138,7 +140,7 @@ UserAction Settings::app_loop(Platform *p, UserInterfaceCustomization *custom,
         case Game::Settings: {
                 AppMenuConfiguration config;
                 auto game = std::make_unique<UtilityApplicationMenu>();
-                auto action = game->collect_config(p, custom, &config);
+                auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);
@@ -202,7 +204,7 @@ int get_settings_storage_offset(Game game)
         return get_settings_storage_offsets()[static_cast<int>(game)];
 }
 
-Configuration *assemble_settings_menu_configuration(Platform *p)
+Configuration *assemble_settings_menu_configuration(const Platform &p)
 {
 
         std::vector<const char *> available_games = {
@@ -216,7 +218,7 @@ Configuration *assemble_settings_menu_configuration(Platform *p)
             game_to_string(Game::Sudoku),
         };
 
-        if (p->capabilities.has_wifi) {
+        if (p.capabilities.has_wifi) {
                 available_games.push_back(game_to_string(Game::WifiApp));
         }
 

@@ -62,26 +62,26 @@ assemble_utility_selector_configuration(Platform *p,
 void extract_app_selection(AppMenuConfiguration *menu_configuration,
                            Configuration *config);
 
-UserAction
-UtilityApplicationMenu::app_loop(Platform *p,
-                                 UserInterfaceCustomization *customization,
-                                 const AppMenuConfiguration &config)
+UserAction UtilityApplicationMenu::app_loop(
+    const Platform &p, const UserInterfaceCustomization &customization,
+    const AppMenuConfiguration &config) const
 {
         switch (config.app) {
         case Game::WifiApp:
-                execute_app(new WifiApp(), p, customization).value();
+                execute_app(*new WifiApp(), p, customization).value();
                 break;
         case Game::RandomSeedPicker:
-                execute_app(new RandomSeedPicker(), p, customization).value();
+                execute_app(*new RandomSeedPicker(), p, customization).value();
                 break;
         case Game::Power:
-                execute_app(new PowerManagementApp(), p, customization).value();
+                execute_app(*new PowerManagementApp(), p, customization)
+                    .value();
                 break;
         case Game::Brightness:
-                execute_app(new BrightnessApp(), p, customization).value();
+                execute_app(*new BrightnessApp(), p, customization).value();
                 break;
         case Game::DefaultsSetting:
-                execute_app(new Settings(), p, customization).value();
+                execute_app(*new Settings(), p, customization).value();
                 break;
         default:
                 LOG_DEBUG(TAG, "Unsupported application selected, exiting...");
@@ -94,8 +94,8 @@ UtilityApplicationMenu::app_loop(Platform *p,
 }
 
 Configuration *
-assemble_utility_selector_configuration(Platform *p,
-                                        AppMenuConfiguration *initial_config)
+assemble_utility_selector_configuration(const Platform &p,
+                                        AppMenuConfiguration &initial_config)
 {
 
         std::vector<const char *> available_apps = {
@@ -104,13 +104,13 @@ assemble_utility_selector_configuration(Platform *p,
             game_to_string(Game::DefaultsSetting),
         };
 
-        if (p->capabilities.has_wifi)
+        if (p.capabilities.has_wifi)
                 available_apps.push_back(game_to_string(Game::WifiApp));
-        if (p->capabilities.can_sleep)
+        if (p.capabilities.can_sleep)
                 available_apps.push_back(game_to_string(Game::Power));
 
         auto *app = ConfigurationOption::of_strings(
-            "Configure", available_apps, game_to_string(initial_config->app));
+            "Configure", available_apps, game_to_string(initial_config.app));
 
         auto options = {app};
 
@@ -134,11 +134,11 @@ void extract_app_selection(AppMenuConfiguration *menu_configuration,
 std::optional<Game> last_selected_app = std::nullopt;
 
 std::optional<UserAction> UtilityApplicationMenu::collect_config(
-    Platform *p, UserInterfaceCustomization *customization,
-    AppMenuConfiguration *game_config)
+    const Platform &p, const UserInterfaceCustomization &customization,
+    AppMenuConfiguration &game_config) const
 {
         AppMenuConfiguration *initial_config =
-            load_initial_utility_menu_configuration(p->persistent_storage);
+            load_initial_utility_menu_configuration(p.persistent_storage);
 
         if (last_selected_app) {
                 initial_config->app = last_selected_app.value();
@@ -147,27 +147,30 @@ std::optional<UserAction> UtilityApplicationMenu::collect_config(
         LOG_DEBUG(TAG, "Initial configuration was loaded.");
 
         Configuration *config =
-            assemble_utility_selector_configuration(p, initial_config);
+            assemble_utility_selector_configuration(p, *initial_config);
 
         auto maybe_interrupt =
-            collect_configuration(*p, *config, *customization, true, false);
+            collect_configuration(p, *config, customization, true, false);
 
         if (maybe_interrupt) {
                 delete config;
                 delete initial_config;
                 return maybe_interrupt;
         }
-        extract_app_selection(game_config, config);
+        extract_app_selection(&game_config, config);
 
-        last_selected_app = game_config->app;
+        last_selected_app = game_config.app;
 
         delete config;
         delete initial_config;
         return std::nullopt;
 }
 
-const char *UtilityApplicationMenu::get_game_name() { return "Utility Menu"; }
-const char *UtilityApplicationMenu::get_help_text()
+const char *UtilityApplicationMenu::get_game_name() const
+{
+        return "Utility Menu";
+}
+const char *UtilityApplicationMenu::get_help_text() const
 {
         return "Move joystick left/right to select the utility app. Press "
                "'right' to enter the selected app.";

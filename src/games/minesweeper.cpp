@@ -49,8 +49,9 @@ typedef struct MinesweeperGridCell {
 static MinesweeperGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
                           int display_rounded_corner_radius);
-static void draw_game_canvas(Platform *p, MinesweeperGridDimensions *dimensions,
-                             UserInterfaceCustomization *customization);
+static void draw_game_canvas(const Platform &p,
+                             MinesweeperGridDimensions *dimensions,
+                             const UserInterfaceCustomization &customization);
 
 static void erase_caret(Display *display, Point *grid_position,
                         MinesweeperGridDimensions *dimensions,
@@ -73,7 +74,7 @@ uncover_grid_cell(Display *display, Point *grid_position,
 static void flag_grid_cell(Display *display, Point *grid_position,
                            MinesweeperGridDimensions *dimensions,
                            std::vector<std::vector<MinesweeperGridCell>> *grid,
-                           UserInterfaceCustomization *customization);
+                           const UserInterfaceCustomization &customization);
 static void
 unflag_grid_cell(Display *display, Point *grid_position,
                  MinesweeperGridDimensions *dimensions,
@@ -91,8 +92,8 @@ void place_bombs(std::vector<std::vector<MinesweeperGridCell>> *grid,
 UserAction minesweeper_loop(Platform *platform,
                             UserInterfaceCustomization *customization);
 
-const char *Minesweeper::get_game_name() { return "Minesweeper"; }
-const char *Minesweeper::get_help_text()
+const char *Minesweeper::get_game_name() const { return "Minesweeper"; }
+const char *Minesweeper::get_help_text() const
 {
         return "Use the joystick to move the caret around the grid. Press "
                "green "
@@ -101,22 +102,23 @@ const char *Minesweeper::get_help_text()
                "you"
                " the number of mines around the cell.";
 }
-UserAction Minesweeper::app_loop(Platform *p,
-                                 UserInterfaceCustomization *customization,
-                                 const MinesweeperConfiguration &config)
+UserAction
+Minesweeper::app_loop(const Platform &p,
+                      const UserInterfaceCustomization &customization,
+                      const MinesweeperConfiguration &config) const
 {
         LOG_DEBUG(TAG, "Entering Minesweeper game loop");
 
         MinesweeperGridDimensions *gd = calculate_grid_dimensions(
-            p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius());
+            p.display->get_width(), p.display->get_height(),
+            p.display->get_display_corner_radius());
         int rows = gd->rows;
         int cols = gd->cols;
 
         draw_game_canvas(p, gd, customization);
         LOG_DEBUG(TAG, "Minesweeper game canvas drawn.");
 
-        if (!p->display->refresh()) {
+        if (!p.display->refresh()) {
                 delete gd;
                 return UserAction::CloseWindow;
         }
@@ -135,7 +137,7 @@ UserAction Minesweeper::app_loop(Platform *p,
         bool bombs_placed = false;
 
         Point caret_position = {.x = 0, .y = 0};
-        draw_caret(p->display, &caret_position, gd);
+        draw_caret(p.display, &caret_position, gd);
         LOG_DEBUG(TAG, "Caret rendered at initial position.");
 
         int total_uncovered = 0;
@@ -150,7 +152,7 @@ UserAction Minesweeper::app_loop(Platform *p,
         while (!is_game_over &&
                !(total_uncovered == cols * rows - config.mines_num)) {
                 auto maybe_direction =
-                    poll_directional_input(p->directional_controllers);
+                    poll_directional_input(p.directional_controllers);
                 if (maybe_direction) {
                         Direction dir = maybe_direction.value();
                         LOG_DEBUG(TAG, "Directional input received: %s",
@@ -168,47 +170,47 @@ UserAction Minesweeper::app_loop(Platform *p,
                         set to black. Because of this, we need to change the
                         erase color */
                         if (grid_at(caret_position).is_uncovered) {
-                                erase_caret(p->display, &caret_position, gd,
+                                erase_caret(p.display, &caret_position, gd,
                                             Black);
                                 // We need to 'uncover' the cell again to ensure
                                 // that the numbers don't get cropped after the
                                 // caret overlaps with them.
-                                uncover_grid_cell(p->display, &caret_position,
+                                uncover_grid_cell(p.display, &caret_position,
                                                   gd, &grid, &total_uncovered);
                         } else if (grid_at(caret_position).is_flagged) {
-                                erase_caret(p->display, &caret_position, gd,
-                                            customization->accent_color);
+                                erase_caret(p.display, &caret_position, gd,
+                                            customization.accent_color);
                                 // We need to unflag and flag the cell again to
                                 // ensure that the flag indicator doesn't get
                                 // cropped after the caret overlaps with them.
-                                unflag_grid_cell(p->display, &caret_position,
-                                                 gd, &grid,
-                                                 customization->accent_color);
-                                flag_grid_cell(p->display, &caret_position, gd,
+                                unflag_grid_cell(p.display, &caret_position, gd,
+                                                 &grid,
+                                                 customization.accent_color);
+                                flag_grid_cell(p.display, &caret_position, gd,
                                                &grid, customization);
                         } else {
-                                erase_caret(p->display, &caret_position, gd,
-                                            customization->accent_color);
+                                erase_caret(p.display, &caret_position, gd,
+                                            customization.accent_color);
                         }
                         translate_within_bounds(&caret_position, dir, gd->rows,
                                                 gd->cols);
-                        draw_caret(p->display, &caret_position, gd);
+                        draw_caret(p.display, &caret_position, gd);
 
                         // We need to manually refresh each time we draw
                         // something. This is required because if the window is
                         // closed, we need to handle this accordingly and free
                         // all resources.
-                        if (!p->display->refresh()) {
+                        if (!p.display->refresh()) {
                                 delete gd;
                                 return UserAction::CloseWindow;
                         }
-                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         /* We continue here to skip the additional input
                            polling delay at the end of the loop and make
                            the input snappy. */
                         continue;
                 }
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_action.has_value() &&
                     !action_input_on_last_iteration) {
                         Action act = maybe_action.value();
@@ -223,16 +225,15 @@ UserAction Minesweeper::app_loop(Platform *p,
                                 if (!cell.is_uncovered) {
                                         if (!cell.is_flagged) {
                                                 flag_grid_cell(
-                                                    p->display, &caret_position,
+                                                    p.display, &caret_position,
                                                     gd, &grid, customization);
 
                                         } else {
                                                 unflag_grid_cell(
-                                                    p->display, &caret_position,
+                                                    p.display, &caret_position,
                                                     gd, &grid,
-                                                    customization
-                                                        ->accent_color);
-                                                draw_caret(p->display,
+                                                    customization.accent_color);
+                                                draw_caret(p.display,
                                                            &caret_position, gd);
                                         }
                                 }
@@ -255,10 +256,10 @@ UserAction Minesweeper::app_loop(Platform *p,
                                 if (!cell.is_flagged) {
                                         auto maybe_interrupt =
                                             uncover_grid_cells_starting_from(
-                                                p->display, &caret_position, gd,
+                                                p.display, &caret_position, gd,
                                                 &grid, &total_uncovered);
 
-                                        draw_caret(p->display, &caret_position,
+                                        draw_caret(p.display, &caret_position,
                                                    gd);
                                         if (maybe_interrupt) {
                                                 delete gd;
@@ -268,18 +269,18 @@ UserAction Minesweeper::app_loop(Platform *p,
                                 }
 
                         case Action::BLUE:
-                                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
+                                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
                                 return UserAction::Exit;
                         default:
                                 LOG_DEBUG(TAG, "Irrelevant action input: %s",
                                           action_to_str(act));
                                 break;
                         }
-                        if (!p->display->refresh()) {
+                        if (!p.display->refresh()) {
                                 delete gd;
                                 return UserAction::CloseWindow;
                         }
-                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                         /* We continue here to skip the additional input
                            polling delay at the end of the loop and make
                            the input snappy. */
@@ -288,11 +289,11 @@ UserAction Minesweeper::app_loop(Platform *p,
                         action_input_on_last_iteration = false;
                 }
 
-                if (!p->display->refresh()) {
+                if (!p.display->refresh()) {
                         delete gd;
                         return UserAction::CloseWindow;
                 }
-                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
+                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
         }
 
         // When the game is lost, we make all bombs explode.
@@ -302,24 +303,24 @@ UserAction Minesweeper::app_loop(Platform *p,
                                 MinesweeperGridCell cell = grid[y][x];
                                 if (cell.is_bomb) {
                                         Point point = {.x = x, .y = y};
-                                        uncover_grid_cell(p->display, &point,
-                                                          gd, &grid,
+                                        uncover_grid_cell(p.display, &point, gd,
+                                                          &grid,
                                                           &total_uncovered);
                                 }
                         }
                 }
 
-                pause_until_any_directional_input(
-                    p->directional_controllers, *p->time_provider, *p->display);
-                display_game_over(*p->display, *customization);
-                p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                pause_until_any_directional_input(p.directional_controllers,
+                                                  *p.time_provider, *p.display);
+                display_game_over(*p.display, customization);
+                p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
         } else {
-                pause_until_any_directional_input(
-                    p->directional_controllers, *p->time_provider, *p->display);
-                display_game_won(*p->display, *customization);
-                p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                pause_until_any_directional_input(p.directional_controllers,
+                                                  *p.time_provider, *p.display);
+                display_game_won(*p.display, customization);
+                p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
-        if (!p->display->refresh()) {
+        if (!p.display->refresh()) {
                 delete gd;
                 return UserAction::CloseWindow;
         }
@@ -490,7 +491,7 @@ std::optional<UserAction> uncover_grid_cells_starting_from(
 void flag_grid_cell(Display *display, Point *grid_position,
                     MinesweeperGridDimensions *dimensions,
                     std::vector<std::vector<MinesweeperGridCell>> *grid,
-                    UserInterfaceCustomization *customization)
+                    const UserInterfaceCustomization &customization)
 {
 
         (*grid)[grid_position->y][grid_position->x].is_flagged = true;
@@ -504,14 +505,14 @@ void flag_grid_cell(Display *display, Point *grid_position,
                 char text[2];
                 sprintf(text, "f");
                 display->draw_string(actual_position, text, FontSize::Size16,
-                                     customization->accent_color, White);
+                                     customization.accent_color, White);
         }
         if (false) {
 
                 char text[2];
                 sprintf(text, "*");
                 display->draw_string(actual_position, text, FontSize::Size16,
-                                     customization->accent_color, White);
+                                     customization.accent_color, White);
         }
 }
 
@@ -538,21 +539,20 @@ void extract_game_config(MinesweeperConfiguration *game_config,
                          Configuration *config);
 
 std::optional<UserAction>
-Minesweeper::collect_config(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            MinesweeperConfiguration *game_config)
+Minesweeper::collect_config(const Platform &p,
+                            const UserInterfaceCustomization &customization,
+                            MinesweeperConfiguration &game_config) const
 {
         Configuration *config =
-            assemble_minesweeper_configuration(p->persistent_storage);
+            assemble_minesweeper_configuration(p.persistent_storage);
 
-        auto maybe_interrupt =
-            collect_configuration(*p, *config, *customization);
+        auto maybe_interrupt = collect_configuration(p, *config, customization);
         if (maybe_interrupt) {
                 delete config;
                 return maybe_interrupt;
         }
 
-        extract_game_config(game_config, config);
+        extract_game_config(&game_config, config);
         delete config;
         return std::nullopt;
 }
@@ -649,15 +649,15 @@ calculate_grid_dimensions(int display_width, int display_height,
 void draw_controls_hints(Display *display,
                          MinesweeperGridDimensions *dimensions,
                          int border_offset);
-void draw_game_canvas(Platform *p, MinesweeperGridDimensions *dimensions,
-                      UserInterfaceCustomization *customization)
+void draw_game_canvas(const Platform &p, MinesweeperGridDimensions *dimensions,
+                      const UserInterfaceCustomization &customization)
 
 {
-        p->display->initialize();
-        p->display->clear(Black);
+        p.display->initialize();
+        p.display->clear(Black);
 
-        if (customization->rendering_mode == Detailed)
-                p->display->draw_rounded_border(customization->accent_color);
+        if (customization.rendering_mode == Detailed)
+                p.display->draw_rounded_border(customization.accent_color);
 
         int x_margin = dimensions->left_horizontal_margin;
         int y_margin = dimensions->top_vertical_margin;
@@ -675,19 +675,19 @@ void draw_game_canvas(Platform *p, MinesweeperGridDimensions *dimensions,
 
         /* We don't draw the individual rectangles to make rendering
            faster on the physical Arduino LCD display. */
-        p->display->clear_region(
+        p.display->clear_region(
             {.x = x_margin - border_offset, .y = y_margin - border_offset},
             {.x = x_margin + actual_width + border_offset,
              .y = y_margin + actual_height + border_offset},
-            customization->accent_color);
+            customization.accent_color);
 
-        p->display->draw_rectangle(
+        p.display->draw_rectangle(
             {.x = x_margin - border_offset, .y = y_margin - border_offset},
             actual_width + 2 * border_offset, actual_height + 2 * border_offset,
             Gray, border_width, false);
 
-        if (customization->show_help_text) {
-                draw_controls_hints(p->display, dimensions, border_offset);
+        if (customization.show_help_text) {
+                draw_controls_hints(p.display, dimensions, border_offset);
         }
 }
 

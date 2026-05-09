@@ -19,8 +19,8 @@ const BrightnessConfiguration DEFAULT_BRIGHTNESS_CONFIGURATION = {
     .brightness = 50,
 };
 
-const char *BrightnessApp::get_game_name() { return "BrightnessApp"; };
-const char *BrightnessApp::get_help_text()
+const char *BrightnessApp::get_game_name() const { return "BrightnessApp"; };
+const char *BrightnessApp::get_help_text() const
 {
         return "Press right to adjust the brightness.";
 };
@@ -34,14 +34,15 @@ int convert_brightness_to_analog_signal(int brightness)
         return 255 * brightness / 100;
 }
 
-UserAction BrightnessApp::app_loop(Platform *p,
-                                   UserInterfaceCustomization *customization,
-                                   const BrightnessConfiguration &config)
+UserAction
+BrightnessApp::app_loop(const Platform &p,
+                        const UserInterfaceCustomization &customization,
+                        const BrightnessConfiguration &config) const
 {
 
         int brightness;
         auto maybe_interrupt = collect_number_input(
-            *p, *customization, "Enter brightness 0-100%", &brightness);
+            p, customization, "Enter brightness 0-100%", &brightness);
         if (maybe_interrupt.has_value()) {
                 return maybe_interrupt.value();
         }
@@ -49,11 +50,11 @@ UserAction BrightnessApp::app_loop(Platform *p,
 
         if (!valid_input) {
                 render_wrapped_help_text(
-                    *p, *customization,
+                    p, customization,
                     "Invalid input, brightness must be an "
                     "integer between 1 and "
                     "100. Press down button to try again.");
-                auto maybe_interrupt_action = wait_until_green_pressed(*p);
+                auto maybe_interrupt_action = wait_until_green_pressed(p);
                 if (maybe_interrupt_action.has_value()) {
                         return maybe_interrupt_action.value();
                 }
@@ -69,7 +70,7 @@ UserAction BrightnessApp::app_loop(Platform *p,
         int storage_offset = get_settings_storage_offset(Game::Brightness);
         auto copy = config;
         copy.brightness = brightness;
-        p->persistent_storage->put(storage_offset, copy);
+        p.persistent_storage->put(storage_offset, copy);
         return UserAction::PlayAgain;
 }
 
@@ -129,17 +130,17 @@ assemble_brightness_configuration(BrightnessConfiguration *initial_config)
 }
 
 std::optional<UserAction>
-BrightnessApp::collect_config(Platform *p,
-                              UserInterfaceCustomization *customization,
-                              BrightnessConfiguration *game_config)
+BrightnessApp::collect_config(const Platform &p,
+                              const UserInterfaceCustomization &customization,
+                              BrightnessConfiguration &game_config) const
 {
         BrightnessConfiguration *initial_config =
-            load_initial_brightness_config(p->persistent_storage);
+            load_initial_brightness_config(p.persistent_storage);
         Configuration *config =
             assemble_brightness_configuration(initial_config);
 
         auto maybe_interrupt_action =
-            collect_configuration(*p, *config, *customization);
+            collect_configuration(p, *config, customization);
         if (maybe_interrupt_action) {
                 delete config;
                 delete initial_config;

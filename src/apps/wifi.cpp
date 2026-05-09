@@ -40,8 +40,8 @@ const Color TEXT_COLOR = Black;
 
 WifiAppConfiguration DEFAULT_WIFI_APP_CONFIG;
 
-const char *WifiApp::get_game_name() { return "Wifi App"; }
-const char *WifiApp::get_help_text()
+const char *WifiApp::get_game_name() const { return "Wifi App"; }
+const char *WifiApp::get_help_text() const
 {
         return "Select 'Modify' action and press next (red) to enter the new "
                "wifi name and password. Select 'Connect' and press next to "
@@ -68,23 +68,23 @@ const char *WifiApp::get_help_text()
  * destination EEPROM location (or otherwise processed).
  */
 std::optional<UserAction>
-get_ssid_and_password_input(Platform *p,
-                            UserInterfaceCustomization *customization,
+get_ssid_and_password_input(const Platform &p,
+                            const UserInterfaceCustomization &customization,
                             char **ssid, char **password);
 
 std::optional<UserAction>
-handle_add_new(WifiAppConfiguration &config, Platform *p,
-               UserInterfaceCustomization *customization);
+handle_add_new(WifiAppConfiguration &config, const Platform &p,
+               const UserInterfaceCustomization &customization);
 std::optional<UserAction>
-handle_modify(WifiAppConfiguration &config, Platform *p,
-              UserInterfaceCustomization *customization);
+handle_modify(WifiAppConfiguration &config, const Platform &p,
+              const UserInterfaceCustomization &customization);
 std::optional<UserAction>
-handle_connect(WifiAppConfiguration &config, Platform *p,
-               UserInterfaceCustomization *customization);
+handle_connect(WifiAppConfiguration &config, const Platform &p,
+               const UserInterfaceCustomization &customization);
 
-UserAction WifiApp::app_loop(Platform *p,
-                             UserInterfaceCustomization *customization,
-                             const WifiAppConfiguration &config)
+UserAction WifiApp::app_loop(const Platform &p,
+                             const UserInterfaceCustomization &customization,
+                             const WifiAppConfiguration &config) const
 {
         WifiAppConfiguration config_copy = config;
 
@@ -103,16 +103,16 @@ UserAction WifiApp::app_loop(Platform *p,
         return UserAction::PlayAgain;
 }
 
-void save_wifi_app_config(WifiAppConfiguration &config, Platform *p)
+void save_wifi_app_config(WifiAppConfiguration &config, const Platform &p)
 {
         int offset = get_settings_storage_offset(Game::WifiApp);
         LOG_DEBUG(TAG, "Saving wifi app config at storage offset %d", offset);
-        p->persistent_storage->put(offset, config);
+        p.persistent_storage->put(offset, config);
 }
 
 std::optional<UserAction>
-handle_add_new(WifiAppConfiguration &config, Platform *p,
-               UserInterfaceCustomization *customization)
+handle_add_new(WifiAppConfiguration &config, const Platform &p,
+               const UserInterfaceCustomization &customization)
 {
         if (config.occupied_config_slots == AVAILABLE_CONFIGURATION_SLOTS) {
                 const char *help_text =
@@ -120,8 +120,8 @@ handle_add_new(WifiAppConfiguration &config, Platform *p,
                     "configuration slots. Please modify one of the "
                     "existing configurations instead of creating a new "
                     "one.";
-                render_wrapped_help_text(*p, *customization, help_text);
-                return wait_until_green_pressed(*p);
+                render_wrapped_help_text(p, customization, help_text);
+                return wait_until_green_pressed(p);
         }
 
         char *ssid;
@@ -155,8 +155,8 @@ handle_add_new(WifiAppConfiguration &config, Platform *p,
         return std::nullopt;
 }
 std::optional<UserAction>
-handle_modify(WifiAppConfiguration &config, Platform *p,
-              UserInterfaceCustomization *customization)
+handle_modify(WifiAppConfiguration &config, const Platform &p,
+              const UserInterfaceCustomization &customization)
 {
         char *ssid;
         char *password;
@@ -189,27 +189,27 @@ handle_modify(WifiAppConfiguration &config, Platform *p,
         return std::nullopt;
 }
 std::optional<UserAction>
-handle_connect(WifiAppConfiguration &config, Platform *p,
-               UserInterfaceCustomization *customization)
+handle_connect(WifiAppConfiguration &config, const Platform &p,
+               const UserInterfaceCustomization &customization)
 {
 
         const char *connecting_text = "Connecting to Wi-Fi network...";
-        render_wrapped_text(*p, *customization, connecting_text);
+        render_wrapped_text(p, customization, connecting_text);
         auto credentials = config.saved_configurations[config.curr_config_idx];
         LOG_INFO(TAG,
                  "Trying to connect to Wi-Fi using network %s and "
                  "password %s",
                  credentials.ssid, credentials.password);
         std::optional<std::unique_ptr<WifiData>> wifi_data =
-            p->wifi_provider->connect_to_network(credentials.ssid,
-                                                 credentials.password);
+            p.wifi_provider->connect_to_network(credentials.ssid,
+                                                credentials.password);
 
         LOG_INFO(TAG, "Received wifi connection data");
 
         char display_text_buffer[256];
         if (wifi_data.has_value()) {
                 std::unique_ptr<WifiData> data =
-                    p->wifi_provider->get_wifi_data();
+                    p.wifi_provider->get_wifi_data();
                 char *data_string = get_wifi_data_string_single_line(*data);
                 LOG_DEBUG("%s\n", data_string);
                 sprintf(display_text_buffer,
@@ -218,19 +218,19 @@ handle_connect(WifiAppConfiguration &config, Platform *p,
         } else {
                 sprintf(display_text_buffer, "Unable to connect to Wi-Fi!");
         }
-        render_wrapped_help_text(*p, *customization, display_text_buffer);
-        return wait_until_green_pressed(*p);
+        render_wrapped_help_text(p, customization, display_text_buffer);
+        return wait_until_green_pressed(p);
 }
 
 std::optional<UserAction>
-get_ssid_and_password_input(Platform *p,
-                            UserInterfaceCustomization *customization,
+get_ssid_and_password_input(const Platform &p,
+                            const UserInterfaceCustomization &customization,
                             char **ssid, char **password)
 {
         LOG_DEBUG(TAG, "Getting user input for SSID...");
         {
-                auto maybe_interrupt = collect_string_input(*p, *customization,
-                                                            "Enter SSID", ssid);
+                auto maybe_interrupt =
+                    collect_string_input(p, customization, "Enter SSID", ssid);
                 if (maybe_interrupt.has_value()) {
                         return maybe_interrupt;
                 }
@@ -239,7 +239,7 @@ get_ssid_and_password_input(Platform *p,
         LOG_DEBUG(TAG, "Getting user input for password...");
         {
                 auto maybe_interrupt = collect_string_input(
-                    *p, *customization, "Enter password", password);
+                    p, customization, "Enter password", password);
                 if (maybe_interrupt.has_value()) {
                         return maybe_interrupt;
                 }
@@ -400,22 +400,23 @@ void extract_game_config(WifiAppConfiguration *app_config,
 }
 
 std::optional<UserAction>
-WifiApp::collect_config(Platform *p, UserInterfaceCustomization *customization,
-                        WifiAppConfiguration *game_config)
+WifiApp::collect_config(const Platform &p,
+                        const UserInterfaceCustomization &customization,
+                        WifiAppConfiguration &game_config) const
 {
         WifiAppConfiguration *initial_config =
-            load_initial_wifi_app_config(p->persistent_storage);
+            load_initial_wifi_app_config(p.persistent_storage);
         Configuration *config = assemble_wifi_app_configuration(initial_config);
 
         auto maybe_interrupt_action =
-            collect_configuration(*p, *config, *customization);
+            collect_configuration(p, *config, customization);
         if (maybe_interrupt_action) {
                 delete config;
                 delete initial_config;
                 return maybe_interrupt_action;
         }
 
-        extract_game_config(game_config, initial_config, config);
+        extract_game_config(&game_config, initial_config, config);
         delete config;
         delete initial_config;
         return std::nullopt;

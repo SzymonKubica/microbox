@@ -44,8 +44,8 @@ class GameState
 GameState *initialize_game_state(int gridSize, int target_max_tile);
 
 void draw(Display *display, GameState *state);
-void update_game_grid(Platform *p, GameState *gs,
-                      UserInterfaceCustomization *customization);
+void update_game_grid(const Platform &p, GameState *gs,
+                      const UserInterfaceCustomization &customization);
 
 bool is_game_over(GameState *gs);
 bool is_game_finished(GameState *gs);
@@ -56,12 +56,13 @@ class Clean2048 : public ApplicationExecutor<Game2048Configuration>
       public:
         Clean2048() {}
 
-        UserAction app_loop(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            const Game2048Configuration &config) override;
+        UserAction app_loop(const Platform &p,
+                            const UserInterfaceCustomization &customization,
+                            const Game2048Configuration &config) const override;
         std::optional<UserAction>
-        collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       Game2048Configuration *game_config) override;
-        const char *get_game_name() override;
-        const char *get_help_text() override;
+        collect_config(const Platform &p,
+                       const UserInterfaceCustomization &customization,
+                       Game2048Configuration &game_config) const override;
+        const char *get_game_name() const override;
+        const char *get_help_text() const override;
 };

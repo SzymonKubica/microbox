@@ -38,14 +38,16 @@ collect_game_of_life_config(Platform *p, GameOfLifeConfiguration *game_config,
 class GameOfLife : public ApplicationExecutor<GameOfLifeConfiguration>
 {
       public:
-        UserAction app_loop(Platform *p,
-                            UserInterfaceCustomization *customization,
-                            const GameOfLifeConfiguration &config) override;
+        UserAction
+        app_loop(const Platform &p,
+                 const UserInterfaceCustomization &customization,
+                 const GameOfLifeConfiguration &config) const override;
         std::optional<UserAction>
-        collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       GameOfLifeConfiguration *game_config) override;
-        const char *get_game_name() override;
-        const char *get_help_text() override;
+        collect_config(const Platform &p,
+                       const UserInterfaceCustomization &customization,
+                       GameOfLifeConfiguration &game_config) const override;
+        const char *get_game_name() const override;
+        const char *get_help_text() const override;
 
         GameOfLife() {}
 };

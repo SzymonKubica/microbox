@@ -3,8 +3,6 @@
 #include <optional>
 #include "snake_common.hpp"
 #include "snake.hpp"
-#include "2048.hpp"
-#include "game_of_life.hpp"
 #include "../apps/settings.hpp"
 #include "../menu.hpp"
 
@@ -70,27 +68,27 @@ struct GameLoopState {
         bool is_waiting() { return iteration != move_period - 1; }
 };
 
-const char *SnakeGame::get_game_name() { return "Snake"; };
-const char *SnakeGame::get_help_text()
+const char *SnakeGame::get_game_name() const { return "Snake"; };
+const char *SnakeGame::get_help_text() const
 {
         return "Use the joystick to control where the snake goes."
                "Consume apples to grow the snake. Avoid hitting the walls or "
                "snake's tail. Press 'up' button to (un-)pause.";
 };
 
-void update_score(Platform *p, SquareCellGridDimensions *dimensions,
+void update_score(const Platform &p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score);
 
-UserAction SnakeGame::app_loop(Platform *p,
-                               UserInterfaceCustomization *customization,
-                               const SnakeConfiguration &config)
+UserAction SnakeGame::app_loop(const Platform &p,
+                               const UserInterfaceCustomization &customization,
+                               const SnakeConfiguration &config) const
 {
         LOG_DEBUG(TAG, "Entering Snake game loop");
 
         int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
-            p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius(), game_cell_width);
+            p.display->get_width(), p.display->get_height(),
+            p.display->get_display_corner_radius(), game_cell_width);
         int rows = gd->rows;
         int cols = gd->cols;
 
@@ -130,7 +128,7 @@ UserAction SnakeGame::app_loop(Platform *p,
         // After the value of a given cell in the grid is changed, this
         // re-renders that single cell in the display.
         auto render_cell = [p, gd, &grid, customization](Point &location) {
-                refresh_grid_cell(p->display, customization->accent_color, gd,
+                refresh_grid_cell(p.display, customization.accent_color, gd,
                                   &grid, location);
         };
         // Renders the snake's head including the neck (2nd segment right behind
@@ -138,18 +136,18 @@ UserAction SnakeGame::app_loop(Platform *p,
         auto render_head = [p, gd, &grid, customization](Snake &snake) {
                 auto neck = snake.get_neck();
                 if (true) {
-                        render_segment_connection(p->display,
-                                                  customization->accent_color,
+                        render_segment_connection(p.display,
+                                                  customization.accent_color,
                                                   gd, &grid, neck, snake.head);
                 }
-                render_snake_head(p->display, customization->accent_color, gd,
+                render_snake_head(p.display, customization.accent_color, gd,
                                   &grid, snake);
         };
 
         // Initial score rendering to complete the game grid first, before the
         // snake gets rendered.
         render_score(0);
-        if (!p->display->refresh()) {
+        if (!p.display->refresh()) {
                 delete gd;
                 return UserAction::CloseWindow;
         }
@@ -173,8 +171,8 @@ UserAction SnakeGame::app_loop(Platform *p,
         auto increment_iteration_and_wait =
             [p, &state, gd]() -> std::optional<UserAction> {
                 state.increment_iteration();
-                p->time_provider->delay_ms(GAME_LOOP_DELAY);
-                if (!p->display->refresh()) {
+                p.time_provider->delay_ms(GAME_LOOP_DELAY);
+                if (!p.display->refresh()) {
                         delete gd;
                         return UserAction::CloseWindow;
                 }
@@ -192,7 +190,7 @@ UserAction SnakeGame::app_loop(Platform *p,
         while (!state.is_game_over) {
 
                 auto maybe_direction =
-                    poll_directional_input(p->directional_controllers);
+                    poll_directional_input(p.directional_controllers);
                 if (maybe_direction.has_value() &&
                     !is_opposite(maybe_direction.value(), snake.direction)) {
                         // We prevent instant game-over when user presses the
@@ -202,7 +200,7 @@ UserAction SnakeGame::app_loop(Platform *p,
                 }
 
                 Action act;
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 bool action_taken = maybe_action.has_value();
 
                 if (config.allow_pause && action_taken && act == YELLOW &&
@@ -316,7 +314,7 @@ UserAction SnakeGame::app_loop(Platform *p,
         }
 
         delete gd;
-        if (!p->display->refresh()) {
+        if (!p.display->refresh()) {
                 return UserAction::CloseWindow;
         } else {
                 return UserAction::PauseAndPlayAgain;
@@ -327,7 +325,7 @@ UserAction SnakeGame::app_loop(Platform *p,
  * Re-renders the text location above the grid informing the user about the
  * current score in the game.
  */
-void update_score(Platform *p, SquareCellGridDimensions *dimensions,
+void update_score(const Platform &p, SquareCellGridDimensions *dimensions,
                   int score_text_end_location, int score)
 {
 
@@ -355,21 +353,20 @@ void extract_game_config(SnakeConfiguration *game_config,
                          Configuration *config);
 
 std::optional<UserAction>
-SnakeGame::collect_config(Platform *p,
-                          UserInterfaceCustomization *customization,
-                          SnakeConfiguration *game_config)
+SnakeGame::collect_config(const Platform &p,
+                          const UserInterfaceCustomization &customization,
+                          SnakeConfiguration &game_config) const
 {
         Configuration *config =
-            assemble_snake_configuration(p->persistent_storage);
+            assemble_snake_configuration(p.persistent_storage);
 
-        auto maybe_interrupt =
-            collect_configuration(*p, *config, *customization);
+        auto maybe_interrupt = collect_configuration(p, *config, customization);
         if (maybe_interrupt) {
                 delete config;
                 return maybe_interrupt;
         }
 
-        extract_game_config(game_config, config);
+        extract_game_config(&game_config, config);
         delete config;
         return std::nullopt;
 }

@@ -36,7 +36,7 @@ GameMenuConfiguration DEFAULT_MENU_CONFIGURATION = {
 
 const char *game_to_string(Game game);
 
-std::optional<UserAction> select_app_and_run(Platform *p)
+std::optional<UserAction> select_app_and_run(const Platform &p)
 {
         GameMenuConfiguration config;
 
@@ -56,8 +56,8 @@ std::optional<UserAction> select_app_and_run(Platform *p)
             "current option. Press the right button to start the game";
         if (maybe_interrupt.has_value() &&
             maybe_interrupt.value() == UserAction::ShowHelp) {
-                render_wrapped_help_text(*p, c, help_text);
-                return wait_until_green_pressed(*p);
+                render_wrapped_help_text(p, c, help_text);
+                return wait_until_green_pressed(p);
         }
 
         // This is needed to handle the 'close window' action.
@@ -78,27 +78,27 @@ std::optional<UserAction> select_app_and_run(Platform *p)
         LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
         switch (config.game) {
         case Game::Clean2048:
-                return execute_app(new Clean2048(), p, &c);
+                return execute_app(*new Clean2048(), p, c);
         case Game::Minesweeper:
-                return execute_app(new Minesweeper(), p, &c);
+                return execute_app(*new Minesweeper(), p, c);
         case Game::GameOfLife:
-                return execute_app(new GameOfLife(), p, &c);
+                return execute_app(*new GameOfLife(), p, c);
         case Game::Settings:
-                return execute_app(new UtilityApplicationMenu(), p, &c);
+                return execute_app(*new UtilityApplicationMenu(), p, c);
         case Game::Snake:
-                return execute_app(new SnakeGame(), p, &c);
+                return execute_app(*new SnakeGame(), p, c);
         case Game::SnakeDuel:
-                return execute_app(new SnakeDuel(), p, &c);
+                return execute_app(*new SnakeDuel(), p, c);
         case Game::WifiApp:
-                return execute_app(new WifiApp(), p, &c);
+                return execute_app(*new WifiApp(), p, c);
         case Game::RandomSeedPicker:
-                return execute_app(new RandomSeedPicker(), p, &c);
+                return execute_app(*new RandomSeedPicker(), p, c);
         case Game::Sudoku:
-                return execute_app(new SudokuGame(), p, &c);
+                return execute_app(*new SudokuGame(), p, c);
         case Game::Power:
-                return execute_app(new PowerManagementApp(), p, &c);
+                return execute_app(*new PowerManagementApp(), p, c);
         case Game::Brightness:
-                return execute_app(new BrightnessApp(), p, &c);
+                return execute_app(*new BrightnessApp(), p, c);
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return UserAction::Exit;
@@ -108,7 +108,7 @@ std::optional<UserAction> select_app_and_run(Platform *p)
 GameMenuConfiguration *
 load_initial_menu_configuration(PersistentStorage *storage);
 Configuration *
-assemble_game_selector_configuration(Platform *p,
+assemble_game_selector_configuration(const Platform &p,
                                      GameMenuConfiguration *initial_config);
 void extract_app_selection(GameMenuConfiguration *menu_configuration,
                            Configuration *config);
@@ -127,11 +127,12 @@ static std::optional<Game> last_selected_game = std::nullopt;
  * apps if needed.
  */
 std::optional<UserAction>
-main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration)
+main_menu_interaction_loop(const Platform &p,
+                           GameMenuConfiguration *configuration)
 {
 
         GameMenuConfiguration *initial_config =
-            load_initial_menu_configuration(p->persistent_storage);
+            load_initial_menu_configuration(p.persistent_storage);
 
         LOG_DEBUG(TAG, "Initial configuration was loaded.");
 
@@ -153,7 +154,7 @@ main_menu_interaction_loop(Platform *p, GameMenuConfiguration *configuration)
         };
 
         auto maybe_interrupt =
-            collect_configuration(*p, *config, customization, false, true);
+            collect_configuration(p, *config, customization, false, true);
 
         if (maybe_interrupt) {
                 delete config;
@@ -222,7 +223,7 @@ load_initial_menu_configuration(PersistentStorage *storage)
 }
 
 Configuration *
-assemble_game_selector_configuration(Platform *p,
+assemble_game_selector_configuration(const Platform &p,
                                      GameMenuConfiguration *initial_config)
 {
 
@@ -334,7 +335,7 @@ const char *game_to_string(Game game)
 }
 
 Configuration *
-assemble_menu_defaults_configuration(Platform *p,
+assemble_menu_defaults_configuration(const Platform &p,
                                      GameMenuConfiguration *initial_config)
 {
 
@@ -350,9 +351,9 @@ assemble_menu_defaults_configuration(Platform *p,
             game_to_string(Game::Brightness),
         };
 
-        if (p->capabilities.has_wifi)
+        if (p.capabilities.has_wifi)
                 available_games.push_back(game_to_string(Game::WifiApp));
-        if (p->capabilities.can_sleep)
+        if (p.capabilities.can_sleep)
                 available_games.push_back(game_to_string(Game::Power));
 
         auto *game = ConfigurationOption::of_strings(
@@ -409,12 +410,12 @@ void extract_defaults_config(GameMenuConfiguration *menu_configuration,
  *
  */
 std::optional<UserAction>
-collect_game_menu_defaults_config(Platform *p,
+collect_game_menu_defaults_config(const Platform &p,
                                   GameMenuConfiguration *configuration)
 {
 
         GameMenuConfiguration *initial_config =
-            load_initial_menu_configuration(p->persistent_storage);
+            load_initial_menu_configuration(p.persistent_storage);
 
         LOG_DEBUG(TAG, "Initial configuration was loaded.");
 
@@ -428,7 +429,7 @@ collect_game_menu_defaults_config(Platform *p,
         };
 
         auto maybe_interrupt =
-            collect_configuration(*p, *config, customization, false, false);
+            collect_configuration(p, *config, customization, false, false);
 
         if (maybe_interrupt) {
                 delete config;

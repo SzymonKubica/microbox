@@ -54,7 +54,7 @@ static void handle_game_over(Display *display,
                              GameState *state);
 
 static void draw_game_canvas(Display *display, GameState *state,
-                             UserInterfaceCustomization *customization);
+                             const UserInterfaceCustomization &customization);
 
 void free_game_state(GameState *gs);
 
@@ -66,8 +66,8 @@ void free_game_state(GameState *gs);
 UserAction enter_2048_loop(Platform *platform,
                            UserInterfaceCustomization *customization);
 
-const char *Clean2048::get_game_name() { return "2048"; }
-const char *Clean2048::get_help_text()
+const char *Clean2048::get_game_name() const { return "2048"; }
+const char *Clean2048::get_help_text() const
 {
 
         return "Use the joystick to shift the tiles around the grid. The "
@@ -90,7 +90,7 @@ GameState *load_saved_game_state(Game2048Configuration config)
         return state;
 }
 
-void save_game_state(Platform *p, Game2048Configuration &config,
+void save_game_state(const Platform &p, Game2048Configuration &config,
                      GameState *state)
 {
         config.is_game_in_progress = true;
@@ -107,12 +107,12 @@ void save_game_state(Platform *p, Game2048Configuration &config,
                   "Saving current 2048 game state to persistent storage at "
                   "offset %d",
                   storage_offset);
-        p->persistent_storage->put(storage_offset, config);
+        p.persistent_storage->put(storage_offset, config);
 }
 
-UserAction Clean2048::app_loop(Platform *p,
-                               UserInterfaceCustomization *customization,
-                               const Game2048Configuration &config)
+UserAction Clean2048::app_loop(const Platform &p,
+                               const UserInterfaceCustomization &customization,
+                               const Game2048Configuration &config) const
 {
         GameState *state;
 
@@ -122,9 +122,9 @@ UserAction Clean2048::app_loop(Platform *p,
                     "continue the previous game or the 'right' button to start "
                     "a "
                     "new game.";
-                render_wrapped_text(*p, *customization, help_text);
+                render_wrapped_text(p, customization, help_text);
                 Action action;
-                auto maybe_interrupt = wait_until_action_input(*p, action);
+                auto maybe_interrupt = wait_until_action_input(p, action);
                 if (maybe_interrupt.has_value()) {
                         assert(maybe_interrupt.value() ==
                                UserAction::CloseWindow);
@@ -141,25 +141,25 @@ UserAction Clean2048::app_loop(Platform *p,
                                               config.target_max_tile);
         }
 
-        draw_game_canvas(p->display, state, customization);
+        draw_game_canvas(p.display, state, customization);
         update_game_grid(p, state, customization);
 
-        if (!p->display->refresh()) {
+        if (!p.display->refresh()) {
                 free_game_state(state);
                 return UserAction::CloseWindow;
         }
 
         while (!(is_game_over(state) || is_game_finished(state))) {
                 auto maybe_direction =
-                    poll_directional_input(p->directional_controllers);
-                auto maybe_action = poll_action_input(p->action_controllers);
+                    poll_directional_input(p.directional_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_direction.has_value()) {
                         Direction dir = maybe_direction.value();
                         LOG_DEBUG(TAG, "Input received: %s",
                                   direction_to_str(dir));
                         take_turn(state, (int)dir);
                         update_game_grid(p, state, customization);
-                        p->time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 } else if (maybe_action.has_value()) {
                         Action act = maybe_action.value();
                         if (act == Action::BLUE) {
@@ -171,11 +171,11 @@ UserAction Clean2048::app_loop(Platform *p,
                                     "save and exit, or left button to exit "
                                     "without "
                                     "saving.";
-                                render_wrapped_text(*p, *customization,
+                                render_wrapped_text(p, customization,
                                                     help_text);
                                 Action action;
                                 auto maybe_interrupt =
-                                    wait_until_action_input(*p, action);
+                                    wait_until_action_input(p, action);
                                 if (maybe_interrupt.has_value()) {
                                         assert(maybe_interrupt.value() ==
                                                UserAction::CloseWindow);
@@ -186,27 +186,27 @@ UserAction Clean2048::app_loop(Platform *p,
                                         save_game_state(p, copy, state);
                                 }
                                 free_game_state(state);
-                                p->time_provider->delay_ms(
+                                p.time_provider->delay_ms(
                                     MOVE_REGISTERED_DELAY);
                                 return UserAction::Exit;
                         }
                 }
-                p->time_provider->delay_ms(INPUT_POLLING_DELAY);
-                if (!p->display->refresh()) {
+                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
+                if (!p.display->refresh()) {
                         free_game_state(state);
                         return UserAction::CloseWindow;
                 }
         }
 
         if (is_game_over(state)) {
-                display_game_over(*p->display, *customization);
+                display_game_over(*p.display, customization);
         }
         if (is_game_finished(state)) {
-                display_game_won(*p->display, *customization);
+                display_game_won(*p.display, customization);
         }
 
-        pause_until_any_directional_input(p->directional_controllers,
-                                          *p->time_provider, *p->display);
+        pause_until_any_directional_input(p.directional_controllers,
+                                          *p.time_provider, *p.display);
         return UserAction::PlayAgain;
 }
 
@@ -298,24 +298,24 @@ void extract_game_config(Game2048Configuration *game_config,
 }
 
 std::optional<UserAction>
-Clean2048::collect_config(Platform *p,
-                          UserInterfaceCustomization *customization,
-                          Game2048Configuration *game_config)
+Clean2048::collect_config(const Platform &p,
+                          const UserInterfaceCustomization &customization,
+                          Game2048Configuration &game_config) const
 {
         Game2048Configuration *initial_config =
-            load_initial_config(p->persistent_storage);
+            load_initial_config(p.persistent_storage);
         Configuration *config =
-            assemble_2048_configuration(p->persistent_storage, initial_config);
+            assemble_2048_configuration(p.persistent_storage, initial_config);
 
         auto maybe_interrupt_action =
-            collect_configuration(*p, *config, *customization);
+            collect_configuration(p, *config, customization);
         if (maybe_interrupt_action) {
                 delete config;
                 delete initial_config;
                 return maybe_interrupt_action;
         }
 
-        extract_game_config(game_config, initial_config, config);
+        extract_game_config(&game_config, initial_config, config);
         delete config;
         delete initial_config;
         return std::nullopt;
@@ -605,18 +605,18 @@ static void copy_grid(int **source, int **destination, int size)
  * contents of the grid slots with the numbers.
  */
 static void draw_game_grid(Display *display, int grid_size,
-                           UserInterfaceCustomization *customization);
+                           const UserInterfaceCustomization &customization);
 
 void draw_game_canvas(Display *display, GameState *state,
-                      UserInterfaceCustomization *customization)
+                      const UserInterfaceCustomization &customization)
 {
         display->initialize();
         display->clear(Black);
 
         // TODO: change this to render like this only if the display has rounded
         // edges (new platform capability)
-        if (customization->rendering_mode == Detailed)
-                display->draw_rounded_border(customization->accent_color);
+        if (customization.rendering_mode == Detailed)
+                display->draw_rounded_border(customization.accent_color);
 
         draw_game_grid(display, state->grid_size, customization);
 }
@@ -715,7 +715,7 @@ GridDimensions *calculate_grid_dimensions(Display *display, int grid_size)
 }
 
 static void draw_game_grid(Display *display, int grid_size,
-                           UserInterfaceCustomization *customization)
+                           const UserInterfaceCustomization &customization)
 {
 
         GridDimensions *gd = calculate_grid_dimensions(display, grid_size);
@@ -724,11 +724,11 @@ static void draw_game_grid(Display *display, int grid_size,
         // We need this lambda to have a reusable way of rendering game
         // cells depending on the UI rendering mode.
         auto cell_renderer = [&](Point start, int width, int height) {
-                if (customization->rendering_mode == Minimalistic) {
+                if (customization.rendering_mode == Minimalistic) {
                         display->draw_rectangle(start, width, height,
                                                 GRID_BG_COLOR, 1, true);
                         display->draw_rectangle(start, width, height,
-                                                customization->accent_color, 2,
+                                                customization.accent_color, 2,
                                                 false);
                 } else {
                         display->draw_rounded_rectangle(
@@ -793,11 +793,11 @@ Color get_number_color_coding(int number)
         }
 }
 
-void update_game_grid(Platform *p, GameState *gs,
-                      UserInterfaceCustomization *customization)
+void update_game_grid(const Platform &p, GameState *gs,
+                      const UserInterfaceCustomization &customization)
 {
         int grid_size = gs->grid_size;
-        GridDimensions *gd = calculate_grid_dimensions(p->display, grid_size);
+        GridDimensions *gd = calculate_grid_dimensions(p.display, grid_size);
 
         int score_title_length = 6 * FONT_WIDTH;
         char score_buffer[20];
@@ -812,14 +812,14 @@ void update_game_grid(Platform *p, GameState *gs,
                                 score_rounding_radius,
                            .y = gd->score_title_y + FONT_SIZE};
 
-        p->display->clear_region(clear_start, clear_end, GRID_BG_COLOR);
+        p.display->clear_region(clear_start, clear_end, GRID_BG_COLOR);
 
         Point score_start = {.x = gd->score_title_x + score_title_length +
                                   FONT_WIDTH,
                              .y = gd->score_title_y};
 
-        p->display->draw_string(score_start, score_buffer, Size16,
-                                GRID_BG_COLOR, TEXT_COLOR);
+        p.display->draw_string(score_start, score_buffer, Size16, GRID_BG_COLOR,
+                               TEXT_COLOR);
 
         // The maximum tile number in this version of 2048 is 4096,
         // because of this the maximum width of the cell text area is
@@ -868,21 +868,21 @@ void update_game_grid(Platform *p, GameState *gs,
                                                         max_cell_text_width,
                                                    .y = start.y + y_margin +
                                                         FONT_SIZE};
-                                p->display->clear_region(clear_start, clear_end,
-                                                         GRID_BG_COLOR);
+                                p.display->clear_region(clear_start, clear_end,
+                                                        GRID_BG_COLOR);
 
                                 // We only use nice color rendering on platforms
                                 // that can hanle that.
                                 Color color =
-                                    p->capabilities.has_fast_display
+                                    p.capabilities.has_fast_display
                                         ? get_number_color_coding(current)
                                         : White;
                                 Point start_with_margin = {
                                     .x = start.x + x_margin,
                                     .y = start.y + y_margin};
-                                p->display->draw_string(start_with_margin,
-                                                        buffer, Size16,
-                                                        GRID_BG_COLOR, color);
+                                p.display->draw_string(start_with_margin,
+                                                       buffer, Size16,
+                                                       GRID_BG_COLOR, color);
                                 gs->old_grid[i][j] = gs->grid[i][j];
                         }
                 }

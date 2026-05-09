@@ -35,9 +35,10 @@ template <typename ConfigStruct> class ApplicationExecutor
          * The main loop of the application/game representing a single
          * application work / playthrough.
          */
-        virtual UserAction app_loop(Platform *p,
-                                    UserInterfaceCustomization *customization,
-                                    const ConfigStruct &config) = 0;
+        virtual UserAction
+        app_loop(const Platform &p,
+                 const UserInterfaceCustomization &customization,
+                 const ConfigStruct &config) const = 0;
         /**
          * Configuration collecting method, this is the first step of each app.
          * Note how this is parameterized with the `ConfigStruct` template type
@@ -45,20 +46,21 @@ template <typename ConfigStruct> class ApplicationExecutor
          * specific config.
          */
         virtual std::optional<UserAction>
-        collect_config(Platform *p, UserInterfaceCustomization *customization,
-                       ConfigStruct *game_config) = 0;
+        collect_config(const Platform &p,
+                       const UserInterfaceCustomization &customization,
+                       ConfigStruct &game_config) const = 0;
 
         /**
          * Static text that will be rendered when the user requests the help
          * screen.
          */
-        virtual const char *get_help_text() = 0;
+        virtual const char *get_help_text() const = 0;
 
         /**
          * This is required to customize the logs in `execute_app` function
          * to customize the logs to align with the application.
          */
-        virtual const char *get_game_name() = 0;
+        virtual const char *get_game_name() const = 0;
         virtual ~ApplicationExecutor() {}
 };
 
@@ -77,8 +79,8 @@ inline bool help_requested(std::optional<UserAction> maybe_event);
  */
 template <typename ConfigStruct>
 std::optional<UserAction>
-execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
-            UserInterfaceCustomization *customization)
+execute_app(const ApplicationExecutor<ConfigStruct> &executor,
+            const Platform &p, const UserInterfaceCustomization &customization)
 {
 
         while (true) {
@@ -86,25 +88,23 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                 // configuration and possibly review the help message.
                 ConfigStruct config;
                 auto maybe_event =
-                    executor->collect_config(p, customization, &config);
+                    executor.collect_config(p, customization, config);
 
                 if (exit_requested(maybe_event)) {
-                        log_exit_requested(executor->get_game_name());
-                        delete executor;
+                        log_exit_requested(executor.get_game_name());
                         return UserAction::Exit;
                 }
 
                 if (close_window_requested(maybe_event)) {
-                        log_exit_requested(executor->get_game_name());
-                        delete executor;
+                        log_exit_requested(executor.get_game_name());
                         return UserAction::CloseWindow;
                 }
 
                 if (help_requested(maybe_event)) {
-                        log_help_requested(executor->get_game_name());
-                        render_wrapped_help_text(*p, *customization,
-                                                 executor->get_help_text());
-                        auto maybe_event = wait_until_green_pressed(*p);
+                        log_help_requested(executor.get_game_name());
+                        render_wrapped_help_text(p, customization,
+                                                 executor.get_help_text());
+                        auto maybe_event = wait_until_green_pressed(p);
 
                         /*
                          * Here things get a bit complex on the emulator:
@@ -121,7 +121,6 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                          * hence the two return pathways out of this function.
                          */
                         if (close_window_requested(maybe_event)) {
-                                delete executor;
                                 return UserAction::CloseWindow;
                         }
                         // Iterate again to render config menu again after help
@@ -129,7 +128,7 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                         continue;
                 }
 
-                auto action = executor->app_loop(p, customization, config);
+                auto action = executor.app_loop(p, customization, config);
 
                 assert(action != UserAction::ShowHelp &&
                        "Showing game help is only supported in the game "
@@ -145,21 +144,19 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                  * we exit.
                  */
                 if (action == UserAction::PauseAndPlayAgain) {
-                        log_game_finished(executor->get_game_name());
+                        log_game_finished(executor.get_game_name());
 
                         Direction dir;
                         Action act;
                         auto maybe_event = pause_until_input(
-                            p->directional_controllers, p->action_controllers,
-                            &dir, &act, *p->time_provider, *p->display);
+                            p.directional_controllers, p.action_controllers,
+                            &dir, &act, *p.time_provider, *p.display);
 
                         if (close_window_requested(maybe_event)) {
-                                delete executor;
                                 return UserAction::CloseWindow;
                         }
 
                         if (act == Action::BLUE) {
-                                delete executor;
                                 return UserAction::Exit;
                         }
                         continue;
@@ -170,7 +167,6 @@ execute_app(ApplicationExecutor<ConfigStruct> *executor, Platform *p,
                 }
 
                 // All other actions (exit/close window) are propagated upwards.
-                delete executor;
                 return action;
         }
 }

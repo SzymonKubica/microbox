@@ -70,12 +70,12 @@ SquareCellGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
                           int display_rounded_corner_radius);
 
-void draw_rewind_mode_indicator(Platform *p,
-                                SquareCellGridDimensions *dimensions,
-                                UserInterfaceCustomization *customization);
-void clear_rewind_mode_indicator(Platform *p,
-                                 SquareCellGridDimensions *dimensions,
-                                 UserInterfaceCustomization *customization);
+void draw_rewind_mode_indicator(
+    const Platform &p, SquareCellGridDimensions *dimensions,
+    const UserInterfaceCustomization &customization);
+void clear_rewind_mode_indicator(
+    const Platform &p, SquareCellGridDimensions *dimensions,
+    const UserInterfaceCustomization &customization);
 void draw_caret(Display *display, Point *grid_position,
                 SquareCellGridDimensions *dimensions, Color caret_color);
 void erase_caret(Display *display, Point *grid_position,
@@ -148,8 +148,8 @@ load_initial_game_of_life_config(PersistentStorage *storage)
 UserAction game_of_life_loop(Platform *platform,
                              UserInterfaceCustomization *customization);
 
-const char *GameOfLife::get_game_name() { return "Game of Life"; }
-const char *GameOfLife::get_help_text()
+const char *GameOfLife::get_game_name() const { return "Game of Life"; }
+const char *GameOfLife::get_help_text() const
 {
 
         return "Use the joystick to move the caret around the grid. Press "
@@ -165,16 +165,16 @@ const char *GameOfLife::get_help_text()
 void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                        int border_offset);
 
-UserAction GameOfLife::app_loop(Platform *p,
-                                UserInterfaceCustomization *customization,
-                                const GameOfLifeConfiguration &config)
+UserAction GameOfLife::app_loop(const Platform &p,
+                                const UserInterfaceCustomization &customization,
+                                const GameOfLifeConfiguration &config) const
 {
 
         LOG_DEBUG(TAG, "Entering Game of Life game loop");
 
         SquareCellGridDimensions *gd = calculate_grid_dimensions(
-            p->display->get_width(), p->display->get_height(),
-            p->display->get_display_corner_radius(), GAME_CELL_WIDTH);
+            p.display->get_width(), p.display->get_height(),
+            p.display->get_display_corner_radius(), GAME_CELL_WIDTH);
         int rows = gd->rows;
         int cols = gd->cols;
         int total_cells = rows * cols;
@@ -191,12 +191,12 @@ UserAction GameOfLife::app_loop(Platform *p,
         // function can be reused for snake. Ideally we need to separate the two
         // concepts in a clean way
         int border_offset = 2;
-        if (customization->show_help_text) {
-                render_help_hints(p->display, gd, border_offset);
+        if (customization.show_help_text) {
+                render_help_hints(p.display, gd, border_offset);
         }
 
         Point caret_pos = {.x = 0, .y = 0};
-        draw_caret(p->display, &caret_pos, gd, customization->accent_color);
+        draw_caret(p.display, &caret_pos, gd, customization.accent_color);
 
         /* Because of memory constraints, we need to use a hand-rolled bitset
            to store each 'frame' of the game simulation. The reason for this
@@ -217,7 +217,7 @@ UserAction GameOfLife::app_loop(Platform *p,
         int rewind_initial_idx = -1;
 
         if (config.prepopulate_grid) {
-                spawn_cells_randomly(p->display, grid, gd);
+                spawn_cells_randomly(p.display, grid, gd);
         }
 
         int evolution_period =
@@ -238,7 +238,7 @@ UserAction GameOfLife::app_loop(Platform *p,
                         StateEvolution evolution = take_simulation_step(
                             grid, gd, config.use_toroidal_array);
 
-                        render_state_change(p->display, evolution, gd);
+                        render_state_change(p.display, evolution, gd);
                         save_grid_state_in_rewind_buffer(&rewind_buffer,
                                                          &rewind_buf_idx, grid);
                         grid = evolution.second;
@@ -246,17 +246,17 @@ UserAction GameOfLife::app_loop(Platform *p,
                 GameOfLifeCell curr =
                     get_cell(caret_pos.x, caret_pos.y, gd->cols, grid);
                 auto maybe_direction =
-                    poll_directional_input(p->directional_controllers);
+                    poll_directional_input(p.directional_controllers);
                 if (maybe_direction.has_value()) {
                         Direction dir = maybe_direction.value();
                         if (mode == REWIND) {
                                 grid = handle_rewind(
                                     dir, &rewind_buffer, rewind_initial_idx,
-                                    &rewind_buf_idx, grid, gd, p->display);
+                                    &rewind_buf_idx, grid, gd, p.display);
                         } else {
                                 Color bg_color =
                                     (curr == EMPTY) ? Black : White;
-                                erase_caret(p->display, &caret_pos, gd,
+                                erase_caret(p.display, &caret_pos, gd,
                                             bg_color);
 
                                 // Move the caret according to the user input.
@@ -264,11 +264,11 @@ UserAction GameOfLife::app_loop(Platform *p,
                                                      ? translate_toroidal_array
                                                      : translate_within_bounds;
                                 translate(&caret_pos, dir, gd->rows, gd->cols);
-                                draw_caret(p->display, &caret_pos, gd,
-                                           customization->accent_color);
+                                draw_caret(p.display, &caret_pos, gd,
+                                           customization.accent_color);
                         }
                 }
-                auto maybe_action = poll_action_input(p->action_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_action.has_value() &&
                     !action_input_on_last_iteration) {
                         Action act = maybe_action.value();
@@ -338,12 +338,12 @@ UserAction GameOfLife::app_loop(Platform *p,
 
                                 save_grid_state_in_rewind_buffer(
                                     &rewind_buffer, &rewind_buf_idx, grid);
-                                draw_game_cell(p->display, &caret_pos, gd,
+                                draw_game_cell(p.display, &caret_pos, gd,
                                                new_cell_color);
                                 // we need to redraw the caret as we have just
                                 // drawn a cell by clearing the region
-                                draw_caret(p->display, &caret_pos, gd,
-                                           customization->accent_color);
+                                draw_caret(p.display, &caret_pos, gd,
+                                           customization.accent_color);
 
                                 grid = new_grid;
                                 break;
@@ -353,7 +353,7 @@ UserAction GameOfLife::app_loop(Platform *p,
                 }
                 iteration += 1;
                 iteration %= evolution_period;
-                if (!p->display->refresh()) {
+                if (!p.display->refresh()) {
                         delete[] grid;
                         delete gd;
                         for (auto state : rewind_buffer) {
@@ -361,26 +361,25 @@ UserAction GameOfLife::app_loop(Platform *p,
                         }
                         return UserAction::CloseWindow;
                 }
-                p->time_provider->delay_ms(GAME_LOOP_DELAY);
+                p.time_provider->delay_ms(GAME_LOOP_DELAY);
         }
         return UserAction::PlayAgain;
 }
 
 std::optional<UserAction>
-GameOfLife::collect_config(Platform *p,
-                           UserInterfaceCustomization *customization,
-                           GameOfLifeConfiguration *game_config)
+GameOfLife::collect_config(const Platform &p,
+                           const UserInterfaceCustomization &customization,
+                           GameOfLifeConfiguration &game_config) const
 {
         Configuration *config =
-            assemble_game_of_life_configuration(p->persistent_storage);
-        auto maybe_interrupt =
-            collect_configuration(*p, *config, *customization);
+            assemble_game_of_life_configuration(p.persistent_storage);
+        auto maybe_interrupt = collect_configuration(p, *config, customization);
         if (maybe_interrupt) {
                 delete config;
                 return maybe_interrupt;
         }
 
-        extract_game_config(game_config, config);
+        extract_game_config(&game_config, config);
         delete config;
         return std::nullopt;
 }
@@ -745,9 +744,9 @@ void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                              (char *)toggle, FontSize::Size16, Black, White);
 }
 
-void draw_rewind_mode_indicator(Platform *p,
+void draw_rewind_mode_indicator(const Platform &p,
                                 SquareCellGridDimensions *dimensions,
-                                UserInterfaceCustomization *customization)
+                                const UserInterfaceCustomization &customization)
 {
 
         int x_margin = dimensions->left_horizontal_margin;
@@ -770,21 +769,21 @@ void draw_rewind_mode_indicator(Platform *p,
            visible against the background. In this case, we use cyan as the
            border color. */
 
-        if (customization->accent_color == DarkBlue) {
+        if (customization.accent_color == DarkBlue) {
                 indicator_border_color = Cyan;
         } else {
                 indicator_border_color = DarkBlue;
         }
 
-        p->display->draw_rectangle(
+        p.display->draw_rectangle(
             {.x = x_margin - border_offset, .y = y_margin - border_offset},
             actual_width + 2 * border_offset, actual_height + 2 * border_offset,
             indicator_border_color, border_width, false);
 }
 
-void clear_rewind_mode_indicator(Platform *p,
-                                 SquareCellGridDimensions *dimensions,
-                                 UserInterfaceCustomization *customization)
+void clear_rewind_mode_indicator(
+    const Platform &p, SquareCellGridDimensions *dimensions,
+    const UserInterfaceCustomization &customization)
 {
 
         int x_margin = dimensions->left_horizontal_margin;
@@ -801,10 +800,10 @@ void clear_rewind_mode_indicator(Platform *p,
 
         Color indicator_border_color;
 
-        p->display->draw_rectangle(
+        p.display->draw_rectangle(
             {.x = x_margin - border_offset, .y = y_margin - border_offset},
             actual_width + 2 * border_offset, actual_height + 2 * border_offset,
-            customization->accent_color, border_width, false);
+            customization.accent_color, border_width, false);
 }
 
 inline bool get_cell(int x, int y, int cols, Grid grid)
