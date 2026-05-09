@@ -1,8 +1,10 @@
-#ifdef EMULATOR
+#if defined(EMULATOR)
 #include <fstream>
 #include <iostream>
+#include "./persistent_storage.hpp"
+#pragma once
 
-template <typename T> T &EmulatorPersistentStorage::get(int offset, T &t)
+template <typename T> T &EmulatorPersistentStorage::get(int offset, T &t) const
 {
         std::ifstream ifs("persistent_storage.bin", std::ios::binary);
 
@@ -27,7 +29,7 @@ template <typename T> T &EmulatorPersistentStorage::get(int offset, T &t)
 }
 
 template <typename T>
-const T &EmulatorPersistentStorage::put(int offset, const T &t)
+const T &EmulatorPersistentStorage::put(int offset, const T &t) const
 {
         std::fstream ofs;
         // We need to specify both in and out to avoid having the truncate

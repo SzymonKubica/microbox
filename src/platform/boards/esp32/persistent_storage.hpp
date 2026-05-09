@@ -9,11 +9,11 @@ const bool ERASE_FLASH = false;
 class Esp32PersistentStorage : AbstractPersistentStorage<Esp32PersistentStorage>
 {
       public:
-        template <typename T> T &get(int offset, T &t)
+        template <typename T> T &get(int offset, T &t) const
         {
                 return EEPROM.get(offset, t);
         }
-        template <typename T> const T &put(int offset, const T &t)
+        template <typename T> const T &put(int offset, const T &t) const
         {
                 EEPROM.put(offset, t);
                 EEPROM.commit();

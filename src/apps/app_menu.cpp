@@ -22,7 +22,7 @@ AppMenuConfiguration DEFAULT_APP_MENU_CONFIGURATION = {
 };
 
 AppMenuConfiguration *
-load_initial_utility_menu_configuration(PersistentStorage *storage)
+load_initial_utility_menu_configuration(const PersistentStorage &storage)
 {
 
         int storage_offset = get_settings_storage_offset(Game::Settings);
@@ -33,7 +33,7 @@ load_initial_utility_menu_configuration(PersistentStorage *storage)
                   "Trying to load initial settings from the persistent storage "
                   "at offset %d",
                   storage_offset);
-        storage->get(storage_offset, configuration);
+        storage.get(storage_offset, configuration);
 
         AppMenuConfiguration *output = new AppMenuConfiguration();
 
@@ -43,7 +43,7 @@ load_initial_utility_menu_configuration(PersistentStorage *storage)
                                "app menu configuration, using default values.");
                 memcpy(output, &DEFAULT_APP_MENU_CONFIGURATION,
                        sizeof(AppMenuConfiguration));
-                storage->put(storage_offset, DEFAULT_APP_MENU_CONFIGURATION);
+                storage.put(storage_offset, DEFAULT_APP_MENU_CONFIGURATION);
 
         } else {
                 LOG_DEBUG(TAG, "Using configuration from persistent storage.");
@@ -55,12 +55,11 @@ load_initial_utility_menu_configuration(PersistentStorage *storage)
         return output;
 }
 
-Configuration *
-assemble_utility_selector_configuration(Platform *p,
-                                        AppMenuConfiguration *initial_config);
+Configuration *assemble_utility_selector_configuration(
+    const Platform &p, const AppMenuConfiguration &initial_config);
 
-void extract_app_selection(AppMenuConfiguration *menu_configuration,
-                           Configuration *config);
+void extract_app_selection(AppMenuConfiguration &menu_configuration,
+                           const Configuration &config);
 
 UserAction UtilityApplicationMenu::app_loop(
     const Platform &p, const UserInterfaceCustomization &customization,
@@ -93,9 +92,8 @@ UserAction UtilityApplicationMenu::app_loop(
         return UserAction::PlayAgain;
 }
 
-Configuration *
-assemble_utility_selector_configuration(const Platform &p,
-                                        AppMenuConfiguration &initial_config)
+Configuration *assemble_utility_selector_configuration(
+    const Platform &p, const AppMenuConfiguration &initial_config)
 {
 
         std::vector<const char *> available_apps = {
@@ -117,12 +115,11 @@ assemble_utility_selector_configuration(const Platform &p,
         return new Configuration("Settings", options);
 }
 
-void extract_app_selection(AppMenuConfiguration *menu_configuration,
-                           Configuration *config)
+void extract_app_selection(AppMenuConfiguration &menu_configuration,
+                           const Configuration &config)
 {
-        ConfigurationOption *app_option = config->options[0];
-
-        menu_configuration->app =
+        ConfigurationOption *app_option = config.options[0];
+        menu_configuration.app =
             game_from_string(app_option->get_current_str_value());
 }
 
@@ -138,7 +135,7 @@ std::optional<UserAction> UtilityApplicationMenu::collect_config(
     AppMenuConfiguration &game_config) const
 {
         AppMenuConfiguration *initial_config =
-            load_initial_utility_menu_configuration(p.persistent_storage);
+            load_initial_utility_menu_configuration(*p.persistent_storage);
 
         if (last_selected_app) {
                 initial_config->app = last_selected_app.value();
@@ -157,7 +154,7 @@ std::optional<UserAction> UtilityApplicationMenu::collect_config(
                 delete initial_config;
                 return maybe_interrupt;
         }
-        extract_app_selection(&game_config, config);
+        extract_app_selection(game_config, *config);
 
         last_selected_app = game_config.app;
 

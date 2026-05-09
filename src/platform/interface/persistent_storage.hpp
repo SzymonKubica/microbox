@@ -13,11 +13,11 @@ template <typename Impl> class AbstractPersistentStorage
 {
 
       public:
-        template <typename T> T &get(int offset, T &t)
+        template <typename T> T &get(int offset, T &t) const
         {
                 return static_cast<Impl *>(this)->get(offset, t);
         }
-        template <typename T> const T &put(int offset, const T &t)
+        template <typename T> const T &put(int offset, const T &t) const
         {
                 return static_cast<Impl *>(this)->put(offset, t);
         }

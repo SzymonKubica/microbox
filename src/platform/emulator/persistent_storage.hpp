@@ -6,8 +6,8 @@ class EmulatorPersistentStorage
     : AbstractPersistentStorage<EmulatorPersistentStorage>
 {
       public:
-        template <typename T> T &get(int offset, T &t);
-        template <typename T> const T &put(int offset, const T &t);
+        template <typename T> T &get(int offset, T &t) const;
+        template <typename T> const T &put(int offset, const T &t) const;
         void setup() {}
 };
 
