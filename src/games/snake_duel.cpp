@@ -156,7 +156,7 @@ UserAction SnakeDuel::app_loop(const Platform &p,
         int rows = gd->rows;
         int cols = gd->cols;
 
-        draw_grid_frame(p, customization, gd.get());
+        draw_grid_frame(p, customization, *gd.get());
 
         std::vector<std::vector<Cell>> grid(rows, std::vector<Cell>(cols));
 
@@ -166,7 +166,7 @@ UserAction SnakeDuel::app_loop(const Platform &p,
         // actual score count, we need to cancel out the three spaces and
         // subtract them from score_end pixel position.
         int score_end =
-            render_centered_above_frame(p, gd.get(), (char *)"P1:    P2:    ");
+            render_centered_above_frame(p, *gd.get(), (char *)"P1:    P2:    ");
 
         /*
          * Helper lambda expressions to avoid passing platform / context
@@ -403,7 +403,7 @@ void take_snake_step(
         // This modifies the snake.head in place.
         translate(snake.head, snake.direction);
 
-        bool wall_hit = is_out_of_bounds(&(snake.head), gd);
+        bool wall_hit = is_out_of_bounds(snake.head, *gd);
         Cell next;
 
         if (!wall_hit) {
@@ -507,7 +507,7 @@ void update_duel_score(const Platform &p, SquareCellGridDimensions *dimensions,
         // offset as 11 to start writing after the 'P2:' text.
         int offset = is_secondary ? 3 : 11;
         int start_position = score_text_end_location - offset * FONT_WIDTH;
-        render_text_above_frame_starting_from(p, dimensions, buffer,
+        render_text_above_frame_starting_from(p, *dimensions, buffer,
                                               start_position, true);
 }
 
@@ -689,7 +689,7 @@ find_fallback_next_safe_step(Snake &snake, std::vector<std::vector<Cell>> &grid,
         };
 
         // Simple case: the cell ahead is accessible
-        if (!is_out_of_bounds(&next, gd) && is_accessible(next)) {
+        if (!is_out_of_bounds(next, *gd) && is_accessible(next)) {
                 return snake.direction;
         }
 

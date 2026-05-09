@@ -45,7 +45,7 @@ calculate_grid_dimensions(int display_width, int display_height,
 
 void draw_grid_frame(const Platform &p,
                      const UserInterfaceCustomization &customization,
-                     SquareCellGridDimensions *dimensions);
+                     const SquareCellGridDimensions &dimensions);
 
 /**
  * Renders text above the grid frame.
@@ -54,14 +54,14 @@ void draw_grid_frame(const Platform &p,
  * things behind the centered text (e.g. incrementable score count).
  */
 int render_centered_above_frame(const Platform &p,
-                                SquareCellGridDimensions *dimensions,
+                                const SquareCellGridDimensions &dimensions,
                                 std::string text);
 /**
  * Renders text above the grid frame starting from the supplied pixel position
  */
-int render_text_above_frame_starting_from(const Platform &p,
-                                          SquareCellGridDimensions *dimensions,
-                                          char *text, int position,
-                                          bool erase_previous = false);
+int render_text_above_frame_starting_from(
+    const Platform &p, const SquareCellGridDimensions &dimensions, char *text,
+    int position, bool erase_previous = false);
 
-bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions);
+bool is_out_of_bounds(const Point &p,
+                      const SquareCellGridDimensions &dimensions);

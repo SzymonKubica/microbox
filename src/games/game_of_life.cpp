@@ -179,7 +179,7 @@ UserAction GameOfLife::app_loop(const Platform &p,
         int cols = gd->cols;
         int total_cells = rows * cols;
 
-        draw_grid_frame(p, customization, gd);
+        draw_grid_frame(p, customization, *gd);
         LOG_DEBUG(TAG, "Game of Life canvas drawn.");
 
         // We need to make the border rectangle and the canvas slightly

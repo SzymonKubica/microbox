@@ -83,18 +83,18 @@ calculate_grid_dimensions(int display_width, int display_height,
 
 void draw_grid_frame(const Platform &p,
                      const UserInterfaceCustomization &customization,
-                     SquareCellGridDimensions *dimensions)
+                     const SquareCellGridDimensions &dimensions)
 
 {
         LOG_DEBUG(TAG, "Rendering rectangular game area.");
         p.display->initialize();
         p.display->clear(Black);
 
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
+        int x_margin = dimensions.left_horizontal_margin;
+        int y_margin = dimensions.top_vertical_margin;
 
-        int actual_width = dimensions->actual_width;
-        int actual_height = dimensions->actual_height;
+        int actual_width = dimensions.actual_width;
+        int actual_height = dimensions.actual_height;
 
         int border_width = 1;
         // We need to make the border rectangle and the canvas slightly
@@ -114,12 +114,12 @@ void draw_grid_frame(const Platform &p,
 }
 
 int render_centered_above_frame(const Platform &p,
-                                SquareCellGridDimensions *dimensions,
+                                const SquareCellGridDimensions &dimensions,
                                 std::string text)
 {
 
-        int y_margin = dimensions->top_vertical_margin;
-        int x_margin = dimensions->left_horizontal_margin;
+        int y_margin = dimensions.top_vertical_margin;
+        int x_margin = dimensions.left_horizontal_margin;
 
         int available_width = p.display->get_width() - 2 * x_margin;
         // We need to ensure that the border is slightly larger than the
@@ -146,7 +146,7 @@ int render_centered_above_frame(const Platform &p,
 }
 
 int render_text_above_frame_starting_from(const Platform &p,
-                                          SquareCellGridDimensions *dimensions,
+                                          const SquareCellGridDimensions &dimensions,
                                           char *text, int position,
                                           bool erase_previous)
 {
@@ -155,7 +155,7 @@ int render_text_above_frame_starting_from(const Platform &p,
         // grid area. Otherwise, rendering items in the grid could 'clip' parts
         // of the border.
         int border_offset = 2;
-        int y_margin = dimensions->top_vertical_margin;
+        int y_margin = dimensions.top_vertical_margin;
         // Because of slightly different font dimensions, we need this offset
         // override to ensure proper vertical space above the game grid.
         int text_above_grid_y = y_margin - border_offset - FONT_SIZE -
@@ -174,10 +174,11 @@ int render_text_above_frame_starting_from(const Platform &p,
         return position + text_pixel_len;
 }
 
-bool is_out_of_bounds(Point *p, SquareCellGridDimensions *dimensions)
+bool is_out_of_bounds(const Point &p,
+                      const SquareCellGridDimensions &dimensions)
 {
-        int x = p->x;
-        int y = p->y;
+        int x = p.x;
+        int y = p.y;
 
-        return x < 0 || y < 0 || x >= dimensions->cols || y >= dimensions->rows;
+        return x < 0 || y < 0 || x >= dimensions.cols || y >= dimensions.rows;
 }

@@ -93,7 +93,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
         int cols = gd->cols;
 
         LOG_DEBUG(TAG, "Rendering snake game area.");
-        draw_grid_frame(p, customization, gd);
+        draw_grid_frame(p, customization, *gd);
 
         std::vector<std::vector<Cell>> grid(rows, std::vector<Cell>(cols));
 
@@ -104,7 +104,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
         // subtract them from score_end pixel position. The function above
         // returns the ending position of the score text so that we can render
         // the score appropriately.
-        int score_text_end_x = render_centered_above_frame(p, gd, "Score:    ");
+        int score_text_end_x = render_centered_above_frame(p, *gd, "Score:    ");
 
         /*
          * Helper lambda expressions to avoid passing platform / context
@@ -230,7 +230,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
                 snake.take_step();
 
                 // Check for failure conditions.
-                bool wall_hit = is_out_of_bounds(&(snake.head), gd);
+                bool wall_hit = is_out_of_bounds(snake.head, *gd);
                 if (!wall_hit) {
                         next = get_cell(snake.head);
                 }
@@ -340,7 +340,7 @@ void update_score(const Platform &p, SquareCellGridDimensions *dimensions,
         // rendering the actual digits starting after the first space after the
         // colon in 'Score:' text, so we move the start location by 3 spaces.
         int start_position = score_text_end_location - 3 * FONT_WIDTH;
-        render_text_above_frame_starting_from(p, dimensions, buffer,
+        render_text_above_frame_starting_from(p, *dimensions, buffer,
                                               start_position, true);
 }
 
