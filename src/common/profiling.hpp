@@ -15,16 +15,17 @@ class DurationLogger
 
       public:
         const char *format_log_string;
-        TimeProvider *time_provider;
+        const TimeProvider &time_provider;
         long start_ms;
-        DurationLogger(TimeProvider *time_provider, const char *format_string)
+        DurationLogger(const TimeProvider &time_provider,
+                       const char *format_string)
             : time_provider(time_provider), format_log_string(format_string)
         {
-                start_ms = time_provider->milliseconds();
+                start_ms = time_provider.milliseconds();
         }
         ~DurationLogger()
         {
-                long elapsed = time_provider->milliseconds() - this->start_ms;
+                long elapsed = time_provider.milliseconds() - this->start_ms;
                 LOG_DEBUG("duration_logger", this->format_log_string, elapsed);
         }
 };

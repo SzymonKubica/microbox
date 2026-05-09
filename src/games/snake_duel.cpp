@@ -320,7 +320,7 @@ UserAction SnakeDuel::app_loop(const Platform &p,
                 }
                 state.last_step_timestamp = current_time();
 
-                TimeProvider *timer = p.time_provider;
+                const TimeProvider &timer = *p.time_provider;
                 {
                         // Logs the elapsed time upon destruction at the end of
                         // the enclosing block.
