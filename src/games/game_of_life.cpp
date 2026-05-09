@@ -263,7 +263,7 @@ UserAction GameOfLife::app_loop(const Platform &p,
                                 auto translate = (config.use_toroidal_array)
                                                      ? translate_toroidal_array
                                                      : translate_within_bounds;
-                                translate(&caret_pos, dir, gd->rows, gd->cols);
+                                translate(caret_pos, dir, gd->rows, gd->cols);
                                 draw_caret(p.display, &caret_pos, gd,
                                            customization.accent_color);
                         }
@@ -459,10 +459,10 @@ StateEvolution take_simulation_step(Grid grid,
 
                         if (use_toroidal_array) {
                                 neighbours = get_neighbours_toroidal_array(
-                                    &curr, rows, cols);
+                                    curr, rows, cols);
                         } else {
                                 neighbours = get_neighbours_inside_grid(
-                                    &curr, rows, cols);
+                                    curr, rows, cols);
                         }
 
                         for (Point nb : neighbours) {

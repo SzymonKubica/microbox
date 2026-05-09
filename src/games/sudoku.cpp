@@ -292,7 +292,7 @@ UserAction SudokuGame::app_loop(const Platform &p,
                 if (maybe_direction.has_value()) {
                         Direction dir = maybe_direction.value();
                         Point previous = caret;
-                        translate_toroidal_array(&caret, dir, 9, 9);
+                        translate_toroidal_array(caret, dir, 9, 9);
                         view.move_caret(previous, caret);
                         // The delay below was hand-tweaked to feel
                         // good.

@@ -12,12 +12,12 @@ namespace SnakeDefinitions
 Snake::Snake(Point head, Direction direction) : head(head), direction(direction)
 {
         Point tail = head;
-        translate(&tail, get_opposite(direction));
+        translate(tail, get_opposite(direction));
         this->tail = tail;
         body = {this->tail, head};
 }
 
-void Snake::take_step() { translate(&this->head, this->direction); }
+void Snake::take_step() { translate(this->head, this->direction); }
 
 Point Snake::get_neck() { return *(this->body.end() - 2).base(); }
 

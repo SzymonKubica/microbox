@@ -401,7 +401,7 @@ void take_snake_step(
         }
 
         // This modifies the snake.head in place.
-        translate(&snake.head, snake.direction);
+        translate(snake.head, snake.direction);
 
         bool wall_hit = is_out_of_bounds(&(snake.head), gd);
         Cell next;
@@ -693,8 +693,7 @@ find_fallback_next_safe_step(Snake &snake, std::vector<std::vector<Cell>> &grid,
                 return snake.direction;
         }
 
-        auto neighbours =
-            get_adjacent_neighbours_inside_grid(&curr, rows, cols);
+        auto neighbours = get_adjacent_neighbours_inside_grid(curr, rows, cols);
 
         for (const auto &nb : neighbours) {
                 if (is_accessible(nb)) {
@@ -827,7 +826,7 @@ bool find_next_step(const Point &start,
                 }
 
                 auto neighbours =
-                    get_adjacent_neighbours_inside_grid(&cur, rows, cols);
+                    get_adjacent_neighbours_inside_grid(cur, rows, cols);
 
                 for (auto &nb : neighbours) {
                         if (is_visited(nb))
@@ -876,7 +875,7 @@ bool find_next_step(const Point &start,
                 }
 
                 auto neighbours =
-                    get_adjacent_neighbours_inside_grid(&cur, rows, cols);
+                    get_adjacent_neighbours_inside_grid(cur, rows, cols);
 
                 for (auto &nb : neighbours) {
                         if (is_visited(nb))

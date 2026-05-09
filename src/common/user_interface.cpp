@@ -1369,7 +1369,7 @@ collect_string_input(const Platform &p,
                         Direction dir = maybe_direction.value();
                         render_character_at_location(cursor, White,
                                                      curr_char_map);
-                        translate_toroidal_array(&cursor, dir,
+                        translate_toroidal_array(cursor, dir,
                                                  curr_char_map.size(),
                                                  strlen(base_char_map[0]));
                         render_character_at_location(
@@ -1645,7 +1645,7 @@ collect_number_input(const Platform &p,
                         Direction dir = maybe_direction.value();
                         render_character_at_location(cursor, White,
                                                      base_char_map);
-                        translate_toroidal_array(&cursor, dir,
+                        translate_toroidal_array(cursor, dir,
                                                  base_char_map.size(),
                                                  strlen(base_char_map[0]));
                         render_character_at_location(

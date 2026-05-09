@@ -191,7 +191,7 @@ Minesweeper::app_loop(const Platform &p,
                                 erase_caret(p.display, &caret_position, gd,
                                             customization.accent_color);
                         }
-                        translate_within_bounds(&caret_position, dir, gd->rows,
+                        translate_within_bounds(caret_position, dir, gd->rows,
                                                 gd->cols);
                         draw_caret(p.display, &caret_position, gd);
 
@@ -340,14 +340,14 @@ void place_bombs(std::vector<std::vector<MinesweeperGridCell>> *grid,
                         Point random_position = {.x = x, .y = y};
 
                         bool is_close_to_caret =
-                            is_adjacent(caret_position, &random_position);
+                            is_adjacent(*caret_position, random_position);
                         if (!(*grid)[y][x].is_bomb && !is_close_to_caret) {
                                 (*grid)[y][x].is_bomb = true;
                                 (*grid)[y][x].adjacent_bombs = 0;
 
                                 Point current = {.x = x, .y = y};
                                 for (Point nb : get_neighbours_inside_grid(
-                                         &current, rows, cols)) {
+                                         current, rows, cols)) {
                                         (*grid)[nb.y][nb.x].adjacent_bombs++;
                                 }
 
@@ -471,7 +471,7 @@ std::optional<UserAction> uncover_grid_cells_starting_from(
 
         if (!current_cell.is_bomb && current_cell.adjacent_bombs == 0) {
                 auto neighbours =
-                    get_neighbours_inside_grid(grid_position, rows, cols);
+                    get_neighbours_inside_grid(*grid_position, rows, cols);
                 for (Point nb : neighbours) {
                         MinesweeperGridCell neighbour_cell =
                             (*grid)[nb.y][nb.x];
