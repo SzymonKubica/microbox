@@ -1,12 +1,15 @@
 #include <cstdint>
 #include <cstring>
+#include "game_of_life.hpp"
 
 #include "../common/logging.hpp"
 #include "../common/constants.hpp"
 #include "../common/maths_utils.hpp"
-#include "game_of_life.hpp"
+#include "../common/grid.hpp"
+
 #include "../apps/settings.hpp"
 #include "../menu.hpp"
+#include "2048.hpp"
 
 #define TAG "game_of_life"
 #define GAME_CELL_WIDTH 8
@@ -32,8 +35,66 @@ GameOfLifeConfiguration DEFAULT_GAME_OF_LIFE_CONFIG = {
     .rewind_buffer_size = REWIND_BUF_SIZE,
 };
 
-typedef bool GameOfLifeCell;
-typedef uint8_t *Grid;
+/* Type aliases */
+
+/**
+ * Each simulation cell is a single boolean variable
+ */
+using GameOfLifeCell = bool;
+/**
+ * Simulation grid is a pointer to an array of u8s that encode grid state
+ * in a compact way.
+ */
+using Grid = uint8_t *;
+
+enum class SimulationMode {
+        RUNNING = 0,
+        PAUSED = 1,
+        REWIND = 2,
+};
+
+/**
+ * Bundles up all stateful components of the GameOfLife 'game' to make the
+ * control flow int the main loop a bit more manageable.
+ */
+struct GameOfLifeState {
+        /**
+         * Initial game config:w
+         */
+        const GameOfLifeConfiguration &config;
+        /**
+         * The shape of the game grid, required for rendering.
+         */
+        const SquareCellGridDimensions &dimensions;
+        SimulationMode &mode;
+        /**
+         * Current state of the cellular automata
+         */
+        Grid curr_grid;
+        /**
+         * A fixed-size history of the previous simulation states maintained as
+         * a circular buffer.
+         */
+        std::vector<uint8_t *> &rewind_buff;
+        /**
+         * The current position in the circular buffer.
+         */
+        int &curr_rewind_buff_idx;
+        /**
+         * The position in the circular buffer that contains the latest
+         * state of the grid. This is required to prevent the rewind
+         * functionality from wrapping around.
+         */
+        int &latest_rewind_buff_idx;
+        /**
+         * The current position of the caret (i.e. the small square used for
+         * user input). When the user presses the confirm action, the cell under
+         * the current caret position will be toggled. This can be used for
+         * interacting with the automata.
+         */
+        Point &caret;
+};
+
 inline bool get_cell(int x, int y, int cols, Grid grid);
 inline void set_cell(int x, int y, int cols, Grid grid, bool alive);
 inline Grid allocate_grid(int cells);
@@ -47,64 +108,83 @@ inline Grid allocate_grid(int cells);
  */
 typedef std::pair<uint8_t *, uint8_t *> StateEvolution;
 
-typedef enum SimulationMode {
-        RUNNING = 0,
-        PAUSED = 1,
-        REWIND = 2,
-} SimulationMode;
+/* Configuration Handling */
 
 /**
  * Assembles the generic configuration struct that can be used to collect user
  * input specifying the game of life configuration.
  */
-Configuration *assemble_game_of_life_configuration(PersistentStorage *storage);
+Configuration *
+assemble_game_of_life_configuration(const PersistentStorage &storage);
 
 /**
  * Extracts the specific game of life config struct after the generic config
  * was collected from the user.
  */
-void extract_game_config(GameOfLifeConfiguration *game_config,
-                         Configuration *config);
+void extract_game_config(GameOfLifeConfiguration &game_config,
+                         const Configuration &config);
 
 SquareCellGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
                           int display_rounded_corner_radius);
 
-void draw_rewind_mode_indicator(
-    const Platform &p, SquareCellGridDimensions *dimensions,
-    const UserInterfaceCustomization &customization);
+/* UI Rendering */
+
+/**
+ * Re-draws the border around the game area using a different color to indicate
+ * that the user has entered the rewind mode.
+ */
+void draw_rewind_mode_indicator(const Display &display,
+                                const UserInterfaceCustomization &customization,
+                                const SquareCellGridDimensions &dimensions);
 void clear_rewind_mode_indicator(
-    const Platform &p, SquareCellGridDimensions *dimensions,
-    const UserInterfaceCustomization &customization);
-void draw_caret(Display *display, Point *grid_position,
-                SquareCellGridDimensions *dimensions, Color caret_color);
-void erase_caret(Display *display, Point *grid_position,
-                 SquareCellGridDimensions *dimensions,
-                 Color grid_background_color);
-void draw_game_cell(Display *display, Point *grid_position,
-                    SquareCellGridDimensions *dimensions, Color color);
+    const Display &display, const UserInterfaceCustomization &customization,
+    const SquareCellGridDimensions &dimensions);
+void draw_caret(const Display &display,
+                const SquareCellGridDimensions &dimensions,
+                const Point &grid_position, Color caret_color);
+void erase_caret(const Display &display,
+                 const SquareCellGridDimensions &dimensions,
+                 const Point &grid_position, Color grid_background_color);
+void draw_game_cell(const Display &display,
+                    const SquareCellGridDimensions &dimensions,
+                    const Point &grid_position, Color color);
 
-StateEvolution take_simulation_step(Grid grid,
-                                    SquareCellGridDimensions *dimensions,
-                                    bool use_toroidal_array);
+/* Simulation State Transitions (and some UI rendering mixed in (not ideal)) */
 
-void render_state_change(Display *display, StateEvolution evolution,
-                         SquareCellGridDimensions *dimensions);
-
-void spawn_cells_randomly(Display *display, Grid grid,
-                          SquareCellGridDimensions *dimensions);
-
-void save_grid_state_in_rewind_buffer(std::vector<Grid> *rewind_buffer,
-                                      int *rewind_buf_idx, Grid grid);
-
-Grid handle_rewind(Direction dir, std::vector<Grid> *rewind_buffer,
-                   int latest_state_idx, int *rewind_buf_idx, Grid grid,
-                   SquareCellGridDimensions *gd, Display *display);
-
+/**
+ * Applies the game of life cellular automata evolution rules and returns
+ * a pair of the old grid state and the new grid state (so that both can be
+ * e.g. inserted into the history rewind buffer).
+ */
+StateEvolution take_simulation_step(const SquareCellGridDimensions &dimensions,
+                                    Grid grid, bool use_toroidal_array);
+void render_state_change(const Display &display,
+                         const SquareCellGridDimensions &dimensions,
+                         StateEvolution evolution);
+void spawn_cells_randomly(const Display &display,
+                          const SquareCellGridDimensions &dimensions,
+                          Grid grid);
+void save_grid_state_in_rewind_buffer(std::vector<Grid> &rewind_buffer,
+                                      int &rewind_buf_idx, Grid grid);
+void handle_rewind(const Display &display, GameOfLifeState &state,
+                   Direction dir);
+void move_caret(const Display &display,
+                const UserInterfaceCustomization &customization,
+                GameOfLifeState &state, Direction dir);
+void toggle_pause(const Display &display,
+                  const UserInterfaceCustomization &customization,
+                  GameOfLifeState &state);
+void toggle_rewind_mode(const Display &display,
+                        const UserInterfaceCustomization &customization,
+                        GameOfLifeState &state);
+void flip_selected_cell(const Display &display,
+                        const UserInterfaceCustomization &customization,
+                        GameOfLifeState &state);
 const char *map_boolean_to_yes_or_no(bool value);
 
 GameOfLifeConfiguration *
-load_initial_game_of_life_config(PersistentStorage *storage)
+load_initial_game_of_life_config(const PersistentStorage &storage)
 {
         int storage_offset = get_settings_storage_offset(Game::GameOfLife);
 
@@ -114,7 +194,7 @@ load_initial_game_of_life_config(PersistentStorage *storage)
                   "Trying to load initial settings from the persistent storage "
                   "at offset %d",
                   storage_offset);
-        storage->get(storage_offset, config);
+        storage.get(storage_offset, config);
 
         GameOfLifeConfiguration *output = new GameOfLifeConfiguration();
 
@@ -124,7 +204,7 @@ load_initial_game_of_life_config(PersistentStorage *storage)
                           "game of life configuration, using default values.");
                 memcpy(output, &DEFAULT_GAME_OF_LIFE_CONFIG,
                        sizeof(GameOfLifeConfiguration));
-                storage->put(storage_offset, DEFAULT_GAME_OF_LIFE_CONFIG);
+                storage.put(storage_offset, DEFAULT_GAME_OF_LIFE_CONFIG);
 
         } else {
                 LOG_DEBUG(TAG, "Using configuration from persistent storage.");
@@ -165,10 +245,15 @@ const char *GameOfLife::get_help_text() const
 void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                        int border_offset);
 
+void perform_evolution(const Display &display, GameOfLifeState &state);
 UserAction GameOfLife::app_loop(const Platform &p,
                                 const UserInterfaceCustomization &customization,
                                 const GameOfLifeConfiguration &config) const
 {
+
+        // Extracted here for clarity and to avoid repeated dereferencing.
+        const Display &display = *p.display;
+        Color accent = customization.accent_color;
 
         LOG_DEBUG(TAG, "Entering Game of Life game loop");
 
@@ -195,8 +280,8 @@ UserAction GameOfLife::app_loop(const Platform &p,
                 render_help_hints(p.display, gd, border_offset);
         }
 
-        Point caret_pos = {.x = 0, .y = 0};
-        draw_caret(p.display, &caret_pos, gd, customization.accent_color);
+        Point caret = {.x = 0, .y = 0};
+        draw_caret(display, *gd, caret, accent);
 
         /* Because of memory constraints, we need to use a hand-rolled bitset
            to store each 'frame' of the game simulation. The reason for this
@@ -214,59 +299,55 @@ UserAction GameOfLife::app_loop(const Platform &p,
         int rewind_buf_idx = -1;
         // Keeps track of the latest diff in the rewind buffer. Prevents us from
         // wrapping back to it.
-        int rewind_initial_idx = -1;
+        int rewind_beg_idx = -1;
 
         if (config.prepopulate_grid) {
-                spawn_cells_randomly(p.display, grid, gd);
+                spawn_cells_randomly(display, *gd, grid);
         }
 
         int evolution_period =
             (1000 / config.simulation_speed) / GAME_LOOP_DELAY;
         int iteration = 0;
 
+        // Ensures that we get rid of all dynamic allocations before exiting
+        // out of the game. This can happen only if the user presses 'back' to
+        // exit from the game or it the window gets closed (applicable only on
+        // the emulator).
+        auto pre_exit_cleanup = [&]() {
+                delete gd;
+                for (int i = 0; i < rewind_buffer.size(); i++) {
+                        LOG_DEBUG(TAG, "Deleting previous states at: %x",
+                                  rewind_buffer[i]);
+                        if (rewind_buffer[i] != nullptr) {
+                                //delete[] (rewind_buffer[i]);
+                        }
+                }
+        };
+
         bool exit_requested = false;
-        SimulationMode mode = PAUSED;
+        SimulationMode mode = SimulationMode::PAUSED;
         // To avoid button debounce issues, we only process action input if
         // it wasn't processed on the last iteration. This is to avoid
         // situations where the user holds the 'spawn' button for too long and
         // the cell flickers instead of getting spawned properly. We implement
         // this using this flag.
         bool action_input_on_last_iteration = false;
+
+        GameOfLifeState state = {config,         *gd,           mode,
+                                 grid,           rewind_buffer, rewind_buf_idx,
+                                 rewind_beg_idx, caret};
+
         while (!exit_requested) {
-                if (mode == RUNNING && iteration == evolution_period - 1) {
-                        LOG_DEBUG(TAG, "Taking a simulation step");
-                        StateEvolution evolution = take_simulation_step(
-                            grid, gd, config.use_toroidal_array);
-
-                        render_state_change(p.display, evolution, gd);
-                        save_grid_state_in_rewind_buffer(&rewind_buffer,
-                                                         &rewind_buf_idx, grid);
-                        grid = evolution.second;
+                if (mode == SimulationMode::RUNNING &&
+                    iteration == evolution_period - 1) {
+                        perform_evolution(display, state);
                 }
-                GameOfLifeCell curr =
-                    get_cell(caret_pos.x, caret_pos.y, gd->cols, grid);
-                auto maybe_direction =
-                    poll_directional_input(p.directional_controllers);
-                if (maybe_direction.has_value()) {
-                        Direction dir = maybe_direction.value();
-                        if (mode == REWIND) {
-                                grid = handle_rewind(
-                                    dir, &rewind_buffer, rewind_initial_idx,
-                                    &rewind_buf_idx, grid, gd, p.display);
-                        } else {
-                                Color bg_color =
-                                    (curr == EMPTY) ? Black : White;
-                                erase_caret(p.display, &caret_pos, gd,
-                                            bg_color);
-
-                                // Move the caret according to the user input.
-                                auto translate = (config.use_toroidal_array)
-                                                     ? translate_toroidal_array
-                                                     : translate_within_bounds;
-                                translate(caret_pos, dir, gd->rows, gd->cols);
-                                draw_caret(p.display, &caret_pos, gd,
-                                           customization.accent_color);
-                        }
+                auto input = poll_directional_input(p.directional_controllers);
+                if (input.has_value()) {
+                        Direction dir = input.value();
+                        mode == SimulationMode::REWIND
+                            ? handle_rewind(display, state, dir)
+                            : move_caret(display, customization, state, dir);
                 }
                 auto maybe_action = poll_action_input(p.action_controllers);
                 if (maybe_action.has_value() &&
@@ -275,77 +356,18 @@ UserAction GameOfLife::app_loop(const Platform &p,
                         action_input_on_last_iteration = true;
                         switch (act) {
                         case YELLOW:
-                                if (mode == PAUSED) {
-                                        mode = RUNNING;
-                                        LOG_DEBUG(TAG, "Simulation running...");
-                                } else if (mode == REWIND) {
-                                        mode = PAUSED;
-                                        LOG_DEBUG(
-                                            TAG,
-                                            "Simulation paused after rewind.");
-                                        clear_rewind_mode_indicator(
-                                            p, gd, customization);
-                                } else {
-                                        mode = PAUSED;
-                                        LOG_DEBUG(TAG, "Simulation paused.");
-                                }
+                                toggle_pause(display, customization, state);
                                 break;
-                        case RED:
+                        case FORWARD_ACTION:
+                                toggle_rewind_mode(display, customization,
+                                                   state);
+                                break;
+                        case CONFIRM_ACTION:
+                                flip_selected_cell(display, customization,
+                                                   state);
+                                break;
+                        case BACK_ACTION:
                                 exit_requested = true;
-                                delete[] grid;
-                                delete gd;
-                                for (auto state : rewind_buffer) {
-                                        delete[] state;
-                                }
-                                break;
-                        case BLUE:
-                                if (mode == REWIND) {
-                                        mode = RUNNING;
-                                        clear_rewind_mode_indicator(
-                                            p, gd, customization);
-                                        LOG_DEBUG(TAG, "Simulation running...");
-                                } else if (rewind_buf_idx != -1) {
-                                        // We can only rewind if the buffer has
-                                        // at least one entry.
-                                        mode = REWIND;
-                                        draw_rewind_mode_indicator(
-                                            p, gd, customization);
-                                        // We need to record the latest index in
-                                        // the rewind buffer.
-                                        rewind_initial_idx = rewind_buf_idx;
-                                        LOG_DEBUG(TAG, "Rewind mode enabled.");
-                                }
-                                break;
-                        case GREEN:
-                                Color new_cell_color;
-
-                                // We copy the current state and only modify the
-                                // caret position.
-                                Grid new_grid = allocate_grid(total_cells);
-                                int size = (total_cells + 7) / 8;
-                                std::memcpy(new_grid, grid,
-                                            size * sizeof(uint8_t));
-
-                                if (curr == EMPTY) {
-                                        set_cell(caret_pos.x, caret_pos.y, cols,
-                                                 new_grid, ALIVE);
-                                        new_cell_color = White;
-                                } else if (curr == ALIVE) {
-                                        set_cell(caret_pos.x, caret_pos.y, cols,
-                                                 new_grid, EMPTY);
-                                        new_cell_color = Black;
-                                }
-
-                                save_grid_state_in_rewind_buffer(
-                                    &rewind_buffer, &rewind_buf_idx, grid);
-                                draw_game_cell(p.display, &caret_pos, gd,
-                                               new_cell_color);
-                                // we need to redraw the caret as we have just
-                                // drawn a cell by clearing the region
-                                draw_caret(p.display, &caret_pos, gd,
-                                           customization.accent_color);
-
-                                grid = new_grid;
                                 break;
                         }
                 } else {
@@ -354,16 +376,24 @@ UserAction GameOfLife::app_loop(const Platform &p,
                 iteration += 1;
                 iteration %= evolution_period;
                 if (!p.display->refresh()) {
-                        delete[] grid;
-                        delete gd;
-                        for (auto state : rewind_buffer) {
-                                delete[] state;
-                        }
+                        pre_exit_cleanup();
                         return UserAction::CloseWindow;
                 }
                 p.time_provider->delay_ms(GAME_LOOP_DELAY);
         }
+        pre_exit_cleanup();
         return UserAction::PlayAgain;
+}
+
+void perform_evolution(const Display &display, GameOfLifeState &state)
+{
+        LOG_DEBUG(TAG, "Taking a simulation step");
+        StateEvolution evolution = take_simulation_step(
+            state.dimensions, state.curr_grid, state.config.use_toroidal_array);
+        render_state_change(display, state.dimensions, evolution);
+        save_grid_state_in_rewind_buffer(
+            state.rewind_buff, state.curr_rewind_buff_idx, state.curr_grid);
+        state.curr_grid = evolution.second;
 }
 
 std::optional<UserAction>
@@ -372,19 +402,20 @@ GameOfLife::collect_config(const Platform &p,
                            GameOfLifeConfiguration &game_config) const
 {
         Configuration *config =
-            assemble_game_of_life_configuration(p.persistent_storage);
+            assemble_game_of_life_configuration(*p.persistent_storage);
         auto maybe_interrupt = collect_configuration(p, *config, customization);
         if (maybe_interrupt) {
                 delete config;
                 return maybe_interrupt;
         }
 
-        extract_game_config(&game_config, config);
+        extract_game_config(game_config, *config);
         delete config;
         return std::nullopt;
 }
 
-Configuration *assemble_game_of_life_configuration(PersistentStorage *storage)
+Configuration *
+assemble_game_of_life_configuration(const PersistentStorage &storage)
 {
         GameOfLifeConfiguration *initial_config =
             load_initial_game_of_life_config(storage);
@@ -409,39 +440,38 @@ Configuration *assemble_game_of_life_configuration(PersistentStorage *storage)
         return new Configuration("Game of Life", options);
 }
 
-void extract_game_config(GameOfLifeConfiguration *game_config,
-                         Configuration *config)
+void extract_game_config(GameOfLifeConfiguration &game_config,
+                         const Configuration &config)
 {
 
-        ConfigurationOption prepopulate_grid = *config->options[0];
+        ConfigurationOption prepopulate_grid = *config.options[0];
         int curr_choice_idx = prepopulate_grid.currently_selected;
         const char *choice = static_cast<const char **>(
             prepopulate_grid.available_values)[curr_choice_idx];
-        game_config->prepopulate_grid = extract_yes_or_no_option(choice);
+        game_config.prepopulate_grid = extract_yes_or_no_option(choice);
 
-        game_config->rewind_buffer_size = REWIND_BUF_SIZE;
+        game_config.rewind_buffer_size = REWIND_BUF_SIZE;
 
-        ConfigurationOption simulation_speed = *config->options[1];
+        ConfigurationOption simulation_speed = *config.options[1];
         int curr_speed_idx = simulation_speed.currently_selected;
-        game_config->simulation_speed = static_cast<int *>(
+        game_config.simulation_speed = static_cast<int *>(
             simulation_speed.available_values)[curr_speed_idx];
 
-        ConfigurationOption use_toroidal_array = *config->options[2];
+        ConfigurationOption use_toroidal_array = *config.options[2];
         int use_toroidal_array_choice_idx =
             use_toroidal_array.currently_selected;
         const char *toroidal_array_choice = static_cast<const char **>(
             use_toroidal_array.available_values)[use_toroidal_array_choice_idx];
-        game_config->use_toroidal_array =
+        game_config.use_toroidal_array =
             extract_yes_or_no_option(toroidal_array_choice);
 }
 
-StateEvolution take_simulation_step(Grid grid,
-                                    SquareCellGridDimensions *dimensions,
-                                    bool use_toroidal_array)
+StateEvolution take_simulation_step(const SquareCellGridDimensions &dimensions,
+                                    Grid grid, bool use_toroidal_array)
 {
         // This assumes that the grid is rectangular.
-        int rows = dimensions->rows;
-        int cols = dimensions->cols;
+        int rows = dimensions.rows;
+        int cols = dimensions.cols;
         int total_cells = rows * cols;
 
         Grid new_grid = allocate_grid(total_cells);
@@ -492,11 +522,12 @@ StateEvolution take_simulation_step(Grid grid,
         return std::make_pair(grid, new_grid);
 }
 
-void render_state_change(Display *display, StateEvolution evolution,
-                         SquareCellGridDimensions *dimensions)
+void render_state_change(const Display &display,
+                         const SquareCellGridDimensions &dimensions,
+                         StateEvolution evolution)
 {
-        int rows = dimensions->rows;
-        int cols = dimensions->cols;
+        int rows = dimensions.rows;
+        int cols = dimensions.cols;
 
         for (int y = 0; y < rows; y++) {
                 for (int x = 0; x < cols; x++) {
@@ -507,115 +538,229 @@ void render_state_change(Display *display, StateEvolution evolution,
 
                         if (curr != prev) {
                                 Color color = curr == ALIVE ? White : Black;
-                                Point position = {.x = x, .y = y};
-                                draw_game_cell(display, &position, dimensions,
+                                draw_game_cell(display, dimensions, {x, y},
                                                color);
                         }
                 }
         }
 }
 
-void save_grid_state_in_rewind_buffer(std::vector<Grid> *rewind_buffer,
-                                      int *rewind_buf_idx, Grid grid)
+void save_grid_state_in_rewind_buffer(std::vector<Grid> &rewind_buffer,
+                                      int &rewind_buf_idx, Grid grid)
 {
 
         // We need to increment the index and wrap it around as we are using
         // a ring buffer.
-        *rewind_buf_idx = (*rewind_buf_idx + 1) % rewind_buffer->size();
-        int idx = *rewind_buf_idx;
-        LOG_DEBUG(TAG, "Current rewind buffer index is now %d",
-                  *rewind_buf_idx);
+        rewind_buf_idx = (rewind_buf_idx + 1) % rewind_buffer.size();
+        int idx = rewind_buf_idx;
+        LOG_DEBUG(TAG, "Current rewind buffer index is now %d", rewind_buf_idx);
         LOG_DEBUG(TAG, "Adding current state to rewind buffer at index %d",
-                  *rewind_buf_idx);
-        if ((*rewind_buffer)[idx] != nullptr) {
+                  rewind_buf_idx);
+        if (rewind_buffer[idx] != nullptr) {
                 LOG_DEBUG(TAG,
                           "Rewind buffer already has saved state at index %d, "
                           "freeing it",
-                          *rewind_buf_idx);
-                delete (*rewind_buffer)[idx];
+                          rewind_buf_idx);
+                delete[] (rewind_buffer[idx]);
         }
-        (*rewind_buffer)[idx] = grid;
+        rewind_buffer[idx] = grid;
 }
 
-Grid handle_rewind(Direction dir, std::vector<Grid> *rewind_buffer,
-                   int latest_state_idx, int *rewind_buf_idx, Grid grid,
-                   SquareCellGridDimensions *gd, Display *display)
+void handle_rewind(const Display &display, GameOfLifeState &state,
+                   Direction dir)
 {
         // Ignore irrelevant input.
         if (dir == UP || dir == DOWN) {
-                return grid;
+                return;
         }
 
         // First we short-circuit if the user tries to go back too far.
         bool forward_in_time = dir == RIGHT;
         bool back_in_time = dir == LEFT;
+
+        /* We unwrap the state here to make the code below less verbose */
+        int &rewind_buf_idx = state.curr_rewind_buff_idx;
+        int &latest_state_idx = state.latest_rewind_buff_idx;
+        std::vector<uint8_t *> &rewind_buffer = state.rewind_buff;
+        const SquareCellGridDimensions &gd = state.dimensions;
+
         // Rewind cannot go back in time past oldest state as it would
         // wrap around to the latest state.
         if (back_in_time &&
-            *rewind_buf_idx == (latest_state_idx + 1) % rewind_buffer->size()) {
-                return grid;
+            rewind_buf_idx == (latest_state_idx + 1) % rewind_buffer.size()) {
+                return;
         }
 
         if (forward_in_time) {
-                auto next_state = (*rewind_buffer)[*rewind_buf_idx];
-                render_state_change(display, std::make_pair(grid, next_state),
-                                    gd);
+                auto next_state = rewind_buffer[rewind_buf_idx];
+                render_state_change(
+                    display, gd, std::make_pair(state.curr_grid, next_state));
 
                 // Rewind cannot go into the future.
-                if (*rewind_buf_idx == latest_state_idx) {
-                        return grid;
+                if (rewind_buf_idx == latest_state_idx) {
+                        return;
                 }
-                *rewind_buf_idx = (*rewind_buf_idx + 1) % rewind_buffer->size();
-                return next_state;
+                rewind_buf_idx = (rewind_buf_idx + 1) % rewind_buffer.size();
+                state.curr_grid = next_state;
         } else if (back_in_time) {
-                auto previous_state = (*rewind_buffer)[*rewind_buf_idx];
-
-                render_state_change(display,
-                                    std::make_pair(grid, previous_state), gd);
+                auto previous_state = rewind_buffer[rewind_buf_idx];
+                render_state_change(
+                    display, gd,
+                    std::make_pair(state.curr_grid, previous_state));
                 // We need to use proper modulo as % is weird with
                 // negative numbers.
-                *rewind_buf_idx = mathematical_modulo((*rewind_buf_idx - 1),
-                                                      rewind_buffer->size());
+                rewind_buf_idx = mathematical_modulo((rewind_buf_idx - 1),
+                                                     rewind_buffer.size());
 
                 /* If the rewind ring buffer has not been fully populated yet,
                    trying to rewind back in time would wrap around to the end of
                    the array and try to render nullptr diffs (as the indices
                    larger than the latest_state_idx haven't been initialized
                    yet). We need to short-circuit if that happens. */
-                auto next_diffs = (*rewind_buffer)[*rewind_buf_idx];
+                auto next_diffs = rewind_buffer[rewind_buf_idx];
                 if (next_diffs == nullptr) {
                         LOG_DEBUG(TAG,
                                   "Rewind buffer is empty at index %d, "
                                   "skipping index update",
-                                  *rewind_buf_idx);
+                                  rewind_buf_idx);
                         // We need to increment the index to go back to safety
-                        *rewind_buf_idx =
-                            (*rewind_buf_idx + 1) % rewind_buffer->size();
+                        rewind_buf_idx =
+                            (rewind_buf_idx + 1) % rewind_buffer.size();
                 }
-                return previous_state;
+                state.curr_grid = previous_state;
         }
-        return grid;
 }
 
-void spawn_cells_randomly(Display *display, Grid grid,
-                          SquareCellGridDimensions *dimensions)
+void move_caret(const Display &display,
+                const UserInterfaceCustomization &customization,
+                GameOfLifeState &state, Direction dir)
 {
-        for (int y = 0; y < dimensions->rows; y++) {
-                for (int x = 0; x < dimensions->cols; x++) {
-                        // We use 30% chance os spawning a cell to avoid massive
-                        // overpopulation
+
+        /* We unwrap the state here to make the code below less verbose */
+        Grid grid = state.curr_grid;
+        const SquareCellGridDimensions &gd = state.dimensions;
+        Point &caret = state.caret;
+
+        GameOfLifeCell curr = get_cell(caret.x, caret.y, gd.cols, grid);
+        Color bg_color = (curr == EMPTY) ? Black : White;
+        erase_caret(display, gd, caret, bg_color);
+
+        // Move the caret according to the user input.
+        auto translate = (state.config.use_toroidal_array)
+                             ? translate_toroidal_array
+                             : translate_within_bounds;
+
+        translate(caret, dir, gd.rows, gd.cols);
+        draw_caret(display, gd, caret, customization.accent_color);
+}
+
+void toggle_pause(const Display &display,
+                  const UserInterfaceCustomization &customization,
+                  GameOfLifeState &state)
+{
+
+        SimulationMode &mode = state.mode;
+        const SquareCellGridDimensions &gd = state.dimensions;
+
+        if (mode == SimulationMode::PAUSED) {
+                mode = SimulationMode::RUNNING;
+                LOG_DEBUG(TAG, "Simulation running...");
+        } else if (mode == SimulationMode::REWIND) {
+                mode = SimulationMode::PAUSED;
+                LOG_DEBUG(TAG, "Simulation paused after rewind.");
+                clear_rewind_mode_indicator(display, customization, gd);
+        } else {
+                mode = SimulationMode::PAUSED;
+                LOG_DEBUG(TAG, "Simulation paused.");
+        }
+}
+
+void toggle_rewind_mode(const Display &display,
+                        const UserInterfaceCustomization &customization,
+                        GameOfLifeState &state)
+{
+
+        SimulationMode &mode = state.mode;
+        const SquareCellGridDimensions &gd = state.dimensions;
+
+        if (mode == SimulationMode::REWIND) {
+                mode = SimulationMode::RUNNING;
+                clear_rewind_mode_indicator(display, customization, gd);
+                LOG_DEBUG(TAG, "Simulation running...");
+        } else if (state.curr_rewind_buff_idx != -1) {
+                // We can only rewind if the buffer has
+                // at least one entry.
+                mode = SimulationMode::REWIND;
+                draw_rewind_mode_indicator(display, customization, gd);
+                // We need to record the latest index in
+                // the rewind buffer.
+                state.latest_rewind_buff_idx = state.curr_rewind_buff_idx;
+                LOG_DEBUG(TAG, "Rewind mode enabled.");
+        }
+}
+
+void flip_selected_cell(const Display &display,
+                        const UserInterfaceCustomization &customization,
+                        GameOfLifeState &state)
+{
+
+        SimulationMode &mode = state.mode;
+        const SquareCellGridDimensions &gd = state.dimensions;
+        Point &caret = state.caret;
+        int &rewind_buf_idx = state.curr_rewind_buff_idx;
+        std::vector<uint8_t *> &rewind_buffer = state.rewind_buff;
+
+        int rows = gd.rows;
+        int cols = gd.cols;
+        int total_cells = rows * cols;
+        // toggle selected cell
+        Color new_cell_color;
+
+        // We copy the current state and only modify the
+        // caret position.
+        Grid new_grid = allocate_grid(total_cells);
+        int size = (total_cells + 7) / 8;
+        std::memcpy(new_grid, state.curr_grid, size * sizeof(uint8_t));
+
+        GameOfLifeCell curr =
+            get_cell(caret.x, caret.y, gd.cols, state.curr_grid);
+        if (curr == EMPTY) {
+                set_cell(caret.x, caret.y, cols, new_grid, ALIVE);
+                new_cell_color = White;
+        } else if (curr == ALIVE) {
+                set_cell(caret.x, caret.y, cols, new_grid, EMPTY);
+                new_cell_color = Black;
+        }
+
+        save_grid_state_in_rewind_buffer(
+            rewind_buffer, state.curr_rewind_buff_idx, state.curr_grid);
+        draw_game_cell(display, gd, caret, new_cell_color);
+        // we need to redraw the caret as we have just
+        // drawn a cell by clearing the region
+        draw_caret(display, gd, caret, customization.accent_color);
+
+        state.curr_grid = new_grid;
+}
+
+void spawn_cells_randomly(const Display &display,
+                          const SquareCellGridDimensions &dimensions, Grid grid)
+{
+        for (int y = 0; y < dimensions.rows; y++) {
+                for (int x = 0; x < dimensions.cols; x++) {
+                        // We use 30% chance of spawning a cell to avoid massive
+                        // overpopulation that would kill everything instantly
                         if (rand() % 10 <= 3) {
-                                set_cell(x, y, dimensions->cols, grid, ALIVE);
-                                Point position = {.x = x, .y = y};
-                                draw_game_cell(display, &position, dimensions,
+                                set_cell(x, y, dimensions.cols, grid, ALIVE);
+                                draw_game_cell(display, dimensions, {x, y},
                                                White);
                         }
                 }
         }
 }
 
-void draw_caret(Display *display, Point *grid_position,
-                SquareCellGridDimensions *dimensions, Color caret_color)
+void draw_caret(const Display &display,
+                const SquareCellGridDimensions &dimensions,
+                const Point &grid_position, Color caret_color)
 {
 
         // We need to ensure that the caret is rendered INSIDE the text
@@ -623,33 +768,34 @@ void draw_caret(Display *display, Point *grid_position,
         // Otherwise, we'll get weird rendering artifacts.
         int border_offset = 1;
         Point actual_position = {
-            .x = dimensions->left_horizontal_margin +
-                 grid_position->x * GAME_CELL_WIDTH + border_offset,
-            .y = dimensions->top_vertical_margin +
-                 grid_position->y * GAME_CELL_WIDTH + border_offset};
+            .x = dimensions.left_horizontal_margin +
+                 grid_position.x * GAME_CELL_WIDTH + border_offset,
+            .y = dimensions.top_vertical_margin +
+                 grid_position.y * GAME_CELL_WIDTH + border_offset};
 
-        display->draw_rectangle(
+        display.draw_rectangle(
             actual_position, GAME_CELL_WIDTH - 2 * border_offset,
             GAME_CELL_WIDTH - 2 * border_offset, caret_color, 1, false);
 }
 
-void draw_game_cell(Display *display, Point *grid_position,
-                    SquareCellGridDimensions *dimensions, Color color)
+void draw_game_cell(const Display &display,
+                    const SquareCellGridDimensions &dimensions,
+                    const Point &grid_position, Color color)
 {
-        Point actual_position = {.x = dimensions->left_horizontal_margin +
-                                      grid_position->x * GAME_CELL_WIDTH,
-                                 .y = dimensions->top_vertical_margin +
-                                      grid_position->y * GAME_CELL_WIDTH};
+        Point actual_position = {.x = dimensions.left_horizontal_margin +
+                                      grid_position.x * GAME_CELL_WIDTH,
+                                 .y = dimensions.top_vertical_margin +
+                                      grid_position.y * GAME_CELL_WIDTH};
 
-        display->clear_region(actual_position,
-                              {.x = actual_position.x + GAME_CELL_WIDTH,
-                               .y = actual_position.y + GAME_CELL_WIDTH},
-                              color);
+        display.clear_region(actual_position,
+                             {.x = actual_position.x + GAME_CELL_WIDTH,
+                              .y = actual_position.y + GAME_CELL_WIDTH},
+                             color);
 }
 
-void erase_caret(Display *display, Point *grid_position,
-                 SquareCellGridDimensions *dimensions,
-                 Color grid_background_color)
+void erase_caret(const Display &display,
+                 const SquareCellGridDimensions &dimensions,
+                 const Point &grid_position, Color grid_background_color)
 {
 
         // We need to ensure that the caret is rendered INSIDE the text
@@ -657,15 +803,15 @@ void erase_caret(Display *display, Point *grid_position,
         // Otherwise, we'll get weird rendering artifacts.
         int border_offset = 1;
         Point actual_position = {
-            .x = dimensions->left_horizontal_margin +
-                 grid_position->x * GAME_CELL_WIDTH + border_offset,
-            .y = dimensions->top_vertical_margin +
-                 grid_position->y * GAME_CELL_WIDTH + border_offset};
+            .x = dimensions.left_horizontal_margin +
+                 grid_position.x * GAME_CELL_WIDTH + border_offset,
+            .y = dimensions.top_vertical_margin +
+                 grid_position.y * GAME_CELL_WIDTH + border_offset};
 
-        display->draw_rectangle(actual_position,
-                                GAME_CELL_WIDTH - 2 * border_offset,
-                                GAME_CELL_WIDTH - 2 * border_offset,
-                                grid_background_color, 1, false);
+        display.draw_rectangle(actual_position,
+                               GAME_CELL_WIDTH - 2 * border_offset,
+                               GAME_CELL_WIDTH - 2 * border_offset,
+                               grid_background_color, 1, false);
 }
 
 void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
@@ -744,15 +890,15 @@ void render_help_hints(Display *display, SquareCellGridDimensions *dimensions,
                              (char *)toggle, FontSize::Size16, Black, White);
 }
 
-void draw_rewind_mode_indicator(const Platform &p,
-                                SquareCellGridDimensions *dimensions,
-                                const UserInterfaceCustomization &customization)
+void draw_rewind_mode_indicator(const Display &display,
+                                const UserInterfaceCustomization &customization,
+                                const SquareCellGridDimensions &dimensions)
 {
 
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
-        int actual_width = dimensions->actual_width;
-        int actual_height = dimensions->actual_height;
+        int x_margin = dimensions.left_horizontal_margin;
+        int y_margin = dimensions.top_vertical_margin;
+        int actual_width = dimensions.actual_width;
+        int actual_height = dimensions.actual_height;
         int border_width = 1;
         // We need to make the border rectangle and the canvas slightly
         // bigger to ensure that it does not overlap with the game area.
@@ -775,21 +921,21 @@ void draw_rewind_mode_indicator(const Platform &p,
                 indicator_border_color = DarkBlue;
         }
 
-        p.display->draw_rectangle(
+        display.draw_rectangle(
             {.x = x_margin - border_offset, .y = y_margin - border_offset},
             actual_width + 2 * border_offset, actual_height + 2 * border_offset,
             indicator_border_color, border_width, false);
 }
 
 void clear_rewind_mode_indicator(
-    const Platform &p, SquareCellGridDimensions *dimensions,
-    const UserInterfaceCustomization &customization)
+    const Display &display, const UserInterfaceCustomization &customization,
+    const SquareCellGridDimensions &dimensions)
 {
 
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
-        int actual_width = dimensions->actual_width;
-        int actual_height = dimensions->actual_height;
+        int x_margin = dimensions.left_horizontal_margin;
+        int y_margin = dimensions.top_vertical_margin;
+        int actual_width = dimensions.actual_width;
+        int actual_height = dimensions.actual_height;
         int border_width = 1;
         // We need to make the border rectangle and the canvas slightly
         // bigger to ensure that it does not overlap with the game area.
@@ -800,7 +946,7 @@ void clear_rewind_mode_indicator(
 
         Color indicator_border_color;
 
-        p.display->draw_rectangle(
+        display.draw_rectangle(
             {.x = x_margin - border_offset, .y = y_margin - border_offset},
             actual_width + 2 * border_offset, actual_height + 2 * border_offset,
             customization.accent_color, border_width, false);

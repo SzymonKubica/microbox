@@ -59,6 +59,8 @@
   - [x] application executor & individual application implementations
   - [ ] all helper functions in all applications
 
+- [ ] make 2048 controls consistent with the rest of the UI flow
+
 
 
 # Done

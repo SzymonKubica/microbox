@@ -2,7 +2,6 @@
 #include "../application_executor.hpp"
 #include "../common/common_transitions.hpp"
 #include "../common/configuration.hpp"
-#include "../common/grid.hpp"
 #include <optional>
 
 struct GameOfLifeConfiguration {
@@ -18,22 +17,6 @@ struct GameOfLifeConfiguration {
          */
         int rewind_buffer_size;
 };
-
-/**
- * Collects the game of life configuration from the user.
- *
- * This is exposed publicly so that the default game configuration saving module
- * can call it, get the new default setttings and save them in the persistent
- * storage.
- *
- * Similar to `collect_configuration` from `configuration.hpp`, it returns true
- * if the configuration was successfully collected. Otherwise, if the user
- * requested exit by pressing the blue button, it returns false and this needs
- * to be handled by the main game loop.
- */
-std::optional<UserAction>
-collect_game_of_life_config(Platform *p, GameOfLifeConfiguration *game_config,
-                            UserInterfaceCustomization *customization);
 
 class GameOfLife : public ApplicationExecutor<GameOfLifeConfiguration>
 {
