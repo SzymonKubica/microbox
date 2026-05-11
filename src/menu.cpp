@@ -36,6 +36,11 @@ GameMenuConfiguration DEFAULT_MENU_CONFIGURATION = {
 
 const char *game_to_string(Game game);
 
+template <typename T> std::unique_ptr<T> make()
+{
+        return std::make_unique<T>();
+}
+
 std::optional<UserAction> select_app_and_run(const Platform &p)
 {
         GameMenuConfiguration config;
@@ -78,27 +83,27 @@ std::optional<UserAction> select_app_and_run(const Platform &p)
         LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
         switch (config.game) {
         case Game::Clean2048:
-                return execute_app(*new Clean2048(), p, c);
+                return execute_app(*make<Clean2048>().get(), p, c);
         case Game::Minesweeper:
-                return execute_app(*new Minesweeper(), p, c);
+                return execute_app(*make<Minesweeper>().get(), p, c);
         case Game::GameOfLife:
-                return execute_app(*new GameOfLife(), p, c);
+                return execute_app(*make<GameOfLife>().get(), p, c);
         case Game::Settings:
-                return execute_app(*new UtilityApplicationMenu(), p, c);
+                return execute_app(*make<UtilityApplicationMenu>().get(), p, c);
         case Game::Snake:
-                return execute_app(*new SnakeGame(), p, c);
+                return execute_app(*make<SnakeGame>().get(), p, c);
         case Game::SnakeDuel:
-                return execute_app(*new SnakeDuel(), p, c);
+                return execute_app(*make<SnakeDuel>().get(), p, c);
         case Game::WifiApp:
-                return execute_app(*new WifiApp(), p, c);
+                return execute_app(*make<WifiApp>().get(), p, c);
         case Game::RandomSeedPicker:
-                return execute_app(*new RandomSeedPicker(), p, c);
+                return execute_app(*make<RandomSeedPicker>().get(), p, c);
         case Game::Sudoku:
-                return execute_app(*new SudokuGame(), p, c);
+                return execute_app(*make<SudokuGame>().get(), p, c);
         case Game::Power:
-                return execute_app(*new PowerManagementApp(), p, c);
+                return execute_app(*make<PowerManagementApp>().get(), p, c);
         case Game::Brightness:
-                return execute_app(*new BrightnessApp(), p, c);
+                return execute_app(*make<BrightnessApp>().get(), p, c);
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return UserAction::Exit;

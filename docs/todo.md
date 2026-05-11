@@ -57,13 +57,12 @@
   - [x] change `collect_configuration` API to take in references and const references
         instead of raw pointers
   - [x] application executor & individual application implementations
-  - [ ] all helper functions in all applications
-
-- [ ] make 2048 controls consistent with the rest of the UI flow
-
+  - [ ] all helper functions in all games & applications
 
 
 # Done
+- [x] debug memory allocation handling for 2048.
+- [x] make 2048 controls consistent with the rest of the UI flow
 - [x] debug 2048 game saving functionality (this was caused by a regression in the
       `wait_until_action_input` function)
 - [x] fix sudoku game-over rendering on the TFT_eSPI display
