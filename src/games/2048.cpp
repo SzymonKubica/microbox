@@ -271,25 +271,25 @@ assemble_2048_configuration(PersistentStorage *storage,
 
         return new Configuration("2048", options);
 }
-void extract_game_config(Game2048Configuration *game_config,
-                         Game2048Configuration *initial_config,
-                         Configuration *config)
+void extract_game_config(Game2048Configuration &game_config,
+                         const Game2048Configuration &initial_config,
+                         const Configuration &config)
 {
 
         // Grid size is the first config option in the game struct
         // above.
-        ConfigurationOption grid_size = *config->options[0];
+        ConfigurationOption grid_size = *config.options[0];
         // Game target is the second config option above.
-        ConfigurationOption game_target = *config->options[1];
+        ConfigurationOption game_target = *config.options[1];
 
-        game_config->grid_size = grid_size.get_curr_int_value();
-        game_config->target_max_tile = game_target.get_curr_int_value();
-        game_config->is_game_in_progress = initial_config->is_game_in_progress;
-        game_config->saved_grid_size = initial_config->saved_grid_size;
-        game_config->saved_target_max_tile =
-            initial_config->saved_target_max_tile;
-        memcpy(game_config->saved_grid, initial_config->saved_grid,
-               sizeof(initial_config->saved_grid));
+        game_config.grid_size = grid_size.get_curr_int_value();
+        game_config.target_max_tile = game_target.get_curr_int_value();
+        game_config.is_game_in_progress = initial_config.is_game_in_progress;
+        game_config.saved_grid_size = initial_config.saved_grid_size;
+        game_config.saved_target_max_tile =
+            initial_config.saved_target_max_tile;
+        memcpy(&game_config.saved_grid, &initial_config.saved_grid,
+               sizeof(initial_config.saved_grid));
 }
 
 std::optional<UserAction>
@@ -297,22 +297,15 @@ Clean2048::collect_config(const Platform &p,
                           const UserInterfaceCustomization &customization,
                           Game2048Configuration &game_config) const
 {
-        Game2048Configuration *initial_config =
-            load_initial_config(*p.persistent_storage);
-        Configuration *config =
-            assemble_2048_configuration(p.persistent_storage, initial_config);
+        auto initial_cfg = std::unique_ptr<Game2048Configuration>(
+            load_initial_config(*p.persistent_storage));
+        auto cfg = std::unique_ptr<Configuration>(assemble_2048_configuration(
+            p.persistent_storage, initial_cfg.get()));
 
-        auto maybe_interrupt_action =
-            collect_configuration(p, *config, customization);
-        if (maybe_interrupt_action) {
-                delete config;
-                delete initial_config;
-                return maybe_interrupt_action;
-        }
-
-        extract_game_config(&game_config, initial_config, config);
-        delete config;
-        delete initial_config;
+        auto interrupt = collect_configuration(p, *cfg, customization);
+        if (interrupt)
+                return interrupt;
+        extract_game_config(game_config, *initial_cfg, *cfg);
         return std::nullopt;
 }
 
