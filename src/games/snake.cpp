@@ -350,25 +350,22 @@ void update_score(const Platform &p, SquareCellGridDimensions *dimensions,
  */
 SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage);
 Configuration *assemble_snake_configuration(PersistentStorage *storage);
-void extract_game_config(SnakeConfiguration *game_config,
-                         Configuration *config);
+void extract_game_config(SnakeConfiguration &game_config,
+                         const Configuration &config);
 
 std::optional<UserAction>
 SnakeGame::collect_config(const Platform &p,
                           const UserInterfaceCustomization &customization,
                           SnakeConfiguration &game_config) const
 {
-        Configuration *config =
-            assemble_snake_configuration(p.persistent_storage);
+        auto config = std::unique_ptr<Configuration>(
+            assemble_snake_configuration(p.persistent_storage));
 
-        auto maybe_interrupt = collect_configuration(p, *config, customization);
-        if (maybe_interrupt) {
-                delete config;
-                return maybe_interrupt;
-        }
+        auto interrupt = collect_configuration(p, *config, customization);
+        if (interrupt)
+                return interrupt;
 
-        extract_game_config(&game_config, config);
-        delete config;
+        extract_game_config(game_config, *config.get());
         return std::nullopt;
 }
 
@@ -429,19 +426,20 @@ SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
         return output;
 }
 
-void extract_game_config(SnakeConfiguration *game_config, Configuration *config)
+void extract_game_config(SnakeConfiguration &game_config,
+                         const Configuration &config)
 {
-        ConfigurationOption speed = *config->options[0];
-        ConfigurationOption enable_poop = *config->options[1];
-        ConfigurationOption allow_grace = *config->options[2];
-        ConfigurationOption allow_pause = *config->options[3];
+        ConfigurationOption speed = *config.options[0];
+        ConfigurationOption enable_poop = *config.options[1];
+        ConfigurationOption allow_grace = *config.options[2];
+        ConfigurationOption allow_pause = *config.options[3];
 
         auto yes_or_no_option_to_bool = [](ConfigurationOption option) {
                 return extract_yes_or_no_option(option.get_current_str_value());
         };
 
-        game_config->speed = speed.get_curr_int_value();
-        game_config->enable_poop = yes_or_no_option_to_bool(enable_poop);
-        game_config->allow_grace = yes_or_no_option_to_bool(allow_grace);
-        game_config->allow_pause = yes_or_no_option_to_bool(allow_pause);
+        game_config.speed = speed.get_curr_int_value();
+        game_config.enable_poop = yes_or_no_option_to_bool(enable_poop);
+        game_config.allow_grace = yes_or_no_option_to_bool(allow_grace);
+        game_config.allow_pause = yes_or_no_option_to_bool(allow_pause);
 }

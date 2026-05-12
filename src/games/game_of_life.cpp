@@ -381,10 +381,11 @@ GameOfLife::collect_config(const Platform &p,
             assemble_game_of_life_configuration(*p.persistent_storage);
         auto cfg = std::unique_ptr<Configuration>(config);
         auto interrupt = collect_configuration(p, *cfg.get(), customization);
-        if (interrupt.has_value())
+        if (interrupt.has_value()) {
                 return interrupt;
+        }
 
-        extract_game_config(game_config, *cfg.get());
+        extract_game_config(game_config, *config);
         return std::nullopt;
 }
 

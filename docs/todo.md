@@ -58,6 +58,17 @@
         instead of raw pointers
   - [x] application executor & individual application implementations
   - [ ] all helper functions in all games & applications
+    - [x] 2048
+    - [x] Game of Life
+    - [ ] Minesweeper
+    - [x] Snake
+  - [ ] change `collect_configuration` API to take in references and const references
+        instead of raw pointers
+    - [ ] Snake Duel
+    - [ ] Sudoku
+  - [ ] update all implementations of `assemble_game_configuration` and `collect_config`
+        to rely on a smart unique pointer instead of `delete` on each return
+        point from the function.
 
 
 # Done
