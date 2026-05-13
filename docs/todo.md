@@ -60,7 +60,7 @@
   - [ ] all helper functions in all games & applications
     - [x] 2048
     - [x] Game of Life
-    - [ ] Minesweeper
+    - [x] Minesweeper
     - [x] Snake
   - [ ] change `collect_configuration` API to take in references and const references
         instead of raw pointers
