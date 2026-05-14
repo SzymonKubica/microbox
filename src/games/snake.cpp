@@ -76,7 +76,7 @@ const char *SnakeGame::get_help_text() const
                "snake's tail. Press 'up' button to (un-)pause.";
 };
 
-void update_score(const Platform &p, SquareCellGridDimensions *dimensions,
+void update_score(const Platform &p, const SquareCellGridDimensions &dimensions,
                   int score_text_end_location, int score);
 
 UserAction SnakeGame::app_loop(const Platform &p,
@@ -86,9 +86,10 @@ UserAction SnakeGame::app_loop(const Platform &p,
         LOG_DEBUG(TAG, "Entering Snake game loop");
 
         int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
-        SquareCellGridDimensions *gd = calculate_grid_dimensions(
-            p.display->get_width(), p.display->get_height(),
-            p.display->get_display_corner_radius(), game_cell_width);
+        auto gd =
+            std::unique_ptr<SquareCellGridDimensions>(calculate_grid_dimensions(
+                p.display->get_width(), p.display->get_height(),
+                p.display->get_display_corner_radius(), game_cell_width));
         int rows = gd->rows;
         int cols = gd->cols;
 
@@ -123,33 +124,32 @@ UserAction SnakeGame::app_loop(const Platform &p,
         };
         // Re-renders the score in the correct location above the grid as
         // determined by grid dimensions and the score text end x position.
-        auto render_score = [p, gd, &grid, score_text_end_x](int score) {
-                update_score(p, gd, score_text_end_x, score);
+        auto render_score = [p, &gd, &grid, score_text_end_x](int score) {
+                update_score(p, *gd, score_text_end_x, score);
         };
         // After the value of a given cell in the grid is changed, this
         // re-renders that single cell in the display.
-        auto render_cell = [p, gd, &grid, customization](Point &location) {
-                refresh_grid_cell(p.display, customization.accent_color, gd,
-                                  &grid, location);
+        auto render_cell = [p, &gd, &grid, customization](Point &location) {
+                refresh_grid_cell(*p.display, customization.accent_color,
+                                  *gd.get(), grid, location);
         };
         // Renders the snake's head including the neck (2nd segment right behind
         // the head).
-        auto render_head = [p, gd, &grid, customization](Snake &snake) {
+        auto render_head = [p, &gd, &grid, customization](Snake &snake) {
                 auto neck = snake.get_neck();
                 if (true) {
-                        render_segment_connection(p.display,
-                                                  customization.accent_color,
-                                                  gd, &grid, neck, snake.head);
+                        render_segment_connection(
+                            *p.display, customization.accent_color, *gd.get(),
+                            grid, neck, snake.head);
                 }
-                render_snake_head(p.display, customization.accent_color, gd,
-                                  &grid, snake);
+                render_snake_head(*p.display, customization.accent_color,
+                                  *gd.get(), grid, snake);
         };
 
         // Initial score rendering to complete the game grid first, before the
         // snake gets rendered.
         render_score(0);
         if (!p.display->refresh()) {
-                delete gd;
                 return UserAction::CloseWindow;
         }
 
@@ -158,7 +158,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
         Snake snake{{.x = cols / 2, .y = rows / 2}, Direction::RIGHT};
         set_cell(snake.head, Cell::Snake);
         set_cell(snake.tail, Cell::Snake);
-        Point apple_location = spawn_apple(&grid);
+        Point apple_location = spawn_apple(grid);
 
         // Render initial state of the game entities.
         render_cell(snake.tail);
@@ -170,11 +170,10 @@ UserAction SnakeGame::app_loop(const Platform &p,
         // Convenience funtion to ensure each short-circuit exit of the
         // loop iteration actually increments the counter and waits a bit.
         auto increment_iteration_and_wait =
-            [p, &state, gd]() -> std::optional<UserAction> {
+            [p, &state]() -> std::optional<UserAction> {
                 state.increment_iteration();
                 p.time_provider->delay_ms(GAME_LOOP_DELAY);
                 if (!p.display->refresh()) {
-                        delete gd;
                         return UserAction::CloseWindow;
                 }
                 return std::nullopt;
@@ -282,7 +281,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
                         // Eating an apple is handled by simply skipping the
                         // step where we erase the last segment of the snake
                         // We then spawn a new apple.
-                        Point apple_loc = spawn_apple(&grid);
+                        Point apple_loc = spawn_apple(grid);
                         game_score++;
                         render_cell(apple_loc);
                         render_score(game_score);
@@ -309,12 +308,10 @@ UserAction SnakeGame::app_loop(const Platform &p,
                 render_cell(tail);
                 snake.body.erase(tail_iter);
                 if (increment_iteration_and_wait().has_value()) {
-                        delete gd;
                         return UserAction::CloseWindow;
                 }
         }
 
-        delete gd;
         if (!p.display->refresh()) {
                 return UserAction::CloseWindow;
         } else {
@@ -326,7 +323,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
  * Re-renders the text location above the grid informing the user about the
  * current score in the game.
  */
-void update_score(const Platform &p, SquareCellGridDimensions *dimensions,
+void update_score(const Platform &p, const SquareCellGridDimensions &dimensions,
                   int score_text_end_location, int score)
 {
 
@@ -341,15 +338,15 @@ void update_score(const Platform &p, SquareCellGridDimensions *dimensions,
         // rendering the actual digits starting after the first space after the
         // colon in 'Score:' text, so we move the start location by 3 spaces.
         int start_position = score_text_end_location - 3 * FONT_WIDTH;
-        render_text_above_frame_starting_from(p, *dimensions, buffer,
+        render_text_above_frame_starting_from(p, dimensions, buffer,
                                               start_position, true);
 }
 
 /**
  * Forward declarations of functions related to configuration manipulation.
  */
-SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage);
-Configuration *assemble_snake_configuration(PersistentStorage *storage);
+SnakeConfiguration *load_initial_snake_config(const PersistentStorage &storage);
+Configuration *assemble_snake_configuration(const PersistentStorage &storage);
 void extract_game_config(SnakeConfiguration &game_config,
                          const Configuration &config);
 
@@ -359,7 +356,7 @@ SnakeGame::collect_config(const Platform &p,
                           SnakeConfiguration &game_config) const
 {
         auto config = std::unique_ptr<Configuration>(
-            assemble_snake_configuration(p.persistent_storage));
+            assemble_snake_configuration(*p.persistent_storage));
 
         auto interrupt = collect_configuration(p, *config, customization);
         if (interrupt)
@@ -369,9 +366,10 @@ SnakeGame::collect_config(const Platform &p,
         return std::nullopt;
 }
 
-Configuration *assemble_snake_configuration(PersistentStorage *storage)
+Configuration *assemble_snake_configuration(const PersistentStorage &storage)
 {
-        SnakeConfiguration *initial_config = load_initial_snake_config(storage);
+        auto initial_config = std::unique_ptr<SnakeConfiguration>(
+            load_initial_snake_config(storage));
 
         ConfigurationOption *speed = ConfigurationOption::of_integers(
             "Speed", {4, 5, 6, 7, 8}, initial_config->speed);
@@ -391,25 +389,24 @@ Configuration *assemble_snake_configuration(PersistentStorage *storage)
         std::vector<ConfigurationOption *> options = {speed, poop, allow_grace,
                                                       allow_pause};
 
-        delete initial_config;
         return new Configuration("Snake", options);
 }
 
-SnakeConfiguration *load_initial_snake_config(PersistentStorage *storage)
+SnakeConfiguration *load_initial_snake_config(const PersistentStorage &storage)
 {
         int storage_offset = get_settings_storage_offset(Game::Snake);
         LOG_DEBUG(TAG, "Loading config from offset %d", storage_offset);
 
         SnakeConfiguration config;
         LOG_DEBUG(TAG, "Trying to load settings from the persistent storage");
-        storage->get(storage_offset, config);
+        storage.get(storage_offset, config);
 
         SnakeConfiguration *output = new SnakeConfiguration();
         if (!config.header.validate_against(DEFAULT_CONFIG)) {
                 LOG_DEBUG(TAG, "The storage does not contain a valid "
                                "snake configuration, using default values.");
                 memcpy(output, &DEFAULT_CONFIG, sizeof(SnakeConfiguration));
-                storage->put(storage_offset, DEFAULT_CONFIG);
+                storage.put(storage_offset, DEFAULT_CONFIG);
 
         } else {
                 LOG_DEBUG(TAG, "Using configuration from persistent storage.");

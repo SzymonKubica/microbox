@@ -100,9 +100,10 @@ Minesweeper::app_loop(const Platform &p,
 {
         LOG_DEBUG(TAG, "Entering Minesweeper game loop");
 
-        MinesweeperGridDimensions *gd = calculate_grid_dimensions(
-            p.display->get_width(), p.display->get_height(),
-            p.display->get_display_corner_radius());
+        auto gd = std::unique_ptr<MinesweeperGridDimensions>(
+            calculate_grid_dimensions(p.display->get_width(),
+                                      p.display->get_height(),
+                                      p.display->get_display_corner_radius()));
         int rows = gd->rows;
         int cols = gd->cols;
 
@@ -110,7 +111,6 @@ Minesweeper::app_loop(const Platform &p,
         LOG_DEBUG(TAG, "Minesweeper game canvas drawn.");
 
         if (!p.display->refresh()) {
-                delete gd;
                 return UserAction::CloseWindow;
         }
 
@@ -192,7 +192,6 @@ Minesweeper::app_loop(const Platform &p,
                         // closed, we need to handle this accordingly and free
                         // all resources.
                         if (!p.display->refresh()) {
-                                delete gd;
                                 return UserAction::CloseWindow;
                         }
                         p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
@@ -253,7 +252,6 @@ Minesweeper::app_loop(const Platform &p,
                                         draw_caret(*p.display, caret_position,
                                                    *gd);
                                         if (maybe_interrupt) {
-                                                delete gd;
                                                 return maybe_interrupt.value();
                                         }
                                         break;
@@ -268,7 +266,6 @@ Minesweeper::app_loop(const Platform &p,
                                 break;
                         }
                         if (!p.display->refresh()) {
-                                delete gd;
                                 return UserAction::CloseWindow;
                         }
                         p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
@@ -281,7 +278,6 @@ Minesweeper::app_loop(const Platform &p,
                 }
 
                 if (!p.display->refresh()) {
-                        delete gd;
                         return UserAction::CloseWindow;
                 }
                 p.time_provider->delay_ms(INPUT_POLLING_DELAY);
@@ -312,10 +308,8 @@ Minesweeper::app_loop(const Platform &p,
                 p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
         }
         if (!p.display->refresh()) {
-                delete gd;
                 return UserAction::CloseWindow;
         }
-        delete gd;
         return UserAction::PauseAndPlayAgain;
 }
 
@@ -581,15 +575,14 @@ load_initial_minesweeper_config(const PersistentStorage &storage)
 Configuration *
 assemble_minesweeper_configuration(const PersistentStorage &storage)
 {
-        MinesweeperConfiguration *initial_config =
-            load_initial_minesweeper_config(storage);
+        auto initial_config = std::unique_ptr<MinesweeperConfiguration>(
+            load_initial_minesweeper_config(storage));
 
         ConfigurationOption *mines_count = ConfigurationOption::of_integers(
             "Number of mines", {10, 15, 25, 30, 35}, initial_config->mines_num);
 
         std::vector<ConfigurationOption *> options = {mines_count};
 
-        delete initial_config;
         return new Configuration("Minesweeper", options);
 }
 

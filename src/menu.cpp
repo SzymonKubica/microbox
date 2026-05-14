@@ -45,7 +45,7 @@ std::optional<UserAction> select_app_and_run(const Platform &p)
 {
         GameMenuConfiguration config;
 
-        auto maybe_interrupt = main_menu_interaction_loop(p, &config);
+        auto maybe_interrupt = main_menu_interaction_loop(p, config);
 
         // This customization might not be initialized properly if the user
         // requests help message. The current version of the help text rendering
@@ -111,12 +111,11 @@ std::optional<UserAction> select_app_and_run(const Platform &p)
 }
 
 GameMenuConfiguration *
-load_initial_menu_configuration(PersistentStorage *storage);
-Configuration *
-assemble_game_selector_configuration(const Platform &p,
-                                     GameMenuConfiguration *initial_config);
-void extract_app_selection(GameMenuConfiguration *menu_configuration,
-                           Configuration *config);
+load_initial_menu_configuration(const PersistentStorage &storage);
+Configuration *assemble_game_selector_configuration(
+    const Platform &p, const GameMenuConfiguration &initial_config);
+void extract_app_selection(GameMenuConfiguration &menu_configuration,
+                           const Configuration &config);
 
 /**
  * As a quality of life improvement, when the game console starts up, it will
@@ -133,11 +132,11 @@ static std::optional<Game> last_selected_game = std::nullopt;
  */
 std::optional<UserAction>
 main_menu_interaction_loop(const Platform &p,
-                           GameMenuConfiguration *configuration)
+                           GameMenuConfiguration &configuration)
 {
 
-        GameMenuConfiguration *initial_config =
-            load_initial_menu_configuration(p.persistent_storage);
+        auto initial_config = std::unique_ptr<GameMenuConfiguration>(
+            load_initial_menu_configuration(*p.persistent_storage));
 
         LOG_DEBUG(TAG, "Initial configuration was loaded.");
 
@@ -149,8 +148,8 @@ main_menu_interaction_loop(const Platform &p,
                 initial_config->game = last_selected_game.value();
         }
 
-        Configuration *config =
-            assemble_game_selector_configuration(p, initial_config);
+        auto config = std::unique_ptr<Configuration>(
+            assemble_game_selector_configuration(p, *initial_config));
 
         UserInterfaceCustomization customization = {
             .accent_color = initial_config->accent_color,
@@ -162,12 +161,10 @@ main_menu_interaction_loop(const Platform &p,
             collect_configuration(p, *config, customization, false, true);
 
         if (maybe_interrupt) {
-                delete config;
-                delete initial_config;
                 return maybe_interrupt;
         }
-        extract_app_selection(configuration, config);
-        last_selected_game = configuration->game;
+        extract_app_selection(configuration, *config);
+        last_selected_game = configuration.game;
 
         /*
          * Note that we are only extracting the selected game from the user
@@ -175,17 +172,15 @@ main_menu_interaction_loop(const Platform &p,
          * color and hints visibility settings to fall back to defaults and
          * here we need to set those again from the initial config.
          */
-        configuration->accent_color = initial_config->accent_color;
-        configuration->rendering_mode = initial_config->rendering_mode;
-        configuration->show_help_text = initial_config->show_help_text;
+        configuration.accent_color = initial_config->accent_color;
+        configuration.rendering_mode = initial_config->rendering_mode;
+        configuration.show_help_text = initial_config->show_help_text;
 
-        delete config;
-        delete initial_config;
         return std::nullopt;
 }
 
 GameMenuConfiguration *
-load_initial_menu_configuration(PersistentStorage *storage)
+load_initial_menu_configuration(const PersistentStorage &storage)
 {
 
         int storage_offset = get_settings_storage_offset(Game::MainMenu);
@@ -202,7 +197,7 @@ load_initial_menu_configuration(PersistentStorage *storage)
                   "Trying to load initial settings from the persistent storage "
                   "at offset %d",
                   storage_offset);
-        storage->get(storage_offset, configuration);
+        storage.get(storage_offset, configuration);
 
         GameMenuConfiguration *output = new GameMenuConfiguration();
 
@@ -212,7 +207,7 @@ load_initial_menu_configuration(PersistentStorage *storage)
                           "game menu configuration, using default values.");
                 memcpy(output, &DEFAULT_MENU_CONFIGURATION,
                        sizeof(GameMenuConfiguration));
-                storage->put(storage_offset, DEFAULT_MENU_CONFIGURATION);
+                storage.put(storage_offset, DEFAULT_MENU_CONFIGURATION);
 
         } else {
                 LOG_DEBUG(TAG, "Using configuration from persistent storage.");
@@ -227,9 +222,8 @@ load_initial_menu_configuration(PersistentStorage *storage)
         return output;
 }
 
-Configuration *
-assemble_game_selector_configuration(const Platform &p,
-                                     GameMenuConfiguration *initial_config)
+Configuration *assemble_game_selector_configuration(
+    const Platform &p, const GameMenuConfiguration &initial_config)
 {
 
         std::vector<const char *> available_games = {
@@ -239,19 +233,19 @@ assemble_game_selector_configuration(const Platform &p,
             game_to_string(Game::Settings),   game_to_string(Game::Power)};
 
         auto *game = ConfigurationOption::of_strings(
-            "Game", available_games, game_to_string(initial_config->game));
+            "Game", available_games, game_to_string(initial_config.game));
 
         auto options = {game};
 
         return new Configuration("MicroBox", options);
 }
 
-void extract_app_selection(GameMenuConfiguration *menu_configuration,
-                           Configuration *config)
+void extract_app_selection(GameMenuConfiguration &menu_configuration,
+                           const Configuration &config)
 {
-        ConfigurationOption *game_option = config->options[0];
+        ConfigurationOption *game_option = config.options[0];
 
-        menu_configuration->game =
+        menu_configuration.game =
             game_from_string(game_option->get_current_str_value());
 }
 
@@ -339,9 +333,8 @@ const char *game_to_string(Game game)
         }
 }
 
-Configuration *
-assemble_menu_defaults_configuration(const Platform &p,
-                                     GameMenuConfiguration *initial_config)
+Configuration *assemble_menu_defaults_configuration(
+    const Platform &p, const GameMenuConfiguration &initial_config)
 {
 
         std::vector<const char *> available_games = {
@@ -362,10 +355,10 @@ assemble_menu_defaults_configuration(const Platform &p,
                 available_games.push_back(game_to_string(Game::Power));
 
         auto *game = ConfigurationOption::of_strings(
-            "Game", available_games, game_to_string(initial_config->game));
+            "Game", available_games, game_to_string(initial_config.game));
 
         auto *accent_color = ConfigurationOption::of_colors(
-            "Color", AVAILABLE_COLORS, initial_config->accent_color);
+            "Color", AVAILABLE_COLORS, initial_config.accent_color);
 
         auto available_modes = {
             rendering_mode_to_str(UserInterfaceRenderingMode::Minimalistic),
@@ -373,32 +366,32 @@ assemble_menu_defaults_configuration(const Platform &p,
 
         auto *rendering_mode = ConfigurationOption::of_strings(
             "UI", available_modes,
-            rendering_mode_to_str(initial_config->rendering_mode));
+            rendering_mode_to_str(initial_config.rendering_mode));
 
         auto *show_help_text = ConfigurationOption::of_strings(
             "Hints", {"Yes", "No"},
-            map_boolean_to_yes_or_no(initial_config->show_help_text));
+            map_boolean_to_yes_or_no(initial_config.show_help_text));
 
         auto options = {game, accent_color, rendering_mode, show_help_text};
 
         return new Configuration("Menu Defaults", options);
 }
 
-void extract_defaults_config(GameMenuConfiguration *menu_configuration,
-                             Configuration *config)
+void extract_defaults_config(GameMenuConfiguration &menu_configuration,
+                             const Configuration &config)
 {
-        ConfigurationOption *game_option = config->options[0];
-        ConfigurationOption *accent_color = config->options[1];
-        ConfigurationOption *rendering_mode = config->options[2];
-        ConfigurationOption *show_help_text = config->options[3];
+        ConfigurationOption *game_option = config.options[0];
+        ConfigurationOption *accent_color = config.options[1];
+        ConfigurationOption *rendering_mode = config.options[2];
+        ConfigurationOption *show_help_text = config.options[3];
 
-        menu_configuration->game =
+        menu_configuration.game =
             game_from_string(game_option->get_current_str_value());
-        menu_configuration->accent_color =
+        menu_configuration.accent_color =
             accent_color->get_current_color_value();
-        menu_configuration->rendering_mode =
+        menu_configuration.rendering_mode =
             rendering_mode_from_str(rendering_mode->get_current_str_value());
-        menu_configuration->show_help_text =
+        menu_configuration.show_help_text =
             extract_yes_or_no_option(show_help_text->get_current_str_value());
 }
 
@@ -416,16 +409,16 @@ void extract_defaults_config(GameMenuConfiguration *menu_configuration,
  */
 std::optional<UserAction>
 collect_game_menu_defaults_config(const Platform &p,
-                                  GameMenuConfiguration *configuration)
+                                  GameMenuConfiguration &configuration)
 {
 
-        GameMenuConfiguration *initial_config =
-            load_initial_menu_configuration(p.persistent_storage);
+        auto initial_config = std::unique_ptr<GameMenuConfiguration>(
+            load_initial_menu_configuration(*p.persistent_storage));
 
         LOG_DEBUG(TAG, "Initial configuration was loaded.");
 
-        Configuration *config =
-            assemble_menu_defaults_configuration(p, initial_config);
+        auto config = std::unique_ptr<Configuration>(
+            assemble_menu_defaults_configuration(p, *initial_config));
 
         UserInterfaceCustomization customization = {
             .accent_color = initial_config->accent_color,
@@ -436,14 +429,8 @@ collect_game_menu_defaults_config(const Platform &p,
         auto maybe_interrupt =
             collect_configuration(p, *config, customization, false, false);
 
-        if (maybe_interrupt) {
-                delete config;
-                delete initial_config;
+        if (maybe_interrupt)
                 return maybe_interrupt;
-        }
-        extract_defaults_config(configuration, config);
-
-        delete config;
-        delete initial_config;
+        extract_defaults_config(configuration, *config);
         return std::nullopt;
 }

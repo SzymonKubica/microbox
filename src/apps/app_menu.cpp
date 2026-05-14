@@ -134,8 +134,8 @@ std::optional<UserAction> UtilityApplicationMenu::collect_config(
     const Platform &p, const UserInterfaceCustomization &customization,
     AppMenuConfiguration &game_config) const
 {
-        AppMenuConfiguration *initial_config =
-            load_initial_utility_menu_configuration(*p.persistent_storage);
+        auto initial_config = std::unique_ptr<AppMenuConfiguration>(
+            load_initial_utility_menu_configuration(*p.persistent_storage));
 
         if (last_selected_app) {
                 initial_config->app = last_selected_app.value();
@@ -143,23 +143,17 @@ std::optional<UserAction> UtilityApplicationMenu::collect_config(
 
         LOG_DEBUG(TAG, "Initial configuration was loaded.");
 
-        Configuration *config =
-            assemble_utility_selector_configuration(p, *initial_config);
+        auto config = std::unique_ptr<Configuration>(
+            assemble_utility_selector_configuration(p, *initial_config));
 
-        auto maybe_interrupt =
+        auto interrupt =
             collect_configuration(p, *config, customization, true, false);
+        if (interrupt)
+                return interrupt;
 
-        if (maybe_interrupt) {
-                delete config;
-                delete initial_config;
-                return maybe_interrupt;
-        }
         extract_app_selection(game_config, *config);
 
         last_selected_app = game_config.app;
-
-        delete config;
-        delete initial_config;
         return std::nullopt;
 }
 

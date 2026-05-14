@@ -44,7 +44,10 @@
 
 # In Progress
 
-- [ ] clean up all usages of raw pointers.
+
+
+# Done
+- [x] clean up all usages of raw pointers.
   - [x] platform code
     - [x] remove raw pointers from the wifi data utils
     - [x] refactor the controller interface to use proper optionals instead of output parameters and boolean
@@ -62,16 +65,14 @@
     - [x] Game of Life
     - [x] Minesweeper
     - [x] Snake
-  - [ ] change `collect_configuration` API to take in references and const references
+    - [x] Snake common utils
+  - [x] change `collect_configuration` API to take in references and const references
         instead of raw pointers
-    - [ ] Snake Duel
-    - [ ] Sudoku
-  - [ ] update all implementations of `assemble_game_configuration` and `collect_config`
+    - [x] Snake Duel
+    - [x] Sudoku
+  - [x] update all implementations of `assemble_game_configuration` and `collect_config`
         to rely on a smart unique pointer instead of `delete` on each return
         point from the function.
-
-
-# Done
 - [x] debug memory allocation handling for 2048.
 - [x] make 2048 controls consistent with the rest of the UI flow
 - [x] debug 2048 game saving functionality (this was caused by a regression in the

@@ -63,18 +63,20 @@ void SimpleSudokuView::render_grid()
 void process_all_cells(
     const SudokuGrid &grid,
     std::function<void(const SudokuCell &, const Point &)> processor);
-void render_digit(Display *display, UserInterfaceCustomization *customization,
-                  SquareCellGridDimensions *dimensions, const Point &location,
-                  const SudokuCell &value,
+void render_digit(const Display &display,
+                  const UserInterfaceCustomization &customization,
+                  const SquareCellGridDimensions &dimensions,
+                  const Point &location, const SudokuCell &cell,
                   std::optional<Color> color_override = std::nullopt);
-void erase_digit(Display *display, UserInterfaceCustomization *customization,
-                 SquareCellGridDimensions *dimensions, Point location);
-void render_digit_underline(Display *display,
-                            UserInterfaceCustomization *customization,
-                            SquareCellGridDimensions *dimensions,
+void erase_digit(const Display &display,
+                 const UserInterfaceCustomization &customization,
+                 const SquareCellGridDimensions &dimensions, Point location);
+void render_digit_underline(const Display &display,
+                            const UserInterfaceCustomization &customization,
+                            const SquareCellGridDimensions &dimensions,
                             Point location);
-void render_digit_underline(Display *display, Color color,
-                            SquareCellGridDimensions *dimensions,
+void render_digit_underline(const Display &display, Color color,
+                            const SquareCellGridDimensions &dimensions,
                             Point location);
 
 void SimpleSudokuView::render_grid_numbers(const SudokuGrid &grid)
@@ -82,7 +84,7 @@ void SimpleSudokuView::render_grid_numbers(const SudokuGrid &grid)
         auto render_if_value_present = [&](const SudokuCell &cell,
                                            const Point &location) {
                 if (cell.digit.has_value())
-                        render_digit(display, &customization, &dimensions,
+                        render_digit(*display, customization, dimensions,
                                      location, cell);
         };
         process_all_cells(grid, render_if_value_present);
@@ -95,7 +97,7 @@ void SimpleSudokuView::underline_all_instances(int digit,
         auto underline_if_value_present = [&](const SudokuCell &cell,
                                               const Point &location) {
                 if (cell.digit.has_value() && cell.digit.value() == digit)
-                        render_digit_underline(display, color, &dimensions,
+                        render_digit_underline(*display, color, dimensions,
                                                location);
         };
         process_all_cells(grid, underline_if_value_present);
@@ -106,8 +108,8 @@ void SimpleSudokuView::underline_all_instances(int digit,
         auto underline_if_value_present = [&](const SudokuCell &cell,
                                               const Point &location) {
                 if (cell.digit.has_value() && cell.digit.value() == digit)
-                        render_digit_underline(display, &customization,
-                                               &dimensions, location);
+                        render_digit_underline(*display, customization,
+                                               dimensions, location);
         };
         process_all_cells(grid, underline_if_value_present);
 }
@@ -118,7 +120,7 @@ void SimpleSudokuView::remove_underline_all_instances(int digit,
                                                      const Point &location) {
                 if (cell.digit.has_value() && cell.digit.value() == digit) {
                         erase_cell_contents(location);
-                        render_digit(display, &customization, &dimensions,
+                        render_digit(*display, customization, dimensions,
                                      location, cell);
                 }
         };
@@ -141,13 +143,13 @@ void process_all_cells(
  * Given the grid dimensions and a location on the grid, it calculates the
  * exact start location where the text inside of the cell should be rendered.
  */
-Point calculate_cell_text_start(SquareCellGridDimensions *dimensions,
+Point calculate_cell_text_start(const SquareCellGridDimensions &dimensions,
                                 const Point &location)
 {
-        int x_margin = dimensions->left_horizontal_margin;
-        int y_margin = dimensions->top_vertical_margin;
+        int x_margin = dimensions.left_horizontal_margin;
+        int y_margin = dimensions.top_vertical_margin;
 
-        int cell_size = dimensions->actual_height / 9;
+        int cell_size = dimensions.actual_height / 9;
         int x_offset = location.x * cell_size;
         int y_offset = location.y * cell_size;
 
@@ -175,9 +177,11 @@ Point calculate_cell_text_start(SquareCellGridDimensions *dimensions,
 
         return {x, y};
 }
-void render_digit(Display *display, UserInterfaceCustomization *customization,
-                  SquareCellGridDimensions *dimensions, const Point &location,
-                  const SudokuCell &cell, std::optional<Color> color_override)
+void render_digit(const Display &display,
+                  const UserInterfaceCustomization &customization,
+                  const SquareCellGridDimensions &dimensions,
+                  const Point &location, const SudokuCell &cell,
+                  std::optional<Color> color_override)
 {
 
         assert(cell.digit.has_value() &&
@@ -192,21 +196,21 @@ void render_digit(Display *display, UserInterfaceCustomization *customization,
 
         char buffer[2];
         sprintf(buffer, "%d", cell.digit.value());
-        display->draw_string(start, buffer, FontSize::Size16, Black,
-                             render_color);
+        display.draw_string(start, buffer, FontSize::Size16, Black,
+                            render_color);
 }
 
-void render_digit_underline(Display *display,
-                            UserInterfaceCustomization *customization,
-                            SquareCellGridDimensions *dimensions,
+void render_digit_underline(const Display &display,
+                            const UserInterfaceCustomization &customization,
+                            const SquareCellGridDimensions &dimensions,
                             Point location)
 {
-        render_digit_underline(display, customization->accent_color, dimensions,
+        render_digit_underline(display, customization.accent_color, dimensions,
                                location);
 }
 
-void render_digit_underline(Display *display, Color color,
-                            SquareCellGridDimensions *dimensions,
+void render_digit_underline(const Display &display, Color color,
+                            const SquareCellGridDimensions &dimensions,
                             Point location)
 {
         Point start = calculate_cell_text_start(dimensions, location);
@@ -214,11 +218,12 @@ void render_digit_underline(Display *display, Color color,
         int y = start.y;
         int fh = FONT_SIZE;
         int fw = FONT_WIDTH;
-        display->draw_line({x, y + fh}, {x + fw, y + fh}, color);
+        display.draw_line({x, y + fh}, {x + fw, y + fh}, color);
 }
 
-void erase_digit(Display *display, UserInterfaceCustomization *customization,
-                 SquareCellGridDimensions *dimensions, Point location)
+void erase_digit(const Display &display,
+                 const UserInterfaceCustomization &customization,
+                 const SquareCellGridDimensions &dimensions, Point location)
 {
 
         Point start = calculate_cell_text_start(dimensions, location);
@@ -244,26 +249,26 @@ void erase_digit(Display *display, UserInterfaceCustomization *customization,
 #endif
 #endif
 
-        display->clear_region({x, y}, {x + fw + adj, y + fh + underline_adj},
-                              Black);
+        display.clear_region({x, y}, {x + fw + adj, y + fh + underline_adj},
+                             Black);
 }
 
 void SimpleSudokuView::render_cell(const SudokuCell &cell,
                                    const Point &location)
 {
-        render_digit(display, &customization, &dimensions, location, cell);
+        render_digit(*display, customization, dimensions, location, cell);
 }
 void SimpleSudokuView::underline_cell(const Point &location)
 {
-        render_digit_underline(display, &customization, &dimensions, location);
+        render_digit_underline(*display, customization, dimensions, location);
 }
 void SimpleSudokuView::underline_cell(const Point &location, Color color)
 {
-        render_digit_underline(display, color, &dimensions, location);
+        render_digit_underline(*display, color, dimensions, location);
 }
 void SimpleSudokuView::erase_cell_contents(const Point &location)
 {
-        erase_digit(display, &customization, &dimensions, location);
+        erase_digit(*display, customization, dimensions, location);
 }
 
 /* User-controlled Caret Rendering */
@@ -382,7 +387,7 @@ void SimpleSudokuView::render_active_digit_selector()
                 // render available numbers two cells to the left of the main
                 // grid. We set the active number to 0 to ensure that the
                 // indicator does not get rendered.
-                render_digit(display, &customization, &dimensions, {-2, i},
+                render_digit(*display, customization, dimensions, {-2, i},
                              cell);
         }
 }
@@ -396,8 +401,8 @@ void SimpleSudokuView::mark_digit_completed(int digit)
         // grid. We set the active number to 0 to ensure that the
         // indicator does not get rendered.
         Point location = {-2, digit_idx};
-        erase_digit(display, &customization, &dimensions, location);
-        render_digit(display, &customization, &dimensions, location, cell,
+        erase_digit(*display, customization, dimensions, location);
+        render_digit(*display, customization, dimensions, location, cell,
                      customization.accent_color);
 }
 void SimpleSudokuView::unmark_digit_completed(int digit)
@@ -409,6 +414,6 @@ void SimpleSudokuView::unmark_digit_completed(int digit)
         // grid. We set the active number to 0 to ensure that the
         // indicator does not get rendered.
         Point location = {-2, digit_idx};
-        erase_digit(display, &customization, &dimensions, location);
-        render_digit(display, &customization, &dimensions, location, cell);
+        erase_digit(*display, customization, dimensions, location);
+        render_digit(*display, customization, dimensions, location, cell);
 }

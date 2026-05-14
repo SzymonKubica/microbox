@@ -44,7 +44,7 @@ std::optional<UserAction> select_app_and_run(const Platform &p);
  */
 std::optional<UserAction>
 collect_game_menu_defaults_config(const Platform &p,
-                                  GameMenuConfiguration *configuration);
+                                  GameMenuConfiguration &configuration);
 /**
  * Responsible for getting input from the user when they first turn on the
  * console. This allows for selecting the game and navigating to the setting
@@ -52,4 +52,4 @@ collect_game_menu_defaults_config(const Platform &p,
  */
 std::optional<UserAction>
 main_menu_interaction_loop(const Platform &p,
-                           GameMenuConfiguration *configuration);
+                           GameMenuConfiguration &configuration);

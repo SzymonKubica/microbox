@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <memory>
 #include "sudoku_engine.hpp"
 #include "../common/logging.hpp"
 #include "../common/point.hpp"
@@ -255,7 +254,7 @@ SudokuGrid generate_solved_grid()
         return grid;
 }
 
-bool test_for_unique_solution(SudokuGrid &grid, int *solution_count);
+bool test_for_unique_solution(SudokuGrid &grid, int &solution_count);
 
 /**
  * Given a Sudoku grid, it verifies if it can be solved and the solution
@@ -270,25 +269,25 @@ bool SudokuEngine::has_unique_solution(const SudokuGrid &grid)
 
         SudokuGrid clone = grid;
         int solution_count = 0;
-        test_for_unique_solution(clone, &solution_count);
+        test_for_unique_solution(clone, solution_count);
         return solution_count == 1;
 }
 
 /**
  * Tests if a given grid can be uniquely solved
  */
-bool test_for_unique_solution(SudokuGrid &grid, int *solution_count)
+bool test_for_unique_solution(SudokuGrid &grid, int &solution_count)
 {
 
         // Prune the search space to return true immediately once more than 1
         // solution is found.
-        if (*solution_count > 1) {
+        if (solution_count > 1) {
                 return true;
         }
 
         std::optional<Point> maybe_empty = find_empty_cell(grid);
         if (!maybe_empty.has_value()) {
-                (*solution_count)++;
+                solution_count++;
                 return true;
         }
 
@@ -301,7 +300,7 @@ bool test_for_unique_solution(SudokuGrid &grid, int *solution_count)
                 // all candidates and rely on the short-circuit logic above
                 // to terminate once more than on solution is found
                 test_for_unique_solution(grid, solution_count);
-                if (*solution_count > 1) {
+                if (solution_count > 1) {
                         return true;
                 }
                 grid[empty.y][empty.x].digit = std::nullopt;

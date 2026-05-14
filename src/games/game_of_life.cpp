@@ -392,8 +392,8 @@ GameOfLife::collect_config(const Platform &p,
 Configuration *
 assemble_game_of_life_configuration(const PersistentStorage &storage)
 {
-        GameOfLifeConfiguration *initial_config =
-            load_initial_game_of_life_config(storage);
+        auto initial_config = std::unique_ptr<GameOfLifeConfiguration>(
+            load_initial_game_of_life_config(storage));
 
         // Controls if grid will get pre-populated with cells randomly.
         auto *spawn_randomly = ConfigurationOption::of_strings(
@@ -407,8 +407,6 @@ assemble_game_of_life_configuration(const PersistentStorage &storage)
         auto *toroidal_array = ConfigurationOption::of_strings(
             "Toroidal array", {"Yes", "No"},
             map_boolean_to_yes_or_no(initial_config->use_toroidal_array));
-
-        delete initial_config;
 
         auto options = {spawn_randomly, simulation_speed, toroidal_array};
 

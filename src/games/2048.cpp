@@ -1,3 +1,4 @@
+#include <memory>
 #include <optional>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -706,7 +707,8 @@ static void draw_game_grid(const Display &display, int grid_size,
                            const UserInterfaceCustomization &customization)
 {
 
-        GridDimensions *gd = calculate_grid_dimensions(display, grid_size);
+        auto gd = std::unique_ptr<GridDimensions>(
+            calculate_grid_dimensions(display, grid_size));
         LOG_DEBUG(TAG, "Calculated grid dimensions.");
 
         // We need this lambda to have a reusable way of rendering game
@@ -746,7 +748,6 @@ static void draw_game_grid(const Display &display, int grid_size,
                         cell_renderer(start, gd->cell_width, gd->cell_height);
                 }
         }
-        delete gd;
 }
 
 static void str_replace(char *str, const char *oldWord, const char *newWord);
@@ -790,7 +791,8 @@ void update_game_grid(const Platform &p, GameState &gs,
                       const UserInterfaceCustomization &customization)
 {
         int grid_size = gs.grid_size;
-        GridDimensions *gd = calculate_grid_dimensions(*p.display, grid_size);
+        auto gd = std::unique_ptr<GridDimensions>(
+            calculate_grid_dimensions(*p.display, grid_size));
 
         int score_title_length = 6 * FONT_WIDTH;
         char score_buffer[20];
@@ -880,7 +882,6 @@ void update_game_grid(const Platform &p, GameState &gs,
                         }
                 }
         }
-        delete gd;
 }
 
 static int number_string_length(int number)

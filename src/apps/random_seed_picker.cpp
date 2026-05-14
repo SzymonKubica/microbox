@@ -206,40 +206,36 @@ load_initial_seed_picker_config(PersistentStorage *storage)
 }
 
 Configuration *assemble_random_seed_picker_configuration(
-    const Platform &p, RandomSeedPickerConfiguration *initial_config);
+    const Platform &p, const RandomSeedPickerConfiguration &initial_config);
 void extract_seed_picker_config(
-    RandomSeedPickerConfiguration *random_seed_picker_config,
-    Configuration *config);
+    RandomSeedPickerConfiguration &random_seed_picker_config,
+    const Configuration &config);
 
 std::optional<UserAction> RandomSeedPicker::collect_config(
     const Platform &p, const UserInterfaceCustomization &customization,
     RandomSeedPickerConfiguration &game_config) const
 {
-        RandomSeedPickerConfiguration *initial_config =
-            load_initial_seed_picker_config(p.persistent_storage);
-        Configuration *config =
-            assemble_random_seed_picker_configuration(p, initial_config);
+        auto initial_config = std::unique_ptr<RandomSeedPickerConfiguration>(
+            load_initial_seed_picker_config(p.persistent_storage));
+        auto config = std::unique_ptr<Configuration>(
+            assemble_random_seed_picker_configuration(p, *initial_config));
 
         auto maybe_interrupt_action =
             collect_configuration(p, *config, customization);
         if (maybe_interrupt_action) {
-                delete config;
-                delete initial_config;
                 return maybe_interrupt_action;
         }
 
-        extract_seed_picker_config(&game_config, config);
-        delete config;
-        delete initial_config;
+        extract_seed_picker_config(game_config, *config);
         return std::nullopt;
 }
 
 Configuration *assemble_random_seed_picker_configuration(
-    const Platform &p, RandomSeedPickerConfiguration *initial_config)
+    const Platform &p, const RandomSeedPickerConfiguration &initial_config)
 
 {
         auto *seed = ConfigurationOption::of_integers(
-            "Seed", {initial_config->seed}, initial_config->seed);
+            "Seed", {initial_config.seed}, initial_config.seed);
 
         std::vector<const char *> available_actions = {
             selector_action_to_str(RandomSeedSelectorAction::Modify),
@@ -252,7 +248,7 @@ Configuration *assemble_random_seed_picker_configuration(
 
         auto *app_action = ConfigurationOption::of_strings(
             "Action", available_actions,
-            selector_action_to_str(initial_config->action));
+            selector_action_to_str(initial_config.action));
 
         auto options = {seed, app_action};
 
@@ -260,14 +256,14 @@ Configuration *assemble_random_seed_picker_configuration(
 }
 
 void extract_seed_picker_config(
-    RandomSeedPickerConfiguration *random_seed_picker_config,
-    Configuration *config)
+    RandomSeedPickerConfiguration &random_seed_picker_config,
+    const Configuration &config)
 {
 
-        ConfigurationOption seed = *config->options[0];
-        ConfigurationOption app_action = *config->options[1];
+        ConfigurationOption seed = *config.options[0];
+        ConfigurationOption app_action = *config.options[1];
 
-        random_seed_picker_config->seed = seed.get_curr_int_value();
-        random_seed_picker_config->action =
+        random_seed_picker_config.seed = seed.get_curr_int_value();
+        random_seed_picker_config.action =
             selector_action_from_str(app_action.get_current_str_value());
 }

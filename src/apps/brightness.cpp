@@ -130,20 +130,14 @@ BrightnessApp::collect_config(const Platform &p,
                               const UserInterfaceCustomization &customization,
                               BrightnessConfiguration &game_config) const
 {
-        BrightnessConfiguration *initial_config =
-            load_initial_brightness_config(*p.persistent_storage);
-        Configuration *config =
-            assemble_brightness_configuration(*initial_config);
+        auto initial_config = std::unique_ptr<BrightnessConfiguration>(
+            load_initial_brightness_config(*p.persistent_storage));
+        auto config = std::unique_ptr<Configuration>(
+            assemble_brightness_configuration(*initial_config));
 
-        auto maybe_interrupt_action =
-            collect_configuration(p, *config, customization);
-        if (maybe_interrupt_action) {
-                delete config;
-                delete initial_config;
-                return maybe_interrupt_action;
-        }
+        auto interrupt = collect_configuration(p, *config, customization);
+        if (interrupt)
+                return interrupt;
 
-        delete config;
-        delete initial_config;
         return std::nullopt;
 }

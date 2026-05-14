@@ -26,19 +26,16 @@ Settings::collect_config(const Platform &p,
                          SettingsConfiguration &game_config) const
 
 {
-        Configuration *settings_config =
-            assemble_settings_menu_configuration(p);
-        auto maybe_interrupt =
+        auto settings_config = std::unique_ptr<Configuration>(
+            assemble_settings_menu_configuration(p));
+        auto interrupt =
             collect_configuration(p, *settings_config, customization);
-        if (maybe_interrupt) {
-                delete settings_config;
-                return maybe_interrupt;
-        }
+        if (interrupt)
+                return interrupt;
 
         Game selected_game;
         extract_menu_setting(selected_game, *settings_config);
         game_config.selected_game = selected_game;
-        delete settings_config;
         return std::nullopt;
 }
 const char *Settings::get_game_name() const { return "Settings Menu"; }
@@ -68,7 +65,7 @@ UserAction Settings::app_loop(const Platform &p,
         switch (selected_game) {
         case Game::MainMenu: {
                 GameMenuConfiguration config;
-                auto action = collect_game_menu_defaults_config(p, &config);
+                auto action = collect_game_menu_defaults_config(p, config);
                 if (action && is_exit_action(action))
                         return action.value();
                 storage.put(offset, config);

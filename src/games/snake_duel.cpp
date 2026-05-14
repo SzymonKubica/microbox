@@ -198,7 +198,7 @@ UserAction SnakeDuel::app_loop(const Platform &p,
         // re-renders that single cell in the display.
         std::function<void(Point & location, Color color)> render_cell =
             [p, &gd, &grid, customization](Point &location, Color color) {
-                    refresh_grid_cell(p.display, color, gd.get(), &grid,
+                    refresh_grid_cell(*p.display, color, *gd.get(), grid,
                                       location);
             };
         // Renders the snake's head including the neck (2nd segment right behind
@@ -206,9 +206,10 @@ UserAction SnakeDuel::app_loop(const Platform &p,
         std::function<void(ColoredSnake & snake)> render_head =
             [p, &gd, &grid, customization](ColoredSnake &snake) {
                     auto neck = snake.get_neck();
-                    render_segment_connection(p.display, snake.color, gd.get(),
-                                              &grid, neck, snake.head);
-                    render_snake_head(p.display, snake.color, gd.get(), &grid,
+                    render_segment_connection(*p.display, snake.color,
+                                              *gd.get(), grid, neck,
+                                              snake.head);
+                    render_snake_head(*p.display, snake.color, *gd.get(), grid,
                                       snake);
             };
 
@@ -247,7 +248,7 @@ UserAction SnakeDuel::app_loop(const Platform &p,
         render_head(second_snake);
         render_cell(second_snake.head, second_snake.color);
 
-        Point apple_location = spawn_apple(&grid);
+        Point apple_location = spawn_apple(grid);
 
         // Here the color doesn't matter as apples are always red.
         render_cell(apple_location, primary_color);
@@ -453,7 +454,7 @@ void take_snake_step(
                 // Eating an apple is handled by simply skipping the step where
                 // we erase the last segment of the snake (the else branch). We
                 // then spawn a new apple.
-                Point apple_location = spawn_apple(&grid);
+                Point apple_location = spawn_apple(grid);
                 // Here the color doesn't matter as apples are always red.
                 render_cell(apple_location, snake.color);
                 (*game_score)++;
@@ -515,8 +516,8 @@ void update_duel_score(const Platform &p, SquareCellGridDimensions *dimensions,
  * Forward declarations of functions related to configuration manipulation.
  */
 Configuration *assemble_snake_duel_configuration(PersistentStorage *storage);
-void extract_game_config(SnakeDuelConfiguration *game_config,
-                         Configuration *config);
+void extract_game_config(SnakeDuelConfiguration &game_config,
+                         const Configuration &config);
 SnakeDuelConfiguration *
 load_initial_snake_duel_config(PersistentStorage *storage);
 
@@ -525,24 +526,21 @@ SnakeDuel::collect_config(const Platform &p,
                           const UserInterfaceCustomization &customization,
                           SnakeDuelConfiguration &game_config) const
 {
-        Configuration *config =
-            assemble_snake_duel_configuration(p.persistent_storage);
+        auto config = std::unique_ptr<Configuration>(
+            assemble_snake_duel_configuration(p.persistent_storage));
 
         auto maybe_interrupt = collect_configuration(p, *config, customization);
-        if (maybe_interrupt) {
-                delete config;
+        if (maybe_interrupt)
                 return maybe_interrupt;
-        }
 
-        extract_game_config(&game_config, config);
-        delete config;
+        extract_game_config(game_config, *config);
         return std::nullopt;
 }
 
 Configuration *assemble_snake_duel_configuration(PersistentStorage *storage)
 {
-        SnakeDuelConfiguration *initial_config =
-            load_initial_snake_duel_config(storage);
+        auto initial_config = std::unique_ptr<SnakeDuelConfiguration>(
+            load_initial_snake_duel_config(storage));
 
         ConfigurationOption *speed = ConfigurationOption::of_integers(
             "Speed", {4, 5, 6, 7, 8}, initial_config->speed);
@@ -565,7 +563,6 @@ Configuration *assemble_snake_duel_configuration(PersistentStorage *storage)
         std::vector<ConfigurationOption *> options = {
             speed, poop, allow_grace, ai_mode, secondary_player_color};
 
-        delete initial_config;
         return new Configuration("Snake Duel", options);
 }
 
@@ -604,28 +601,28 @@ load_initial_snake_duel_config(PersistentStorage *storage)
         return output;
 }
 
-void extract_game_config(SnakeDuelConfiguration *game_config,
-                         Configuration *config)
+void extract_game_config(SnakeDuelConfiguration &game_config,
+                         const Configuration &config)
 {
         // It is important that we don't copy any of the ConfigurationOption as
         // they internally contain pointers to their option values and running
         // destructor at the end would result in a double-free.
-        ConfigurationOption *speed = config->options[0];
-        ConfigurationOption *enable_poop = config->options[1];
-        ConfigurationOption *allow_grace = config->options[2];
-        ConfigurationOption *enable_ai = config->options[3];
-        ConfigurationOption *secondary_player_color = config->options[4];
+        ConfigurationOption *speed = config.options[0];
+        ConfigurationOption *enable_poop = config.options[1];
+        ConfigurationOption *allow_grace = config.options[2];
+        ConfigurationOption *enable_ai = config.options[3];
+        ConfigurationOption *secondary_player_color = config.options[4];
 
         auto yes_or_no_option_to_bool = [](ConfigurationOption *option) {
                 return extract_yes_or_no_option(
                     option->get_current_str_value());
         };
 
-        game_config->speed = speed->get_curr_int_value();
-        game_config->enable_poop = yes_or_no_option_to_bool(enable_poop);
-        game_config->allow_grace = yes_or_no_option_to_bool(allow_grace);
-        game_config->enable_ai = yes_or_no_option_to_bool(enable_ai);
-        game_config->secondary_player_color =
+        game_config.speed = speed->get_curr_int_value();
+        game_config.enable_poop = yes_or_no_option_to_bool(enable_poop);
+        game_config.allow_grace = yes_or_no_option_to_bool(allow_grace);
+        game_config.enable_ai = yes_or_no_option_to_bool(enable_ai);
+        game_config.secondary_player_color =
             secondary_player_color->get_current_color_value();
 }
 

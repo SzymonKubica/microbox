@@ -298,15 +298,15 @@ WifiAppConfiguration *load_initial_wifi_app_config(PersistentStorage *storage)
 }
 
 Configuration *
-assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
+assemble_wifi_app_configuration(WifiAppConfiguration &initial_config)
 {
 
-        auto saved_configs = initial_config->get_saved_configs();
+        auto saved_configs = initial_config.get_saved_configs();
 
         // 'Unzip' the saved configurations into ssids and passwords
         // separately so that they can be rendered in the configuration
         // menu.
-        int occupied_configs = initial_config->occupied_config_slots;
+        int occupied_configs = initial_config.occupied_config_slots;
         std::vector<const char *> ssids(occupied_configs);
         std::vector<const char *> passwords(occupied_configs);
         std::transform(
@@ -320,14 +320,14 @@ assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
 
         LOG_DEBUG(TAG, "Starting to read saved wiifi credentials.");
         auto *ssid = ConfigurationOption::of_strings(
-            "SSID", ssids, initial_config->get_currently_selected_ssid());
+            "SSID", ssids, initial_config.get_currently_selected_ssid());
         auto *password = ConfigurationOption::of_strings(
             "Password", passwords,
-            initial_config->get_currently_selected_password());
+            initial_config.get_currently_selected_password());
 
         auto *connect_on_startup = ConfigurationOption::of_strings(
             "On Boot", {"Yes", "No"},
-            map_boolean_to_yes_or_no(initial_config->connect_on_startup));
+            map_boolean_to_yes_or_no(initial_config.connect_on_startup));
 
         auto available_actions = {
             wifi_app_action_to_string(WifiAppAction::Connect),
@@ -335,10 +335,10 @@ assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
             wifi_app_action_to_string(WifiAppAction::Modify)};
 
         LOG_DEBUG(TAG, "Current initial config wifi action: %d",
-                  initial_config->action);
+                  initial_config.action);
         auto *app_action = ConfigurationOption::of_strings(
             "Action", available_actions,
-            wifi_app_action_to_string(initial_config->action));
+            wifi_app_action_to_string(initial_config.action));
 
         auto options = {ssid, password, connect_on_startup, app_action};
 
@@ -353,16 +353,16 @@ assemble_wifi_app_configuration(WifiAppConfiguration *initial_config)
         return new Configuration("Wi-Fi", options, linked_values);
 }
 
-void extract_game_config(WifiAppConfiguration *app_config,
-                         WifiAppConfiguration *initial_config,
-                         Configuration *config)
+void extract_game_config(WifiAppConfiguration &app_config,
+                         WifiAppConfiguration &initial_config,
+                         const Configuration &config)
 {
-        ConfigurationOption ssid = *config->options[0];
-        ConfigurationOption password = *config->options[1];
-        ConfigurationOption connect_on_startup = *config->options[2];
-        ConfigurationOption app_action = *config->options[3];
+        ConfigurationOption ssid = *config.options[0];
+        ConfigurationOption password = *config.options[1];
+        ConfigurationOption connect_on_startup = *config.options[2];
+        ConfigurationOption app_action = *config.options[3];
 
-        app_config->intialization_magic_number = INITIALIZATION_MAGIC_NUMBER;
+        app_config.intialization_magic_number = INITIALIZATION_MAGIC_NUMBER;
 
         /**
          * We infer the currently selected configuration index by
@@ -371,7 +371,7 @@ void extract_game_config(WifiAppConfiguration *app_config,
          */
 
         // Get the available, saved configs.
-        auto saved_config = initial_config->get_saved_configs();
+        auto saved_config = initial_config.get_saved_configs();
         std::vector<const char *> ssids(saved_config.size());
         std::transform(
             saved_config.begin(), saved_config.end(), ssids.begin(),
@@ -387,15 +387,14 @@ void extract_game_config(WifiAppConfiguration *app_config,
                 }
         }
 
-        app_config->curr_config_idx = selected_idx;
-        app_config->occupied_config_slots =
-            initial_config->occupied_config_slots;
-        memcpy(app_config->saved_configurations,
-               initial_config->saved_configurations,
+        app_config.curr_config_idx = selected_idx;
+        app_config.occupied_config_slots = initial_config.occupied_config_slots;
+        memcpy(app_config.saved_configurations,
+               initial_config.saved_configurations,
                sizeof(WifiCredentials[AVAILABLE_CONFIGURATION_SLOTS]));
-        app_config->connect_on_startup = extract_yes_or_no_option(
+        app_config.connect_on_startup = extract_yes_or_no_option(
             connect_on_startup.get_current_str_value());
-        app_config->action =
+        app_config.action =
             action_from_string(app_action.get_current_str_value());
 }
 
@@ -404,21 +403,17 @@ WifiApp::collect_config(const Platform &p,
                         const UserInterfaceCustomization &customization,
                         WifiAppConfiguration &game_config) const
 {
-        WifiAppConfiguration *initial_config =
-            load_initial_wifi_app_config(p.persistent_storage);
-        Configuration *config = assemble_wifi_app_configuration(initial_config);
+        auto initial_config = std::unique_ptr<WifiAppConfiguration>(
+            load_initial_wifi_app_config(p.persistent_storage));
+        auto config = std::unique_ptr<Configuration>(
+            assemble_wifi_app_configuration(*initial_config));
 
         auto maybe_interrupt_action =
             collect_configuration(p, *config, customization);
-        if (maybe_interrupt_action) {
-                delete config;
-                delete initial_config;
+        if (maybe_interrupt_action)
                 return maybe_interrupt_action;
-        }
 
-        extract_game_config(&game_config, initial_config, config);
-        delete config;
-        delete initial_config;
+        extract_game_config(game_config, *initial_config, *config);
         return std::nullopt;
 }
 

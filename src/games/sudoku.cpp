@@ -212,9 +212,10 @@ UserAction SudokuGame::app_loop(const Platform &p,
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
 
-        SquareCellGridDimensions *gd = calculate_grid_dimensions(
-            p.display->get_width(), p.display->get_height(),
-            p.display->get_display_corner_radius(), 9, 9, true);
+        auto gd =
+            std::unique_ptr<SquareCellGridDimensions>(calculate_grid_dimensions(
+                p.display->get_width(), p.display->get_height(),
+                p.display->get_display_corner_radius(), 9, 9, true));
 
         SimpleSudokuView view{customization, *gd, p.display};
 
@@ -273,7 +274,6 @@ UserAction SudokuGame::app_loop(const Platform &p,
 
         while (true) {
                 if (!p.display->refresh()) {
-                        delete gd;
                         return UserAction::CloseWindow;
                 }
                 if (state.is_grid_full() &&
@@ -388,7 +388,6 @@ UserAction SudokuGame::app_loop(const Platform &p,
                                 save_game_state(p, copy, state.grid);
                         }
                         p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
-                        delete gd;
                         return UserAction::Exit;
                 }
                 }
@@ -403,52 +402,51 @@ UserAction SudokuGame::app_loop(const Platform &p,
  * Forward declarations of functions related to configuration
  * manipulation.
  */
-SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage);
+SudokuConfiguration *
+load_initial_sudoku_config(const PersistentStorage &storage);
 Configuration *
-assemble_sudoku_configuration(SudokuConfiguration *initial_config);
-void extract_game_config(SudokuConfiguration *game_config,
-                         Configuration *config,
-                         SudokuConfiguration *initial_config);
+assemble_sudoku_configuration(const SudokuConfiguration &initial_config);
+void extract_game_config(SudokuConfiguration &game_config,
+                         const Configuration &config,
+                         const SudokuConfiguration &initial_config);
 
 std::optional<UserAction>
 SudokuGame::collect_config(const Platform &p,
                            const UserInterfaceCustomization &customization,
                            SudokuConfiguration &game_config) const
 {
-        SudokuConfiguration *initial_config =
-            load_initial_sudoku_config(p.persistent_storage);
+        auto initial_config = std::unique_ptr<SudokuConfiguration>(
+            load_initial_sudoku_config(*p.persistent_storage));
 
-        Configuration *config = assemble_sudoku_configuration(initial_config);
+        auto config = std::unique_ptr<Configuration>(
+            assemble_sudoku_configuration(*initial_config));
 
         auto maybe_interrupt = collect_configuration(p, *config, customization);
         if (maybe_interrupt) {
-                delete initial_config;
-                delete config;
                 return maybe_interrupt;
         }
 
-        extract_game_config(&game_config, config, initial_config);
-        delete initial_config;
-        delete config;
+        extract_game_config(game_config, *config, *initial_config);
         return std::nullopt;
 }
 
 Configuration *
-assemble_sudoku_configuration(SudokuConfiguration *initial_config)
+assemble_sudoku_configuration(const SudokuConfiguration &initial_config)
 {
 
         ConfigurationOption *difficulty = ConfigurationOption::of_integers(
-            "Difficulty", {1, 2, 3}, initial_config->difficulty);
+            "Difficulty", {1, 2, 3}, initial_config.difficulty);
 
         ConfigurationOption *accent_color = ConfigurationOption::of_colors(
-            "Color", AVAILABLE_COLORS, initial_config->accent_color);
+            "Color", AVAILABLE_COLORS, initial_config.accent_color);
 
         std::vector<ConfigurationOption *> options = {difficulty, accent_color};
 
         return new Configuration("Sudoku", options);
 }
 
-SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage)
+SudokuConfiguration *
+load_initial_sudoku_config(const PersistentStorage &storage)
 {
         int storage_offset = get_settings_storage_offset(Game::Sudoku);
         LOG_DEBUG(TAG, "Loading config from offset %d", storage_offset);
@@ -456,7 +454,7 @@ SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage)
         SudokuConfiguration config{};
 
         LOG_DEBUG(TAG, "Trying to load settings from the persistent storage");
-        storage->get(storage_offset, config);
+        storage.get(storage_offset, config);
 
         SudokuConfiguration *output = new SudokuConfiguration();
 
@@ -465,7 +463,7 @@ SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage)
                                "sudoku configuration, using default values.");
                 memcpy(output, &DEFAULT_SUDOKU_CONFIG,
                        sizeof(SudokuConfiguration));
-                storage->put(storage_offset, DEFAULT_SUDOKU_CONFIG);
+                storage.put(storage_offset, DEFAULT_SUDOKU_CONFIG);
 
         } else {
                 LOG_DEBUG(TAG, "Using configuration from persistent storage.");
@@ -480,20 +478,20 @@ SudokuConfiguration *load_initial_sudoku_config(PersistentStorage *storage)
         return output;
 }
 
-void extract_game_config(SudokuConfiguration *game_config,
-                         Configuration *config,
-                         SudokuConfiguration *initial_config)
+void extract_game_config(SudokuConfiguration &game_config,
+                         const Configuration &config,
+                         const SudokuConfiguration &initial_config)
 {
-        ConfigurationOption difficulty = *config->options[0];
-        ConfigurationOption accent_color = *config->options[1];
+        ConfigurationOption difficulty = *config.options[0];
+        ConfigurationOption accent_color = *config.options[1];
 
-        game_config->difficulty = difficulty.get_curr_int_value();
-        game_config->is_game_in_progress = initial_config->is_game_in_progress;
-        game_config->accent_color = accent_color.get_current_color_value();
+        game_config.difficulty = difficulty.get_curr_int_value();
+        game_config.is_game_in_progress = initial_config.is_game_in_progress;
+        game_config.accent_color = accent_color.get_current_color_value();
         for (int y = 0; y < 9; y++) {
                 for (int x = 0; x < 9; x++) {
-                        game_config->saved_game[y][x] =
-                            initial_config->saved_game[y][x];
+                        game_config.saved_game[y][x] =
+                            initial_config.saved_game[y][x];
                 }
         }
 }

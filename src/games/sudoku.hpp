@@ -16,10 +16,6 @@ struct SudokuConfiguration {
         Color accent_color;
 };
 
-std::optional<UserAction>
-collect_sudoku_config(Platform *p, SudokuConfiguration *game_config,
-                      UserInterfaceCustomization *customization);
-
 class SudokuGame : public ApplicationExecutor<SudokuConfiguration>
 {
       public:
