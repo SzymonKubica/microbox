@@ -2,6 +2,7 @@
 
 #include "../platform/interface/display.hpp"
 #include "../platform/interface/platform.hpp"
+#include "../platform/interface/thumbnail.hpp"
 #include "../common/configuration.hpp"
 
 #include "../common/common_transitions.hpp"
@@ -41,7 +42,8 @@ class GameState
         }
 };
 
-class Clean2048 : public ApplicationExecutor<Game2048Configuration>
+class Clean2048 : public ApplicationExecutor<Game2048Configuration>,
+                  public ThumbnailRenderer
 {
       public:
         Clean2048() {}
@@ -55,4 +57,8 @@ class Clean2048 : public ApplicationExecutor<Game2048Configuration>
                        Game2048Configuration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
 };

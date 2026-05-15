@@ -703,6 +703,22 @@ GridDimensions *calculate_grid_dimensions(const Display &display, int grid_size)
                                   score_start.y, score_title_x, score_title_y);
 }
 
+void render_cell(const Display &display,
+                 const UserInterfaceCustomization &customization,
+                 Point position, int width, int height)
+{
+        Color bg_color = GRID_BG_COLOR;
+        if (customization.rendering_mode == Detailed) {
+                display.draw_rounded_rectangle(position, width, height,
+                                               height / 2, bg_color);
+                return;
+        }
+        display.draw_rectangle(position, width, height, bg_color, 1, true);
+        // Render a border according to the rounded corner
+        display.draw_rectangle(position, width, height,
+                               customization.accent_color, 2, false);
+}
+
 static void draw_game_grid(const Display &display, int grid_size,
                            const UserInterfaceCustomization &customization)
 {
@@ -714,16 +730,7 @@ static void draw_game_grid(const Display &display, int grid_size,
         // We need this lambda to have a reusable way of rendering game
         // cells depending on the UI rendering mode.
         auto cell_renderer = [&](Point start, int width, int height) {
-                if (customization.rendering_mode == Minimalistic) {
-                        display.draw_rectangle(start, width, height,
-                                               GRID_BG_COLOR, 1, true);
-                        display.draw_rectangle(start, width, height,
-                                               customization.accent_color, 2,
-                                               false);
-                } else {
-                        display.draw_rounded_rectangle(
-                            start, width, height, height / 2, GRID_BG_COLOR);
-                }
+                render_cell(display, customization, start, width, height);
         };
 
         Point score_start = {.x = gd->score_start_x, .y = gd->score_start_y};
@@ -782,6 +789,45 @@ Color get_number_color_coding(int number)
         }
 }
 
+void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
+                      int old_digit_len, int cell_value)
+{
+        assert(cell_value <= 4096);
+        char buffer[5];
+        sprintf(buffer, "%4d", cell_value);
+        str_replace(buffer, "   0", "    ");
+        // The maximum tile number in this version of 2048 is 4096, because of
+        // this the maximum width of the cell text area is given below.
+        int max_cell_text_width = 4 * FONT_WIDTH;
+
+        // We need to center the four characters
+        // of text inside the cell.
+        int x_margin = (gd->cell_width - max_cell_text_width) / 2;
+        int y_margin = (gd->cell_height - FONT_SIZE) / 2;
+        int old_digit_text_width = old_digit_len * FONT_WIDTH;
+
+        // We clear the region where the old number was drawn, note that we need
+        // to be efficient, so instead of clearing all 4 possible characters, we
+        // only clear the characters of the actual number. So if the number is
+        // composed of two digits, we clear a region that spans two digits.
+        Point clear_start = {.x = start.x + x_margin + max_cell_text_width -
+                                  old_digit_text_width,
+                             .y = start.y + y_margin};
+        Point clear_end = {.x = start.x + x_margin + max_cell_text_width,
+                           .y = start.y + y_margin + FONT_SIZE};
+        p.display->clear_region(clear_start, clear_end, GRID_BG_COLOR);
+
+        // We only use nice color rendering on platforms
+        // that can hanle that.
+        Color color = p.capabilities.has_fast_display
+                          ? get_number_color_coding(cell_value)
+                          : Black;
+        Point start_with_margin = {.x = start.x + x_margin,
+                                   .y = start.y + y_margin};
+        p.display->draw_string(start_with_margin, buffer, Size16, GRID_BG_COLOR,
+                               color);
+}
+
 /**
  * Note that the game state is modified: the new grid state gets copied
  * over into the `old_state` variable. TODO: figure out why Szymon from 2 years
@@ -816,11 +862,6 @@ void update_game_grid(const Platform &p, GameState &gs,
         p.display->draw_string(score_start, score_buffer, Size16, GRID_BG_COLOR,
                                TEXT_COLOR);
 
-        // The maximum tile number in this version of 2048 is 4096,
-        // because of this the maximum width of the cell text area is
-        // given below.
-        int max_cell_text_width = 4 * FONT_WIDTH;
-
         for (int i = 0; i < grid_size; i++) {
                 for (int j = 0; j < grid_size; j++) {
                         Point start = {
@@ -831,54 +872,13 @@ void update_game_grid(const Platform &p, GameState &gs,
 
                         int current = gs.grid[i][j];
                         if (current != gs.old_grid[i][j]) {
-
-                                char buffer[5];
-                                sprintf(buffer, "%4d", gs.grid[i][j]);
-                                str_replace(buffer, "   0", "    ");
-
-                                // We need to center the four characters
-                                // of text inside the cell.
-                                int x_margin =
-                                    (gd->cell_width - max_cell_text_width) / 2;
-                                int y_margin =
-                                    (gd->cell_height - FONT_SIZE) / 2;
                                 int old_digit_len =
                                     number_string_length(gs.old_grid[i][j]);
-                                int old_digit_text_width =
-                                    old_digit_len * FONT_WIDTH;
 
-                                // We clear the region where the old
-                                // number was drawn, note that we need
-                                // to be efficient, so instead of
-                                // clearing all 4 possible characters,
-                                // we only clear the characters of the
-                                // actual number. So if the number is
-                                // composed of two digits, we clear a
-                                // region that spans two digits.
-                                Point clear_start = {.x = start.x + x_margin +
-                                                          max_cell_text_width -
-                                                          old_digit_text_width,
-                                                     .y = start.y + y_margin};
-                                Point clear_end = {.x = start.x + x_margin +
-                                                        max_cell_text_width,
-                                                   .y = start.y + y_margin +
-                                                        FONT_SIZE};
-                                p.display->clear_region(clear_start, clear_end,
-                                                        GRID_BG_COLOR);
+                                render_cell_value(p, gd, start, old_digit_len,
+                                                 current)
 
-                                // We only use nice color rendering on platforms
-                                // that can hanle that.
-                                Color color =
-                                    p.capabilities.has_fast_display
-                                        ? get_number_color_coding(current)
-                                        : White;
-                                Point start_with_margin = {
-                                    .x = start.x + x_margin,
-                                    .y = start.y + y_margin};
-                                p.display->draw_string(start_with_margin,
-                                                       buffer, Size16,
-                                                       GRID_BG_COLOR, color);
-                                gs.old_grid[i][j] = gs.grid[i][j];
+                                    gs.old_grid[i][j] = gs.grid[i][j];
                         }
                 }
         }
@@ -907,4 +907,52 @@ static void str_replace(char *str, const char *oldWord, const char *newWord)
                 wrapped_str.replace(pos, to_replace.length(), replacement);
         }
         std::strcpy(str, wrapped_str.c_str());
+}
+
+/**
+ * Responsible for rendering a preview of what a 2048 game looks like.
+ */
+void Clean2048::render_thumbnail(
+    const Platform &platform, const UserInterfaceCustomization &customization)
+{
+        auto config = load_initial_config(*platform.persistent_storage);
+
+        auto state =
+            initialize_game_state(config->grid_size, config->target_max_tile);
+
+        const auto &display = *platform.display;
+        auto gd = std::unique_ptr<GridDimensions>(
+            calculate_grid_dimensions(display, config->grid_size));
+
+        int width = gd->cell_width;
+        int height = gd->cell_height;
+        int x_spacing = gd->cell_x_spacing;
+        int y_spacing = gd->cell_y_spacing;
+
+        // TODO: abstract out duplication between this code and
+        // `calculate_grid_dimensions`
+        int corner_radius = display.get_display_corner_radius();
+        int usable_width = display.get_width() - 2 * SCREEN_BORDER_WIDTH;
+        int usable_height = display.get_height() - 2 * corner_radius;
+        int x_margin = (usable_width - 2 * width - x_spacing) / 2;
+        int y_margin =
+            gd->grid_start_y + (usable_height - 2 * height - y_spacing) / 2;
+        Point start = {x_margin, y_margin};
+
+        Point x_displacement = Point{1, 0} * (width + x_spacing);
+        Point y_displacement = Point{0, 1} * (height + y_spacing);
+
+        auto render_at = [&](Point position) {
+                render_cell(*platform.display, customization, position, width,
+                            height);
+        };
+
+        render_at(start);
+        render_at(start + x_displacement);
+        render_at(start + y_displacement);
+        render_at(start + x_displacement + y_displacement);
+
+        while (true) {
+                platform.display->refresh();
+        }
 }

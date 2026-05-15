@@ -27,8 +27,8 @@
       as the library depends on the global arduino installation structure.
       It migth be better to explain / clean-up the process of configuring the
       library with the correct pins and target device.
-- [ ] design & add game thumbnail rendering
 - [ ] understand the cool cube rendering code for the 2.4 display and implement something like this.
+- [ ] remove dependency on the corner radius for minimalistic rendering
 ## Require hardware testing
 ### any platform
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
@@ -44,7 +44,7 @@
 
 # In Progress
 
-
+- [ ] design & add game thumbnail rendering
 
 # Done
 - [x] clean up all usages of raw pointers.
@@ -60,7 +60,7 @@
   - [x] change `collect_configuration` API to take in references and const references
         instead of raw pointers
   - [x] application executor & individual application implementations
-  - [ ] all helper functions in all games & applications
+  - [x] all helper functions in all games & applications
     - [x] 2048
     - [x] Game of Life
     - [x] Minesweeper
@@ -71,6 +71,8 @@
     - [x] Snake Duel
     - [x] Sudoku
   - [x] update all implementations of `assemble_game_configuration` and `collect_config`
+  - [x] change `collect_configuration` API to take in references and const references
+        instead of raw pointers
         to rely on a smart unique pointer instead of `delete` on each return
         point from the function.
 - [x] debug memory allocation handling for 2048.

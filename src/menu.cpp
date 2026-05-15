@@ -4,6 +4,7 @@
 
 #include "menu.hpp"
 #include "application_executor.hpp"
+#include "platform/interface/thumbnail.hpp"
 
 #include "common/configuration.hpp"
 #include "common/logging.hpp"
@@ -125,6 +126,18 @@ void extract_app_selection(GameMenuConfiguration &menu_configuration,
  */
 static std::optional<Game> last_selected_game = std::nullopt;
 
+std::optional<std::unique_ptr<ThumbnailRenderer>>
+get_thumbnail_renderer(Game game)
+{
+        switch (game) {
+        case Game::Clean2048:
+                return make<Clean2048>();
+        case Game::Minesweeper:
+        default:
+                return std::nullopt;
+        }
+}
+
 /**
  * Responsible for getting input from the user when they first turn on the
  * console. This allows for selecting the game and navigating to the setting
@@ -148,6 +161,7 @@ main_menu_interaction_loop(const Platform &p,
                 initial_config->game = last_selected_game.value();
         }
 
+
         auto config = std::unique_ptr<Configuration>(
             assemble_game_selector_configuration(p, *initial_config));
 
@@ -156,6 +170,12 @@ main_menu_interaction_loop(const Platform &p,
             .rendering_mode = initial_config->rendering_mode,
             .show_help_text = initial_config->show_help_text,
         };
+
+        // TODO: build a proper UI flow where we select the game left/right
+        // and render the thumbnail for each game
+        auto renderer = get_thumbnail_renderer(Game::Clean2048);
+        ThumbnailRenderer *game_preview = renderer.value().get();
+        game_preview->render_thumbnail(p, customization);
 
         auto maybe_interrupt =
             collect_configuration(p, *config, customization, false, true);
