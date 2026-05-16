@@ -161,7 +161,6 @@ main_menu_interaction_loop(const Platform &p,
                 initial_config->game = last_selected_game.value();
         }
 
-
         auto config = std::unique_ptr<Configuration>(
             assemble_game_selector_configuration(p, *initial_config));
 
@@ -173,12 +172,15 @@ main_menu_interaction_loop(const Platform &p,
 
         // TODO: build a proper UI flow where we select the game left/right
         // and render the thumbnail for each game
-        auto renderer = get_thumbnail_renderer(Game::Clean2048);
-        ThumbnailRenderer *game_preview = renderer.value().get();
-        game_preview->render_thumbnail(p, customization);
+        if (false) {
+                auto renderer = get_thumbnail_renderer(Game::Clean2048);
+                ThumbnailRenderer *game_preview = renderer.value().get();
+                game_preview->render_thumbnail(p, customization);
+        }
 
         auto maybe_interrupt =
-            collect_configuration(p, *config, customization, false, true);
+            collect_configuration_single_option_with_thumbnails(
+                p, *config, customization, false, true);
 
         if (maybe_interrupt) {
                 return maybe_interrupt;

@@ -261,6 +261,12 @@ collect_configuration(const Platform &p, Configuration &config,
                       const UserInterfaceCustomization &customization,
                       bool allow_exit = true, bool should_render_logo = false);
 
+
+std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
+    const Platform &p, Configuration &config,
+    const UserInterfaceCustomization &customization, bool allow_exit,
+    bool should_render_logo);
+
 void populate_int_option_values(ConfigurationOption &value,
                                 const std::vector<int> &available_values);
 void populate_string_option_values(

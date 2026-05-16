@@ -790,7 +790,7 @@ Color get_number_color_coding(int number)
 }
 
 void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
-                      int old_digit_len, int cell_value)
+                       int old_digit_len, int cell_value)
 {
         assert(cell_value <= 4096);
         char buffer[5];
@@ -874,11 +874,10 @@ void update_game_grid(const Platform &p, GameState &gs,
                         if (current != gs.old_grid[i][j]) {
                                 int old_digit_len =
                                     number_string_length(gs.old_grid[i][j]);
+                                render_cell_value(p, gd.get(), start,
+                                                  old_digit_len, current);
 
-                                render_cell_value(p, gd, start, old_digit_len,
-                                                 current)
-
-                                    gs.old_grid[i][j] = gs.grid[i][j];
+                                gs.old_grid[i][j] = gs.grid[i][j];
                         }
                 }
         }
@@ -942,17 +941,31 @@ void Clean2048::render_thumbnail(
         Point x_displacement = Point{1, 0} * (width + x_spacing);
         Point y_displacement = Point{0, 1} * (height + y_spacing);
 
-        auto render_at = [&](Point position) {
+        auto cell = [&](Point position) {
                 render_cell(*platform.display, customization, position, width,
                             height);
         };
+        auto cell_value = [&](Point position, int value) {
+                render_cell_value(platform, gd.get(), position, 0, value);
+        };
 
-        render_at(start);
-        render_at(start + x_displacement);
-        render_at(start + y_displacement);
-        render_at(start + x_displacement + y_displacement);
+        // Using lambdas with short, declarative names to make the section
+        // where we are actually rendering the items clear and concise.
+        auto second = start + x_displacement;
+        auto third = start + y_displacement;
+        auto fourth = start + x_displacement + y_displacement;
+        cell(start);
+        cell(second);
+        cell_value(second, 64);
+        cell(third);
+        cell_value(third, 256);
+        cell(fourth);
+        cell_value(fourth, 2048);
 
         while (true) {
-                platform.display->refresh();
+                if (!platform.display->refresh()) {
+                        return;
+                }
+                platform.time_provider->delay_ms(100);
         }
 }

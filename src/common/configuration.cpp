@@ -358,6 +358,92 @@ collect_configuration(const Platform &p, Configuration &config,
         return std::nullopt;
 }
 
+/**
+ * Responsible for rendering a menu allowing the user to select from a list of
+ * available options by 'scrolling' left and right. Each of the list options
+ * needs to provide a thumbnail renderer that will be invoked when the game is
+ * selected.
+ */
+std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
+    const Platform &p, Configuration &config,
+    const UserInterfaceCustomization &customization, bool allow_exit,
+    bool should_render_logo)
+{
+        ConfigurationDiff *diff = new ConfigurationDiff;
+        render_config_menu(*p.display, config, *diff, false, customization,
+                           should_render_logo);
+        if (customization.show_help_text) {
+                render_default_controls_explanations(p);
+        }
+        delete diff;
+        while (true) {
+                // We get a fresh, empty diff during each iteration to avoid
+                // option value text rerendering when they are not modified.
+                ConfigurationDiff diff = ConfigurationDiff{};
+                bool confirmation_bar_selected =
+                    config.curr_selected_option == config.options.size();
+
+                // Abstract out the repeatable delay functionality.
+                auto move_registered_delay = [&] {
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                };
+
+                auto maybe_action = poll_action_input(p.action_controllers);
+                if (maybe_action.has_value()) {
+                        Action act = maybe_action.value();
+                        /* To make the UI more intuitive, we also allow users to
+                        cycle configuration options. This change was inspired by
+                        initial play testing by Tomek. */
+                        if (act == CONFIRM_ACTION) {
+                                /*
+                                 Note that we re-render before peforming the
+                                 move_registered_delay to ensure that the UI is
+                                 snappy.
+                                 */
+                                increment_current_option_value(config, diff);
+                                render_config_menu(*p.display, config, diff,
+                                                   true, customization,
+                                                   should_render_logo);
+                                if (!p.display->refresh()) {
+                                        return UserAction::CloseWindow;
+                                }
+                                move_registered_delay();
+                                continue;
+                        }
+                        move_registered_delay();
+                        if (act == BACK_ACTION && allow_exit)
+                                return UserAction::Exit;
+                        if (act == HELP_ACTION)
+                                return UserAction::ShowHelp;
+                        if (act == FORWARD_ACTION)
+                                break;
+                }
+                auto maybe_direction =
+                    poll_directional_input(p.directional_controllers);
+                Direction dir;
+                if (maybe_direction.has_value()) {
+                        dir = maybe_direction.value();
+                        // We only have a single option to configure. Because of
+                        // this there is no point to handle UP/DOWN inputs.
+                        if (dir == LEFT)
+                                decrement_current_option_value(config, diff);
+                        if (dir == RIGHT)
+                                increment_current_option_value(config, diff);
+                        render_config_menu(*p.display, config, diff, true,
+                                           customization, should_render_logo);
+                        if (!p.display->refresh()) {
+                                return UserAction::CloseWindow;
+                        }
+
+                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                }
+                if (!p.display->refresh())
+                        return UserAction::CloseWindow;
+                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
+        }
+        return std::nullopt;
+}
+
 bool extract_yes_or_no_option(const char *value)
 {
         if (strlen(value) == 3 && strncmp(value, "Yes", 3) == 0) {
