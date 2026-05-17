@@ -920,6 +920,7 @@ void Clean2048::render_thumbnail(
             initialize_game_state(config->grid_size, config->target_max_tile);
 
         const auto &display = *platform.display;
+        display.clear(Black);
         auto gd = std::unique_ptr<GridDimensions>(
             calculate_grid_dimensions(display, config->grid_size));
 
@@ -961,11 +962,4 @@ void Clean2048::render_thumbnail(
         cell_value(third, 256);
         cell(fourth);
         cell_value(fourth, 2048);
-
-        while (true) {
-                if (!platform.display->refresh()) {
-                        return;
-                }
-                platform.time_provider->delay_ms(100);
-        }
 }

@@ -2,6 +2,7 @@
 
 #include "logging.hpp"
 #include "../platform/interface/platform.hpp"
+#include "../platform/interface/thumbnail.hpp"
 #include "user_interface_customization.hpp"
 #include "map"
 #include <optional>
@@ -236,6 +237,8 @@ void increment_current_option_value(Configuration &config,
                                     ConfigurationDiff &diff);
 void decrement_current_option_value(Configuration &config,
                                     ConfigurationDiff &diff);
+void increment_option_value(ConfigurationOption &option);
+void decrement_option_value(ConfigurationOption &option);
 int find_max_config_option_name_text_length(const Configuration &config);
 int find_max_config_option_value_text_length(const Configuration &config);
 
@@ -261,11 +264,11 @@ collect_configuration(const Platform &p, Configuration &config,
                       const UserInterfaceCustomization &customization,
                       bool allow_exit = true, bool should_render_logo = false);
 
-
 std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
-    const Platform &p, Configuration &config,
-    const UserInterfaceCustomization &customization, bool allow_exit,
-    bool should_render_logo);
+    const Platform &p, const UserInterfaceCustomization &customization,
+    ConfigurationOption &option,
+    const std::vector<std::unique_ptr<ThumbnailRenderer>> &thumbnails,
+    bool allow_exit, bool should_render_logo);
 
 void populate_int_option_values(ConfigurationOption &value,
                                 const std::vector<int> &available_values);

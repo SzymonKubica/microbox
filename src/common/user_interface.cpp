@@ -30,11 +30,6 @@ const size_t MAX_RENDERED_OPTION_NUM = 4;
 
 inline int get_centering_margin(int screen_width, int text_length,
                                 int font_width);
-void render_config_bar_centered(
-    const Display &display, int y_start, int option_text_max_len,
-    int value_text_max_len, const char *option_text, const char *value_text,
-    bool is_already_rendered, bool update_value_cell, bool update_option_name,
-    const UserInterfaceCustomization &customization);
 void render_text_bar_centered(const Display &display, int y_start,
                               int option_text_max_len, int value_text_max_len,
                               const char *text, bool is_already_rendered,

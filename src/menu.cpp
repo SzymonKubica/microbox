@@ -126,14 +126,43 @@ void extract_app_selection(GameMenuConfiguration &menu_configuration,
  */
 static std::optional<Game> last_selected_game = std::nullopt;
 
+template <typename GameExecutor>
+std::unique_ptr<ThumbnailRenderer> get_name_renderer()
+{
+        return std::make_unique<NameBoxRenderer>(
+            GameExecutor().get_game_name());
+}
+
 std::optional<std::unique_ptr<ThumbnailRenderer>>
 get_thumbnail_renderer(Game game)
 {
         switch (game) {
-        case Game::Clean2048:
-                return make<Clean2048>();
+        case Game::Clean2048: {
+                ThumbnailRenderer *renderer = new Clean2048();
+                return std::unique_ptr<ThumbnailRenderer>(renderer);
+        }
         case Game::Minesweeper:
+                return get_name_renderer<Minesweeper>();
+        case Game::GameOfLife:
+                return get_name_renderer<GameOfLife>();
+        case Game::Settings:
+                return get_name_renderer<Settings>();
+        case Game::Snake:
+                return get_name_renderer<SnakeGame>();
+        case Game::SnakeDuel:
+                return get_name_renderer<SnakeDuel>();
+        case Game::WifiApp:
+                return get_name_renderer<WifiApp>();
+        case Game::RandomSeedPicker:
+                return get_name_renderer<RandomSeedPicker>();
+        case Game::Sudoku:
+                return get_name_renderer<SudokuGame>();
+        case Game::Power:
+                return get_name_renderer<PowerManagementApp>();
+        case Game::Brightness:
+                return get_name_renderer<BrightnessApp>();
         default:
+                LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return std::nullopt;
         }
 }
@@ -170,17 +199,19 @@ main_menu_interaction_loop(const Platform &p,
             .show_help_text = initial_config->show_help_text,
         };
 
-        // TODO: build a proper UI flow where we select the game left/right
-        // and render the thumbnail for each game
-        if (false) {
-                auto renderer = get_thumbnail_renderer(Game::Clean2048);
-                ThumbnailRenderer *game_preview = renderer.value().get();
-                game_preview->render_thumbnail(p, customization);
+        std::vector<std::unique_ptr<ThumbnailRenderer>> renderers;
+        std::vector<Game> games = {
+            Game::Clean2048, Game::Minesweeper, Game::GameOfLife, Game::Snake,
+            Game::SnakeDuel, Game::Sudoku,      Game::Settings,   Game::Power};
+        for (auto game : games) {
+                renderers.emplace_back(
+                    std::move(get_thumbnail_renderer(game).value()));
         }
 
+        ConfigurationOption &option = *config->options[0];
         auto maybe_interrupt =
             collect_configuration_single_option_with_thumbnails(
-                p, *config, customization, false, true);
+                p, customization, option, renderers, false, true);
 
         if (maybe_interrupt) {
                 return maybe_interrupt;

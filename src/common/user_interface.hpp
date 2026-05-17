@@ -13,6 +13,12 @@ void render_config_menu(const Display &display, const Configuration &config,
                         const UserInterfaceCustomization &customization,
                         bool should_render_logo = false);
 
+void render_config_bar_centered(
+    const Display &display, int y_start, int option_text_max_len,
+    int value_text_max_len, const char *option_text, const char *value_text,
+    bool is_already_rendered, bool update_value_cell, bool update_option_name,
+    const UserInterfaceCustomization &customization);
+
 std::optional<UserAction>
 collect_string_input(const Platform &p,
                      const UserInterfaceCustomization &customization,

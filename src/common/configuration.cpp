@@ -152,6 +152,20 @@ void shift_current_config_option_value(Configuration &config,
         diff.modified_options.push_back(config.curr_selected_option);
 }
 
+void shift_option_value(ConfigurationOption &option, int steps)
+{
+        option.currently_selected = mathematical_modulo(
+            option.currently_selected + steps, option.available_values_len);
+}
+void increment_option_value(ConfigurationOption &option)
+{
+        shift_option_value(option, 1);
+}
+void decrement_option_value(ConfigurationOption &option)
+{
+        shift_option_value(option, -1);
+}
+
 int find_max_config_option_value_text_length(const Configuration &config)
 {
         int max_length = 0;
@@ -281,8 +295,6 @@ collect_configuration(const Platform &p, Configuration &config,
                 // We get a fresh, empty diff during each iteration to avoid
                 // option value text rerendering when they are not modified.
                 ConfigurationDiff diff = ConfigurationDiff{};
-                bool confirmation_bar_selected =
-                    config.curr_selected_option == config.options.size();
 
                 // Abstract out the repeatable delay functionality.
                 auto move_registered_delay = [&] {
@@ -365,24 +377,25 @@ collect_configuration(const Platform &p, Configuration &config,
  * selected.
  */
 std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
-    const Platform &p, Configuration &config,
-    const UserInterfaceCustomization &customization, bool allow_exit,
-    bool should_render_logo)
+    const Platform &p, const UserInterfaceCustomization &customization,
+    ConfigurationOption &option,
+    const std::vector<std::unique_ptr<ThumbnailRenderer>> &thumbnails,
+    bool allow_exit, bool should_render_logo)
 {
-        ConfigurationDiff *diff = new ConfigurationDiff;
-        render_config_menu(*p.display, config, *diff, false, customization,
-                           should_render_logo);
+        // Sanity check ensuring that we have enough thumbnail renderers for
+        // each available option.
+        assert(option.available_values_len == thumbnails.size());
+
+        auto render_thumbnail_for_current_selection = [&]() {
+                thumbnails[option.currently_selected]->render_thumbnail(
+                    p, customization);
+        };
+        render_thumbnail_for_current_selection();
+
         if (customization.show_help_text) {
                 render_default_controls_explanations(p);
         }
-        delete diff;
         while (true) {
-                // We get a fresh, empty diff during each iteration to avoid
-                // option value text rerendering when they are not modified.
-                ConfigurationDiff diff = ConfigurationDiff{};
-                bool confirmation_bar_selected =
-                    config.curr_selected_option == config.options.size();
-
                 // Abstract out the repeatable delay functionality.
                 auto move_registered_delay = [&] {
                         p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
@@ -400,13 +413,10 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
                                  move_registered_delay to ensure that the UI is
                                  snappy.
                                  */
-                                increment_current_option_value(config, diff);
-                                render_config_menu(*p.display, config, diff,
-                                                   true, customization,
-                                                   should_render_logo);
-                                if (!p.display->refresh()) {
+                                increment_option_value(option);
+                                render_thumbnail_for_current_selection();
+                                if (!p.display->refresh())
                                         return UserAction::CloseWindow;
-                                }
                                 move_registered_delay();
                                 continue;
                         }
@@ -426,16 +436,13 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
                         // We only have a single option to configure. Because of
                         // this there is no point to handle UP/DOWN inputs.
                         if (dir == LEFT)
-                                decrement_current_option_value(config, diff);
+                                decrement_option_value(option);
                         if (dir == RIGHT)
-                                increment_current_option_value(config, diff);
-                        render_config_menu(*p.display, config, diff, true,
-                                           customization, should_render_logo);
-                        if (!p.display->refresh()) {
+                                increment_option_value(option);
+                        render_thumbnail_for_current_selection();
+                        if (!p.display->refresh())
                                 return UserAction::CloseWindow;
-                        }
-
-                        p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
+                        move_registered_delay();
                 }
                 if (!p.display->refresh())
                         return UserAction::CloseWindow;
