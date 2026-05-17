@@ -44,7 +44,11 @@
 
 # In Progress
 
-- [ ] design & add game thumbnail rendering
+- [ ] design game thumbnail rendering
+- [ ] add game thumbnails
+- [ ] explore Lopaka and find if it can be used for fancy thumbnail rendering
+- [ ] add instrumentation so that thumbnails are only rendered on the fast display
+
 
 # Done
 - [x] clean up all usages of raw pointers.
