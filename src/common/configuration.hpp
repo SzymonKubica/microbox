@@ -1,9 +1,8 @@
 #pragma once
 
-#include "logging.hpp"
 #include "../platform/interface/platform.hpp"
-#include "../platform/interface/thumbnail.hpp"
 #include "user_interface_customization.hpp"
+#include "thumbnail.hpp"
 #include "map"
 #include <optional>
 

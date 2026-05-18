@@ -47,7 +47,8 @@
 - [ ] design game thumbnail rendering
 - [ ] add game thumbnails
 - [ ] explore Lopaka and find if it can be used for fancy thumbnail rendering
-- [ ] add instrumentation so that thumbnails are only rendered on the fast display
+- [x] add instrumentation so that thumbnails are only rendered on the fast display
+- [ ] find the right place for the thumbnail renderer
 
 
 # Done

@@ -4,12 +4,12 @@
 
 #include "menu.hpp"
 #include "application_executor.hpp"
-#include "platform/interface/thumbnail.hpp"
 
 #include "common/configuration.hpp"
 #include "common/logging.hpp"
 #include "common/color.hpp"
 #include "common/constants.hpp"
+#include "common/thumbnail.hpp"
 
 #include "games/minesweeper.hpp"
 #include "games/sudoku.hpp"
@@ -199,19 +199,25 @@ main_menu_interaction_loop(const Platform &p,
             .show_help_text = initial_config->show_help_text,
         };
 
-        std::vector<std::unique_ptr<ThumbnailRenderer>> renderers;
-        std::vector<Game> games = {
-            Game::Clean2048, Game::Minesweeper, Game::GameOfLife, Game::Snake,
-            Game::SnakeDuel, Game::Sudoku,      Game::Settings,   Game::Power};
-        for (auto game : games) {
-                renderers.emplace_back(
-                    std::move(get_thumbnail_renderer(game).value()));
+        std::optional<UserAction> maybe_interrupt = std::nullopt;
+        if (p.capabilities.has_fast_display) {
+                std::vector<std::unique_ptr<ThumbnailRenderer>> renderers;
+                std::vector<Game> games = {Game::Clean2048,  Game::Minesweeper,
+                                           Game::GameOfLife, Game::Snake,
+                                           Game::SnakeDuel,  Game::Sudoku,
+                                           Game::Settings,   Game::Power};
+                for (auto game : games) {
+                        renderers.emplace_back(
+                            std::move(get_thumbnail_renderer(game).value()));
+                }
+                ConfigurationOption &option = *config->options[0];
+                maybe_interrupt =
+                    collect_configuration_single_option_with_thumbnails(
+                        p, customization, option, renderers, false, true);
+        } else {
+                maybe_interrupt = collect_configuration(
+                    p, *config, customization, false, true);
         }
-
-        ConfigurationOption &option = *config->options[0];
-        auto maybe_interrupt =
-            collect_configuration_single_option_with_thumbnails(
-                p, customization, option, renderers, false, true);
 
         if (maybe_interrupt) {
                 return maybe_interrupt;

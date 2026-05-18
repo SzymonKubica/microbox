@@ -14,7 +14,7 @@
 
 const char *PowerManagementApp::get_game_name() const
 {
-        return "PowerManagementApp";
+        return "Power Off";
 };
 const char *PowerManagementApp::get_help_text() const
 {

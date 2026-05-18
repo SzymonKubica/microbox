@@ -38,6 +38,11 @@ void render_text_bar_centered(const Display &display, int y_start,
                               Color text_color = White,
                               int font_width = FONT_WIDTH,
                               FontSize font_size = Size16);
+void render_config_bar_centered(
+    const Display &display, int y_start, int option_text_max_len,
+    int value_text_max_len, const char *option_text, const char *value_text,
+    bool is_already_rendered, bool update_value_cell, bool update_option_name,
+    const UserInterfaceCustomization &customization);
 void render_circle_selector(const Display &display, bool already_rendered,
                             int x_axis, std::vector<int> y_positions,
                             int prev_pos_idx, int curr_pos_idx, int radius,
@@ -1750,4 +1755,19 @@ std::optional<UserAction> wait_until_action_input(const Platform &p,
                         return UserAction::CloseWindow;
                 }
         }
+}
+
+void NameBoxRenderer::render_thumbnail(
+    const Platform &platform, const UserInterfaceCustomization &customization)
+{
+
+        const auto &display = *platform.display;
+        display.clear(Black);
+        const char *header = "App";
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+
+        render_config_bar_centered(
+            display, available_height / 2, strlen(header), strlen(option_name),
+            header, option_name, false, true, true, customization);
 }

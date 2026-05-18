@@ -38,7 +38,7 @@ Settings::collect_config(const Platform &p,
         game_config.selected_game = selected_game;
         return std::nullopt;
 }
-const char *Settings::get_game_name() const { return "Settings Menu"; }
+const char *Settings::get_game_name() const { return "Settings"; }
 const char *Settings::get_help_text() const
 {
         return "Select the game/application and adjust the settings, press "

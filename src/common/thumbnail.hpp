@@ -1,6 +1,6 @@
 #pragma once
-#include "platform.hpp"
-#include "../../common/user_interface_customization.hpp"
+#include "user_interface_customization.hpp"
+#include "../platform/interface/platform.hpp"
 
 /**
  * Thumbnail renderer allows for rendering a preview of what the game is
