@@ -16,7 +16,8 @@ struct SudokuConfiguration {
         Color accent_color;
 };
 
-class SudokuGame : public ApplicationExecutor<SudokuConfiguration>
+class SudokuGame : public ApplicationExecutor<SudokuConfiguration>,
+                   public ThumbnailRenderer
 {
       public:
         UserAction app_loop(const Platform &p,
@@ -28,6 +29,10 @@ class SudokuGame : public ApplicationExecutor<SudokuConfiguration>
                        SudokuConfiguration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+
+        void
+        render_thumbnail(const Platform &platform,
+                         const UserInterfaceCustomization &customization) override;
 
         SudokuGame() {}
 };

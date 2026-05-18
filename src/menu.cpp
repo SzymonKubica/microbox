@@ -155,8 +155,11 @@ get_thumbnail_renderer(Game game)
                 return get_name_renderer<WifiApp>();
         case Game::RandomSeedPicker:
                 return get_name_renderer<RandomSeedPicker>();
-        case Game::Sudoku:
-                return get_name_renderer<SudokuGame>();
+        case Game::Sudoku: {
+                ThumbnailRenderer *renderer = new SudokuGame();
+                return std::unique_ptr<ThumbnailRenderer>(renderer);
+        }
+
         case Game::Power:
                 return get_name_renderer<PowerManagementApp>();
         case Game::Brightness:
