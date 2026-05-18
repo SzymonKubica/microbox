@@ -3,4 +3,3 @@ build-debug/*
 build-emulator/*
 build-emulator-debug/*
 persistent-storage.bin
-wifi_ssid_password_secrets.hpp
