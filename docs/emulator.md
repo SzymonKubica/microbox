@@ -84,3 +84,11 @@ cmake --build .
 - use  `g` to press the green button
 - use  `b` to press the blue button
 - use  `r` to press the red button
+
+## Troubleshooting
+
+If you are targeting a minimal debian-based distribution (e.g. RaspberryPi OS)
+You might need to install `libcurl` and `libsfml`:
+```
+sudo apt install libsfml-dev libcurl4-openssl-dev
+```
