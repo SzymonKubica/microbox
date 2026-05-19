@@ -1,4 +1,5 @@
 #include "font_provider.hpp"
+#include <SFML/Graphics/Color.hpp>
 #ifdef EMULATOR
 #include "sfml_display.hpp"
 #include <SFML/Graphics.hpp>
@@ -12,7 +13,7 @@ void SfmlDisplay::initialize() const {}
 
 void SfmlDisplay::sleep() const {};
 
-sf::Color map_to_sf_color(Color color);
+sf::Color map_to_sf_color(uint32_t color);
 void SfmlDisplay::clear(Color color) const
 {
         texture->clear(map_to_sf_color(color));
@@ -273,7 +274,7 @@ void SfmlDisplay::draw_image(Point start, int width, int height,
  * RGB888 with the additional opacity channel. This function converts from the
  * RGB565 color to the RGB888 by scaling each channel and setting opacity to 1.
  */
-sf::Color map_to_sf_color(Color color)
+sf::Color map_to_sf_color(uint32_t color)
 {
         uint8_t red, green, blue;
 
@@ -298,14 +299,34 @@ void SfmlDisplay::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
 void SfmlDisplay::drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
                            uint32_t color)
 {
+        sf::Color sf_color = map_to_sf_color(color);
+        sf::Vertex line[] = {sf::Vertex(sf::Vector2f(xs, ys), sf_color),
+                             sf::Vertex(sf::Vector2f(xe, ye), sf_color)};
+
+        texture->draw(line, 2, sf::PrimitiveType::Lines);
+        texture->display();
 }
-void SfmlDisplay::drawRect(int32_t x, int32_t y, int32_t w, int32_t h,
-                           uint32_t color)
+void SfmlDisplay::drawRect(int x, int y, int w, int h, int color)
 {
+        sf::RectangleShape rectangle({(float)w, (float)h});
+        rectangle.setPosition({(float)x, (float)y});
+        rectangle.setFillColor(sf::Color::Transparent);
+        rectangle.setOutlineColor(map_to_sf_color(color));
+        rectangle.setOutlineThickness(1);
+        texture->draw(rectangle);
+        texture->display();
 }
 void SfmlDisplay::fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
                            uint32_t color)
 {
+        sf::RectangleShape rectangle({(float)w, (float)h});
+        rectangle.setPosition({(float)x, (float)y});
+        sf::Color sf_color = map_to_sf_color(color);
+        rectangle.setFillColor(sf_color);
+        rectangle.setOutlineColor(sf_color);
+        rectangle.setOutlineThickness(1);
+        texture->draw(rectangle);
+        texture->display();
 }
 void SfmlDisplay::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
                                 int32_t radius, uint32_t color)
@@ -315,10 +336,52 @@ void SfmlDisplay::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
                                 int32_t radius, uint32_t color)
 {
 }
-void SfmlDisplay::drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color) {}
-void SfmlDisplay::fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color) {}
-void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y) {}
+void SfmlDisplay::drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color)
+{
+        sf::CircleShape circle(r);
+        circle.setPosition({(float)(x - r), (float)(y - r)});
+        sf::Color sf_color = map_to_sf_color(color);
+        circle.setOutlineColor(sf_color);
+        texture->draw(circle);
+        texture->display();
+}
+void SfmlDisplay::fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color)
+{
+        sf::CircleShape circle(r);
+        circle.setPosition({(float)(x - r), (float)(y - r)});
+        sf::Color sf_color = map_to_sf_color(color);
+        circle.setFillColor(sf_color);
+        circle.setOutlineColor(sf_color);
+        texture->draw(circle);
+        texture->display();
+}
+
+// This is a bit dirty but that's how we implement the functionality of
+// 'setting' the fill color. This is based on the assumption that we'll always
+// have at most one instance of the display so they won't keep overriding
+// the 'memoized' size here
+uint32_t font_size;
+sf::Color text_color;
+void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y)
+{
+
+        const sf::Font font = get_emulator_font();
+        int resolved_font_size = FontSize::Size16 * font_size;
+        // The default font size is 16. We use the font_size
+        // in line with the behaviour of the TFT_eSPI library: font_size == 1
+        // means that we are scaling the font as 100%, 2 means 200% and so on.
+        sf::Text text(font, string, resolved_font_size);
+
+        // We need to adjust the vertical alignment of the text to make it
+        // pixel-close to the actual TFT_eSPI behaviour.
+        int adjustment = 1;
+        text.setFillColor(sf::Color(text_color));
+        text.setPosition({(float)(x - FONT_WIDTH / 2 + adjustment),
+                          (float)(y - resolved_font_size / 2 + adjustment)});
+        texture->draw(text);
+        texture->display();
+}
 void SfmlDisplay::fillScreen(uint32_t color) {}
-void SfmlDisplay::setTextColor(uint16_t color) {}
-void SfmlDisplay::setTextSize(uint8_t size) {}
+void SfmlDisplay::setTextColor(uint32_t color) { text_color = map_to_sf_color(color); }
+void SfmlDisplay::setTextSize(uint8_t size) { font_size = size; }
 #endif

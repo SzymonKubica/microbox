@@ -143,24 +143,26 @@ class Display
 class TftCompatibleDisplay
 {
       public:
-        virtual void drawPixel(int32_t x, int32_t y, uint32_t color),
-            drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
-                     uint32_t bg, uint8_t size),
-            drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
-                     uint32_t color),
-            drawRect(int32_t x, int32_t y, int32_t w, int32_t h,
-                     uint32_t color),
-            fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
-                     uint32_t color),
-            drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
-                          int32_t radius, uint32_t color),
-            fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
-                          int32_t radius, uint32_t color),
-            drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
-            fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
-            drawString(const char *string, int32_t x, int32_t y),
-            fillScreen(uint32_t color),
-  setTextColor(uint16_t color),
-            // Set character size multiplier (this increases pixel size)
-            setTextSize(uint8_t size);
+        virtual void drawPixel(int32_t x, int32_t y, uint32_t color) = 0;
+        virtual void drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
+                              uint32_t bg, uint8_t size) = 0;
+        virtual void drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
+                              uint32_t color) = 0;
+        virtual void drawRect(int x, int y, int w, int h,
+                              int color) = 0;
+        virtual void fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                              uint32_t color) = 0;
+        virtual void drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                                   int32_t radius, uint32_t color) = 0;
+        virtual void fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                                   int32_t radius, uint32_t color) = 0;
+        virtual void drawCircle(int32_t x, int32_t y, int32_t r,
+                                uint32_t color) = 0;
+        virtual void fillCircle(int32_t x, int32_t y, int32_t r,
+                                uint32_t color) = 0;
+        virtual void drawString(const char *string, int32_t x, int32_t y) = 0;
+        virtual void fillScreen(uint32_t color) = 0;
+        virtual void setTextColor(uint32_t color) = 0;
+        // Set character size multiplier (this increases pixel size)
+        virtual void setTextSize(uint8_t size) = 0;
 };

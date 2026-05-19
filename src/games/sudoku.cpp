@@ -4,6 +4,9 @@
 #include "sudoku.hpp"
 #include "../apps/settings.hpp"
 #include "../menu.hpp"
+// TODO: remove. This is here only for testing. Game code
+// should not depend on the specifics of a particular display.
+#include "../platform/emulator/sfml_display.hpp"
 
 #include "../common/configuration.hpp"
 #include "../common/configuration.hpp"
@@ -499,34 +502,18 @@ void extract_game_config(SudokuConfiguration &game_config,
 void SudokuGame::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
-        const auto &display = *platform.display;
-        display.clear(Black);
+        platform.display->clear(Color::Black);
+        SfmlDisplay *tft_display = ((SfmlDisplay *)platform.display);
         int rect_1_h = 60;
         int rect_1_w = 60;
-        display.draw_rectangle({132, 101}, rect_1_w, rect_1_h, White, 1, false);
-        display.draw_line({152, 101}, {152, 160}, White);
-        display.draw_line({171, 101}, {171, 160}, White);
-        display.draw_line({132, 121}, {191, 121}, White);
-        display.draw_line({133, 141}, {191, 141}, White);
-        display.draw_string({140, 108}, (char *)"1", FontSize::Size16, Black,
-                            White);
-        display.draw_string({179, 148}, (char *)"5", FontSize::Size16, Black,
-                            White);
-        display.draw_string({140, 148}, (char *)"7", FontSize::Size16, Black,
-                            White);
-
-  /*
-  int rect_1_h = 60;
-int rect_1_w = 60;
-tft.drawRect(132, 101, rect_1_w, rect_1_h, 0xFFFF);
-tft.drawLine(152, 101, 152, 160, 0xFFFF);
-tft.drawLine(171, 101, 171, 160, 0xFFFF);
-tft.drawLine(132, 121, 191, 121, 0xFFFF);
-tft.drawLine(133, 141, 191, 141, 0xFFFF);
-tft.setTextColor(0xFFFF);
-tft.setTextSize(1);
-tft.drawString("1", 140, 108);
-tft.drawString("5", 179, 148);
-tft.drawString("7", 140, 148);
-    */
+        tft_display->drawRect(132, 101, rect_1_w, rect_1_h, 0xFFFF);
+        tft_display->drawLine(152, 101, 152, 160, 0xFFFF);
+        tft_display->drawLine(171, 101, 171, 160, 0xFFFF);
+        tft_display->drawLine(132, 121, 191, 121, 0xFFFF);
+        tft_display->drawLine(133, 141, 191, 141, 0xFFFF);
+        tft_display->setTextColor(0xFFFF);
+        tft_display->setTextSize(1);
+        tft_display->drawString("1", 140, 108);
+        tft_display->drawString("5", 179, 148);
+        tft_display->drawString("7", 140, 148);
 }

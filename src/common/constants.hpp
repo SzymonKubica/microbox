@@ -53,7 +53,7 @@
 #endif
 
 constexpr int DISPLAY_HEIGHT = 240;
-#if defined(WAVESHARE_2_4_INCH_LCD)
+#if defined(WAVESHARE_2_4_INCH_LCD) | defined(EMULATOR)
 constexpr int DISPLAY_WIDTH = 320;
 constexpr int DISPLAY_CORNER_RADIUS = 40;
 #else
