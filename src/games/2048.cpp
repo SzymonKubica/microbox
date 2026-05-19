@@ -921,13 +921,26 @@ void Clean2048::render_thumbnail(
 
         const auto &display = *platform.display;
         display.clear(Black);
+
+        const char *name = "MicroBox";
+        const char *subtitle = "2048";
+        // We initialize a dummy configuration to ensure that the UI code
+        // 'knows' that we have a single 'config bar' and so adjusts the
+        // vertical spacing accordingly.
+        render_menu_heading(display,
+                            Configuration(name, {new ConfigurationOption()}),
+                            false, strlen(name), customization);
+        render_menu_subtitle(
+            display, Configuration(subtitle, {new ConfigurationOption()}),
+            false, strlen(subtitle), customization);
+
         auto gd = std::unique_ptr<GridDimensions>(
             calculate_grid_dimensions(display, config->grid_size));
 
         int width = gd->cell_width;
         int height = gd->cell_height;
-        int x_spacing = gd->cell_x_spacing;
-        int y_spacing = gd->cell_y_spacing;
+        int x_spacing = gd->cell_x_spacing / 2;
+        int y_spacing = gd->cell_y_spacing / 2;
 
         // TODO: abstract out duplication between this code and
         // `calculate_grid_dimensions`

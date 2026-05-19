@@ -6,7 +6,11 @@
 #include "../menu.hpp"
 // TODO: remove. This is here only for testing. Game code
 // should not depend on the specifics of a particular display.
+#if defined(EMULATOR)
 #include "../platform/emulator/sfml_display.hpp"
+#else
+#include "../platform/drivers/display/lcd_display_2_4_inch.hpp"
+#endif
 
 #include "../common/configuration.hpp"
 #include "../common/configuration.hpp"
@@ -502,18 +506,43 @@ void extract_game_config(SudokuConfiguration &game_config,
 void SudokuGame::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
-        platform.display->clear(Color::Black);
+        const auto &display = *platform.display;
+        display.clear(Color::Black);
+        const char *name = "MicroBox";
+        const char *subtitle = "Sudoku";
+        // We initialize a dummy configuration to ensure that the UI code
+        // 'knows' that we have a single 'config bar' and so adjusts the
+        // vertical spacing accordingly.
+        render_menu_heading(display,
+                            Configuration(name, {new ConfigurationOption()}),
+                            false, strlen(name), customization);
+        render_menu_subtitle(
+            display, Configuration(subtitle, {new ConfigurationOption()}),
+            false, strlen(subtitle), customization);
+// TODO: clean up
+#if defined(EMULATOR)
         SfmlDisplay *tft_display = ((SfmlDisplay *)platform.display);
+#else
+        LcdDisplay *tft_display = ((LcdDisplay *)platform.display);
+#endif
         int rect_1_h = 60;
         int rect_1_w = 60;
-        tft_display->drawRect(132, 101, rect_1_w, rect_1_h, 0xFFFF);
-        tft_display->drawLine(152, 101, 152, 160, 0xFFFF);
-        tft_display->drawLine(171, 101, 171, 160, 0xFFFF);
-        tft_display->drawLine(132, 121, 191, 121, 0xFFFF);
-        tft_display->drawLine(133, 141, 191, 141, 0xFFFF);
-        tft_display->setTextColor(0xFFFF);
+        int x_adj = 5;
+        int y_adj = 6;
+        tft_display->drawRect(132 - x_adj, 101 + y_adj, rect_1_w, rect_1_h,
+                              0xFFFF);
+        tft_display->drawLine(152 - x_adj, 101 + y_adj, 152 - x_adj,
+                              160 + y_adj, 0xFFFF);
+        tft_display->drawLine(171 - x_adj, 101 + y_adj, 171 - x_adj,
+                              160 + y_adj, 0xFFFF);
+        tft_display->drawLine(132 - x_adj, 121 + y_adj, 191 - x_adj,
+                              121 + y_adj, 0xFFFF);
+        tft_display->drawLine(133 - x_adj, 141 + y_adj, 191 - x_adj,
+                              141 + y_adj, 0xFFFF);
+        tft_display->setTextColor(customization.accent_color);
         tft_display->setTextSize(1);
-        tft_display->drawString("1", 140, 108);
-        tft_display->drawString("5", 179, 148);
-        tft_display->drawString("7", 140, 148);
+        tft_display->drawString("1", 140 - x_adj, 108 + y_adj);
+        tft_display->setTextColor(0xFFFF);
+        tft_display->drawString("5", 179 - x_adj, 148 + y_adj);
+        tft_display->drawString("7", 140 - x_adj, 148 + y_adj);
 }

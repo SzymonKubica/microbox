@@ -6,14 +6,18 @@
 #include "configuration.hpp"
 #include "../platform/interface/display.hpp"
 
-
 void setup_display();
 
+void render_menu_heading(const Display &display, const Configuration &config,
+                         bool text_update_only, int text_max_length,
+                         const UserInterfaceCustomization &customization);
+void render_menu_subtitle(const Display &display, const Configuration &config,
+                          bool text_update_only, int text_max_length,
+                          const UserInterfaceCustomization &customization);
 void render_config_menu(const Display &display, const Configuration &config,
                         const ConfigurationDiff &diff, bool text_update_only,
                         const UserInterfaceCustomization &customization,
                         bool should_render_logo = false);
-
 
 std::optional<UserAction>
 collect_string_input(const Platform &p,

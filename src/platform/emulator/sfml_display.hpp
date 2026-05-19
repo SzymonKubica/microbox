@@ -131,8 +131,7 @@ class SfmlDisplay : public Display, public TftCompatibleDisplay
                       uint32_t bg, uint8_t size) override;
         void drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
                       uint32_t color) override;
-        void drawRect(int x, int y, int w, int h,
-                      int color) override;
+        void drawRect(int x, int y, int w, int h, int color) override;
         void fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
                       uint32_t color) override;
         void drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,

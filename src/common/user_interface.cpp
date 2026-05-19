@@ -441,6 +441,61 @@ inline int get_centering_margin(int screen_width, int font_width,
         return (screen_width - text_length * font_width) / 2;
 }
 
+void render_menu_heading(const Display &display, const Configuration &config,
+                         bool text_update_only, int text_max_length,
+                         const UserInterfaceCustomization &customization)
+{
+        const char *heading_text = config.name;
+
+        int h = display.get_height();
+        int w = display.get_width();
+        int fw = FONT_WIDTH;
+        int fh = FONT_SIZE;
+        int left_margin = get_centering_margin(w, fw, text_max_length);
+
+        int bars_num = std::min(config.options.size(), MAX_RENDERED_OPTION_NUM);
+
+        int bar_height = 2 * fh;
+        int bar_gap_height = fh * 3 / 4;
+        int y_spacing = calculate_section_spacing(h, bars_num, bar_height,
+                                                  bar_gap_height, Size24);
+
+        // Render the config menu heading.
+        render_text_bar_centered(display, y_spacing, text_max_length, 0,
+                                 heading_text, text_update_only,
+                                 customization.rendering_mode, Black, White,
+                                 HEADING_FONT_WIDTH, Size24);
+}
+
+// TODO: clean up this duplication against the above. Ideally we should have
+// specialized versions of those two functions where there is only a title,
+// a thumbnail / single config option and then a subtitle.
+void render_menu_subtitle(const Display &display, const Configuration &config,
+                          bool text_update_only, int text_max_length,
+                          const UserInterfaceCustomization &customization)
+{
+        const char *heading_text = config.name;
+
+        int h = display.get_height();
+        int w = display.get_width();
+        int fw = FONT_WIDTH;
+        int fh = FONT_SIZE;
+        int left_margin = get_centering_margin(w, fw, text_max_length);
+
+        int bars_num = std::min(config.options.size(), MAX_RENDERED_OPTION_NUM);
+
+        int bar_height = 2 * fh;
+        int bar_gap_height = fh * 3 / 4;
+        int y_spacing = calculate_section_spacing(h, bars_num, bar_height,
+                                                  bar_gap_height, Size16);
+
+        // Render the config menu heading.
+        render_text_bar_centered(display, 3 * y_spacing, text_max_length, 0,
+                                 heading_text, text_update_only,
+                                 customization.rendering_mode, Black, White,
+                                 FONT_WIDTH, Size16);
+}
+
 /**
  *
  * @param `text_update_only` controlls if the config menu has already been
@@ -467,8 +522,6 @@ void render_config_menu(const Display &display, const Configuration &config,
                        config.options.size() * FONT_SIZE - HEADING_FONT_SIZE) /
                       3;
 
-        const char *heading_text = config.name;
-
         // We exctract the display dimensions and font sizes into shorter
         // variable names to make the code easier to read.
         int h = display.get_height();
@@ -489,14 +542,11 @@ void render_config_menu(const Display &display, const Configuration &config,
                 display.clear(Black);
         }
 
+        render_menu_heading(display, config, text_update_only, text_max_length,
+                            customization);
+
         int *bar_positions = calculate_config_bar_positions(
             y_spacing, Size24, bar_height, bar_gap_height, bars_num);
-
-        // Render the config menu heading.
-        render_text_bar_centered(display, y_spacing, text_max_length, 0,
-                                 heading_text, text_update_only,
-                                 customization.rendering_mode, Black, White,
-                                 HEADING_FONT_WIDTH, Size24);
 
         // This is manually tweaked to make it look good.
         int logo_x_margin = 35;
@@ -1763,11 +1813,20 @@ void NameBoxRenderer::render_thumbnail(
 
         const auto &display = *platform.display;
         display.clear(Black);
+        const char *name = "MicroBox";
+        // We initialize a dummy configuration to ensure that the UI code
+        // 'knows' that we have a single 'config bar' and so adjusts the
+        // vertical spacing accordingly.
+        render_menu_heading(display,
+                            Configuration(name, {new ConfigurationOption()}),
+                            false, strlen(name), customization);
+
         const char *header = "App";
         int available_height =
             display.get_height() - display.get_display_corner_radius();
 
-        render_config_bar_centered(
-            display, available_height / 2, strlen(header), strlen(option_name),
-            header, option_name, false, true, true, customization);
+        render_config_bar_centered(display, available_height * 2 / 3,
+                                   strlen(header), strlen(option_name), header,
+                                   option_name, false, true, true,
+                                   customization);
 }

@@ -30,9 +30,9 @@ class SudokuGame : public ApplicationExecutor<SudokuConfiguration>,
         const char *get_game_name() const override;
         const char *get_help_text() const override;
 
-        void
-        render_thumbnail(const Platform &platform,
-                         const UserInterfaceCustomization &customization) override;
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
 
         SudokuGame() {}
 };

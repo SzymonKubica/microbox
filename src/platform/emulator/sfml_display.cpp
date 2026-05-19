@@ -1,6 +1,6 @@
 #include "font_provider.hpp"
-#include <SFML/Graphics/Color.hpp>
 #ifdef EMULATOR
+#include <SFML/Graphics/Color.hpp>
 #include "sfml_display.hpp"
 #include <SFML/Graphics.hpp>
 #include "../../common/constants.hpp"
@@ -382,6 +382,9 @@ void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y)
         texture->display();
 }
 void SfmlDisplay::fillScreen(uint32_t color) {}
-void SfmlDisplay::setTextColor(uint32_t color) { text_color = map_to_sf_color(color); }
+void SfmlDisplay::setTextColor(uint32_t color)
+{
+        text_color = map_to_sf_color(color);
+}
 void SfmlDisplay::setTextSize(uint8_t size) { font_size = size; }
 #endif

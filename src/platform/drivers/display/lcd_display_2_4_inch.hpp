@@ -10,7 +10,7 @@
  * display. All calls are forwarded to the library responsible for driving the
  * display. Because of this, this module depends on the `src/lib/` modules.
  */
-class LcdDisplay : public Display
+class LcdDisplay : public Display, public TftCompatibleDisplay
 {
       public:
         /**
@@ -118,5 +118,26 @@ class LcdDisplay : public Display
         virtual bool refresh() const override;
 
         virtual void sleep() const override;
+
+        void drawPixel(int32_t x, int32_t y, uint32_t color) override;
+        void drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
+                      uint32_t bg, uint8_t size) override;
+        void drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
+                      uint32_t color) override;
+        void drawRect(int x, int y, int w, int h, int color) override;
+        void fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                      uint32_t color) override;
+        void drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                           int32_t radius, uint32_t color) override;
+        void fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                           int32_t radius, uint32_t color) override;
+        void drawCircle(int32_t x, int32_t y, int32_t r,
+                        uint32_t color) override;
+        void fillCircle(int32_t x, int32_t y, int32_t r,
+                        uint32_t color) override;
+        void drawString(const char *string, int32_t x, int32_t y) override;
+        void fillScreen(uint32_t color) override;
+        void setTextColor(uint32_t color) override;
+        void setTextSize(uint8_t size) override;
 };
 #endif

@@ -44,15 +44,18 @@
 
 # In Progress
 
-- [ ] design game thumbnail rendering
 - [ ] add game thumbnails
-- [x] explore Lopaka and find if it can be used for fancy thumbnail rendering (not great unless display API changes)
-- [ ] create a display interfact that is a drop-in replacement for the lopaka-generated graphics (i.e. that exposes the same interface as TFT_eSPI)
-- [x] add instrumentation so that thumbnails are only rendered on the fast display
-- [x] find the right place for the thumbnail renderer
-
+- [ ] clean up hacky display interface casting
+- [ ] ensure that the menu heading is not re-rendered when thumbnails are switched
+- [ ] fix heading centering for the target font
+- [ ] add logo rendering and only render it once (this should be done inside of `collect_configuration_single_option_with_thumbnails`)
 
 # Done
+- [x] design game thumbnail rendering
+- [x] explore Lopaka and find if it can be used for fancy thumbnail rendering (not great unless display API changes)
+- [x] create a display interfact that is a drop-in replacement for the lopaka-generated graphics (i.e. that exposes the same interface as TFT_eSPI)
+- [x] add instrumentation so that thumbnails are only rendered on the fast display
+- [x] find the right place for the thumbnail renderer
 - [x] clean up all usages of raw pointers.
   - [x] platform code
     - [x] remove raw pointers from the wifi data utils

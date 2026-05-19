@@ -12,10 +12,7 @@
 #include "Arduino.h"
 #endif
 
-const char *PowerManagementApp::get_game_name() const
-{
-        return "Power Off";
-};
+const char *PowerManagementApp::get_game_name() const { return "Power Off"; };
 const char *PowerManagementApp::get_help_text() const
 {
         return "Press any button to enter deep sleep. Press 'back' to cancel. "

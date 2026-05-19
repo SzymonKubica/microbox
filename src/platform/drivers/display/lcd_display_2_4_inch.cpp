@@ -127,4 +127,49 @@ void LcdDisplay::sleep() const
         analogWrite(DEV_BL_PIN, 0);
         tft.writecommand(0x10); // ILI9341 SLEEP IN
 }
+
+void LcdDisplay::drawPixel(int32_t x, int32_t y, uint32_t color) {}
+void LcdDisplay::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
+                          uint32_t bg, uint8_t size)
+{
+}
+void LcdDisplay::drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
+                          uint32_t color)
+{
+        tft.drawLine(xs, ys, xe, ye, color);
+}
+void LcdDisplay::drawRect(int x, int y, int w, int h, int color)
+{
+        tft.drawRect(x, y, w, h, color);
+}
+void LcdDisplay::fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                          uint32_t color)
+{
+        tft.fillRect(x, y, w, h, color);
+}
+void LcdDisplay::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                               int32_t radius, uint32_t color)
+{
+        tft.drawRoundRect(x, y, w, h, radius, color);
+}
+void LcdDisplay::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                               int32_t radius, uint32_t color)
+{
+        tft.fillRoundRect(x, y, w, h, radius, color);
+}
+void LcdDisplay::drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color)
+{
+        tft.drawCircle(x, y, r, color);
+}
+void LcdDisplay::fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color)
+{
+        tft.fillCircle(x, y, r, color);
+}
+void LcdDisplay::drawString(const char *string, int32_t x, int32_t y)
+{
+        tft.drawString(string, x, y);
+}
+void LcdDisplay::fillScreen(uint32_t color) { tft.fillScreen(color); }
+void LcdDisplay::setTextColor(uint32_t color) { tft.setTextColor(color); }
+void LcdDisplay::setTextSize(uint8_t size) { tft.setTextSize(size); }
 #endif
