@@ -118,6 +118,9 @@ class SfmlDisplay : public Display
          */
         void sleep() const override;
 
+        void draw_image(Point start, int width, int height,
+                                const uint16_t *bitmap) const override;
+
         SfmlDisplay(sf::RenderWindow *window, sf::RenderTexture *texture)
             : window(window), texture(texture)
         {

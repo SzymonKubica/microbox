@@ -2,6 +2,7 @@
 #include "../../common/point.hpp"
 #include "../../common/font_size.hpp"
 #include "../../common/color.hpp"
+#include <cstdint>
 
 /*
  * @brief Display interface that needs to be implemented by classes that will be
@@ -118,4 +119,46 @@ class Display
          * battery.
          */
         virtual void sleep() const = 0;
+
+        // We make this an impure virtual function to avoid implementing it in
+        // all types of displays at this point. TODO: clean it up and provide
+        // an implementation everywhere.
+        virtual void draw_image(Point start, int width, int height,
+                                const uint16_t *bitmap) const
+        {
+        }
+};
+
+/**
+ * A display interface that is drop-in compatible with the interface exposed
+ * by the TFT_eSPI library for LCD displays. The idea here is to expose an
+ * interface that is exactly the same so that we can generate images using
+ * Lopaka (see here: https://lopaka.app/) and paste them into the source code.
+ *
+ * Note that not all functions on the TFT_eSPI interface are here.
+ * We are only interested in functions that handle graphics drawing. The aim
+ * here is to have the main display abstraction above handle initialization
+ * and other housekeeping items.
+ */
+class TftCompatibleDisplay
+{
+        virtual void drawPixel(int32_t x, int32_t y, uint32_t color),
+            drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
+                     uint32_t bg, uint8_t size),
+            drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
+                     uint32_t color),
+            drawRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                     uint32_t color),
+            fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                     uint32_t color),
+            drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                          int32_t radius, uint32_t color),
+            fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                          int32_t radius, uint32_t color),
+            drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
+            fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
+            drawString(const char *string, int32_t x, int32_t y),
+            fillScreen(uint32_t color), setTextColor(uint16_t color),
+            // Set character size multiplier (this increases pixel size)
+            setTextSize(uint8_t size);
 };

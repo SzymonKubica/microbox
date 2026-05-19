@@ -499,7 +499,6 @@ void extract_game_config(SudokuConfiguration &game_config,
 void SudokuGame::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
-
         const auto &display = *platform.display;
         display.clear(Black);
         int rect_1_h = 60;
@@ -515,4 +514,19 @@ void SudokuGame::render_thumbnail(
                             White);
         display.draw_string({140, 148}, (char *)"7", FontSize::Size16, Black,
                             White);
+
+  /*
+  int rect_1_h = 60;
+int rect_1_w = 60;
+tft.drawRect(132, 101, rect_1_w, rect_1_h, 0xFFFF);
+tft.drawLine(152, 101, 152, 160, 0xFFFF);
+tft.drawLine(171, 101, 171, 160, 0xFFFF);
+tft.drawLine(132, 121, 191, 121, 0xFFFF);
+tft.drawLine(133, 141, 191, 141, 0xFFFF);
+tft.setTextColor(0xFFFF);
+tft.setTextSize(1);
+tft.drawString("1", 140, 108);
+tft.drawString("5", 179, 148);
+tft.drawString("7", 140, 148);
+    */
 }

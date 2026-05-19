@@ -47,7 +47,7 @@
 - [ ] design game thumbnail rendering
 - [ ] add game thumbnails
 - [x] explore Lopaka and find if it can be used for fancy thumbnail rendering (not great unless display API changes)
-- [ ] create a display interfact that is a drop-in replacement for the lopaka-generated graphics
+- [ ] create a display interfact that is a drop-in replacement for the lopaka-generated graphics (i.e. that exposes the same interface as TFT_eSPI)
 - [x] add instrumentation so that thumbnails are only rendered on the fast display
 - [x] find the right place for the thumbnail renderer
 
