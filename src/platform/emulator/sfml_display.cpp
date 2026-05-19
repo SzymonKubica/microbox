@@ -290,4 +290,35 @@ sf::Color map_to_sf_color(Color color)
 
         return sf::Color(red, green, blue);
 }
+void SfmlDisplay::drawPixel(int32_t x, int32_t y, uint32_t color) {}
+void SfmlDisplay::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
+                           uint32_t bg, uint8_t size)
+{
+}
+void SfmlDisplay::drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
+                           uint32_t color)
+{
+}
+void SfmlDisplay::drawRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                           uint32_t color)
+{
+}
+void SfmlDisplay::fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                           uint32_t color)
+{
+}
+void SfmlDisplay::drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                                int32_t radius, uint32_t color)
+{
+}
+void SfmlDisplay::fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                                int32_t radius, uint32_t color)
+{
+}
+void SfmlDisplay::drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color) {}
+void SfmlDisplay::fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color) {}
+void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y) {}
+void SfmlDisplay::fillScreen(uint32_t color) {}
+void SfmlDisplay::setTextColor(uint16_t color) {}
+void SfmlDisplay::setTextSize(uint8_t size) {}
 #endif

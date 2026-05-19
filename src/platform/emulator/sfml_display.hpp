@@ -8,7 +8,7 @@
  * physical SFML library. This is used for emulating the console behaviour on
  * linux machines.
  */
-class SfmlDisplay : public Display
+class SfmlDisplay : public Display, public TftCompatibleDisplay
 {
       public:
         /**
@@ -119,12 +119,34 @@ class SfmlDisplay : public Display
         void sleep() const override;
 
         void draw_image(Point start, int width, int height,
-                                const uint16_t *bitmap) const override;
+                        const uint16_t *bitmap) const override;
 
         SfmlDisplay(sf::RenderWindow *window, sf::RenderTexture *texture)
             : window(window), texture(texture)
         {
         }
+
+        void drawPixel(int32_t x, int32_t y, uint32_t color) override;
+        void drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
+                      uint32_t bg, uint8_t size) override;
+        void drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
+                      uint32_t color) override;
+        void drawRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                      uint32_t color) override;
+        void fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                      uint32_t color) override;
+        void drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                           int32_t radius, uint32_t color) override;
+        void fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                           int32_t radius, uint32_t color) override;
+        void drawCircle(int32_t x, int32_t y, int32_t r,
+                        uint32_t color) override;
+        void fillCircle(int32_t x, int32_t y, int32_t r,
+                        uint32_t color) override;
+        void drawString(const char *string, int32_t x, int32_t y) override;
+        void fillScreen(uint32_t color) override;
+        void setTextColor(uint16_t color) override;
+        void setTextSize(uint8_t size) override;
 
       private:
         sf::RenderWindow *window;

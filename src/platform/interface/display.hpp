@@ -142,6 +142,7 @@ class Display
  */
 class TftCompatibleDisplay
 {
+      public:
         virtual void drawPixel(int32_t x, int32_t y, uint32_t color),
             drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
                      uint32_t bg, uint8_t size),
@@ -158,7 +159,8 @@ class TftCompatibleDisplay
             drawCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
             fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color),
             drawString(const char *string, int32_t x, int32_t y),
-            fillScreen(uint32_t color), setTextColor(uint16_t color),
+            fillScreen(uint32_t color),
+  setTextColor(uint16_t color),
             // Set character size multiplier (this increases pixel size)
             setTextSize(uint8_t size);
 };
