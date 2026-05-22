@@ -265,7 +265,7 @@ collect_configuration(const Platform &p, Configuration &config,
 
 std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
     const Platform &p, const UserInterfaceCustomization &customization,
-    ConfigurationOption &option,
+    ConfigurationOption &option, const char *menu_name,
     const std::vector<std::unique_ptr<ThumbnailRenderer>> &thumbnails,
     bool allow_exit, bool should_render_logo);
 

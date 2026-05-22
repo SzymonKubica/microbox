@@ -378,13 +378,21 @@ collect_configuration(const Platform &p, Configuration &config,
  */
 std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
     const Platform &p, const UserInterfaceCustomization &customization,
-    ConfigurationOption &option,
+    ConfigurationOption &option, const char *menu_name,
     const std::vector<std::unique_ptr<ThumbnailRenderer>> &thumbnails,
     bool allow_exit, bool should_render_logo)
 {
         // Sanity check ensuring that we have enough thumbnail renderers for
         // each available option.
         assert(option.available_values_len == thumbnails.size());
+
+        const auto &display = *p.display;
+        display.clear(Black);
+        // 'knows' that we have a single 'config bar' and so adjusts the
+        // vertical spacing accordingly.
+        render_menu_heading(
+            display, Configuration(menu_name, {new ConfigurationOption()}),
+            false, strlen(menu_name), customization);
 
         auto render_thumbnail_for_current_selection = [&]() {
                 thumbnails[option.currently_selected]->render_thumbnail(

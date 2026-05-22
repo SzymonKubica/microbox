@@ -507,15 +507,11 @@ void SudokuGame::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
         const auto &display = *platform.display;
-        display.clear(Color::Black);
-        const char *name = "MicroBox";
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+        display.clear_region({0, available_height / 2},
+                             {display.get_width(), available_height}, Black);
         const char *subtitle = "Sudoku";
-        // We initialize a dummy configuration to ensure that the UI code
-        // 'knows' that we have a single 'config bar' and so adjusts the
-        // vertical spacing accordingly.
-        render_menu_heading(display,
-                            Configuration(name, {new ConfigurationOption()}),
-                            false, strlen(name), customization);
         render_menu_subtitle(
             display, Configuration(subtitle, {new ConfigurationOption()}),
             false, strlen(subtitle), customization);

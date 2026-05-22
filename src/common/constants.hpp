@@ -17,7 +17,7 @@
 #define HEADING_FONT_WIDTH 15
 #else
 #if defined(WAVESHARE_2_4_INCH_LCD)
-#define HEADING_FONT_WIDTH 12
+#define HEADING_FONT_WIDTH 14
 #else
 #define HEADING_FONT_WIDTH 17
 #endif

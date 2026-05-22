@@ -216,7 +216,8 @@ main_menu_interaction_loop(const Platform &p,
                 ConfigurationOption &option = *config->options[0];
                 maybe_interrupt =
                     collect_configuration_single_option_with_thumbnails(
-                        p, customization, option, renderers, false, true);
+                        p, customization, option, "MicroBox", renderers, false,
+                        true);
         } else {
                 maybe_interrupt = collect_configuration(
                     p, *config, customization, false, true);

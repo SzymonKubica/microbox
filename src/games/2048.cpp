@@ -920,16 +920,12 @@ void Clean2048::render_thumbnail(
             initialize_game_state(config->grid_size, config->target_max_tile);
 
         const auto &display = *platform.display;
-        display.clear(Black);
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+        display.clear_region({0, available_height / 2},
+                             {display.get_width(), available_height}, Black);
 
-        const char *name = "MicroBox";
         const char *subtitle = "2048";
-        // We initialize a dummy configuration to ensure that the UI code
-        // 'knows' that we have a single 'config bar' and so adjusts the
-        // vertical spacing accordingly.
-        render_menu_heading(display,
-                            Configuration(name, {new ConfigurationOption()}),
-                            false, strlen(name), customization);
         render_menu_subtitle(
             display, Configuration(subtitle, {new ConfigurationOption()}),
             false, strlen(subtitle), customization);

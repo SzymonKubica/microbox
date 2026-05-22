@@ -161,6 +161,11 @@ void render_config_bar_centered(const Display &display, int y_start,
 
         if (!is_already_rendered) {
                 Point bar_name_str_start = {.x = left_margin, .y = y_start};
+                // We clear the horizontal strip of display if the frame is not
+                // already rendered in case there was something rendered there
+                // that wasn't cleared up.
+                display.clear_region({0, bar_start.y - 2 * fh},
+                                     {w, 3 * bar_start.y}, Black);
 
                 if (customization.rendering_mode == Detailed) {
                         // Draw the background for the two configuration cells.
@@ -449,7 +454,7 @@ void render_menu_heading(const Display &display, const Configuration &config,
 
         int h = display.get_height();
         int w = display.get_width();
-        int fw = FONT_WIDTH;
+        int fw = HEADING_FONT_WIDTH;
         int fh = FONT_SIZE;
         int left_margin = get_centering_margin(w, fw, text_max_length);
 
@@ -1812,14 +1817,6 @@ void NameBoxRenderer::render_thumbnail(
 {
 
         const auto &display = *platform.display;
-        display.clear(Black);
-        const char *name = "MicroBox";
-        // We initialize a dummy configuration to ensure that the UI code
-        // 'knows' that we have a single 'config bar' and so adjusts the
-        // vertical spacing accordingly.
-        render_menu_heading(display,
-                            Configuration(name, {new ConfigurationOption()}),
-                            false, strlen(name), customization);
 
         const char *header = "App";
         int available_height =
