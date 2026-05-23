@@ -42,6 +42,7 @@ void render_config_bar_centered(
     const Display &display, int y_start, int option_text_max_len,
     int value_text_max_len, const char *option_text, const char *value_text,
     bool is_already_rendered, bool update_value_cell, bool update_option_name,
+    bool clear_before_rendering,
     const UserInterfaceCustomization &customization);
 void render_circle_selector(const Display &display, bool already_rendered,
                             int x_axis, std::vector<int> y_positions,
@@ -110,6 +111,7 @@ void render_config_bar_centered(const Display &display, int y_start,
                                 const char *option_text, const char *value_text,
                                 bool is_already_rendered,
                                 bool update_value_cell, bool update_option_name,
+                                bool clear_before_rendering,
                                 const UserInterfaceCustomization &customization)
 {
 
@@ -159,13 +161,16 @@ void render_config_bar_centered(const Display &display, int y_start,
 
         Color accent_color = customization.accent_color;
 
-        if (!is_already_rendered) {
-                Point bar_name_str_start = {.x = left_margin, .y = y_start};
+        if (clear_before_rendering) {
                 // We clear the horizontal strip of display if the frame is not
                 // already rendered in case there was something rendered there
                 // that wasn't cleared up.
                 display.clear_region({0, bar_start.y - 2 * fh},
                                      {w, 3 * bar_start.y}, Black);
+        }
+
+        if (!is_already_rendered) {
+                Point bar_name_str_start = {.x = left_margin, .y = y_start};
 
                 if (customization.rendering_mode == Detailed) {
                         // Draw the background for the two configuration cells.
@@ -658,7 +663,7 @@ void render_config_menu(const Display &display, const Configuration &config,
                                   diff.modified_options.end(),
                                   bar_idx_to_option_idx[i]) !=
                             diff.modified_options.end(),
-                    update_option_names, customization);
+                    update_option_names, false, customization);
                 LOG_DEBUG(TAG,
                           "Rendered config bar %d with option text '%s' and "
                           "value '%s'",
@@ -1824,6 +1829,6 @@ void NameBoxRenderer::render_thumbnail(
 
         render_config_bar_centered(display, available_height * 2 / 3,
                                    strlen(header), strlen(option_name), header,
-                                   option_name, false, true, true,
+                                   option_name, false, true, true, true,
                                    customization);
 }

@@ -447,7 +447,9 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
                                 decrement_option_value(option);
                         if (dir == RIGHT)
                                 increment_option_value(option);
-                        render_thumbnail_for_current_selection();
+                        if (dir == LEFT || dir == RIGHT) {
+                                render_thumbnail_for_current_selection();
+                        }
                         if (!p.display->refresh())
                                 return UserAction::CloseWindow;
                         move_registered_delay();
