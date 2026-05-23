@@ -172,4 +172,15 @@ void LcdDisplay::drawString(const char *string, int32_t x, int32_t y)
 void LcdDisplay::fillScreen(uint32_t color) { tft.fillScreen(color); }
 void LcdDisplay::setTextColor(uint32_t color) { tft.setTextColor(color); }
 void LcdDisplay::setTextSize(uint8_t size) { tft.setTextSize(size); }
+
+void LcdDisplay::drawTriangle(int32_t xs, int32_t ys, int32_t x2, int32_t y2,
+                              int32_t xe, int32_t ye, uint32_t color)
+{
+        tft.drawTriangle(xs, ys, x2, y2, xe, ye, color);
+}
+void LcdDisplay::fillTriangle(int32_t xs, int32_t ys, int32_t x2, int32_t y2,
+                              int32_t xe, int32_t ye, uint32_t color)
+{
+        tft.fillTriangle(xs, ys, x2, y2, xe, ye, color);
+}
 #endif
