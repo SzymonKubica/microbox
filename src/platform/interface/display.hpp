@@ -151,6 +151,12 @@ class TftCompatibleDisplay
         virtual void drawRect(int x, int y, int w, int h, int color) = 0;
         virtual void fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
                               uint32_t color) = 0;
+        virtual void drawTriangle(int32_t xs, int32_t ys, int32_t x2,
+                                  int32_t y2, int32_t xe, int32_t ye,
+                                  uint32_t color) = 0;
+        virtual void fillTriangle(int32_t xs, int32_t ys, int32_t x2,
+                                  int32_t y2, int32_t xe, int32_t ye,
+                                  uint32_t color) = 0;
         virtual void drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
                                    int32_t radius, uint32_t color) = 0;
         virtual void fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,

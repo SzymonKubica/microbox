@@ -387,4 +387,31 @@ void SfmlDisplay::setTextColor(uint32_t color)
         text_color = map_to_sf_color(color);
 }
 void SfmlDisplay::setTextSize(uint8_t size) { font_size = size; }
+
+void SfmlDisplay::drawTriangle(int32_t xs, int32_t ys, int32_t x2, int32_t y2,
+                               int32_t xe, int32_t ye, uint32_t color)
+{
+        sf::ConvexShape triangle;
+        triangle.setPointCount(3);
+        triangle.setPoint(0, sf::Vector2f(xs, ys));
+        triangle.setPoint(1, sf::Vector2f(x2, y2));
+        triangle.setPoint(2, sf::Vector2f(xe, ye));
+        triangle.setFillColor(sf::Color::Transparent);
+        triangle.setOutlineColor(map_to_sf_color(color));
+        texture->draw(triangle);
+        texture->display();
+}
+void SfmlDisplay::fillTriangle(int32_t xs, int32_t ys, int32_t x2, int32_t y2,
+                               int32_t xe, int32_t ye, uint32_t color)
+{
+        sf::ConvexShape triangle;
+        triangle.setPointCount(3);
+        triangle.setPoint(0, sf::Vector2f(xs, ys));
+        triangle.setPoint(1, sf::Vector2f(x2, y2));
+        triangle.setPoint(2, sf::Vector2f(xe, ye));
+        triangle.setFillColor(map_to_sf_color(color));
+        triangle.setOutlineColor(map_to_sf_color(color));
+        texture->draw(triangle);
+        texture->display();
+}
 #endif
