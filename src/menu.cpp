@@ -145,8 +145,11 @@ get_thumbnail_renderer(Game game)
                 return get_name_renderer<Minesweeper>();
         case Game::GameOfLife:
                 return get_name_renderer<GameOfLife>();
-        case Game::Settings:
-                return get_name_renderer<Settings>();
+        case Game::Settings: {
+                ThumbnailRenderer *renderer = new Settings();
+                return std::unique_ptr<ThumbnailRenderer>(renderer);
+        }
+
         case Game::Snake:
                 return get_name_renderer<SnakeGame>();
         case Game::SnakeDuel:

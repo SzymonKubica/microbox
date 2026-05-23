@@ -1,9 +1,17 @@
+#include <cstring>
 #include <memory>
 
 #include "settings.hpp"
 #include "app_menu.hpp"
 #include "brightness.hpp"
 #include "random_seed_picker.hpp"
+// TODO: remove. This is here only for testing. Game code
+// should not depend on the specifics of a particular display.
+#if defined(EMULATOR)
+#include "../platform/emulator/sfml_display.hpp"
+#else
+#include "../platform/drivers/display/lcd_display_2_4_inch.hpp"
+#endif
 #include "wifi.hpp"
 #include "../menu.hpp"
 #include "../common/configuration.hpp"
@@ -229,4 +237,50 @@ void extract_menu_setting(Game &selection, const Configuration &config)
 {
         ConfigurationOption menu_option = *config.options[0];
         selection = game_from_string(menu_option.get_current_str_value());
+}
+
+void Settings::render_thumbnail(const Platform &platform,
+                                const UserInterfaceCustomization &customization)
+{
+        const auto &display = *platform.display;
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+        display.clear_region({0, available_height / 2},
+                             {display.get_width(), available_height}, Black);
+        const char *subtitle = "Settings";
+        render_menu_subtitle(
+            display, Configuration(subtitle, {new ConfigurationOption()}),
+            false, strlen(subtitle), customization);
+
+// TODO: clean up
+#if defined(EMULATOR)
+        SfmlDisplay &tft = *((SfmlDisplay *)platform.display);
+#else
+        LcdDisplay &tft = *((LcdDisplay *)platform.display);
+#endif
+
+        // [BEGIN lopaka generated]
+        auto draw_polygon_7 = [&tft]() {
+                tft.drawLine(122, 109, 134, 97, 0x4208);
+                tft.drawLine(134, 97, 198, 163, 0x4208);
+                tft.drawLine(198, 163, 186, 175, 0x4208);
+                tft.drawLine(186, 175, 185, 175, 0x4208);
+                tft.drawLine(185, 175, 122, 109, 0x4208);
+        };
+        auto draw_polygon_8 = [&tft]() {
+                tft.drawLine(186, 97, 199, 110, 0x4208);
+                tft.drawLine(199, 110, 136, 173, 0x4208);
+                tft.drawLine(136, 173, 123, 160, 0x4208);
+                tft.drawLine(123, 160, 186, 97, 0x4208);
+        };
+        tft.drawRect(117, 125, 22, 22, 0x4208);
+        tft.drawRect(150, 91, 22, 28, 0x4208);
+        tft.drawRect(150, 125, 22, 22, 0x4208);
+        tft.drawRect(150, 154, 22, 28, 0x4208);
+        draw_polygon_7();
+        tft.fillCircle(161, 137, 34, 0x4208);
+        draw_polygon_8();
+        tft.fillCircle(161, 137, 20, 0x0);
+        tft.drawRect(185, 125, 22, 22, 0x4208);
+        // [END lopaka generated]
 }

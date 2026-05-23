@@ -20,7 +20,8 @@ struct SettingsConfiguration {
  * then saved in the persistent storage and used as the default values in the
  * future.
  */
-class Settings : public ApplicationExecutor<SettingsConfiguration>
+class Settings : public ApplicationExecutor<SettingsConfiguration>,
+                 public ThumbnailRenderer
 {
       public:
         UserAction app_loop(const Platform &p,
@@ -32,4 +33,8 @@ class Settings : public ApplicationExecutor<SettingsConfiguration>
                        SettingsConfiguration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
 };
