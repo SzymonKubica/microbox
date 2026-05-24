@@ -13,7 +13,8 @@
 struct SleepConfiguration {
 };
 
-class PowerManagementApp : public ApplicationExecutor<SleepConfiguration>
+class PowerManagementApp : public ApplicationExecutor<SleepConfiguration>,
+                           public ThumbnailRenderer
 {
       public:
         PowerManagementApp() {}
@@ -27,4 +28,8 @@ class PowerManagementApp : public ApplicationExecutor<SleepConfiguration>
                        SleepConfiguration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
 };

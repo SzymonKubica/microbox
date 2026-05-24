@@ -414,4 +414,6 @@ void SfmlDisplay::fillTriangle(int32_t xs, int32_t ys, int32_t x2, int32_t y2,
         texture->draw(triangle);
         texture->display();
 }
+
+TftCompatibleDisplay *SfmlDisplay::cast_into_tft_compatible() { return this; }
 #endif

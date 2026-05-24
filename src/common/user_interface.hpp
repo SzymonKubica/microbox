@@ -10,7 +10,8 @@ void setup_display();
 
 void render_menu_heading(const Display &display, const Configuration &config,
                          bool text_update_only, int text_max_length,
-                         const UserInterfaceCustomization &customization);
+                         const UserInterfaceCustomization &customization,
+                         bool should_render_logo = false);
 void render_menu_subtitle(const Display &display, const Configuration &config,
                           bool text_update_only, int text_max_length,
                           const UserInterfaceCustomization &customization);

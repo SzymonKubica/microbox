@@ -392,7 +392,7 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
         // vertical spacing accordingly.
         render_menu_heading(
             display, Configuration(menu_name, {new ConfigurationOption()}),
-            false, strlen(menu_name), customization);
+            false, strlen(menu_name), customization, should_render_logo);
 
         auto render_thumbnail_for_current_selection = [&]() {
                 thumbnails[option.currently_selected]->render_thumbnail(

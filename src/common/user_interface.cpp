@@ -341,16 +341,15 @@ void render_text_bar_centered(const Display &display, int y_start,
                             get_good_contrast_text_color(background_color));
                 } else {
 
-#ifdef EMULATOR
                         // We need to clear the background in black so that it
                         // is the previous text is erased. Note that this is
                         // only required on the emulator as the actual LCD
                         // display always clears the background of the text.
-                        display.clear_region(
-                            bar_start,
-                            {bar_start.x + bar_width, bar_start.y + fh * 2},
-                            Black);
-#endif
+                        display.clear_region(bar_start + Point{-3 * fw, 0},
+                                             Point{bar_start.x + bar_width,
+                                                   bar_start.y + fh * 2} +
+                                                 Point(3 * fw, 0),
+                                             Black);
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
                         // Draw the background for the two configuration cells.
@@ -453,7 +452,8 @@ inline int get_centering_margin(int screen_width, int font_width,
 
 void render_menu_heading(const Display &display, const Configuration &config,
                          bool text_update_only, int text_max_length,
-                         const UserInterfaceCustomization &customization)
+                         const UserInterfaceCustomization &customization,
+                         bool should_render_logo)
 {
         const char *heading_text = config.name;
 
@@ -470,11 +470,21 @@ void render_menu_heading(const Display &display, const Configuration &config,
         int y_spacing = calculate_section_spacing(h, bars_num, bar_height,
                                                   bar_gap_height, Size24);
 
+        // This is manually tweaked to make it look good.
+        int logo_x_margin = 35;
+        int logo_y_margin = 5;
+
         // Render the config menu heading.
         render_text_bar_centered(display, y_spacing, text_max_length, 0,
                                  heading_text, text_update_only,
                                  customization.rendering_mode, Black, White,
                                  HEADING_FONT_WIDTH, Size24);
+
+        if (should_render_logo) {
+                render_logo(
+                    display, customization,
+                    {.x = logo_x_margin, .y = y_spacing + logo_y_margin});
+        }
 }
 
 // TODO: clean up this duplication against the above. Ideally we should have
@@ -1823,7 +1833,7 @@ void NameBoxRenderer::render_thumbnail(
 
         const auto &display = *platform.display;
 
-        const char *header = "App";
+        const char *header = "Play";
         int available_height =
             display.get_height() - display.get_display_corner_radius();
 

@@ -163,8 +163,10 @@ get_thumbnail_renderer(Game game)
                 return std::unique_ptr<ThumbnailRenderer>(renderer);
         }
 
-        case Game::Power:
-                return get_name_renderer<PowerManagementApp>();
+        case Game::Power: {
+                ThumbnailRenderer *renderer = new PowerManagementApp();
+                return std::unique_ptr<ThumbnailRenderer>(renderer);
+        }
         case Game::Brightness:
                 return get_name_renderer<BrightnessApp>();
         default:

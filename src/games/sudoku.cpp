@@ -506,7 +506,7 @@ void extract_game_config(SudokuConfiguration &game_config,
 void SudokuGame::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
-        const auto &display = *platform.display;
+        const Display &display = *platform.display;
         int available_height =
             display.get_height() - display.get_display_corner_radius();
         display.clear_region({0, available_height / 2},
@@ -515,15 +515,11 @@ void SudokuGame::render_thumbnail(
         render_menu_subtitle(
             display, Configuration(subtitle, {new ConfigurationOption()}),
             false, strlen(subtitle), customization);
-// TODO: clean up
-#if defined(EMULATOR)
-        SfmlDisplay *tft_display = ((SfmlDisplay *)platform.display);
-#else
-        LcdDisplay *tft_display = ((LcdDisplay *)platform.display);
-#endif
+        TftCompatibleDisplay *tft_display =
+            platform.display->cast_into_tft_compatible();
         int rect_1_h = 60;
         int rect_1_w = 60;
-        int x_adj = 5;
+        int x_adj = 0;
         int y_adj = 6;
         tft_display->drawRect(132 - x_adj, 101 + y_adj, rect_1_w, rect_1_h,
                               0xFFFF);

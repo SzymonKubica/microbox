@@ -151,6 +151,8 @@ class SfmlDisplay : public Display, public TftCompatibleDisplay
         void setTextColor(uint32_t color) override;
         void setTextSize(uint8_t size) override;
 
+        TftCompatibleDisplay *cast_into_tft_compatible() override;
+
       private:
         sf::RenderWindow *window;
         sf::RenderTexture *texture;

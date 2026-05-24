@@ -1,5 +1,14 @@
 #include <cassert>
+#include <cstring>
 #include "power.hpp"
+
+// TODO: remove. This is here only for testing. Game code
+// should not depend on the specifics of a particular display.
+#if defined(EMULATOR)
+#include "../platform/emulator/sfml_display.hpp"
+#else
+#include "../platform/drivers/display/lcd_display_2_4_inch.hpp"
+#endif
 
 #include "../common/configuration.hpp"
 
@@ -49,4 +58,33 @@ std::optional<UserAction> PowerManagementApp::collect_config(
         if (act == BACK_ACTION)
                 return UserAction::Exit;
         return std::nullopt;
+}
+
+void PowerManagementApp::render_thumbnail(
+    const Platform &platform, const UserInterfaceCustomization &customization)
+{
+
+        const auto &display = *platform.display;
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+        display.clear_region({0, available_height / 2},
+                             {display.get_width(), available_height}, Black);
+        const char *subtitle = "Power Off";
+        render_menu_subtitle(
+            display, Configuration(subtitle, {new ConfigurationOption()}),
+            false, strlen(subtitle), customization);
+
+        TftCompatibleDisplay &tft =
+            *platform.display->cast_into_tft_compatible();
+
+        // [BEGIN lopaka generated]
+        tft.fillCircle(162, 137, 27, White);
+        tft.fillCircle(162, 137, 27, White);
+        tft.fillCircle(162, 137, 15, 0x0);
+        tft.fillRect(158, 107, 9, 28, customization.accent_color);
+        tft.fillRect(167, 100, 5, 39, 0x0);
+        tft.fillCircle(162, 105, 4, customization.accent_color);
+        tft.fillCircle(162, 134, 4, customization.accent_color);
+        tft.fillRect(153, 100, 5, 41, 0x0);
+        // [END lopaka generated]
 }

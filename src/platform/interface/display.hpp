@@ -4,6 +4,49 @@
 #include "../../common/color.hpp"
 #include <cstdint>
 
+/**
+ * A display interface that is drop-in compatible with the interface exposed
+ * by the TFT_eSPI library for LCD displays. The idea here is to expose an
+ * interface that is exactly the same so that we can generate images using
+ * Lopaka (see here: https://lopaka.app/) and paste them into the source code.
+ *
+ * Note that not all functions on the TFT_eSPI interface are here.
+ * We are only interested in functions that handle graphics drawing. The aim
+ * here is to have the main display abstraction above handle initialization
+ * and other housekeeping items.
+ */
+class TftCompatibleDisplay
+{
+      public:
+        virtual void drawPixel(int32_t x, int32_t y, uint32_t color) = 0;
+        virtual void drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
+                              uint32_t bg, uint8_t size) = 0;
+        virtual void drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
+                              uint32_t color) = 0;
+        virtual void drawRect(int x, int y, int w, int h, int color) = 0;
+        virtual void fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                              uint32_t color) = 0;
+        virtual void drawTriangle(int32_t xs, int32_t ys, int32_t x2,
+                                  int32_t y2, int32_t xe, int32_t ye,
+                                  uint32_t color) = 0;
+        virtual void fillTriangle(int32_t xs, int32_t ys, int32_t x2,
+                                  int32_t y2, int32_t xe, int32_t ye,
+                                  uint32_t color) = 0;
+        virtual void drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                                   int32_t radius, uint32_t color) = 0;
+        virtual void fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
+                                   int32_t radius, uint32_t color) = 0;
+        virtual void drawCircle(int32_t x, int32_t y, int32_t r,
+                                uint32_t color) = 0;
+        virtual void fillCircle(int32_t x, int32_t y, int32_t r,
+                                uint32_t color) = 0;
+        virtual void drawString(const char *string, int32_t x, int32_t y) = 0;
+        virtual void fillScreen(uint32_t color) = 0;
+        virtual void setTextColor(uint32_t color) = 0;
+        // Set character size multiplier (this increases pixel size)
+        virtual void setTextSize(uint8_t size) = 0;
+};
+
 /*
  * @brief Display interface that needs to be implemented by classes that will be
  * used for drawing our games.
@@ -127,47 +170,13 @@ class Display
                                 const uint16_t *bitmap) const
         {
         }
-};
-
-/**
- * A display interface that is drop-in compatible with the interface exposed
- * by the TFT_eSPI library for LCD displays. The idea here is to expose an
- * interface that is exactly the same so that we can generate images using
- * Lopaka (see here: https://lopaka.app/) and paste them into the source code.
- *
- * Note that not all functions on the TFT_eSPI interface are here.
- * We are only interested in functions that handle graphics drawing. The aim
- * here is to have the main display abstraction above handle initialization
- * and other housekeeping items.
- */
-class TftCompatibleDisplay
-{
-      public:
-        virtual void drawPixel(int32_t x, int32_t y, uint32_t color) = 0;
-        virtual void drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color,
-                              uint32_t bg, uint8_t size) = 0;
-        virtual void drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye,
-                              uint32_t color) = 0;
-        virtual void drawRect(int x, int y, int w, int h, int color) = 0;
-        virtual void fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
-                              uint32_t color) = 0;
-        virtual void drawTriangle(int32_t xs, int32_t ys, int32_t x2,
-                                  int32_t y2, int32_t xe, int32_t ye,
-                                  uint32_t color) = 0;
-        virtual void fillTriangle(int32_t xs, int32_t ys, int32_t x2,
-                                  int32_t y2, int32_t xe, int32_t ye,
-                                  uint32_t color) = 0;
-        virtual void drawRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
-                                   int32_t radius, uint32_t color) = 0;
-        virtual void fillRoundRect(int32_t x, int32_t y, int32_t w, int32_t h,
-                                   int32_t radius, uint32_t color) = 0;
-        virtual void drawCircle(int32_t x, int32_t y, int32_t r,
-                                uint32_t color) = 0;
-        virtual void fillCircle(int32_t x, int32_t y, int32_t r,
-                                uint32_t color) = 0;
-        virtual void drawString(const char *string, int32_t x, int32_t y) = 0;
-        virtual void fillScreen(uint32_t color) = 0;
-        virtual void setTextColor(uint32_t color) = 0;
-        // Set character size multiplier (this increases pixel size)
-        virtual void setTextSize(uint8_t size) = 0;
+        /**
+         * This is required so that different implementations of the display
+         * interface can 'cast themselves' into the TFT_eSPI-compatible display
+         * interface. The reason we need this cast is that we cannot cast a raw
+         * pointer to the base `Display` class into a pointer to the
+         * `TftCompatibleDisplay` class, because it causes issues with the
+         * vtable and the virtual functions.
+         */
+        virtual TftCompatibleDisplay *cast_into_tft_compatible() = 0;
 };

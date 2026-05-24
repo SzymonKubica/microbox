@@ -252,12 +252,8 @@ void Settings::render_thumbnail(const Platform &platform,
             display, Configuration(subtitle, {new ConfigurationOption()}),
             false, strlen(subtitle), customization);
 
-// TODO: clean up
-#if defined(EMULATOR)
-        SfmlDisplay &tft = *((SfmlDisplay *)platform.display);
-#else
-        LcdDisplay &tft = *((LcdDisplay *)platform.display);
-#endif
+        TftCompatibleDisplay &tft =
+            *platform.display->cast_into_tft_compatible();
 
         auto draw_polygon_10_copy_4 = [&]() {
                 tft.drawLine(134, 156, 148, 142, 0xBDF7);
