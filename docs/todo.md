@@ -45,6 +45,11 @@
 # In Progress
 
 - [ ] add game thumbnails
+  - [ ] minesweeper
+  - [ ] snake
+  - [ ] snake duel
+  - [ ] game of life
+
 
 # Done
 - [x] clean up hacky display interface casting
