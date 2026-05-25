@@ -18,7 +18,8 @@ struct GameOfLifeConfiguration {
         int rewind_buffer_size;
 };
 
-class GameOfLife : public ApplicationExecutor<GameOfLifeConfiguration>
+class GameOfLife : public ApplicationExecutor<GameOfLifeConfiguration>,
+                   public ThumbnailRenderer
 {
       public:
         UserAction
@@ -31,6 +32,10 @@ class GameOfLife : public ApplicationExecutor<GameOfLifeConfiguration>
                        GameOfLifeConfiguration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
 
         GameOfLife() {}
 };

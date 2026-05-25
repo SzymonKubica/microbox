@@ -967,3 +967,53 @@ inline Grid allocate_grid(int cells)
         }
         return grid;
 }
+
+void GameOfLife::render_thumbnail(
+    const Platform &platform, const UserInterfaceCustomization &customization)
+{
+
+        const Display &display = *platform.display;
+        Color accent = customization.accent_color;
+
+        /* Subtitle Rendering */
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+        display.clear_region({0, available_height / 2},
+                             {display.get_width(), available_height}, Black);
+        const char *subtitle = "Game Of Life";
+        render_menu_subtitle(
+            display, Configuration(subtitle, {new ConfigurationOption()}),
+            false, strlen(subtitle), customization);
+
+        SquareCellGridDimensions *dimensions = calculate_grid_dimensions(
+            display.get_width(), display.get_height(),
+            display.get_display_corner_radius(), GAME_CELL_WIDTH);
+
+        // Shorthand lambda to make the rendering code maximally concise.
+        auto cell = [&](const Point &location) {
+                draw_game_cell(display, *dimensions, location, White);
+        };
+
+        // Draw a simple glider
+        {
+                int start_x = 15;
+                int start_y = 15;
+                cell({start_x, start_y});
+                cell({start_x, start_y + 1});
+                cell({start_x, start_y + 2});
+                cell({start_x - 1, start_y + 2});
+                cell({start_x - 2, start_y + 1});
+        }
+
+        // Draw another shape
+        {
+                int start_x = 20;
+                int start_y = 12;
+                cell({start_x, start_y});
+                for (int i = 1; i <= 3; i++) {
+                        cell({start_x + 1, start_y + i});
+                        cell({start_x - 1, start_y + i});
+                }
+                cell({start_x, start_y + 4});
+        }
+}

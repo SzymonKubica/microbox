@@ -143,13 +143,14 @@ get_thumbnail_renderer(Game game)
         }
         case Game::Minesweeper:
                 return get_name_renderer<Minesweeper>();
-        case Game::GameOfLife:
-                return get_name_renderer<GameOfLife>();
+        case Game::GameOfLife: {
+                ThumbnailRenderer *renderer = new GameOfLife();
+                return std::unique_ptr<ThumbnailRenderer>(renderer);
+        }
         case Game::Settings: {
                 ThumbnailRenderer *renderer = new Settings();
                 return std::unique_ptr<ThumbnailRenderer>(renderer);
         }
-
         case Game::Snake:
                 return get_name_renderer<SnakeGame>();
         case Game::SnakeDuel:
@@ -162,7 +163,6 @@ get_thumbnail_renderer(Game game)
                 ThumbnailRenderer *renderer = new SudokuGame();
                 return std::unique_ptr<ThumbnailRenderer>(renderer);
         }
-
         case Game::Power: {
                 ThumbnailRenderer *renderer = new PowerManagementApp();
                 return std::unique_ptr<ThumbnailRenderer>(renderer);
