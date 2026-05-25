@@ -156,8 +156,10 @@ get_thumbnail_renderer(Game game)
                 return std::unique_ptr<ThumbnailRenderer>(renderer);
         }
 
-        case Game::SnakeDuel:
-                return get_name_renderer<SnakeDuel>();
+        case Game::SnakeDuel: {
+                ThumbnailRenderer *renderer = new SnakeDuel();
+                return std::unique_ptr<ThumbnailRenderer>(renderer);
+        }
         case Game::WifiApp:
                 return get_name_renderer<WifiApp>();
         case Game::RandomSeedPicker:

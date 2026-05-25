@@ -34,7 +34,8 @@ std::optional<UserAction>
 collect_snake_duel_config(Platform *p, SnakeDuelConfiguration *game_config,
                           UserInterfaceCustomization *customization);
 
-class SnakeDuel : public ApplicationExecutor<SnakeDuelConfiguration>
+class SnakeDuel : public ApplicationExecutor<SnakeDuelConfiguration>,
+                  public ThumbnailRenderer
 {
       public:
         UserAction
@@ -48,5 +49,8 @@ class SnakeDuel : public ApplicationExecutor<SnakeDuelConfiguration>
         const char *get_game_name() const override;
         const char *get_help_text() const override;
 
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
         SnakeDuel() {}
 };

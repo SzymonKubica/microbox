@@ -885,3 +885,86 @@ bool find_next_step(const Point &start,
 
         return false;
 }
+
+void SnakeDuel::render_thumbnail(
+    const Platform &platform, const UserInterfaceCustomization &customization)
+{
+
+        const Display &display = *platform.display;
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+        display.clear_region({0, available_height / 2},
+                             {display.get_width(), available_height}, Black);
+        const char *subtitle = "Snake Duel";
+        render_menu_subtitle(
+            display, Configuration(subtitle, {new ConfigurationOption()}),
+            false, strlen(subtitle), customization);
+
+        int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
+        auto gd =
+            std::unique_ptr<SquareCellGridDimensions>(calculate_grid_dimensions(
+                platform.display->get_width(), platform.display->get_height(),
+                platform.display->get_display_corner_radius(),
+                game_cell_width));
+
+        // After the value of a given cell in the grid is changed, this
+        // re-renders that single cell in the display.
+        auto render_cell = [platform, &gd, customization](
+                               Point location, Cell type, Color color) {
+                render_grid_cell(*platform.display, color, *gd.get(), type,
+                                 location);
+        };
+        // Renders the snake's head including the neck (2nd segment right behind
+        // the head).
+        auto render_head = [platform, &gd, customization](Snake &snake,
+                                                          Color color) {
+                auto neck = snake.get_neck();
+                render_segment_connection(*platform.display, color, *gd.get(),
+                                          neck, snake.head);
+                render_snake_head(*platform.display, color, *gd.get(), snake);
+        };
+
+        auto render_connection = [platform, &gd, customization](
+                                     Point first, Point second, Color color) {
+                render_segment_connection(*platform.display, color, *gd.get(),
+                                          first, second);
+        };
+
+        int rows = gd->rows;
+        int cols = gd->cols;
+        Snake snake{{.x = cols / 2, .y = rows / 2}, Direction::RIGHT};
+
+        const auto primary = customization.accent_color;
+        render_head(snake, primary);
+        render_cell(snake.get_neck(), Cell::Snake, primary);
+
+        std::vector<Point> snake_trail = {{-1, 0}, {-1, 1}, {-1, 2}};
+
+        {
+                Point last = snake.get_neck();
+                for (const auto &p : snake_trail) {
+                        Point translated = snake.get_neck() + p;
+                        render_connection(last, translated, primary);
+                        render_cell(translated, Cell::Snake, primary);
+                        last = translated;
+                }
+        }
+
+        Point apple = translate_pure(
+            translate_pure(snake.head, snake.direction), snake.direction);
+        render_cell(apple, Cell::Apple, primary);
+
+        Snake second_snake{Point{.x = cols / 2, .y = rows / 2} + Point{2, 2},
+                           Direction::UP};
+        render_head(second_snake, Red);
+        render_cell(second_snake.get_neck(), Cell::Snake, Red);
+        std::vector<Point> second_snake_trail = {{0, 1}, {-1, 1}};
+
+        Point last = second_snake.get_neck();
+        for (const auto &p : second_snake_trail) {
+                Point translated = second_snake.get_neck() + p;
+                render_connection(last, translated, Red);
+                render_cell(translated, Cell::Snake, Red);
+                last = translated;
+        }
+}
