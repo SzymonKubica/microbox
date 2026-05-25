@@ -35,7 +35,8 @@ std::optional<UserAction>
 collect_snake_config(Platform *p, SnakeConfiguration *game_config,
                      UserInterfaceCustomization *customization);
 
-class SnakeGame : public ApplicationExecutor<SnakeConfiguration>
+class SnakeGame : public ApplicationExecutor<SnakeConfiguration>,
+                  public ThumbnailRenderer
 {
       public:
         SnakeGame() {}
@@ -49,4 +50,7 @@ class SnakeGame : public ApplicationExecutor<SnakeConfiguration>
                        SnakeConfiguration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
 };

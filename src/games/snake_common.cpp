@@ -27,7 +27,6 @@ Point Snake::get_neck() { return *(this->body.end() - 2).base(); }
  */
 void render_snake_head(const Display &display, Color snake_color,
                        const SquareCellGridDimensions &dimensions,
-                       const std::vector<std::vector<Cell>> &grid,
                        const Snake &snake)
 {
 
@@ -118,7 +117,6 @@ void render_snake_head(const Display &display, Color snake_color,
  */
 void render_segment_connection(const Display &display, Color snake_color,
                                const SquareCellGridDimensions &dimensions,
-                               const std::vector<std::vector<Cell>> &grid,
                                Point &first_location, Point &second_location)
 {
 
@@ -181,10 +179,9 @@ void render_segment_connection(const Display &display, Color snake_color,
                                snake_color, border_width, true);
 }
 
-void refresh_grid_cell(const Display &display, Color snake_color,
-                       const SquareCellGridDimensions &dimensions,
-                       const std::vector<std::vector<Cell>> &grid,
-                       Point &location)
+void render_grid_cell(const Display &display, Color snake_color,
+                      const SquareCellGridDimensions &dimensions,
+                      Cell cell_type, Point &location)
 {
         int padding = DEFAULT_PADDING;
         int snake_padding = SNAKE_SEGMENT_PADDING;
@@ -195,8 +192,6 @@ void refresh_grid_cell(const Display &display, Color snake_color,
 
         Point start = {.x = left_margin + location.x * width,
                        .y = top_margin + location.y * height};
-
-        Cell cell_type = grid[location.y][location.x];
 
         // When rendering on the actual lcd display the circle comes out a bit
         // larger because of pixel inaccuracies and internal of that lcd display
@@ -267,6 +262,14 @@ void refresh_grid_cell(const Display &display, Color snake_color,
                 break;
         }
         }
+}
+void refresh_grid_cell(const Display &display, Color snake_color,
+                       const SquareCellGridDimensions &dimensions,
+                       const std::vector<std::vector<Cell>> &grid,
+                       Point &location)
+{
+        Cell cell_type = grid[location.y][location.x];
+        render_grid_cell(display, snake_color, dimensions, cell_type, location);
 }
 
 Point spawn_apple(std::vector<std::vector<Cell>> &grid)

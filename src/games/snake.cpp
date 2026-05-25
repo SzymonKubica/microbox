@@ -137,13 +137,11 @@ UserAction SnakeGame::app_loop(const Platform &p,
         // the head).
         auto render_head = [p, &gd, &grid, customization](Snake &snake) {
                 auto neck = snake.get_neck();
-                if (true) {
-                        render_segment_connection(
-                            *p.display, customization.accent_color, *gd.get(),
-                            grid, neck, snake.head);
-                }
+                render_segment_connection(*p.display,
+                                          customization.accent_color, *gd.get(),
+                                          neck, snake.head);
                 render_snake_head(*p.display, customization.accent_color,
-                                  *gd.get(), grid, snake);
+                                  *gd.get(), snake);
         };
 
         // Initial score rendering to complete the game grid first, before the
@@ -439,4 +437,72 @@ void extract_game_config(SnakeConfiguration &game_config,
         game_config.enable_poop = yes_or_no_option_to_bool(enable_poop);
         game_config.allow_grace = yes_or_no_option_to_bool(allow_grace);
         game_config.allow_pause = yes_or_no_option_to_bool(allow_pause);
+}
+
+void SnakeGame::render_thumbnail(
+    const Platform &platform, const UserInterfaceCustomization &customization)
+{
+
+        const Display &display = *platform.display;
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+        display.clear_region({0, available_height / 2},
+                             {display.get_width(), available_height}, Black);
+        const char *subtitle = "Snake";
+        render_menu_subtitle(
+            display, Configuration(subtitle, {new ConfigurationOption()}),
+            false, strlen(subtitle), customization);
+
+        int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
+        auto gd =
+            std::unique_ptr<SquareCellGridDimensions>(calculate_grid_dimensions(
+                platform.display->get_width(), platform.display->get_height(),
+                platform.display->get_display_corner_radius(),
+                game_cell_width));
+
+        // After the value of a given cell in the grid is changed, this
+        // re-renders that single cell in the display.
+        auto render_cell = [platform, &gd, customization](Point location,
+                                                          Cell type) {
+                render_grid_cell(*platform.display, customization.accent_color,
+                                 *gd.get(), type, location);
+        };
+        // Renders the snake's head including the neck (2nd segment right behind
+        // the head).
+        auto render_head = [platform, &gd, customization](Snake &snake) {
+                auto neck = snake.get_neck();
+                render_segment_connection(*platform.display,
+                                          customization.accent_color, *gd.get(),
+                                          neck, snake.head);
+                render_snake_head(*platform.display, customization.accent_color,
+                                  *gd.get(), snake);
+        };
+
+        auto render_connection = [platform, &gd, customization](Point first,
+                                                                Point second) {
+                render_segment_connection(*platform.display,
+                                          customization.accent_color, *gd.get(),
+                                          first, second);
+        };
+
+        int rows = gd->rows;
+        int cols = gd->cols;
+        Snake snake{{.x = cols / 2, .y = rows / 2}, Direction::RIGHT};
+
+        render_head(snake);
+        render_cell(snake.get_neck(), Cell::Snake);
+
+        std::vector<Point> snake_trail = {{-1, 0}, {-1, 1}, {-1, 2}};
+
+        Point last = snake.get_neck();
+        for (const auto &p : snake_trail) {
+                Point translated = snake.get_neck() + p;
+                render_connection(last, translated);
+                render_cell(translated, Cell::Snake);
+                last = translated;
+        }
+
+        Point apple = translate_pure(
+            translate_pure(snake.head, snake.direction), snake.direction);
+        render_cell(apple, Cell::Apple);
 }

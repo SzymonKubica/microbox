@@ -29,7 +29,10 @@
       library with the correct pins and target device.
 - [ ] understand the cool cube rendering code for the 2.4 display and implement something like this.
 - [ ] remove dependency on the corner radius for minimalistic rendering
+- [ ] fix memory leaks in the new game menu
 ## Require hardware testing
+- [ ] find a monospace font for the TFT_eSPI display and get its width so
+      that the display rendering is properly centered.
 ### any platform
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] clean up constants definiton file to remove platform- / display-specific
@@ -42,13 +45,15 @@
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 ## Dev experience
 
+
+
 # In Progress
 
 - [ ] add game thumbnails
   - [ ] minesweeper
   - [ ] snake
   - [ ] snake duel
-  - [ ] game of life
+  - [x] game of life
 
 
 # Done

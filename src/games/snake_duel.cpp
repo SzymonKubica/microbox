@@ -207,9 +207,8 @@ UserAction SnakeDuel::app_loop(const Platform &p,
             [p, &gd, &grid, customization](ColoredSnake &snake) {
                     auto neck = snake.get_neck();
                     render_segment_connection(*p.display, snake.color,
-                                              *gd.get(), grid, neck,
-                                              snake.head);
-                    render_snake_head(*p.display, snake.color, *gd.get(), grid,
+                                              *gd.get(), neck, snake.head);
+                    render_snake_head(*p.display, snake.color, *gd.get(),
                                       snake);
             };
 

@@ -55,19 +55,20 @@ void refresh_grid_cell(const Display &display, Color snake_color,
                        const SquareCellGridDimensions &dimensions,
                        const std::vector<std::vector<Cell>> &grid,
                        Point &location);
+void render_grid_cell(const Display &display, Color snake_color,
+                      const SquareCellGridDimensions &dimensions,
+                      Cell cell_type, Point &location);
 /**
  * Renders a segment that connects two adjacent snake segments on the grid.
  */
 void render_segment_connection(const Display &display, Color snake_color,
                                const SquareCellGridDimensions &dimensions,
-                               const std::vector<std::vector<Cell>> &grid,
                                Point &first_location, Point &second_location);
 /**
  * Renders a segment that connects two adjacent snake segments on the grid.
  */
 void render_snake_head(const Display &display, Color snake_color,
                        const SquareCellGridDimensions &dimensions,
-                       const std::vector<std::vector<Cell>> &grid,
                        const Snake &snake);
 
 } // namespace SnakeDefinitions

@@ -151,8 +151,11 @@ get_thumbnail_renderer(Game game)
                 ThumbnailRenderer *renderer = new Settings();
                 return std::unique_ptr<ThumbnailRenderer>(renderer);
         }
-        case Game::Snake:
-                return get_name_renderer<SnakeGame>();
+        case Game::Snake: {
+                ThumbnailRenderer *renderer = new SnakeGame();
+                return std::unique_ptr<ThumbnailRenderer>(renderer);
+        }
+
         case Game::SnakeDuel:
                 return get_name_renderer<SnakeDuel>();
         case Game::WifiApp:
