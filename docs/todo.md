@@ -29,8 +29,6 @@
       library with the correct pins and target device.
 - [ ] understand the cool cube rendering code for the 2.4 display and implement something like this.
 - [ ] remove dependency on the corner radius for minimalistic rendering
-- [ ] fix memory leaks in the new game menu
-- [ ] clean up duplication in the thumbnail rendering code
 ## Require hardware testing
 - [ ] find a monospace font for the TFT_eSPI display and get its width so
       that the display rendering is properly centered.
@@ -50,10 +48,13 @@
 
 # In Progress
 
+- [ ] fix memory leaks in the new game menu
+- [ ] clean up duplication in the thumbnail rendering code
+
 - [ ] add game thumbnails
   - [ ] minesweeper
-  - [ ] snake
-  - [ ] snake duel
+  - [x] snake
+  - [x] snake duel
   - [x] game of life
 
 
