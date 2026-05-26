@@ -50,15 +50,17 @@
 
 - [ ] fix memory leaks in the new game menu
 - [ ] clean up duplication in the thumbnail rendering code
+- [ ] clean up hacky font size overrides in the sfml adapter for the TFT_eSPI
+      library
 
-- [ ] add game thumbnails
-  - [ ] minesweeper
-  - [x] snake
-  - [x] snake duel
-  - [x] game of life
 
 
 # Done
+- [x] add game thumbnails
+  - [x] minesweeper
+  - [x] snake
+  - [x] snake duel
+  - [x] game of life
 - [x] clean up hacky display interface casting
 - [x] ensure that the menu heading is not re-rendered when thumbnails are switched
 - [x] fix heading centering for the target font
