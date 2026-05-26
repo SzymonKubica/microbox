@@ -19,7 +19,8 @@ std::optional<UserAction>
 collect_minesweeper_config(Platform *p, MinesweeperConfiguration *game_config,
                            UserInterfaceCustomization *customization);
 
-class Minesweeper : public ApplicationExecutor<MinesweeperConfiguration>
+class Minesweeper : public ApplicationExecutor<MinesweeperConfiguration>,
+                    public ThumbnailRenderer
 {
       public:
         UserAction
@@ -32,6 +33,10 @@ class Minesweeper : public ApplicationExecutor<MinesweeperConfiguration>
                        MinesweeperConfiguration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
 
         Minesweeper() {}
 };

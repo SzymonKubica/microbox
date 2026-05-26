@@ -1833,7 +1833,7 @@ void NameBoxRenderer::render_thumbnail(
 
         const auto &display = *platform.display;
 
-        const char *header = "Play";
+        const char *header = ">";
         int available_height =
             display.get_height() - display.get_display_corner_radius();
 

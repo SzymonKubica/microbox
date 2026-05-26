@@ -366,7 +366,13 @@ void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y)
 {
 
         const sf::Font font = get_emulator_font();
-        int resolved_font_size = FontSize::Size16 * font_size;
+        // TODO: remove this hack:
+
+        int adj = 0;
+        if (font_size == 4) {
+                adj = 2;
+        }
+        int resolved_font_size = FontSize::Size16 * (font_size - adj);
         // The default font size is 16. We use the font_size
         // in line with the behaviour of the TFT_eSPI library: font_size == 1
         // means that we are scaling the font as 100%, 2 means 200% and so on.
@@ -376,8 +382,8 @@ void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y)
         // pixel-close to the actual TFT_eSPI behaviour.
         int adjustment = 1;
         text.setFillColor(sf::Color(text_color));
-        text.setPosition({(float)(x - FONT_WIDTH / 2 + adjustment),
-                          (float)(y - resolved_font_size / 2 + adjustment)});
+        text.setPosition({(float)(x - FONT_WIDTH / 2 + adjustment * font_size + 1),
+                          (float)(y - resolved_font_size / 2 + adjustment * (font_size + 1))});
         texture->draw(text);
         texture->display();
 }

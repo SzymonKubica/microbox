@@ -712,3 +712,175 @@ void draw_controls_hints(const Display &display,
         display.draw_string({.x = flag_text_x, .y = text_below_grid_y},
                             (char *)flag, FontSize::Size16, Black, White);
 }
+
+void Minesweeper::render_thumbnail(
+    const Platform &platform, const UserInterfaceCustomization &customization)
+{
+
+        const Display &display = *platform.display;
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+        display.clear_region({0, available_height / 2},
+                             {display.get_width(), available_height}, Black);
+        const char *subtitle = "Minesweeper";
+        render_menu_subtitle(
+            display, Configuration(subtitle, {new ConfigurationOption()}),
+            false, strlen(subtitle), customization);
+        TftCompatibleDisplay &tft =
+            *platform.display->cast_into_tft_compatible();
+
+        // [BEGIN lopaka generated]
+
+        auto draw_polygon_10_copy_1 = [&]() {
+                tft.drawLine(134, 153, 142, 145, 0xBDF7);
+                tft.drawLine(142, 145, 147, 150, 0xBDF7);
+                tft.drawLine(147, 150, 139, 158, 0xBDF7);
+                tft.drawLine(139, 158, 134, 153, 0xBDF7);
+        };
+
+        auto draw_polygon_10_copy_3 = [&]() {
+                tft.drawLine(161, 180, 169, 172, 0xBDF7);
+                tft.drawLine(169, 172, 174, 177, 0xBDF7);
+                tft.drawLine(174, 177, 166, 185, 0xBDF7);
+                tft.drawLine(166, 185, 161, 180, 0xBDF7);
+        };
+
+        auto draw_polygon_10_copy_4 = [&]() {
+                tft.drawLine(152, 159, 166, 145, 0xBDF7);
+                tft.drawLine(166, 145, 174, 153, 0xBDF7);
+                tft.drawLine(174, 153, 160, 167, 0xBDF7);
+                tft.drawLine(160, 167, 152, 159, 0xBDF7);
+        };
+
+        auto draw_polygon_10_copy_5 = [&]() {
+                tft.drawLine(134, 177, 148, 163, 0xBDF7);
+                tft.drawLine(148, 163, 156, 171, 0xBDF7);
+                tft.drawLine(156, 171, 142, 185, 0xBDF7);
+                tft.drawLine(142, 185, 134, 177, 0xBDF7);
+        };
+
+        auto draw_polygon_10_copy_6 = [&]() {
+                tft.drawLine(175, 113, 183, 105, 0xBDF7);
+                tft.drawLine(183, 105, 188, 110, 0xBDF7);
+                tft.drawLine(188, 110, 180, 118, 0xBDF7);
+                tft.drawLine(180, 118, 175, 113, 0xBDF7);
+        };
+
+        auto draw_polygon_10_copy_7 = [&]() {
+                tft.drawLine(202, 140, 210, 132, 0xBDF7);
+                tft.drawLine(210, 132, 215, 137, 0xBDF7);
+                tft.drawLine(215, 137, 207, 145, 0xBDF7);
+                tft.drawLine(207, 145, 202, 140, 0xBDF7);
+        };
+
+        auto draw_polygon_10_copy_8 = [&]() {
+                tft.drawLine(193, 119, 207, 105, 0xBDF7);
+                tft.drawLine(207, 105, 215, 113, 0xBDF7);
+                tft.drawLine(215, 113, 201, 127, 0xBDF7);
+                tft.drawLine(201, 127, 193, 119, 0xBDF7);
+        };
+
+        auto draw_polygon_10_copy_9 = [&]() {
+                tft.drawLine(175, 137, 189, 123, 0xBDF7);
+                tft.drawLine(189, 123, 197, 131, 0xBDF7);
+                tft.drawLine(197, 131, 183, 145, 0xBDF7);
+                tft.drawLine(183, 145, 175, 137, 0xBDF7);
+        };
+        // ellipse 1 copy 1
+        tft.fillCircle(154, 165, 16, 0xBDF7);
+        // rect 4 copy 3
+        tft.fillRect(130, 159, 9, 13, 0xBDF7);
+        // rect 4 copy 5
+        tft.fillRect(170, 159, 9, 13, 0xBDF7);
+        // rect 4 copy 6
+        tft.fillRect(148, 141, 13, 9, 0xBDF7);
+        // rect 4 copy 7
+        tft.fillRect(148, 181, 13, 9, 0xBDF7);
+        // polygon 10 copy 1
+        draw_polygon_10_copy_1();
+        // polygon 10 copy 3
+        draw_polygon_10_copy_3();
+        // polygon 10 copy 4
+        draw_polygon_10_copy_4();
+        // polygon 10 copy 5
+        draw_polygon_10_copy_5();
+        // triangle 15 copy 1
+        tft.fillTriangle(142, 145, 135, 153, 149, 153, 0xBDF7);
+        // triangle 15 copy 2
+        tft.fillTriangle(141, 170, 135, 177, 147, 177, 0xBDF7);
+        // triangle 15 copy 3
+        tft.fillTriangle(168, 170, 162, 177, 174, 177, 0xBDF7);
+        // triangle 19 copy 4
+        tft.fillTriangle(142, 184, 149, 176, 135, 176, 0xBDF7);
+        // triangle 15 copy 4
+        tft.fillTriangle(166, 145, 160, 152, 172, 152, 0xBDF7);
+        // triangle 19 copy 1
+        tft.fillTriangle(141, 158, 147, 153, 135, 153, 0xBDF7);
+        // triangle 19 copy 2
+        tft.fillTriangle(166, 161, 173, 153, 159, 153, 0xBDF7);
+        // triangle 19 copy 3
+        tft.fillTriangle(166, 184, 173, 176, 159, 176, 0xBDF7);
+        // ellipse 2 copy 1
+        tft.fillCircle(154, 165, 12, 0x0);
+        // string 19
+        tft.setTextColor(0xFFFF);
+        tft.setTextSize(4);
+        tft.drawString("1", 106, 154);
+        // ellipse 1 copy 2
+        tft.fillCircle(195, 125, 16, 0xBDF7);
+        // rect 4 copy 8
+        tft.fillRect(171, 119, 9, 13, 0xBDF7);
+        // rect 4 copy 9
+        tft.fillRect(211, 119, 9, 13, 0xBDF7);
+        // rect 4 copy 10
+        tft.fillRect(189, 101, 13, 9, 0xBDF7);
+        // rect 4 copy 11
+        tft.fillRect(189, 141, 13, 9, 0xBDF7);
+        // polygon 10 copy 6
+        draw_polygon_10_copy_6();
+        // polygon 10 copy 7
+        draw_polygon_10_copy_7();
+        // polygon 10 copy 8
+        draw_polygon_10_copy_8();
+        // polygon 10 copy 9
+        draw_polygon_10_copy_9();
+        // triangle 15 copy 5
+        tft.fillTriangle(183, 105, 176, 113, 190, 113, 0xBDF7);
+        // triangle 15 copy 6
+        tft.fillTriangle(182, 130, 176, 137, 188, 137, 0xBDF7);
+        // triangle 15 copy 7
+        tft.fillTriangle(209, 130, 203, 137, 215, 137, 0xBDF7);
+        // triangle 15 copy 8
+        tft.fillTriangle(207, 105, 201, 112, 213, 112, 0xBDF7);
+        // triangle 19 copy 5
+        tft.fillTriangle(182, 118, 188, 113, 176, 113, 0xBDF7);
+        // triangle 19 copy 6
+        tft.fillTriangle(207, 121, 214, 113, 200, 113, 0xBDF7);
+        // triangle 19 copy 7
+        tft.fillTriangle(207, 144, 214, 136, 200, 136, 0xBDF7);
+        // triangle 19 copy 8
+        tft.fillTriangle(183, 144, 190, 136, 176, 136, 0xBDF7);
+        // ellipse 2 copy 2
+        tft.fillCircle(195, 125, 12, 0x0);
+        // string 19 copy 1
+        tft.setTextColor(0x8E09);
+        tft.drawString("2", 143, 107);
+        // string 19 copy 2
+        tft.drawString("2", 185, 154);
+        // line 40
+        tft.drawLine(0, 0, 0, 0, 0xFFFF);
+        // rect 41
+        tft.fillRect(109, 131, 15, 5, 0xFFFF);
+        // rect 42
+        tft.fillRect(114, 105, 5, 26, 0xFFFF);
+        // triangle 43
+        tft.fillTriangle(119, 105, 123, 123, 114, 123, 0xFFFF);
+        // rect 41 copy 1
+        tft.fillRect(147, 175, 15, 5, customization.accent_color);
+        // rect 42 copy 1
+        tft.fillRect(152, 149, 5, 26, customization.accent_color);
+        // triangle 43 copy 1
+        tft.fillTriangle(157, 149, 161, 167, 152, 167,
+                         customization.accent_color);
+        // [END lopaka generated]
+}

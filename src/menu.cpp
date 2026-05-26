@@ -133,45 +133,37 @@ std::unique_ptr<ThumbnailRenderer> get_name_renderer()
             GameExecutor().get_game_name());
 }
 
+template <typename GameExecutor>
+std::unique_ptr<ThumbnailRenderer> get_custom_renderer()
+{
+        ThumbnailRenderer *renderer = new GameExecutor();
+        return std::unique_ptr<ThumbnailRenderer>(renderer);
+}
+
 std::optional<std::unique_ptr<ThumbnailRenderer>>
 get_thumbnail_renderer(Game game)
 {
         switch (game) {
-        case Game::Clean2048: {
-                ThumbnailRenderer *renderer = new Clean2048();
-                return std::unique_ptr<ThumbnailRenderer>(renderer);
-        }
-        case Game::Minesweeper:
-                return get_name_renderer<Minesweeper>();
-        case Game::GameOfLife: {
-                ThumbnailRenderer *renderer = new GameOfLife();
-                return std::unique_ptr<ThumbnailRenderer>(renderer);
-        }
-        case Game::Settings: {
-                ThumbnailRenderer *renderer = new Settings();
-                return std::unique_ptr<ThumbnailRenderer>(renderer);
-        }
-        case Game::Snake: {
-                ThumbnailRenderer *renderer = new SnakeGame();
-                return std::unique_ptr<ThumbnailRenderer>(renderer);
-        }
-
-        case Game::SnakeDuel: {
-                ThumbnailRenderer *renderer = new SnakeDuel();
-                return std::unique_ptr<ThumbnailRenderer>(renderer);
-        }
         case Game::WifiApp:
                 return get_name_renderer<WifiApp>();
         case Game::RandomSeedPicker:
                 return get_name_renderer<RandomSeedPicker>();
-        case Game::Sudoku: {
-                ThumbnailRenderer *renderer = new SudokuGame();
-                return std::unique_ptr<ThumbnailRenderer>(renderer);
-        }
-        case Game::Power: {
-                ThumbnailRenderer *renderer = new PowerManagementApp();
-                return std::unique_ptr<ThumbnailRenderer>(renderer);
-        }
+        case Game::Minesweeper:
+                return get_custom_renderer<Minesweeper>();
+        case Game::Clean2048:
+                return get_custom_renderer<Clean2048>();
+        case Game::GameOfLife:
+                return get_custom_renderer<GameOfLife>();
+        case Game::Settings:
+                return get_custom_renderer<Settings>();
+        case Game::Snake:
+                return get_custom_renderer<SnakeGame>();
+        case Game::SnakeDuel:
+                return get_custom_renderer<SnakeDuel>();
+        case Game::Sudoku:
+                return get_custom_renderer<SudokuGame>();
+        case Game::Power:
+                return get_custom_renderer<PowerManagementApp>();
         case Game::Brightness:
                 return get_name_renderer<BrightnessApp>();
         default:
