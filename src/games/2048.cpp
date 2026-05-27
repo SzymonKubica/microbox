@@ -935,17 +935,18 @@ void Clean2048::render_thumbnail(
 
         int width = gd->cell_width;
         int height = gd->cell_height;
-        int x_spacing = gd->cell_x_spacing / 2;
-        int y_spacing = gd->cell_y_spacing / 2;
+        int x_spacing = gd->cell_x_spacing / 4;
+        int y_spacing = gd->cell_y_spacing / 4;
 
         // TODO: abstract out duplication between this code and
         // `calculate_grid_dimensions`
         int corner_radius = display.get_display_corner_radius();
-        int usable_width = display.get_width() - 2 * SCREEN_BORDER_WIDTH;
+        int usable_width = display.get_width();
         int usable_height = display.get_height() - 2 * corner_radius;
+        int y_adj = 10;
         int x_margin = (usable_width - 2 * width - x_spacing) / 2;
         int y_margin =
-            gd->grid_start_y + (usable_height - 2 * height - y_spacing) / 2;
+            gd->grid_start_y + (usable_height - 2 * height - y_spacing) / 2 + y_adj;
         Point start = {x_margin, y_margin};
 
         Point x_displacement = Point{1, 0} * (width + x_spacing);

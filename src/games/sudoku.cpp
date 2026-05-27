@@ -520,7 +520,7 @@ void SudokuGame::render_thumbnail(
         int rect_1_h = 60;
         int rect_1_w = 60;
         int x_adj = 0;
-        int y_adj = 6;
+        int y_adj = 10;
         tft_display->drawRect(132 - x_adj, 101 + y_adj, rect_1_w, rect_1_h,
                               0xFFFF);
         tft_display->drawLine(152 - x_adj, 101 + y_adj, 152 - x_adj,

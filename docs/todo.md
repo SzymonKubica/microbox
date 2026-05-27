@@ -53,8 +53,6 @@
 - [ ] clean up hacky font size overrides in the sfml adapter for the TFT_eSPI
       library
 
-
-
 # Done
 - [x] add game thumbnails
   - [x] minesweeper
