@@ -985,9 +985,10 @@ void GameOfLife::render_thumbnail(
             display, Configuration(subtitle, {new ConfigurationOption()}),
             false, strlen(subtitle), customization);
 
-        SquareCellGridDimensions *dimensions = calculate_grid_dimensions(
-            display.get_width(), display.get_height(),
-            display.get_display_corner_radius(), GAME_CELL_WIDTH);
+        auto dimensions =
+            std::unique_ptr<SquareCellGridDimensions>(calculate_grid_dimensions(
+                display.get_width(), display.get_height(),
+                display.get_display_corner_radius(), GAME_CELL_WIDTH));
 
         // Shorthand lambda to make the rendering code maximally concise.
         auto cell = [&](const Point &location) {

@@ -914,10 +914,8 @@ static void str_replace(char *str, const char *oldWord, const char *newWord)
 void Clean2048::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
-        auto config = load_initial_config(*platform.persistent_storage);
-
-        auto state =
-            initialize_game_state(config->grid_size, config->target_max_tile);
+        auto config = std::unique_ptr<Game2048Configuration>(
+            load_initial_config(*platform.persistent_storage));
 
         const auto &display = *platform.display;
         int available_height =
@@ -945,8 +943,8 @@ void Clean2048::render_thumbnail(
         int usable_height = display.get_height() - 2 * corner_radius;
         int y_adj = 10;
         int x_margin = (usable_width - 2 * width - x_spacing) / 2;
-        int y_margin =
-            gd->grid_start_y + (usable_height - 2 * height - y_spacing) / 2 + y_adj;
+        int y_margin = gd->grid_start_y +
+                       (usable_height - 2 * height - y_spacing) / 2 + y_adj;
         Point start = {x_margin, y_margin};
 
         Point x_displacement = Point{1, 0} * (width + x_spacing);

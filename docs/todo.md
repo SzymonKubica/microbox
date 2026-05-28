@@ -16,8 +16,6 @@
 
 - rename the console as microbox already exists (first find a better name)
 
-
-
 # TODO
 
 ## Doable on the emulator
@@ -44,16 +42,14 @@
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 ## Dev experience
 
-
-
 # In Progress
 
-- [ ] fix memory leaks in the new game menu
 - [ ] clean up duplication in the thumbnail rendering code
 - [ ] clean up hacky font size overrides in the sfml adapter for the TFT_eSPI
       library
 
 # Done
+- [x] fix memory leaks in the new game menu
 - [x] add game thumbnails
   - [x] minesweeper
   - [x] snake

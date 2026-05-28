@@ -382,8 +382,10 @@ void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y)
         // pixel-close to the actual TFT_eSPI behaviour.
         int adjustment = 1;
         text.setFillColor(sf::Color(text_color));
-        text.setPosition({(float)(x - FONT_WIDTH / 2 + adjustment * font_size + 1),
-                          (float)(y - resolved_font_size / 2 + adjustment * (font_size + 1))});
+        text.setPosition(
+            {(float)(x - FONT_WIDTH / 2 + adjustment * font_size + 1),
+             (float)(y - resolved_font_size / 2 +
+                     adjustment * (font_size + 1))});
         texture->draw(text);
         texture->display();
 }
