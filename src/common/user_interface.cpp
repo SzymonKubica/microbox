@@ -19,6 +19,8 @@
 
 #define SELECTOR_CIRCLE_RADIUS 5
 
+const int LOGO_CUBE_SIZE = 24;
+
 // Maximum length of config option value text in characters.
 // This is needed to ensure that the config bars don't overflow the display.
 #define MAX_CONFIG_OPTION_VALUE_LENGTH 13
@@ -37,7 +39,7 @@ void render_text_bar_centered(const Display &display, int y_start,
                               Color background_color = Black,
                               Color text_color = White,
                               int font_width = FONT_WIDTH,
-                              FontSize font_size = Size16);
+                              FontSize font_size = Size16, int x_offset = 0);
 void render_config_bar_centered(
     const Display &display, int y_start, int option_text_max_len,
     int value_text_max_len, const char *option_text, const char *value_text,
@@ -289,13 +291,17 @@ void render_config_bar_centered(const Display &display, int y_start,
  * this param as true only once per configuration collection session. The idea
  * is that since this text bar doesn't change, it makes no sense to re-render it
  * every time.
+ *
+ * The last optional parameter: `x_offset` allows callers to override the
+ * calculated centering margin to shift the rendered text bar a bit to the right
+ * This is useful when rendering some icon in front of the centered text.
  */
 void render_text_bar_centered(const Display &display, int y_start,
                               int option_text_max_len, int value_text_max_len,
                               const char *text, bool is_already_rendered,
                               UserInterfaceRenderingMode rendering_mode,
                               Color background_color, Color text_color,
-                              int font_width, FontSize font_size)
+                              int font_width, FontSize font_size, int x_offset)
 {
 
         // We calculate the total width using the same logic as for the config
@@ -311,9 +317,8 @@ void render_text_bar_centered(const Display &display, int y_start,
         int fw = font_width;
         int fh = font_size;
 
-        int left_margin = get_centering_margin(w, fw, text_len);
-
-        int text_x = get_centering_margin(w, fw, strlen(text));
+        int left_margin = x_offset + get_centering_margin(w, fw, text_len);
+        int text_x = x_offset + get_centering_margin(w, fw, strlen(text));
 
         // We determine centering of the configuration bars based on the
         // position of the text. The actual rounded rect that contains the text
@@ -424,8 +429,10 @@ int find_y_spacing_between_bars(int bars_count, int font_height,
                                 int display_height)
 {
         int bars_num = std::min(bars_count, (int)MAX_RENDERED_OPTION_NUM);
-        int bar_height = 2 * font_height;
-        int bar_gap_height = font_height * 3 / 4;
+        // Configuration bars are always rendered using the default size 16
+        // font.
+        int bar_height = 2 * FontSize::Size16;
+        int bar_gap_height = FontSize::Size16 * 3 / 4;
         return calculate_section_spacing(display_height, bars_num, bar_height,
                                          bar_gap_height, font_height);
 }
@@ -468,15 +475,20 @@ void render_menu_heading(const Display &display, const Configuration &config,
         int y_spacing = find_y_spacing_between_bars(
             config.options.size(), FontSize::Size24, display.get_height());
 
-        render_text_bar_centered(display, y_spacing, text_max_length, 0,
-                                 config.name, text_update_only,
-                                 customization.rendering_mode, Black, White,
-                                 HEADING_FONT_WIDTH, FontSize::Size24);
+        int logo_offset = should_render_logo ? LOGO_CUBE_SIZE : 0;
+
+        render_text_bar_centered(
+            display, y_spacing, text_max_length, 0, config.name,
+            text_update_only, customization.rendering_mode, Black, White,
+            HEADING_FONT_WIDTH, FontSize::Size24, logo_offset);
 
         if (should_render_logo) {
                 // This is manually tweaked to make it look good.
-                int logo_x_margin = 35;
-                int logo_y_margin = 5;
+                // int logo_x_margin = 35; (backup of the old value that is
+                // potentially needed for the 1.69 inch display, don't remove
+                // until tested there)
+                int logo_x_margin = 85;
+                int logo_y_margin = 8;
                 render_logo(
                     display, customization,
                     {.x = logo_x_margin, .y = y_spacing + logo_y_margin});
@@ -1780,7 +1792,7 @@ void render_logo(const Display &display,
                  Point position)
 {
 
-        int size = 24;
+        int size = LOGO_CUBE_SIZE;
         draw_cube_perspective(display, position, size,
                               customization.accent_color);
         draw_mu_letter(display, position, size, customization.accent_color);

@@ -388,11 +388,16 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
 
         const auto &display = *p.display;
         display.clear(Black);
-        // 'knows' that we have a single 'config bar' and so adjusts the
-        // vertical spacing accordingly.
-        render_menu_heading(
-            display, Configuration(menu_name, {new ConfigurationOption()}),
-            false, strlen(menu_name), customization, should_render_logo);
+        // We insert those dummy configuration options so that the header is
+        // positioned
+        // high as if two configuration bars were rendered below it. This is a
+        // bith hacky but it allows us to reuse the `render_menu_heading`
+        // function.
+        std::vector<ConfigurationOption *> options = {
+            new ConfigurationOption(), new ConfigurationOption()};
+        render_menu_heading(display, Configuration(menu_name, options), false,
+                            strlen(menu_name), customization,
+                            should_render_logo);
 
         auto render_thumbnail_for_current_selection = [&]() {
                 thumbnails[option.currently_selected]->render_thumbnail(

@@ -127,14 +127,14 @@ void extract_app_selection(GameMenuConfiguration &menu_configuration,
 static std::optional<Game> last_selected_game = std::nullopt;
 
 template <typename GameExecutor>
-std::unique_ptr<ThumbnailRenderer> get_name_renderer()
+std::unique_ptr<ThumbnailRenderer> simple_name_renderer()
 {
         return std::make_unique<NameBoxRenderer>(
             GameExecutor().get_game_name());
 }
 
 template <typename GameExecutor>
-std::unique_ptr<ThumbnailRenderer> get_custom_renderer()
+std::unique_ptr<ThumbnailRenderer> custom_renderer()
 {
         ThumbnailRenderer *renderer = new GameExecutor();
         return std::unique_ptr<ThumbnailRenderer>(renderer);
@@ -143,29 +143,30 @@ std::unique_ptr<ThumbnailRenderer> get_custom_renderer()
 std::optional<std::unique_ptr<ThumbnailRenderer>>
 get_thumbnail_renderer(Game game)
 {
+
         switch (game) {
         case Game::WifiApp:
-                return get_name_renderer<WifiApp>();
+                return simple_name_renderer<WifiApp>();
         case Game::RandomSeedPicker:
-                return get_name_renderer<RandomSeedPicker>();
+                return simple_name_renderer<RandomSeedPicker>();
         case Game::Minesweeper:
-                return get_custom_renderer<Minesweeper>();
+                return custom_renderer<Minesweeper>();
         case Game::Clean2048:
-                return get_custom_renderer<Clean2048>();
+                return custom_renderer<Clean2048>();
         case Game::GameOfLife:
-                return get_custom_renderer<GameOfLife>();
+                return custom_renderer<GameOfLife>();
         case Game::Settings:
-                return get_custom_renderer<Settings>();
+                return custom_renderer<Settings>();
         case Game::Snake:
-                return get_custom_renderer<SnakeGame>();
+                return custom_renderer<SnakeGame>();
         case Game::SnakeDuel:
-                return get_custom_renderer<SnakeDuel>();
+                return custom_renderer<SnakeDuel>();
         case Game::Sudoku:
-                return get_custom_renderer<SudokuGame>();
+                return custom_renderer<SudokuGame>();
         case Game::Power:
-                return get_custom_renderer<PowerManagementApp>();
+                return custom_renderer<PowerManagementApp>();
         case Game::Brightness:
-                return get_name_renderer<BrightnessApp>();
+                return simple_name_renderer<BrightnessApp>();
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return std::nullopt;

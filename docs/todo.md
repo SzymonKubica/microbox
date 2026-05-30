@@ -14,7 +14,6 @@
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
-- rename the console as microbox already exists (first find a better name)
 
 # TODO
 
@@ -45,12 +44,12 @@
 # In Progress
 
 - [ ] add generic texture rendering for the SFML display (requires documentation)
-
-- [ ] fix wifi connection crashes on esp32
+- [ ] fix random number API failures (likely need a different provider)
 - [ ] fix compilation compatibility for arduino r4 minima
 - [ ] clean up all TODO
 
 # Done
+- [x] fix heading rendering when there are 4 available options
 - [x] clean up duplication in the thumbnail rendering code
 - [x] clean up hacky font size overrides in the sfml adapter for the TFT_eSPI
       library
