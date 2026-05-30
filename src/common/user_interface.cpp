@@ -408,7 +408,7 @@ void render_circle_selector(const Display &display, bool already_rendered,
  */
 int calculate_section_spacing(int display_height, int config_bar_num,
                               int bar_height, int gap_between_bars_height,
-                              FontSize heading_font_size)
+                              int heading_font_size)
 {
         int spacings_num = 3;
         int total_gaps = config_bar_num - 1;
@@ -416,8 +416,18 @@ int calculate_section_spacing(int display_height, int config_bar_num,
         int total_gaps_height = total_gaps * gap_between_bars_height;
         int total_config = config_bars_height + total_gaps_height;
         // Having calculated all intermediate heights, we get the final spacing.
-        return (display_height - total_config - (int)heading_font_size) /
+        return (display_height - total_config - heading_font_size) /
                spacings_num;
+}
+
+int find_y_spacing_between_bars(int bars_count, int font_height,
+                                int display_height)
+{
+        int bars_num = std::min(bars_count, (int)MAX_RENDERED_OPTION_NUM);
+        int bar_height = 2 * font_height;
+        int bar_gap_height = font_height * 3 / 4;
+        return calculate_section_spacing(display_height, bars_num, bar_height,
+                                         bar_gap_height, font_height);
 }
 /**
  * Given the initial spacing in front of the config heading and the number,
@@ -455,65 +465,52 @@ void render_menu_heading(const Display &display, const Configuration &config,
                          const UserInterfaceCustomization &customization,
                          bool should_render_logo)
 {
-        const char *heading_text = config.name;
+        int y_spacing = find_y_spacing_between_bars(
+            config.options.size(), FontSize::Size24, display.get_height());
 
-        int h = display.get_height();
-        int w = display.get_width();
-        int fw = HEADING_FONT_WIDTH;
-        int fh = FONT_SIZE;
-        int left_margin = get_centering_margin(w, fw, text_max_length);
-
-        int bars_num = std::min(config.options.size(), MAX_RENDERED_OPTION_NUM);
-
-        int bar_height = 2 * fh;
-        int bar_gap_height = fh * 3 / 4;
-        int y_spacing = calculate_section_spacing(h, bars_num, bar_height,
-                                                  bar_gap_height, Size24);
-
-        // This is manually tweaked to make it look good.
-        int logo_x_margin = 35;
-        int logo_y_margin = 5;
-
-        // Render the config menu heading.
         render_text_bar_centered(display, y_spacing, text_max_length, 0,
-                                 heading_text, text_update_only,
+                                 config.name, text_update_only,
                                  customization.rendering_mode, Black, White,
-                                 HEADING_FONT_WIDTH, Size24);
+                                 HEADING_FONT_WIDTH, FontSize::Size24);
 
         if (should_render_logo) {
+                // This is manually tweaked to make it look good.
+                int logo_x_margin = 35;
+                int logo_y_margin = 5;
                 render_logo(
                     display, customization,
                     {.x = logo_x_margin, .y = y_spacing + logo_y_margin});
         }
 }
 
-// TODO: clean up this duplication against the above. Ideally we should have
-// specialized versions of those two functions where there is only a title,
-// a thumbnail / single config option and then a subtitle.
 void render_menu_subtitle(const Display &display, const Configuration &config,
                           bool text_update_only, int text_max_length,
                           const UserInterfaceCustomization &customization)
 {
-        const char *heading_text = config.name;
+        int y_spacing = find_y_spacing_between_bars(
+            config.options.size(), FontSize::Size16, display.get_height());
 
-        int h = display.get_height();
-        int w = display.get_width();
-        int fw = FONT_WIDTH;
-        int fh = FONT_SIZE;
-        int left_margin = get_centering_margin(w, fw, text_max_length);
-
-        int bars_num = std::min(config.options.size(), MAX_RENDERED_OPTION_NUM);
-
-        int bar_height = 2 * fh;
-        int bar_gap_height = fh * 3 / 4;
-        int y_spacing = calculate_section_spacing(h, bars_num, bar_height,
-                                                  bar_gap_height, Size16);
-
-        // Render the config menu heading.
         render_text_bar_centered(display, 3 * y_spacing, text_max_length, 0,
-                                 heading_text, text_update_only,
+                                 config.name, text_update_only,
                                  customization.rendering_mode, Black, White,
-                                 FONT_WIDTH, Size16);
+                                 FONT_WIDTH, FontSize::Size16);
+}
+
+void clear_half_display_and_render_subtitle(
+    const Platform &platform, const UserInterfaceCustomization &customization,
+    const char *subtitle)
+{
+        const Display &display = *platform.display;
+        int available_height =
+            display.get_height() - display.get_display_corner_radius();
+        display.clear_region({0, available_height / 2},
+                             {display.get_width(), available_height}, Black);
+
+        // Here we create a dummy configuration with a single option as
+        // 'render_menu_subtitle' expects a full configuration to be provided.
+        render_menu_subtitle(
+            display, Configuration(subtitle, {new ConfigurationOption()}),
+            false, strlen(subtitle), customization);
 }
 
 /**
@@ -555,7 +552,7 @@ void render_config_menu(const Display &display, const Configuration &config,
         int bar_height = 2 * fh;
         int bar_gap_height = fh * 3 / 4;
         int y_spacing = calculate_section_spacing(h, bars_num, bar_height,
-                                                  bar_gap_height, Size24);
+                                                  bar_gap_height, (int)Size24);
 
         if (!text_update_only) {
                 display.initialize();

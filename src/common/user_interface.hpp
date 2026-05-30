@@ -12,6 +12,14 @@ void render_menu_heading(const Display &display, const Configuration &config,
                          bool text_update_only, int text_max_length,
                          const UserInterfaceCustomization &customization,
                          bool should_render_logo = false);
+/**
+ * Utility function required for thumbnail renderers, the intent is to clear
+ * the area where the thumbnail will be rendered and then render a subtitle
+ * with the name of the game.
+ */
+void clear_half_display_and_render_subtitle(
+    const Platform &platform, const UserInterfaceCustomization &customization,
+    const char *subtitle);
 void render_menu_subtitle(const Display &display, const Configuration &config,
                           bool text_update_only, int text_max_length,
                           const UserInterfaceCustomization &customization);

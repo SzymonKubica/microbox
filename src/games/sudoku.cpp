@@ -4,14 +4,6 @@
 #include "sudoku.hpp"
 #include "../apps/settings.hpp"
 #include "../menu.hpp"
-// TODO: remove. This is here only for testing. Game code
-// should not depend on the specifics of a particular display.
-#if defined(EMULATOR)
-#include "../platform/emulator/sfml_display.hpp"
-#else
-#include "../platform/drivers/display/lcd_display_2_4_inch.hpp"
-#endif
-
 #include "../common/configuration.hpp"
 #include "../common/configuration.hpp"
 #include "../common/constants.hpp"
@@ -507,14 +499,8 @@ void SudokuGame::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
         const Display &display = *platform.display;
-        int available_height =
-            display.get_height() - display.get_display_corner_radius();
-        display.clear_region({0, available_height / 2},
-                             {display.get_width(), available_height}, Black);
-        const char *subtitle = "Sudoku";
-        render_menu_subtitle(
-            display, Configuration(subtitle, {new ConfigurationOption()}),
-            false, strlen(subtitle), customization);
+        clear_half_display_and_render_subtitle(platform, customization,
+                                               "Sudoku");
         TftCompatibleDisplay *tft_display =
             platform.display->cast_into_tft_compatible();
         int rect_1_h = 60;

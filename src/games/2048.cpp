@@ -917,17 +917,9 @@ void Clean2048::render_thumbnail(
         auto config = std::unique_ptr<Game2048Configuration>(
             load_initial_config(*platform.persistent_storage));
 
+        clear_half_display_and_render_subtitle(platform, customization, "2048");
+
         const auto &display = *platform.display;
-        int available_height =
-            display.get_height() - display.get_display_corner_radius();
-        display.clear_region({0, available_height / 2},
-                             {display.get_width(), available_height}, Black);
-
-        const char *subtitle = "2048";
-        render_menu_subtitle(
-            display, Configuration(subtitle, {new ConfigurationOption()}),
-            false, strlen(subtitle), customization);
-
         auto gd = std::unique_ptr<GridDimensions>(
             calculate_grid_dimensions(display, config->grid_size));
 

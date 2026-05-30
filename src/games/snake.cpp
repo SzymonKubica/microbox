@@ -444,14 +444,9 @@ void SnakeGame::render_thumbnail(
 {
 
         const Display &display = *platform.display;
-        int available_height =
-            display.get_height() - display.get_display_corner_radius();
-        display.clear_region({0, available_height / 2},
-                             {display.get_width(), available_height}, Black);
-        const char *subtitle = "Snake";
-        render_menu_subtitle(
-            display, Configuration(subtitle, {new ConfigurationOption()}),
-            false, strlen(subtitle), customization);
+
+        clear_half_display_and_render_subtitle(platform, customization,
+                                               "Snake");
 
         int game_cell_width = DEFAULT_SNAKE_GAME_CELL_WIDTH;
         auto gd =

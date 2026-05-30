@@ -5,13 +5,6 @@
 #include "app_menu.hpp"
 #include "brightness.hpp"
 #include "random_seed_picker.hpp"
-// TODO: remove. This is here only for testing. Game code
-// should not depend on the specifics of a particular display.
-#if defined(EMULATOR)
-#include "../platform/emulator/sfml_display.hpp"
-#else
-#include "../platform/drivers/display/lcd_display_2_4_inch.hpp"
-#endif
 #include "wifi.hpp"
 #include "../menu.hpp"
 #include "../common/configuration.hpp"

@@ -156,5 +156,18 @@ class SfmlDisplay : public Display, public TftCompatibleDisplay
       private:
         sf::RenderWindow *window;
         sf::RenderTexture *texture;
+
+        /**
+         * Font size that was set by the `setTextSize` method on the
+         * TftCompatibleDisplay We need to maintain this state to achieve
+         * compatibility with the interface exposed by the TFT_eSPI library.
+         */
+        uint32_t tft_font_size;
+        /**
+         * Text color that was set by the `setTextColor` method on the
+         * TftCompatibleDisplay We need to maintain this state to achieve
+         * compatibility with the interface exposed by the TFT_eSPI library.
+         */
+        sf::Color tft_text_color;
 };
 #endif

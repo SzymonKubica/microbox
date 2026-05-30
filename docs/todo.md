@@ -44,11 +44,16 @@
 
 # In Progress
 
-- [ ] clean up duplication in the thumbnail rendering code
-- [ ] clean up hacky font size overrides in the sfml adapter for the TFT_eSPI
-      library
+- [ ] add generic texture rendering for the SFML display (requires documentation)
+
+- [ ] fix wifi connection crashes on esp32
+- [ ] fix compilation compatibility for arduino r4 minima
+- [ ] clean up all TODO
 
 # Done
+- [x] clean up duplication in the thumbnail rendering code
+- [x] clean up hacky font size overrides in the sfml adapter for the TFT_eSPI
+      library
 - [x] fix memory leaks in the new game menu
 - [x] add game thumbnails
   - [x] minesweeper

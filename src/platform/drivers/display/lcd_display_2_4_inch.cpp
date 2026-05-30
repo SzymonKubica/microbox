@@ -11,7 +11,11 @@ TFT_eSPI tft = TFT_eSPI();
 
 uint16_t to_tft_color(Color c) { return static_cast<uint16_t>(c); }
 
-int map_font_size(FontSize font_size)
+/**
+ * Based on the supplied font size, we are converting it to the font number
+ * used by TFT_eSPI library.
+ */
+int font_type_from_size(FontSize font_size)
 {
         switch (font_size) {
         case Size16:
@@ -87,7 +91,7 @@ void LcdDisplay::draw_string(Point start, char *string_buffer,
                              Color fg_color) const
 {
         tft.setTextColor(to_tft_color(fg_color), to_tft_color(bg_color));
-        tft.setTextFont(map_font_size(font_size));
+        tft.setTextFont(font_type_from_size(font_size));
         tft.setTextSize(2);
         tft.setCursor(start.x, start.y);
         tft.print(string_buffer);

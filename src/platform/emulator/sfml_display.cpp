@@ -356,45 +356,37 @@ void SfmlDisplay::fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color)
         texture->display();
 }
 
-// This is a bit dirty but that's how we implement the functionality of
-// 'setting' the fill color. This is based on the assumption that we'll always
-// have at most one instance of the display so they won't keep overriding
-// the 'memoized' size here
-uint32_t font_size;
-sf::Color text_color;
 void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y)
 {
 
         const sf::Font font = get_emulator_font();
-        // TODO: remove this hack:
 
-        int adj = 0;
-        if (font_size == 4) {
-                adj = 2;
-        }
-        int resolved_font_size = FontSize::Size16 * (font_size - adj);
         // The default font size is 16. We use the font_size
         // in line with the behaviour of the TFT_eSPI library: font_size == 1
         // means that we are scaling the font as 100%, 2 means 200% and so on.
+        // Note that internally our FontSize 16 corresponds to the TFT_eSPI font
+        // number 1 and size 2. Because of this, the resolved font size divides
+        // the FONT_SIZE by 2 to get our emulated font size back to what
+        // corresponds to TFT_eSPI font size 1.
+        int resolved_font_size = FONT_SIZE / 2 * this->tft_font_size;
+        int resolved_font_width = FONT_WIDTH / 2 * this->tft_font_size;
         sf::Text text(font, string, resolved_font_size);
 
-        // We need to adjust the vertical alignment of the text to make it
-        // pixel-close to the actual TFT_eSPI behaviour.
-        int adjustment = 1;
-        text.setFillColor(sf::Color(text_color));
-        text.setPosition(
-            {(float)(x - FONT_WIDTH / 2 + adjustment * font_size + 1),
-             (float)(y - resolved_font_size / 2 +
-                     adjustment * (font_size + 1))});
+        // For fonts larger than 1, we need to adjust the vertical alignment of
+        // the text to make it pixel-close to the actual TFT_eSPI behaviour.
+        float adjustment =
+            this->tft_font_size != 1 ? 2 * this->tft_font_size : 1;
+        text.setFillColor(sf::Color(this->tft_text_color));
+        text.setPosition({(float)(x), (float)(y - adjustment)});
         texture->draw(text);
         texture->display();
 }
 void SfmlDisplay::fillScreen(uint32_t color) {}
 void SfmlDisplay::setTextColor(uint32_t color)
 {
-        text_color = map_to_sf_color(color);
+        this->tft_text_color = map_to_sf_color(color);
 }
-void SfmlDisplay::setTextSize(uint8_t size) { font_size = size; }
+void SfmlDisplay::setTextSize(uint8_t size) { this->tft_font_size = size; }
 
 void SfmlDisplay::drawTriangle(int32_t xs, int32_t ys, int32_t x2, int32_t y2,
                                int32_t xe, int32_t ye, uint32_t color)
