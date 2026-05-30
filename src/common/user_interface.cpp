@@ -515,7 +515,10 @@ void clear_half_display_and_render_subtitle(
         const Display &display = *platform.display;
         int available_height =
             display.get_height() - display.get_display_corner_radius();
-        display.clear_region({0, available_height / 2},
+        // We need to start erasing from a bit higher. This is required because
+        // some thumbnails for the games render more stuff.
+        int adjustment = 5;
+        display.clear_region({0, available_height / 2 - adjustment},
                              {display.get_width(), available_height}, Black);
 
         // Here we create a dummy configuration with a single option as

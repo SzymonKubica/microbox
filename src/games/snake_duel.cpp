@@ -932,7 +932,21 @@ void SnakeDuel::render_thumbnail(
         render_head(snake, primary);
         render_cell(snake.get_neck(), Cell::Snake, primary);
 
-        std::vector<Point> snake_trail = {{-1, 0}, {-1, 1}, {-1, 2}};
+        // Here we control the layout of the snake's tail by specifying
+        // which direction it went starting from the head and going back.
+        Point trail_part = {0, -1};
+        std::vector<Point> snake_trail;
+        snake_trail.push_back(trail_part);
+        auto add_tail_segment = [&](Direction direction) {
+                translate(trail_part, direction);
+                snake_trail.push_back(trail_part);
+        };
+        add_tail_segment(Direction::LEFT);
+        add_tail_segment(Direction::DOWN);
+        add_tail_segment(Direction::DOWN);
+        add_tail_segment(Direction::DOWN);
+        add_tail_segment(Direction::DOWN);
+        add_tail_segment(Direction::RIGHT);
 
         {
                 Point last = snake.get_neck();
@@ -944,15 +958,18 @@ void SnakeDuel::render_thumbnail(
                 }
         }
 
-        Point apple = translate_pure(
-            translate_pure(snake.head, snake.direction), snake.direction);
+        Point apple = snake.head;
+        translate(apple, Direction::RIGHT);
+        translate(apple, Direction::RIGHT);
+        translate(apple, Direction::UP);
         render_cell(apple, Cell::Apple, primary);
 
-        Snake second_snake{Point{.x = cols / 2, .y = rows / 2} + Point{2, 2},
+        Snake second_snake{Point{.x = cols / 2, .y = rows / 2} + Point{2, 1},
                            Direction::UP};
         render_head(second_snake, Red);
         render_cell(second_snake.get_neck(), Cell::Snake, Red);
-        std::vector<Point> second_snake_trail = {{0, 1}, {-1, 1}};
+        std::vector<Point> second_snake_trail = {
+            {0, 1}, {-1, 1}, {-1, 1}, {-1, 0}, {-2, 0}};
 
         Point last = second_snake.get_neck();
         for (const auto &p : second_snake_trail) {

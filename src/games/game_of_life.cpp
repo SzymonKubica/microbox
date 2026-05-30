@@ -988,26 +988,29 @@ void GameOfLife::render_thumbnail(
                 draw_game_cell(display, *dimensions, location, White);
         };
 
-        // Draw a simple glider
-        {
-                int start_x = 15;
-                int start_y = 15;
-                cell({start_x, start_y});
-                cell({start_x, start_y + 1});
-                cell({start_x, start_y + 2});
-                cell({start_x - 1, start_y + 2});
-                cell({start_x - 2, start_y + 1});
-        }
+        // clang-format off
+        uint8_t _ = 0;
+        uint8_t pattern[9][9] = {
+            {_, _, _, 1, 1, 1, _, _, _},
+            {_, _, 1, _, _, _, 1, _, _},
+            {_, 1, _, _, _, _, _, 1, _},
+            {1, _, _, _, 1, _, _, _, 1},
+            {1, _, _, 1, _, 1, _, _, 1},
+            {1, _, _, _, 1, _, _, _, 1},
+            {_, 1, _, _, _, _, _, 1, _},
+            {_, _, 1, _, _, _, 1, _, _},
+            {_, _, _, 1, 1, 1, _, _, _},
+        };
+        // clang-format-on
 
-        // Draw another shape
-        {
-                int start_x = 20;
-                int start_y = 12;
-                cell({start_x, start_y});
-                for (int i = 1; i <= 3; i++) {
-                        cell({start_x + 1, start_y + i});
-                        cell({start_x - 1, start_y + i});
+        // Top left point of the square where thumbnails get ususally rendered.
+        Point top_left{.x = 13, .y = 10};
+
+        for (int y = 0; y < 9; y++) {
+                for (int x = 0; x < 9; x++) {
+                        if (pattern[y][x] == 1) {
+                                cell(top_left + Point{x, y});
+                        }
                 }
-                cell({start_x, start_y + 4});
         }
 }

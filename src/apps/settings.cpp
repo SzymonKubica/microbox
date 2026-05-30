@@ -248,62 +248,85 @@ void Settings::render_thumbnail(const Platform &platform,
         TftCompatibleDisplay &tft =
             *platform.display->cast_into_tft_compatible();
 
+        // [BEGIN lopaka generated]
+
         auto draw_polygon_10_copy_4 = [&]() {
-                tft.drawLine(134, 156, 148, 142, 0xBDF7);
-                tft.drawLine(148, 142, 156, 150, 0xBDF7);
-                tft.drawLine(156, 150, 142, 164, 0xBDF7);
-                tft.drawLine(142, 164, 134, 156, 0xBDF7);
+                tft.drawLine(132, 156, 146, 142, 0xBDF7);
+                tft.drawLine(146, 142, 154, 150, 0xBDF7);
+                tft.drawLine(154, 150, 140, 164, 0xBDF7);
+                tft.drawLine(140, 164, 132, 156, 0xBDF7);
         };
 
         auto draw_polygon_10_copy_3 = [&]() {
-                tft.drawLine(168, 124, 182, 110, 0xBDF7);
-                tft.drawLine(182, 110, 190, 118, 0xBDF7);
-                tft.drawLine(190, 118, 176, 132, 0xBDF7);
-                tft.drawLine(176, 132, 168, 124, 0xBDF7);
+                tft.drawLine(166, 124, 180, 110, 0xBDF7);
+                tft.drawLine(180, 110, 188, 118, 0xBDF7);
+                tft.drawLine(188, 118, 174, 132, 0xBDF7);
+                tft.drawLine(174, 132, 166, 124, 0xBDF7);
         };
 
         auto draw_polygon_10 = [&]() {
-                tft.drawLine(134, 118, 142, 110, 0xBDF7);
-                tft.drawLine(142, 110, 147, 115, 0xBDF7);
-                tft.drawLine(147, 115, 139, 123, 0xBDF7);
-                tft.drawLine(139, 123, 134, 118, 0xBDF7);
+                tft.drawLine(132, 118, 140, 110, 0xBDF7);
+                tft.drawLine(140, 110, 145, 115, 0xBDF7);
+                tft.drawLine(145, 115, 137, 123, 0xBDF7);
+                tft.drawLine(137, 123, 132, 118, 0xBDF7);
         };
 
         auto draw_polygon_10_copy_1 = [&]() {
-                tft.drawLine(177, 160, 185, 152, 0xBDF7);
-                tft.drawLine(185, 152, 190, 157, 0xBDF7);
-                tft.drawLine(190, 157, 182, 165, 0xBDF7);
-                tft.drawLine(182, 165, 177, 160, 0xBDF7);
+                tft.drawLine(175, 160, 183, 152, 0xBDF7);
+                tft.drawLine(183, 152, 188, 157, 0xBDF7);
+                tft.drawLine(188, 157, 180, 165, 0xBDF7);
+                tft.drawLine(180, 165, 175, 160, 0xBDF7);
         };
 
         auto draw_polygon_10_copy_2 = [&]() {
-                tft.drawLine(177, 160, 185, 152, 0xBDF7);
-                tft.drawLine(185, 152, 190, 157, 0xBDF7);
-                tft.drawLine(190, 157, 182, 165, 0xBDF7);
-                tft.drawLine(182, 165, 177, 160, 0xBDF7);
+                tft.drawLine(175, 160, 183, 152, 0xBDF7);
+                tft.drawLine(183, 152, 188, 157, 0xBDF7);
+                tft.drawLine(188, 157, 180, 165, 0xBDF7);
+                tft.drawLine(180, 165, 175, 160, 0xBDF7);
         };
-
-        tft.drawRect(150, 125, 22, 22, 0x4208);
-        tft.fillCircle(162, 137, 27, 0xBDF7);
-        tft.drawRect(187, 131, 9, 13, 0xBDF7);
-        tft.fillRect(187, 131, 9, 13, 0xBDF7);
+        // rect 4 copy 2
+        tft.drawRect(148, 125, 22, 22, 0x4208);
+        // ellipse 1
+        tft.fillCircle(160, 137, 27, 0xBDF7);
+        // rect 4 copy 6
+        tft.drawRect(185, 131, 9, 13, 0xBDF7);
+        // rect 4 copy 7
+        tft.fillRect(185, 131, 9, 13, 0xBDF7);
+        // polygon 10 copy 4
         draw_polygon_10_copy_4();
+        // polygon 10 copy 3
         draw_polygon_10_copy_3();
-        tft.fillCircle(162, 137, 15, 0x0);
-        tft.drawRect(156, 104, 13, 9, 0xBDF7);
-        tft.fillRect(129, 131, 9, 13, 0xBDF7);
-        tft.fillRect(156, 104, 13, 9, 0xBDF7);
-        tft.fillRect(156, 162, 13, 9, 0xBDF7);
+        // ellipse 2
+        tft.fillCircle(160, 137, 15, 0x0);
+        // rect 4 copy 4
+        tft.drawRect(154, 104, 13, 9, 0xBDF7);
+        // rect 4 copy 5
+        tft.fillRect(127, 131, 9, 13, 0xBDF7);
+        // rect 4 copy 8
+        tft.fillRect(154, 104, 13, 9, 0xBDF7);
+        // rect 4 copy 9
+        tft.fillRect(154, 162, 13, 9, 0xBDF7);
+        // polygon 10
         draw_polygon_10();
+        // polygon 10 copy 1
         draw_polygon_10_copy_1();
+        // polygon 10 copy 2
         draw_polygon_10_copy_2();
-        tft.fillTriangle(142, 110, 135, 118, 149, 118, 0xBDF7);
-        tft.fillTriangle(182, 110, 176, 117, 188, 117, 0xBDF7);
-        tft.fillTriangle(183, 150, 177, 157, 189, 157, 0xBDF7);
-        tft.fillTriangle(141, 149, 135, 156, 147, 156, 0xBDF7);
-        tft.fillTriangle(144, 126, 152, 118, 135, 118, 0xBDF7);
-        tft.fillTriangle(182, 125, 189, 117, 175, 117, 0xBDF7);
-        tft.fillTriangle(182, 164, 189, 156, 175, 156, 0xBDF7);
-        tft.fillTriangle(142, 163, 149, 155, 135, 155, 0xBDF7);
+        // triangle 15
+        tft.fillTriangle(140, 110, 133, 118, 147, 118, 0xBDF7);
+        // triangle 15 copy 1
+        tft.fillTriangle(180, 110, 174, 117, 186, 117, 0xBDF7);
+        // triangle 15 copy 2
+        tft.fillTriangle(181, 150, 175, 157, 187, 157, 0xBDF7);
+        // triangle 15 copy 3
+        tft.fillTriangle(139, 149, 133, 156, 145, 156, 0xBDF7);
+        // triangle 19
+        tft.fillTriangle(142, 126, 150, 118, 133, 118, 0xBDF7);
+        // triangle 19 copy 1
+        tft.fillTriangle(180, 125, 187, 117, 173, 117, 0xBDF7);
+        // triangle 19 copy 2
+        tft.fillTriangle(180, 164, 187, 156, 173, 156, 0xBDF7);
+        // triangle 19 copy 3
+        tft.fillTriangle(140, 163, 147, 155, 133, 155, 0xBDF7);
         // [END lopaka generated]
 }

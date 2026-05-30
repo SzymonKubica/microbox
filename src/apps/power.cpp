@@ -78,13 +78,12 @@ void PowerManagementApp::render_thumbnail(
             *platform.display->cast_into_tft_compatible();
 
         // [BEGIN lopaka generated]
-        tft.fillCircle(162, 137, 27, White);
-        tft.fillCircle(162, 137, 27, White);
-        tft.fillCircle(162, 137, 15, 0x0);
-        tft.fillRect(158, 107, 9, 28, customization.accent_color);
-        tft.fillRect(167, 100, 5, 39, 0x0);
-        tft.fillCircle(162, 105, 4, customization.accent_color);
-        tft.fillCircle(162, 134, 4, customization.accent_color);
-        tft.fillRect(153, 100, 5, 41, 0x0);
+        tft.fillCircle(160, 137, 27, White);
+        tft.fillCircle(160, 137, 15, 0x0);
+        tft.fillRect(156, 107, 9, 28, customization.accent_color);
+        tft.fillRect(165, 100, 5, 39, 0x0);
+        tft.fillCircle(160, 105, 4, customization.accent_color);
+        tft.fillCircle(160, 134, 4, customization.accent_color);
+        tft.fillRect(151, 100, 5, 41, 0x0);
         // [END lopaka generated]
 }

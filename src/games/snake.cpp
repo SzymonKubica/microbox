@@ -487,7 +487,25 @@ void SnakeGame::render_thumbnail(
         render_head(snake);
         render_cell(snake.get_neck(), Cell::Snake);
 
-        std::vector<Point> snake_trail = {{-1, 0}, {-1, 1}, {-1, 2}};
+        // Here we control the layout of the snake's tail by specifying
+        // which direction it went starting from the head and going back.
+        Point trail_part = {0, -1};
+        std::vector<Point> snake_trail;
+        snake_trail.push_back(trail_part);
+        auto add_tail_segment = [&](Direction direction) {
+                translate(trail_part, direction);
+                snake_trail.push_back(trail_part);
+        };
+        add_tail_segment(Direction::LEFT);
+        add_tail_segment(Direction::DOWN);
+        add_tail_segment(Direction::DOWN);
+        add_tail_segment(Direction::DOWN);
+        add_tail_segment(Direction::DOWN);
+        add_tail_segment(Direction::RIGHT);
+        add_tail_segment(Direction::RIGHT);
+        add_tail_segment(Direction::RIGHT);
+        add_tail_segment(Direction::RIGHT);
+        add_tail_segment(Direction::UP);
 
         Point last = snake.get_neck();
         for (const auto &p : snake_trail) {
@@ -497,7 +515,9 @@ void SnakeGame::render_thumbnail(
                 last = translated;
         }
 
-        Point apple = translate_pure(
-            translate_pure(snake.head, snake.direction), snake.direction);
+        Point apple = snake.head;
+        translate(apple, Direction::RIGHT);
+        translate(apple, Direction::RIGHT);
+        translate(apple, Direction::UP);
         render_cell(apple, Cell::Apple);
 }

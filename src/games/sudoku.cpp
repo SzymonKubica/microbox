@@ -501,26 +501,30 @@ void SudokuGame::render_thumbnail(
         const Display &display = *platform.display;
         clear_half_display_and_render_subtitle(platform, customization,
                                                "Sudoku");
-        TftCompatibleDisplay *tft_display =
-            platform.display->cast_into_tft_compatible();
+        TftCompatibleDisplay &tft =
+            *platform.display->cast_into_tft_compatible();
+
+        // [BEGIN lopaka generated]
         int rect_1_h = 60;
         int rect_1_w = 60;
-        int x_adj = 0;
-        int y_adj = 10;
-        tft_display->drawRect(132 - x_adj, 101 + y_adj, rect_1_w, rect_1_h,
-                              0xFFFF);
-        tft_display->drawLine(152 - x_adj, 101 + y_adj, 152 - x_adj,
-                              160 + y_adj, 0xFFFF);
-        tft_display->drawLine(171 - x_adj, 101 + y_adj, 171 - x_adj,
-                              160 + y_adj, 0xFFFF);
-        tft_display->drawLine(132 - x_adj, 121 + y_adj, 191 - x_adj,
-                              121 + y_adj, 0xFFFF);
-        tft_display->drawLine(133 - x_adj, 141 + y_adj, 191 - x_adj,
-                              141 + y_adj, 0xFFFF);
-        tft_display->setTextColor(customization.accent_color);
-        tft_display->setTextSize(1);
-        tft_display->drawString("1", 140 - x_adj, 108 + y_adj);
-        tft_display->setTextColor(0xFFFF);
-        tft_display->drawString("5", 179 - x_adj, 148 + y_adj);
-        tft_display->drawString("7", 140 - x_adj, 148 + y_adj);
+        // rect 1
+        tft.drawRect(130, 107, rect_1_w, rect_1_h, 0xFFFF);
+        // line 2
+        tft.drawLine(150, 107, 150, 166, 0xFFFF);
+        // line 3
+        tft.drawLine(169, 107, 169, 166, 0xFFFF);
+        // line 4
+        tft.drawLine(130, 127, 189, 127, 0xFFFF);
+        // line 5
+        tft.drawLine(131, 147, 189, 147, 0xFFFF);
+        // string 6
+        tft.setTextColor(customization.accent_color);
+        tft.setTextSize(1);
+        tft.drawString("1", 138, 114);
+        tft.setTextColor(0xFFFF);
+        // string 6 copy 1
+        tft.drawString("5", 177, 154);
+        // string 6 copy 2
+        tft.drawString("7", 138, 154);
+        // [END lopaka generated]
 }

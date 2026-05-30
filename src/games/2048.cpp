@@ -919,25 +919,21 @@ void Clean2048::render_thumbnail(
 
         clear_half_display_and_render_subtitle(platform, customization, "2048");
 
+        // This is hard-coded to align with the lopaka-generated thumbnails.
+        int thumbnail_width = 69;
+        Point thumbnail_start{126, 103};
+
         const auto &display = *platform.display;
         auto gd = std::unique_ptr<GridDimensions>(
             calculate_grid_dimensions(display, config->grid_size));
 
-        int width = gd->cell_width;
-        int height = gd->cell_height;
-        int x_spacing = gd->cell_x_spacing / 4;
-        int y_spacing = gd->cell_y_spacing / 4;
+        int spacing = 9;
+        int x_spacing = spacing;
+        int y_spacing = spacing;
+        int width = (thumbnail_width - spacing) / 2;
+        int height = width;
 
-        // TODO: abstract out duplication between this code and
-        // `calculate_grid_dimensions`
-        int corner_radius = display.get_display_corner_radius();
-        int usable_width = display.get_width();
-        int usable_height = display.get_height() - 2 * corner_radius;
-        int y_adj = 10;
-        int x_margin = (usable_width - 2 * width - x_spacing) / 2;
-        int y_margin = gd->grid_start_y +
-                       (usable_height - 2 * height - y_spacing) / 2 + y_adj;
-        Point start = {x_margin, y_margin};
+        Point start = thumbnail_start;
 
         Point x_displacement = Point{1, 0} * (width + x_spacing);
         Point y_displacement = Point{0, 1} * (height + y_spacing);
@@ -946,8 +942,19 @@ void Clean2048::render_thumbnail(
                 render_cell(*platform.display, customization, position, width,
                             height);
         };
-        auto cell_value = [&](Point position, int value) {
-                render_cell_value(platform, gd.get(), position, 0, value);
+        auto cell_value = [&](Point position, const char *value) {
+                // We only render single-digit numbers
+                int text_width = FONT_WIDTH;
+
+                // We need to center the four characters
+                // of text inside the cell.
+                int x_margin = (width - text_width) / 2;
+                int y_margin = (height - FONT_SIZE) / 2;
+
+                Point start_with_margin = {.x = position.x + x_margin,
+                                           .y = position.y + y_margin};
+                platform.display->draw_string(start_with_margin, (char *)value,
+                                              Size16, GRID_BG_COLOR, Black);
         };
 
         // Using lambdas with short, declarative names to make the section
@@ -956,10 +963,11 @@ void Clean2048::render_thumbnail(
         auto third = start + y_displacement;
         auto fourth = start + x_displacement + y_displacement;
         cell(start);
+        cell_value(start, "2");
         cell(second);
-        cell_value(second, 64);
+        cell_value(second, "0");
         cell(third);
-        cell_value(third, 256);
+        cell_value(third, "4");
         cell(fourth);
-        cell_value(fourth, 2048);
+        cell_value(fourth, "8");
 }

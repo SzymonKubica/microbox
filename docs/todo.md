@@ -15,6 +15,7 @@
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
 
+
 # TODO
 
 ## Doable on the emulator
@@ -26,6 +27,9 @@
       library with the correct pins and target device.
 - [ ] understand the cool cube rendering code for the 2.4 display and implement something like this.
 - [ ] remove dependency on the corner radius for minimalistic rendering
+
+- [ ] If no input from the user for 5 seconds, the game thumbnail should start
+      moving where possible (e.g. game of life should start evolving)
 ## Require hardware testing
 - [ ] find a monospace font for the TFT_eSPI display and get its width so
       that the display rendering is properly centered.
@@ -47,6 +51,9 @@
 - [ ] fix random number API failures (likely need a different provider)
 - [ ] fix compilation compatibility for arduino r4 minima
 - [ ] clean up all TODO
+- [ ] add ellipse rendering
+- [ ] game of life rewind likes to crash
+
 
 # Done
 - [x] fix heading rendering when there are 4 available options
