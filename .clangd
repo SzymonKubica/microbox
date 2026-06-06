@@ -3,10 +3,10 @@ CompileFlags:
   Add: [
     # If you have a dependency that doesn't get recognized by the LSP, you need
     # to find where the headers of that library live and include that here.
-    "-target", "x86_64-unknown-linux-gnu",
-    # We need to include the place where the actual sfml dep was loaded.
-    "-isystem", "/home/szymon/Arduino/arduino-things/game_console/emulator-build/_deps/sfml-src/include",
-    # Ensures that the sfml-specific code in the src/ tree is enabled
-    "-DEMULATOR"
+    "-isystem", "/home/szymon/.arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/lib/gcc/arm-none-eabi/7.2.1/include",
+    "-isystem", "/home/szymon/.arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include",
+    # The two below are supposed to add the standard c++ headers such as <cassert>
+    "-isystem", "/home/szymon/.arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1",
+    "-isystem", "/home/szymon/.arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1/arm-none-eabi",
   ]
-  CompilationDatabase: build-emulator/
+  CompilationDatabase: build/

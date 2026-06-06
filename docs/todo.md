@@ -43,16 +43,18 @@
 - [ ] fix minesweeper crashing
 ### uno q / raspberry pi
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
+## Low priority
+- [ ] add generic texture rendering for the SFML display (requires documentation)
 ## Dev experience
 
 # In Progress
 
-- [ ] add generic texture rendering for the SFML display (requires documentation)
 - [ ] fix random number API failures (likely need a different provider)
 - [ ] fix compilation compatibility for arduino r4 minima
 - [ ] clean up all TODO
 - [ ] add ellipse rendering
 - [ ] game of life rewind likes to crash
+
 
 
 # Done

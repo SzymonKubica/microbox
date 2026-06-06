@@ -2,14 +2,6 @@
 #include <cstring>
 #include "power.hpp"
 
-// TODO: remove. This is here only for testing. Game code
-// should not depend on the specifics of a particular display.
-#if defined(EMULATOR)
-#include "../platform/emulator/sfml_display.hpp"
-#else
-#include "../platform/drivers/display/lcd_display_2_4_inch.hpp"
-#endif
-
 #include "../common/configuration.hpp"
 
 #define INPUT_REGISTERED_DELAY 150
