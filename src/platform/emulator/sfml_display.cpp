@@ -356,6 +356,33 @@ void SfmlDisplay::fillCircle(int32_t x, int32_t y, int32_t r, uint32_t color)
         texture->display();
 }
 
+void SfmlDisplay::drawEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
+                              uint32_t color)
+{
+        sf::CircleShape ellipse(rx);
+        ellipse.setPosition({(float)(x - rx), (float)(y - ry)});
+        ellipse.setScale({1.0f, (float)ry / rx});
+        sf::Color sf_color = map_to_sf_color(color);
+        ellipse.setOutlineColor(sf_color);
+        ellipse.setOutlineThickness(1);
+        ellipse.setFillColor(sf::Color::Transparent);
+        texture->draw(ellipse);
+        texture->display();
+}
+void SfmlDisplay::fillEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
+                              uint32_t color)
+{
+        sf::CircleShape ellipse(rx);
+        ellipse.setPosition({(float)(x - rx), (float)(y - ry)});
+        ellipse.setScale({1.0f, (float)ry / rx});
+        sf::Color sf_color = map_to_sf_color(color);
+        ellipse.setFillColor(sf_color);
+        ellipse.setOutlineColor(sf_color);
+        ellipse.setOutlineThickness(1);
+        texture->draw(ellipse);
+        texture->display();
+}
+
 void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y)
 {
 

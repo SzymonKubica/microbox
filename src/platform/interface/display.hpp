@@ -40,6 +40,10 @@ class TftCompatibleDisplay
                                 uint32_t color) = 0;
         virtual void fillCircle(int32_t x, int32_t y, int32_t r,
                                 uint32_t color) = 0;
+        virtual void drawEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
+                                 uint32_t color) = 0;
+        virtual void fillEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
+                                 uint32_t color) = 0;
         virtual void drawString(const char *string, int32_t x, int32_t y) = 0;
         virtual void fillScreen(uint32_t color) = 0;
         virtual void setTextColor(uint32_t color) = 0;

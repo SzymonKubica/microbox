@@ -146,6 +146,10 @@ class SfmlDisplay : public Display, public TftCompatibleDisplay
                         uint32_t color) override;
         void fillCircle(int32_t x, int32_t y, int32_t r,
                         uint32_t color) override;
+        void drawEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
+                         uint32_t color) override;
+        void fillEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
+                         uint32_t color) override;
         void drawString(const char *string, int32_t x, int32_t y) override;
         void fillScreen(uint32_t color) override;
         void setTextColor(uint32_t color) override;

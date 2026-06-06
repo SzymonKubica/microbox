@@ -49,15 +49,16 @@
 
 # In Progress
 
+
 - [ ] fix random number API failures (likely need a different provider)
 - [ ] fix compilation compatibility for arduino r4 minima
 - [ ] clean up all TODO
-- [ ] add ellipse rendering
 - [ ] game of life rewind likes to crash
 
 
 
 # Done
+- [x] add ellipse rendering
 - [x] fix heading rendering when there are 4 available options
 - [x] clean up duplication in the thumbnail rendering code
 - [x] clean up hacky font size overrides in the sfml adapter for the TFT_eSPI

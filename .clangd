@@ -1,12 +1,13 @@
 CompileFlags:
-  Remove: ["-nostdlib"]
-  Add: [
-    # If you have a dependency that doesn't get recognized by the LSP, you need
-    # to find where the headers of that library live and include that here.
-    "-isystem", "/home/szymon/.arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/lib/gcc/arm-none-eabi/7.2.1/include",
-    "-isystem", "/home/szymon/.arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include",
-    # The two below are supposed to add the standard c++ headers such as <cassert>
-    "-isystem", "/home/szymon/.arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1",
-    "-isystem", "/home/szymon/.arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1/arm-none-eabi",
+  Remove: [
+    "-nostdlib",
+    "-mlongcalls",
+    "-mdisable-hardware-atomics",
+    "-fstrict-volatile-bitfields",
+    "-fno-tree-switch-conversion"
   ]
+  Add: [
+    "-DSOC_WIFI_SUPPORTED",
+    "-DCONFIG_ESP_WIFI_REMOTE_ENABLED=1",
+    ]
   CompilationDatabase: build/

@@ -173,6 +173,17 @@ void LcdDisplay::drawString(const char *string, int32_t x, int32_t y)
 {
         tft.drawString(string, x, y);
 }
+
+void LcdDisplay::drawEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
+                             uint32_t color)
+{
+        tft.drawEllipse(x, y, rx, ry, color);
+}
+void LcdDisplay::fillEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
+                             uint32_t color)
+{
+        tft.fillEllipse(x, y, rx, ry, color);
+}
 void LcdDisplay::fillScreen(uint32_t color) { tft.fillScreen(color); }
 void LcdDisplay::setTextColor(uint32_t color) { tft.setTextColor(color); }
 void LcdDisplay::setTextSize(uint8_t size) { tft.setTextSize(size); }
