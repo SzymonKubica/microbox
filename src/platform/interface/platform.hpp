@@ -46,6 +46,12 @@ struct PlatformCapabilities {
          * rendering features on platforms that can handle that.
          */
         bool has_fast_display = true;
+        /**
+         * If the target device supports some 'deep sleep' mode this flag should
+         * be set to true. This is important for platforms that are powered by
+         * lipo batteries that don't have a physical power off switch.
+         */
+        bool supports_power_off = true;
 };
 
 /**

@@ -434,7 +434,7 @@ assemble_sudoku_configuration(const SudokuConfiguration &initial_config)
 {
 
         ConfigurationOption *difficulty = ConfigurationOption::of_integers(
-            "Difficulty", {1, 2, 3}, initial_config.difficulty);
+            "Level", {1, 2, 3}, initial_config.difficulty);
 
         ConfigurationOption *accent_color = ConfigurationOption::of_colors(
             "Color", AVAILABLE_COLORS, initial_config.accent_color);

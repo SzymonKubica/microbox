@@ -40,7 +40,6 @@
 ### Arduino-specific
 - [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
-- [ ] fix minesweeper crashing
 ### uno q / raspberry pi
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 ## Low priority
@@ -50,12 +49,18 @@
 # In Progress
 
 
-- [ ] fix random number API failures (likely need a different provider)
+- [ ] fix minesweeper crashing
+
+- [ ] fix random number API failures (likely need a different provider - looks like no http providers to be found)
 - [ ] clean up all TODO
 - [ ] game of life rewind likes to crash
 
-
 # Done
+- [x] hand-tune the logo rendering on the 1.69 display target.
+- [x] ensure no ugly rendering artifacts on V1 display target.
+  - [x] sudoku config options look bad (bar too wide)
+- [x] disable the power application on V0 and V1 that are always powered with
+      a power bank
 - [x] fix compilation compatibility for arduino r4 minima
 - [x] fix compilation compatibility for arduino r4 wifi
 - [x] add ellipse rendering

@@ -296,7 +296,12 @@ Configuration *assemble_game_selector_configuration(
             game_to_string(Game::Clean2048),  game_to_string(Game::Minesweeper),
             game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
             game_to_string(Game::SnakeDuel),  game_to_string(Game::Sudoku),
-            game_to_string(Game::Settings),   game_to_string(Game::Power)};
+            game_to_string(Game::Settings),
+        };
+
+        if (p.capabilities.supports_power_off) {
+                available_games.push_back(game_to_string(Game::Power));
+        }
 
         auto *game = ConfigurationOption::of_strings(
             "Game", available_games, game_to_string(initial_config.game));

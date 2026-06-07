@@ -4,7 +4,6 @@
 
 function compile_arduino_r4_minima() {
 set -x
-  #  TODO: the code needs to be updated to respect the MICROBOX_0 target
   arduino-cli compile --build-path ./build  \
     --build-property build.extra_flags="-DWAVESHARE_1_69_INCH_LCD -DMICROBOX_0 -DDEBUG_BUILD" \
     --build-property compiler.c.extra_flags="-include Arduino.h"

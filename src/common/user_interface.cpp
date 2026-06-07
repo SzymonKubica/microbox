@@ -581,7 +581,7 @@ void render_config_menu(const Display &display, const Configuration &config,
             y_spacing, Size24, bar_height, bar_gap_height, bars_num);
 
         // This is manually tweaked to make it look good.
-        int logo_x_margin = 35;
+        int logo_x_margin = 30;
         int logo_y_margin = 5;
         if (!text_update_only && should_render_logo) {
                 render_logo(
