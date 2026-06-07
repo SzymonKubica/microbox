@@ -48,12 +48,11 @@
 
 # In Progress
 
-
-- [ ] fix minesweeper crashing
-
 - [ ] fix random number API failures (likely need a different provider - looks like no http providers to be found)
 - [ ] clean up all TODO
 - [ ] game of life rewind likes to crash
+
+- [ ] fix minesweeper crashing
 
 # Done
 - [x] hand-tune the logo rendering on the 1.69 display target.

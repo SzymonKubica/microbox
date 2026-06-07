@@ -14,9 +14,45 @@
  * sprinkled in the implementation below.
  */
 
+/**
+ * Due to hardware limitations we need to encode the set of valid numbers for
+ * a given cell as a bitset. This is because Arduino-based targets (R4 minima
+ * & R4 wifi) crash when trying to generate Sudoku grids.
+ */
+using ValidNumberSetMask = uint16_t;
+
+void set_valid_number(ValidNumberSetMask &mask, int number)
+{
+        mask |= 1 << (number - 1);
+}
+
+bool is_valid_number(const ValidNumberSetMask &mask, int number)
+{
+        return mask & 1 << (number - 1);
+}
+
+std::vector<int> into_vector(const ValidNumberSetMask &mask)
+{
+        std::vector<int> output;
+        for (int i = 1; i <= 9; i++) {
+                if (is_valid_number(mask, i))
+                        output.push_back(i);
+        }
+        return output;
+}
+int size(const ValidNumberSetMask &mask)
+{
+        int count = 0;
+        for (int i = 1; i <= 9; i++) {
+                if (is_valid_number(mask, i))
+                        count++;
+        }
+        return count;
+}
+
 /* Forward-declarations of the utility functions used by the Sudoku solver */
 std::optional<Point> find_empty_cell(const SudokuGrid &grid);
-std::vector<int> find_valid_numbers(const SudokuGrid &grid, Point location);
+ValidNumberSetMask find_valid_numbers(const SudokuGrid &grid, Point location);
 
 /**
  * Recursive algorithm that solves the supplied Sudoku grid by modifying it in
@@ -35,11 +71,13 @@ bool SudokuEngine::solve(SudokuGrid &grid)
         Point empty = maybe_location.value();
         LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
 
-        std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
-        LOG_DEBUG(TAG, "Found valid %d numbers", valid_numbers.size());
+        ValidNumberSetMask valid_numbers = find_valid_numbers(grid, empty);
+        LOG_DEBUG(TAG, "Found valid %d numbers", size(valid_numbers));
 
         auto &empty_cell = grid[empty.y][empty.x];
-        for (int candidate : valid_numbers) {
+        for (int candidate = 1; candidate <= 9; candidate++) {
+                if (!is_valid_number(valid_numbers, candidate))
+                        continue;
                 empty_cell.digit = candidate;
                 if (solve(grid)) {
                         return true;
@@ -76,8 +114,12 @@ std::optional<Point> find_empty_cell(const SudokuGrid &grid)
  * Applies sudoku rules to determine the set of candidate numbers that can be
  * placed on the `location` in the grid. Note that in order to do this the
  * tested location has to be empty.
+ *
+ * Note: due to hardware constraints, we are encoding the set of valid numbers
+ * in a fixed-size array of bools. If bool at index n is set, it means that
+ * number n+1 is valid.
  */
-std::vector<int> find_valid_numbers(const SudokuGrid &grid, Point location)
+ValidNumberSetMask find_valid_numbers(const SudokuGrid &grid, Point location)
 {
         auto &cell_at_location = grid[location.y][location.x];
 
@@ -120,7 +162,11 @@ std::vector<int> find_valid_numbers(const SudokuGrid &grid, Point location)
                         remove_candidate_if_cell_has_value(current);
                 }
         }
-        return candidates;
+        ValidNumberSetMask output = 0;
+        for (int number : candidates) {
+                set_valid_number(output, number);
+        }
+        return output;
 }
 
 /*
@@ -183,13 +229,7 @@ SudokuGrid SudokuEngine::generate_grid(int difficulty_level)
                 cell.digit = std::nullopt;
                 cell.is_user_defined = true;
 
-#if defined(EMULATOR) || defined(ARDUINO_ARCH_ESP32)
                 if (SudokuEngine::has_unique_solution(solvable)) {
-#else
-                // TODO: optimize the uniqueness checking logic to work on
-                // arduino
-                if (true) {
-#endif
                         removed++;
                 } else {
                         cell.digit = previous_value;
@@ -227,7 +267,7 @@ bool populate_solved_grid(std::vector<std::vector<SudokuCell>> &grid)
         Point empty = maybe_location.value();
         LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
 
-        std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
+        auto valid_numbers = into_vector(find_valid_numbers(grid, empty));
         LOG_DEBUG(TAG, "Found valid %d numbers", valid_numbers.size());
 
         std::shuffle(valid_numbers.begin(), valid_numbers.end(),
@@ -254,7 +294,7 @@ SudokuGrid generate_solved_grid()
         return grid;
 }
 
-bool test_for_unique_solution(SudokuGrid &grid, int &solution_count);
+void test_for_unique_solution(SudokuGrid &grid, int &solution_count);
 
 /**
  * Given a Sudoku grid, it verifies if it can be solved and the solution
@@ -266,7 +306,6 @@ bool test_for_unique_solution(SudokuGrid &grid, int &solution_count);
  */
 bool SudokuEngine::has_unique_solution(const SudokuGrid &grid)
 {
-
         SudokuGrid clone = grid;
         int solution_count = 0;
         test_for_unique_solution(clone, solution_count);
@@ -274,39 +313,39 @@ bool SudokuEngine::has_unique_solution(const SudokuGrid &grid)
 }
 
 /**
- * Tests if a given grid can be uniquely solved
+ * Tests if a given grid can be uniquely solved.
  */
-bool test_for_unique_solution(SudokuGrid &grid, int &solution_count)
+void test_for_unique_solution(SudokuGrid &grid, int &solution_count)
 {
-
         // Prune the search space to return true immediately once more than 1
         // solution is found.
-        if (solution_count > 1) {
-                return true;
-        }
+        if (solution_count > 1)
+                return;
 
         std::optional<Point> maybe_empty = find_empty_cell(grid);
         if (!maybe_empty.has_value()) {
+                // No empty cells means that a solution was found.
                 solution_count++;
-                return true;
+                return;
         }
 
         Point empty = maybe_empty.value();
-        std::vector<int> valid_numbers = find_valid_numbers(grid, empty);
+        auto valid_numbers = find_valid_numbers(grid, empty);
 
-        for (int candidate : valid_numbers) {
+        for (int candidate = 1; candidate <= 9; candidate++) {
+                if (!is_valid_number(valid_numbers, candidate))
+                        continue;
                 grid[empty.y][empty.x].digit = candidate;
                 // Here we don't skip if a solution is found. Instead we try
                 // all candidates and rely on the short-circuit logic above
                 // to terminate once more than on solution is found
                 test_for_unique_solution(grid, solution_count);
                 if (solution_count > 1) {
-                        return true;
+                        return;
                 }
                 grid[empty.y][empty.x].digit = std::nullopt;
         }
-
-        return false;
+        return;
 }
 
 /**
