@@ -353,7 +353,7 @@ void render_text_bar_centered(const Display &display, int y_start,
                         display.clear_region(bar_start + Point{-3 * fw, 0},
                                              Point{bar_start.x + bar_width,
                                                    bar_start.y + fh * 2} +
-                                                 Point(3 * fw, 0),
+                                                 Point{3 * fw, 0},
                                              Black);
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below

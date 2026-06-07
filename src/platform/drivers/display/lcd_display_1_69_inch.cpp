@@ -258,4 +258,15 @@ void LcdDisplay_1_69::sleep() const
         // TODO: For now this is a no-op as we don't support display sleeping on
         // the Arduino waveshare 1.69 inch LCD.
 }
+
+/**
+ * Note that the Waveshare 1.69 inch LCD does not use the same display driver
+ * as the 2.4 inch LCD, hence it is not copatible with the TFT_eSPI libarry and
+ * cannot be used with the TFT-compatible interface. This means that all
+ * lopaka-generated UI artifact code is not compatible with this display.
+ *
+ * This is mostly fine as this display doesn't refresh fast enough for those
+ * UI elements to look good. Adding them would result in the UI feeling laggy.
+ */
+TftCompatibleDisplay *LcdDisplay_1_69::cast_into_tft_compatible() { return nullptr; }
 #endif

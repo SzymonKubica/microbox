@@ -51,13 +51,13 @@
 
 
 - [ ] fix random number API failures (likely need a different provider)
-- [ ] fix compilation compatibility for arduino r4 minima
 - [ ] clean up all TODO
 - [ ] game of life rewind likes to crash
 
 
-
 # Done
+- [x] fix compilation compatibility for arduino r4 minima
+- [x] fix compilation compatibility for arduino r4 wifi
 - [x] add ellipse rendering
 - [x] fix heading rendering when there are 4 available options
 - [x] clean up duplication in the thumbnail rendering code

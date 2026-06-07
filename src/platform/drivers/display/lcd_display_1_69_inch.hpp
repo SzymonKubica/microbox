@@ -117,5 +117,15 @@ class LcdDisplay_1_69 : public Display
          */
         virtual bool refresh() const override;
         virtual void sleep() const override;
+
+        /**
+         * This is required so that different implementations of the display
+         * interface can 'cast themselves' into the TFT_eSPI-compatible display
+         * interface. The reason we need this cast is that we cannot cast a raw
+         * pointer to the base `Display` class into a pointer to the
+         * `TftCompatibleDisplay` class, because it causes issues with the
+         * vtable and the virtual functions.
+         */
+        virtual TftCompatibleDisplay *cast_into_tft_compatible() override;
 };
 #endif
