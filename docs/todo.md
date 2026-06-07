@@ -38,8 +38,6 @@
 - [ ] clean up constants definiton file to remove platform- / display-specific
       overrides
 ### Arduino-specific
-- [ ] optimize sudoku unique solution finding to remove Arduino memory issues.
-- [ ] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
 ### uno q / raspberry pi
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 ## Low priority
@@ -54,7 +52,10 @@
 
 - [ ] fix minesweeper crashing
 
+
 # Done
+- [x] optimize sudoku unique solution finding to remove Arduino memory issues.
+- [x] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
 - [x] hand-tune the logo rendering on the 1.69 display target.
 - [x] ensure no ugly rendering artifacts on V1 display target.
   - [x] sudoku config options look bad (bar too wide)
