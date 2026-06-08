@@ -37,6 +37,7 @@ Platform *initialize_platform()
             // indicate that we don't have wifi support.
             .wifi_provider = nullptr,
             .client = nullptr,
+            .power_manager = nullptr,
             .capabilities =
                 {
                     .has_wifi = false,
@@ -44,6 +45,7 @@ Platform *initialize_platform()
                     .action_button_kind = ActionButtonKind::Colors,
                     .has_fast_display = false,
                     .supports_power_off = false,
+                    .has_display_with_rounded_corners = true,
                 },
         };
 

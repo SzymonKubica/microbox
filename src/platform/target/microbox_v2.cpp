@@ -5,6 +5,7 @@
 #include "../boards/generic/time_provider.hpp"
 #include "../boards/esp32/wifi_provider.hpp"
 #include "../boards/esp32/http_client.hpp"
+#include "../boards/esp32/power_manager.hpp"
 #include "../interface/controller.hpp"
 #include "../../common/logging.hpp"
 #include "Adafruit_seesaw.h"
@@ -24,6 +25,7 @@ Platform *initialize_platform()
         TimeProvider *time_provider = new ArduinoTimeProvider();
         WifiProvider *wifi_provider = new Esp32WifiProvider();
         Esp32HttpClient *client = new Esp32HttpClient();
+        EspPowerManager *power_manager = new EspPowerManager();
 
         /**
          * Note that we are not importing the esp32-specific persistent storage
@@ -54,6 +56,7 @@ Platform *initialize_platform()
             .persistent_storage = persistent_storage,
             .wifi_provider = wifi_provider,
             .client = client,
+            .power_manager = power_manager,
             .capabilities = {.has_wifi = true,
                              .can_sleep = true,
                              .action_button_kind =

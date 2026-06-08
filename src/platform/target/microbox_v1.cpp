@@ -32,12 +32,14 @@ Platform *initialize_platform()
                              .persistent_storage = persistent_storage,
                              .wifi_provider = wifi_provider,
                              .client = client,
+                             .power_manager = nullptr,
                              .capabilities = {
                                  .has_wifi = true,
                                  .can_sleep = true,
                                  .action_button_kind = ActionButtonKind::Colors,
                                  .has_fast_display = false,
                                  .supports_power_off = false,
+                                 .has_display_with_rounded_corners = true,
                              }};
 
         return new Platform(platform);
