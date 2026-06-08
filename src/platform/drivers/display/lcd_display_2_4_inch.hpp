@@ -147,6 +147,8 @@ class LcdDisplay : public Display, public TftCompatibleDisplay
         void fillScreen(uint32_t color) override;
         void setTextColor(uint32_t color) override;
         void setTextSize(uint8_t size) override;
+        void pushImage(int x, int y, int width, int height,
+                                const uint16_t *image_array) override;
 
         TftCompatibleDisplay *cast_into_tft_compatible() override;
 };

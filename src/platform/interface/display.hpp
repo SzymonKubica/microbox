@@ -49,6 +49,8 @@ class TftCompatibleDisplay
         virtual void setTextColor(uint32_t color) = 0;
         // Set character size multiplier (this increases pixel size)
         virtual void setTextSize(uint8_t size) = 0;
+        virtual void pushImage(int x, int y, int width, int height,
+                                const uint16_t *image_array) = 0;
 };
 
 /*
@@ -167,13 +169,6 @@ class Display
          */
         virtual void sleep() const = 0;
 
-        // We make this an impure virtual function to avoid implementing it in
-        // all types of displays at this point. TODO: clean it up and provide
-        // an implementation everywhere.
-        virtual void draw_image(Point start, int width, int height,
-                                const uint16_t *bitmap) const
-        {
-        }
         /**
          * This is required so that different implementations of the display
          * interface can 'cast themselves' into the TFT_eSPI-compatible display

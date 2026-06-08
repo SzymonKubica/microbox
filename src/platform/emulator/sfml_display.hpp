@@ -118,9 +118,6 @@ class SfmlDisplay : public Display, public TftCompatibleDisplay
          */
         void sleep() const override;
 
-        void draw_image(Point start, int width, int height,
-                        const uint16_t *bitmap) const override;
-
         SfmlDisplay(sf::RenderWindow *window, sf::RenderTexture *texture)
             : window(window), texture(texture)
         {
@@ -154,6 +151,8 @@ class SfmlDisplay : public Display, public TftCompatibleDisplay
         void fillScreen(uint32_t color) override;
         void setTextColor(uint32_t color) override;
         void setTextSize(uint8_t size) override;
+        void pushImage(int x, int y, int width, int height,
+                                const uint16_t *image_array) override;
 
         TftCompatibleDisplay *cast_into_tft_compatible() override;
 

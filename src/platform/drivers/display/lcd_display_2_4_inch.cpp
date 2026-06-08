@@ -199,5 +199,11 @@ void LcdDisplay::fillTriangle(int32_t xs, int32_t ys, int32_t x2, int32_t y2,
         tft.fillTriangle(xs, ys, x2, y2, xe, ye, color);
 }
 
+void LcdDisplay::pushImage(int x, int y, int width, int height,
+                           const uint16_t *image_array)
+{
+        tft.pushImage(x, y, width, height, image_array);
+}
+
 TftCompatibleDisplay *LcdDisplay::cast_into_tft_compatible() { return this; }
 #endif

@@ -255,8 +255,10 @@ bool LcdDisplay_1_69::refresh() const
 
 void LcdDisplay_1_69::sleep() const
 {
-        // TODO: For now this is a no-op as we don't support display sleeping on
-        // the Arduino waveshare 1.69 inch LCD.
+        // This is a no-op as we don't support display sleeping on
+        // the Arduino waveshare 1.69 inch LCD. This is because those
+        // console targets are designed with a power-bank in mind (no LiPo
+        // batteries) and so we don't need functionality to sleep the display.
 }
 
 /**
@@ -268,5 +270,8 @@ void LcdDisplay_1_69::sleep() const
  * This is mostly fine as this display doesn't refresh fast enough for those
  * UI elements to look good. Adding them would result in the UI feeling laggy.
  */
-TftCompatibleDisplay *LcdDisplay_1_69::cast_into_tft_compatible() { return nullptr; }
+TftCompatibleDisplay *LcdDisplay_1_69::cast_into_tft_compatible()
+{
+        return nullptr;
+}
 #endif

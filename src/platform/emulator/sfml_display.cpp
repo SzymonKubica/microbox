@@ -255,20 +255,6 @@ bool SfmlDisplay::refresh() const
         return true;
 };
 
-void SfmlDisplay::draw_image(Point start, int width, int height,
-                             const uint16_t *bitmap) const
-{
-        /*
-        // The idea here would be that we take the bitmap, then put it into
-        // the texture and render into the window. The current problem is that
-        // Lopaka renders u16 bitmaps while SFML seems to only support u8.
-        sf::Texture image_texture;
-        image_texture.update(bitmap);
-        sf::Sprite sprite(texture);
-        texture->draw(bitmap);
-         */
-}
-
 /**
  * The Arduino LCD display uses the RGB565 color encoding, whereas SFML uses
  * RGB888 with the additional opacity channel. This function converts from the
@@ -440,6 +426,24 @@ void SfmlDisplay::fillTriangle(int32_t xs, int32_t ys, int32_t x2, int32_t y2,
         triangle.setOutlineColor(map_to_sf_color(color));
         texture->draw(triangle);
         texture->display();
+}
+
+void SfmlDisplay::pushImage(int x, int y, int width, int height,
+                            const uint16_t *image_array)
+{
+        sf::Image img({(unsigned int)width, (unsigned int)height});
+        for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                        uint16_t pixel = image_array[y * width + x];
+                        sf::Color c = map_to_sf_color(pixel);
+                        img.setPixel({(unsigned int)x, (unsigned int)y}, c);
+                }
+        };
+        sf::Texture tex;
+        tex.loadFromImage(img);
+        sf::Sprite sprite(tex);
+        sprite.setPosition({(float)x, (float)y});
+        texture->draw(sprite);
 }
 
 TftCompatibleDisplay *SfmlDisplay::cast_into_tft_compatible() { return this; }
