@@ -1,5 +1,6 @@
 #pragma once
 #include "controller.hpp"
+#include "power_manager.hpp"
 #include "time_provider.hpp"
 #include "display.hpp"
 #include "http_client.hpp"
@@ -52,6 +53,7 @@ struct PlatformCapabilities {
          * lipo batteries that don't have a physical power off switch.
          */
         bool supports_power_off = true;
+        bool has_display_with_rounded_corners = false;
 };
 
 /**
@@ -71,5 +73,6 @@ struct Platform {
         PersistentStorage *persistent_storage;
         WifiProvider *wifi_provider;
         HttpClient *client;
+        PowerManager *power_manager;
         PlatformCapabilities capabilities;
 };
