@@ -1238,6 +1238,22 @@ void draw_mu_letter(const Display &display, Point position, int size,
 }
 
 /**
+ * When the user is entering input using the on-screen keyboard, we need to
+ * render a prompt to tell them what they are entering. This function handles
+ * that.
+ */
+void render_input_prompt(const Platform &p, int display_width,
+                         const char *input_prompt)
+{
+        int prompt_text_centering_margin =
+            (display_width - strlen(input_prompt) * FONT_WIDTH) / 2;
+        Point prompt_text_start = {.x = prompt_text_centering_margin,
+                                   .y = FONT_WIDTH};
+        p.display->draw_string(prompt_text_start, (char *)input_prompt,
+                               FontSize::Size16, Black, White);
+}
+
+/**
  * Draws an on-screen keyboard and allows the user to move around it
  * using the cursor. The text entered by the user will be returned in a
  * heap-allocated character array. The caller of this function is
@@ -1280,12 +1296,7 @@ collect_string_input(const Platform &p,
 
         p.display->clear(Black);
 
-        int prompt_text_centering_margin =
-            (w - strlen(input_prompt) * FONT_WIDTH) / 2;
-        Point prompt_text_start = {.x = prompt_text_centering_margin,
-                                   .y = FONT_WIDTH};
-        p.display->draw_string(prompt_text_start, (char *)input_prompt,
-                               FontSize::Size16, Black, White);
+        render_input_prompt(p, w, input_prompt);
 
         // Note how the bottom right part of the keyboard is filled with
         // spaces this is needed to ensure that the selection cursor is
@@ -1555,14 +1566,7 @@ collect_number_input(const Platform &p,
 
         p.display->clear(Black);
 
-        // TODO: this logic is the samse as above, we can extract it to
-        // a shared helper.
-        int prompt_text_centering_margin =
-            (w - strlen(input_prompt) * FONT_WIDTH) / 2;
-        Point prompt_text_start = {.x = prompt_text_centering_margin,
-                                   .y = FONT_WIDTH};
-        p.display->draw_string(prompt_text_start, (char *)input_prompt,
-                               FontSize::Size16, Black, White);
+        render_input_prompt(p, w, input_prompt);
 
         // Note how the bottom right part of the keyboard is filled with
         // spaces this is needed to ensure that the selection cursor is

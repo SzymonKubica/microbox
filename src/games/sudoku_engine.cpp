@@ -18,6 +18,10 @@
  * Due to hardware limitations we need to encode the set of valid numbers for
  * a given cell as a bitset. This is because Arduino-based targets (R4 minima
  * & R4 wifi) crash when trying to generate Sudoku grids.
+ *
+ * This happens when we try to validate if a solution is unique and we allocate
+ * a vector of possible valid numbers for each cell (and keep it) on each recursive
+ * iteration.
  */
 using ValidNumberSetMask = uint16_t;
 
@@ -25,12 +29,10 @@ void set_valid_number(ValidNumberSetMask &mask, int number)
 {
         mask |= 1 << (number - 1);
 }
-
 bool is_valid_number(const ValidNumberSetMask &mask, int number)
 {
         return mask & 1 << (number - 1);
 }
-
 std::vector<int> into_vector(const ValidNumberSetMask &mask)
 {
         std::vector<int> output;

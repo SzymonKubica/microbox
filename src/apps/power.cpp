@@ -8,11 +8,6 @@
 
 #define TAG "power_management_app"
 
-#if defined(WAVESHARE_2_4_INCH_LCD) // TODO: make this specific to the esp32
-#include "esp_sleep.h"
-#include "Arduino.h"
-#endif
-
 const char *PowerManagementApp::get_game_name() const { return "Power Off"; };
 const char *PowerManagementApp::get_help_text() const
 {
@@ -25,17 +20,11 @@ PowerManagementApp::app_loop(const Platform &p,
                              const UserInterfaceCustomization &customization,
                              const SleepConfiguration &config) const
 {
-#if defined(ARDUINO_ARCH_ESP32)
-#define DEV_BL_PIN 4
-        // We are entering deep sleep and shutting down the main CPU.
-        // The intent is that resetting the console is the only way to
-        // wake up now.
         p.display->sleep();
-        gpio_hold_en((gpio_num_t)DEV_BL_PIN);
-        gpio_deep_sleep_hold_en();
-        esp_deep_sleep_start();
-#endif
-        // This will never be reached as we are entering the deep sleep above.
+        p.power_manager->enter_deep_sleep();
+
+        // This will never be reached as we are entering the deep sleep above
+        // and so the only way to wake up is to reset the console.
         return UserAction::Exit;
 }
 

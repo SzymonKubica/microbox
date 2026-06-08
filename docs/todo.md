@@ -27,7 +27,6 @@
       library with the correct pins and target device.
 - [ ] understand the cool cube rendering code for the 2.4 display and implement something like this.
 - [ ] remove dependency on the corner radius for minimalistic rendering
-
 - [ ] If no input from the user for 5 seconds, the game thumbnail should start
       moving where possible (e.g. game of life should start evolving)
 ## Require hardware testing
@@ -41,19 +40,21 @@
 ### uno q / raspberry pi
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 ## Low priority
-- [ ] add generic texture rendering for the SFML display (requires documentation)
+- [ ] remove the need of display-specific rendering adjustments in the sudoku UI code
+- [ ] ensure that the display corner radius on the 2_4 inch display can be set to
+      0 and the code still works
 ## Dev experience
 
 # In Progress
 
 - [ ] fix random number API failures (likely need a different provider - looks like no http providers to be found)
-- [ ] clean up all TODO
 - [ ] game of life rewind likes to crash
-
-- [ ] fix minesweeper crashing
+- [ ] fix minesweeper crashing (hard to reproduce)
 
 
 # Done
+- [x] clean up all (actionable) TODO
+- [x] add generic texture rendering for the SFML display (requires documentation)
 - [x] optimize sudoku unique solution finding to remove Arduino memory issues.
 - [x] run the full Sudoku uniqueness check on esp32 and skip on arduino (stack size constraints)
 - [x] hand-tune the logo rendering on the 1.69 display target.

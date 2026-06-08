@@ -57,8 +57,9 @@ Game2048Configuration DEFAULT_2048_GAME_CONFIG = {
 
 static void copy_grid(int **source, int **destination, int size);
 
-static void draw_game_canvas(const Display &display, GameState *state,
-                             const UserInterfaceCustomization &customization);
+void draw_game_canvas(const PlatformCapabilities &capabilities,
+                      const Display &display, GameState *state,
+                      const UserInterfaceCustomization &customization);
 
 void free_game_state(GameState *gs);
 
@@ -137,7 +138,7 @@ UserAction Clean2048::app_loop(const Platform &p,
                                               config.target_max_tile);
         }
 
-        draw_game_canvas(*p.display, state, customization);
+        draw_game_canvas(p.capabilities, *p.display, state, customization);
         update_game_grid(p, *state, customization);
 
         if (!p.display->refresh()) {
@@ -596,18 +597,18 @@ static void copy_grid(int **source, int **destination, int size)
 static void draw_game_grid(const Display &display, int grid_size,
                            const UserInterfaceCustomization &customization);
 
-void draw_game_canvas(const Display &display, GameState *state,
+void draw_game_canvas(const PlatformCapabilities &capabilities,
+                      const Display &display, GameState *state,
                       const UserInterfaceCustomization &customization)
 {
         display.initialize();
         display.clear(Black);
 
-        // TODO: change this to render like this only if the display has rounded
-        // edges (new platform capability)
-        if (customization.rendering_mode == Detailed)
+        if (customization.rendering_mode == Detailed &&
+            capabilities.has_display_with_rounded_corners) {
                 display.draw_rounded_border(customization.accent_color);
-
-        draw_game_grid(display, state->grid_size, customization);
+                draw_game_grid(display, state->grid_size, customization);
+        }
 }
 
 /**
@@ -784,7 +785,8 @@ Color get_number_color_coding(int number)
         case 2048:
                 return Magenta;
         default:
-                // Right now this is unreachable as the max game target is 2048
+                // Right now this is unreachable as the max game target
+                // is 2048
                 return Black;
         }
 }
@@ -796,8 +798,9 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
         char buffer[5];
         sprintf(buffer, "%4d", cell_value);
         str_replace(buffer, "   0", "    ");
-        // The maximum tile number in this version of 2048 is 4096, because of
-        // this the maximum width of the cell text area is given below.
+        // The maximum tile number in this version of 2048 is 4096,
+        // because of this the maximum width of the cell text area is
+        // given below.
         int max_cell_text_width = 4 * FONT_WIDTH;
 
         // We need to center the four characters
@@ -806,10 +809,11 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
         int y_margin = (gd->cell_height - FONT_SIZE) / 2;
         int old_digit_text_width = old_digit_len * FONT_WIDTH;
 
-        // We clear the region where the old number was drawn, note that we need
-        // to be efficient, so instead of clearing all 4 possible characters, we
-        // only clear the characters of the actual number. So if the number is
-        // composed of two digits, we clear a region that spans two digits.
+        // We clear the region where the old number was drawn, note that
+        // we need to be efficient, so instead of clearing all 4
+        // possible characters, we only clear the characters of the
+        // actual number. So if the number is composed of two digits, we
+        // clear a region that spans two digits.
         Point clear_start = {.x = start.x + x_margin + max_cell_text_width -
                                   old_digit_text_width,
                              .y = start.y + y_margin};
@@ -829,10 +833,12 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
 }
 
 /**
- * Note that the game state is modified: the new grid state gets copied
- * over into the `old_state` variable. TODO: figure out why Szymon from 2 years
- * ago decided to handle this mutation in this place.
+ * Note that the game state is modified: the differences in new grid get
+ * copied over into the `old_state` variable. The reason this is done
+ * here is to avoid iterating over the entire grid again just to copy
+ * the new grid state into the old one.
  */
+
 void update_game_grid(const Platform &p, GameState &gs,
                       const UserInterfaceCustomization &customization)
 {
@@ -919,7 +925,8 @@ void Clean2048::render_thumbnail(
 
         clear_half_display_and_render_subtitle(platform, customization, "2048");
 
-        // This is hard-coded to align with the lopaka-generated thumbnails.
+        // This is hard-coded to align with the lopaka-generated
+        // thumbnails.
         int thumbnail_width = 69;
         Point thumbnail_start{126, 103};
 
@@ -957,8 +964,9 @@ void Clean2048::render_thumbnail(
                                               Size16, GRID_BG_COLOR, Black);
         };
 
-        // Using lambdas with short, declarative names to make the section
-        // where we are actually rendering the items clear and concise.
+        // Using lambdas with short, declarative names to make the
+        // section where we are actually rendering the items clear and
+        // concise.
         auto second = start + x_displacement;
         auto third = start + y_displacement;
         auto fourth = start + x_displacement + y_displacement;

@@ -490,13 +490,6 @@ void flag_grid_cell(const Display &display, const Point &grid_position,
                 display.draw_string(actual_position, text, FontSize::Size16,
                                     customization.accent_color, White);
         }
-        // TODO: figure out what this is
-        if (false) {
-                char text[2];
-                sprintf(text, "*");
-                display.draw_string(actual_position, text, FontSize::Size16,
-                                    customization.accent_color, White);
-        }
 }
 
 void unflag_grid_cell(const Display &display, const Point &grid_position,

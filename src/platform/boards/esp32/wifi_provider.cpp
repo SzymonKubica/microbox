@@ -13,8 +13,7 @@ std::unique_ptr<WifiData> Esp32WifiProvider::get_wifi_data()
         WiFi.BSSID(data->bssid);
         WiFi.macAddress(data->mac_address);
         data->rssi = WiFi.RSSI();
-        // TODO: add data extraction
-        data->encryption_type = 2;
+        data->encryption_type = (uint8_t)WiFi.encryptionType(0);
 
         String ssid_str = WiFi.SSID();
         data->ssid = new char[ssid_str.length() + 1];

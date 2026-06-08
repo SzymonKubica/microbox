@@ -4,8 +4,6 @@
 #include <EEPROM.h>
 #include <nvs_flash.h>
 
-const bool ERASE_FLASH = false;
-
 class Esp32PersistentStorage : AbstractPersistentStorage<Esp32PersistentStorage>
 {
       public:
@@ -29,21 +27,6 @@ class Esp32PersistentStorage : AbstractPersistentStorage<Esp32PersistentStorage>
          */
         void setup()
         {
-                /**
-                 * When I originally experimented with the esp32 flash-based
-                 * EERPROM, I would get lots of crashes with some out of memory
-                 * issues. The hypothesis was that this was due to memory
-                 * fragmentation. This code below allows to clean the flash if
-                 * the configuration parameters that we are writing into cause
-                 * too much fragmentation.
-                 *
-                 * TODO: this is likely not required and could be removed.
-                 */
-                if (ERASE_FLASH) {
-                        nvs_flash_erase();
-                        nvs_flash_init();
-                }
-
                 EEPROM.begin(3072);
         }
 };
