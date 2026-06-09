@@ -53,6 +53,7 @@
 
 
 # Done
+- [x] fix 2048 rendering
 - [x] clean up all (actionable) TODO
 - [x] add generic texture rendering for the SFML display (requires documentation)
 - [x] optimize sudoku unique solution finding to remove Arduino memory issues.

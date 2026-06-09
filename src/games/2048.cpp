@@ -66,7 +66,6 @@ void free_game_state(GameState *gs);
 const char *Clean2048::get_game_name() const { return "2048"; }
 const char *Clean2048::get_help_text() const
 {
-
         return "Use the joystick to shift the tiles around the grid. The "
                "objective is to merge tiles of the same value to reach the "
                "2048 "
@@ -607,8 +606,8 @@ void draw_game_canvas(const PlatformCapabilities &capabilities,
         if (customization.rendering_mode == Detailed &&
             capabilities.has_display_with_rounded_corners) {
                 display.draw_rounded_border(customization.accent_color);
-                draw_game_grid(display, state->grid_size, customization);
         }
+        draw_game_grid(display, state->grid_size, customization);
 }
 
 /**
