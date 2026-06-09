@@ -26,31 +26,31 @@ void SimpleSudokuView::render_grid()
 
         int cell_size = dimensions.actual_height / 9;
 
+        auto draw_vertical_line = [&](int offset, Color color) {
+                Point start = {x_margin + offset, y_margin};
+                Point end = start + Point{0, w};
+                display->draw_line(start, end, color);
+        };
+        auto draw_horizontal_line = [&](int offset, Color color) {
+                Point start = {x_margin, y_margin + offset};
+                Point end = start + Point{w, 0};
+                display->draw_line(start, end, color);
+        };
+
         // We only render borders between cells for a minimalistic look
         for (int i = 1; i < 9; i++) {
                 int offset = i * cell_size;
-                auto draw_vertical_line = [&](int offset) {
-                        Point start = {x_margin + offset, y_margin};
-                        Point end = start + Point{0, w};
-                        display->draw_line(start, end, color);
-                };
-                auto draw_horizontal_line = [&](int offset) {
-                        Point start = {x_margin, y_margin + offset};
-                        Point end = start + Point{w, 0};
-                        display->draw_line(start, end, color);
-                };
+                draw_vertical_line(offset, color);
+                draw_horizontal_line(offset, color);
+        }
 
-                draw_vertical_line(offset);
-                draw_horizontal_line(offset);
-
-                // We make the lines between big squares thicker by drawing
-                // it three times.
-                if (i % 3 == 0) {
-                        draw_vertical_line(offset - 1);
-                        draw_horizontal_line(offset - 1);
-                        draw_vertical_line(offset + 1);
-                        draw_horizontal_line(offset + 1);
-                }
+        // We need to render the gray separators afterwards to ensure that they
+        // are on top of the main grid lines rendered using the accent color
+        // above.
+        for (int i = 3; i < 9; i += 3) {
+                int offset = i * cell_size;
+                draw_vertical_line(offset, White);
+                draw_horizontal_line(offset, White);
         }
 }
 
@@ -75,6 +75,10 @@ void render_digit_underline(const Display &display,
                             const UserInterfaceCustomization &customization,
                             const SquareCellGridDimensions &dimensions,
                             Point location);
+void erase_digit_underline(const Display &display,
+                           const UserInterfaceCustomization &customization,
+                           const SquareCellGridDimensions &dimensions,
+                           Point location);
 void render_digit_underline(const Display &display, Color color,
                             const SquareCellGridDimensions &dimensions,
                             Point location);
@@ -158,22 +162,17 @@ Point calculate_cell_text_start(const SquareCellGridDimensions &dimensions,
         // character. This is defined by the font height and width. Note
         // that we are subtracting one to take the cell border into
         // account and make it visually centered.
-        int border_adjustment_offset = 1;
         int fh = FONT_SIZE;
         int fw = FONT_WIDTH;
 
-        int x_padding = (cell_size - fw) / 2 - border_adjustment_offset;
-        int y_padding = (cell_size - fh) / 2 - border_adjustment_offset;
+        int x_padding = (cell_size - fw) / 2;
+        int y_padding = (cell_size - fh) / 2;
 
-        // Because of pixel-precision inaccuracies we need to adjust the
-        // placement of the numbers in the grid.
-#ifdef EMULATOR
-        int adj = 0;
-#else
-        int adj = 1;
-#endif
-        int x = x_margin + x_offset + x_padding + adj;
-        int y = y_margin + y_offset + y_padding + adj;
+        // We ned to shift the digits slightly upwards to make them visually
+        // separate from the underline.
+        int y_adjustment = 1;
+        int x = x_margin + x_offset + x_padding;
+        int y = y_margin + y_offset + y_padding - y_adjustment;
 
         return {x, y};
 }
@@ -218,7 +217,33 @@ void render_digit_underline(const Display &display, Color color,
         int y = start.y;
         int fh = FONT_SIZE;
         int fw = FONT_WIDTH;
-        display.draw_line({x, y + fh}, {x + fw, y + fh}, color);
+
+        int underline_digit_spacing = 1;
+        int line_inclusive_end_adjustment = 1;
+
+        display.draw_line({x, y + fh + underline_digit_spacing},
+                          {x + fw - line_inclusive_end_adjustment,
+                           y + fh + underline_digit_spacing},
+                          color);
+}
+
+void erase_digit_underline(const Display &display,
+                           const UserInterfaceCustomization &customization,
+                           const SquareCellGridDimensions &dimensions,
+                           Point location)
+{
+        Point start = calculate_cell_text_start(dimensions, location);
+        int x = start.x;
+        int y = start.y;
+        int fh = FONT_SIZE;
+        int fw = FONT_WIDTH;
+        int underline_digit_spacing = 1;
+        int underline_thickness = 1;
+
+        display.clear_region(
+            {x, y + fh + underline_digit_spacing},
+            {x + fw, y + fh + underline_digit_spacing + underline_thickness},
+            Black);
 }
 
 void erase_digit(const Display &display,
@@ -232,25 +257,7 @@ void erase_digit(const Display &display,
         int fh = FONT_SIZE;
         int fw = FONT_WIDTH;
 
-        // For active numbers that were underlined we need to erase a bit
-        // further down to remove the underline.
-        int underline_adj = 1;
-
-        // Because of pixel-precision inaccuracies we need to adjust the
-        // placement of the numbers in the grid.
-#ifdef EMULATOR
-        int adj = 0;
-#else
-        int adj = 1;
-#if defined(WAVESHARE_2_4_INCH_LCD)
-        // TODO: make this consistent across different displays.
-        underline_adj = 0;
-#else
-#endif
-#endif
-
-        display.clear_region({x, y}, {x + fw + adj, y + fh + underline_adj},
-                             Black);
+        display.clear_region({x, y}, {x + fw, y + fh}, Black);
 }
 
 void SimpleSudokuView::render_cell(const SudokuCell &cell,
@@ -269,6 +276,7 @@ void SimpleSudokuView::underline_cell(const Point &location, Color color)
 void SimpleSudokuView::erase_cell_contents(const Point &location)
 {
         erase_digit(*display, customization, dimensions, location);
+        erase_digit_underline(*display, customization, dimensions, location);
 }
 
 /* User-controlled Caret Rendering */
@@ -342,17 +350,10 @@ void render_digit_selection_indicator(Display *display,
         int y_offset = (selected_number - 1) * cell_size;
         int circle_radius = 3;
 
-        int padding = (cell_size - circle_radius) / 2;
-        // Need this to make the selector visually balanced and
-        // centered.
-#ifdef EMULATOR
-        int y_adjustment = 3;
-#else
-        int y_adjustment = 1;
-#endif
+        int padding = (cell_size - 2 * circle_radius) / 2;
 
         int x = x_margin + x_offset + padding;
-        int y = y_margin + y_offset + padding + y_adjustment;
+        int y = y_margin + y_offset + padding;
 
         display->draw_circle({x, y}, circle_radius, color, 1, true);
 }

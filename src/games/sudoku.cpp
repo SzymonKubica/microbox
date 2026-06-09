@@ -292,7 +292,19 @@ UserAction SudokuGame::app_loop(const Platform &p,
                         Direction dir = maybe_direction.value();
                         Point previous = caret;
                         translate_toroidal_array(caret, dir, 9, 9);
+                        // If the current was placed over an underlined cell,
+                        // the underline will get clipped when clearing the
+                        // caret so we need to redraw it here.
                         view.move_caret(previous, caret);
+                        auto &cell = state.grid[previous.y][previous.x];
+                        if (cell.digit.has_value()) {
+                                view.render_cell(cell, previous);
+                        }
+                        if (cell.digit.has_value() &&
+                            cell.digit.value() == state.active_digit) {
+                                view.underline_cell(previous,
+                                                    config.accent_color);
+                        }
                         // The delay below was hand-tweaked to feel
                         // good.
                         p.time_provider->delay_ms(GAME_LOOP_DELAY * 3 / 2);

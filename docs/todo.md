@@ -30,8 +30,6 @@
 - [ ] If no input from the user for 5 seconds, the game thumbnail should start
       moving where possible (e.g. game of life should start evolving)
 ## Require hardware testing
-- [ ] find a monospace font for the TFT_eSPI display and get its width so
-      that the display rendering is properly centered.
 ### any platform
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] clean up constants definiton file to remove platform- / display-specific
@@ -40,7 +38,6 @@
 ### uno q / raspberry pi
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 ## Low priority
-- [ ] remove the need of display-specific rendering adjustments in the sudoku UI code
 - [ ] ensure that the display corner radius on the 2_4 inch display can be set to
       0 and the code still works
 ## Dev experience
@@ -53,6 +50,9 @@
 
 
 # Done
+- [x] remove the need of display-specific rendering adjustments in the sudoku UI code
+- [x] find a monospace font for the TFT_eSPI display and get its width so
+      that the display rendering is properly centered. (Solution: font 1 is monospace and it is already being used for normal text )
 - [x] fix 2048 rendering
 - [x] clean up all (actionable) TODO
 - [x] add generic texture rendering for the SFML display (requires documentation)
