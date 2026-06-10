@@ -1,6 +1,9 @@
 # Ideas
 
-- game of life based 'puzzle game':
+Ideas are high-level shortlist items that might get picked up and turned into
+todo. They usually start with a 'theme' headline to give the overall idea.
+
+- **Creative Game Idea** game of life based 'puzzle game':
   - you have a limited number of seeds
   - you need to clear a given pattern on the grid
   - the pattern is constructed of cells that become cleared whenever at least
@@ -8,33 +11,42 @@
   - you can pause the evolution and plant a seed whenever you want
   - the fewer evolution generations and seeds you use the better
 
+- **3d rendering exploration** understand the cool cube rendering code for the 2.4 display and implement something like this.
+
+- **Animated thumbnails** If no input from the user for 5 seconds, the game thumbnail should start
+  moving where possible (e.g. game of life should start evolving)
+
+- **Android Firmware-Update Tool** An android application that would allow for
+  sending over new binaries and flashing them onto the console. This would be
+  needed if I ever want to give the console to someone else who can't code or
+  doesn't have linux.
+
 - android 'emulator':
   - top view of the console
   - actual animated joystick
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
-
-
 # TODO
 
 ## Doable on the emulator
-- [ ] understand the cool cube rendering code for the 2.4 display and implement something like this.
-- [ ] remove dependency on the corner radius for minimalistic rendering
-- [ ] If no input from the user for 5 seconds, the game thumbnail should start
-      moving where possible (e.g. game of life should start evolving)
+- [ ] remove dependency on the corner radius for minimalistic rendering (this is
+      hard as currently many UI items depend on this radius)
 ## Require hardware testing
 ### any platform
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
 - [ ] clean up constants definiton file to remove platform- / display-specific
       overrides
+  - [ ] add a structure to represent display dimensional properties (height, width and corner raidus)
+        and have each display implementation return that
+  - [ ] add a structure representing normal font / heading font height and width
+        and return that from the display implementation
 ### Arduino-specific
 ### uno q / raspberry pi
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 ## Low priority
 - [ ] ensure that the display corner radius on the 2_4 inch display can be set to
       0 and the code still works
-## Dev experience
 
 # In Progress
 
