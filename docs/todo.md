@@ -19,12 +19,6 @@
 # TODO
 
 ## Doable on the emulator
-- [ ] document patches required on esp32
-- [ ] add 'vendoring' for the TFT LCD display library to ensure users don't need to to
-      patching of the library code globally in their arduino libs. This is tricky
-      as the library depends on the global arduino installation structure.
-      It migth be better to explain / clean-up the process of configuring the
-      library with the correct pins and target device.
 - [ ] understand the cool cube rendering code for the 2.4 display and implement something like this.
 - [ ] remove dependency on the corner radius for minimalistic rendering
 - [ ] If no input from the user for 5 seconds, the game thumbnail should start
@@ -50,6 +44,12 @@
 
 
 # Done
+- [x] document patches required on esp32
+- [x] add 'vendoring' for the TFT LCD display library to ensure users don't need to to
+      patching of the library code globally in their arduino libs. This is tricky
+      as the library depends on the global arduino installation structure.
+      It migth be better to explain / clean-up the process of configuring the
+      library with the correct pins and target device.
 - [x] remove the need of display-specific rendering adjustments in the sudoku UI code
 - [x] find a monospace font for the TFT_eSPI display and get its width so
       that the display rendering is properly centered. (Solution: font 1 is monospace and it is already being used for normal text )
