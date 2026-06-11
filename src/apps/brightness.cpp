@@ -6,8 +6,6 @@
 #include "../common/grid.hpp"
 #include "settings.hpp"
 
-#define INPUT_REGISTERED_DELAY 150
-
 #define TAG "sleep_app"
 
 #if defined(WAVESHARE_2_4_INCH_LCD)

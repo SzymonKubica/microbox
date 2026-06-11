@@ -4,8 +4,6 @@
 
 #include "../common/configuration.hpp"
 
-#define INPUT_REGISTERED_DELAY 150
-
 #define TAG "power_management_app"
 
 const char *PowerManagementApp::get_game_name() const { return "Power Off"; };

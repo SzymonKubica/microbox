@@ -50,11 +50,13 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] clean up constants definiton file to remove platform- / display-specific
       overrides
-  - [ ] add a structure to represent display dimensional properties (height, width and corner raidus)
+  - [x] add a structure to represent display dimensional properties (height, width and corner raidus)
         and have each display implementation return that
-  - [ ] add a structure representing normal font / heading font height and width
+  - [x] add a structure representing normal font / heading font height and width
         and return that from the display implementation
-
+  - [ ] remove all references to FONT_SIZE, FONT_WIDTH, HEADING_FONT_SIZE, HEADING_FONT_WIDTH
+        constants.
+  - [ ] remove all references to display dimension constants.
 
 # Done
 - [x] document patches required on esp32

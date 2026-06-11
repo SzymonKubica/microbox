@@ -3,9 +3,14 @@
 #include <SFML/Graphics/Color.hpp>
 #include "sfml_display.hpp"
 #include <SFML/Graphics.hpp>
+#include "../../common/logging.hpp"
 
 #define SCREEN_BORDER_WIDTH 3
-#define DISPLAY_CORNER_RADIUS 40
+#define TAG "sfml_display"
+
+constexpr int DISPLAY_HEIGHT = 240;
+constexpr int DISPLAY_WIDTH = 320;
+constexpr int DISPLAY_CORNER_RADIUS = 40;
 
 void SfmlDisplay::setup() const {};
 
@@ -229,13 +234,13 @@ int SfmlDisplay::get_height() const { return DISPLAY_HEIGHT; }
 
 int SfmlDisplay::get_width() const { return DISPLAY_WIDTH; }
 
-FontConfiguration LcdDisplay::get_font_configuration() const
+FontConfiguration SfmlDisplay::get_font_configuration() const
 {
         return FontConfiguration{
             .font_dimensions = {.width = 10, .height = 16},
             .heading_font_dimensions = {.width = 15, .height = 24}};
 }
-DisplayDimensions LcdDisplay::get_display_dimensions() const
+DisplayDimensions SfmlDisplay::get_display_dimensions() const
 {
         return DisplayDimensions{.width = DISPLAY_WIDTH,
                                  .height = DISPLAY_HEIGHT,
@@ -395,8 +400,11 @@ void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y)
         // number 1 and size 2. Because of this, the resolved font size divides
         // the FONT_SIZE by 2 to get our emulated font size back to what
         // corresponds to TFT_eSPI font size 1.
-        int resolved_font_size = FONT_SIZE / 2 * this->tft_font_size;
-        int resolved_font_width = FONT_WIDTH / 2 * this->tft_font_size;
+        auto dimensions = get_font_configuration();
+        int resolved_font_size =
+            dimensions.font_dimensions.height / 2 * this->tft_font_size;
+        int resolved_font_width =
+            dimensions.font_dimensions.width / 2 * this->tft_font_size;
         sf::Text text(font, string, resolved_font_size);
 
         // For fonts larger than 1, we need to adjust the vertical alignment of
@@ -454,7 +462,12 @@ void SfmlDisplay::pushImage(int x, int y, int width, int height,
                 }
         };
         sf::Texture tex;
-        tex.loadFromImage(img);
+        bool success = tex.loadFromImage(img);
+        if (!success) {
+                LOG_ERROR(TAG,
+                          "Failed to load texture from image in pushImage");
+                return;
+        }
         sf::Sprite sprite(tex);
         sprite.setPosition({(float)x, (float)y});
         texture->draw(sprite);

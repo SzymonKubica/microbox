@@ -243,13 +243,13 @@ int LcdDisplay_1_69::get_height() const { return LCD_WIDTH; };
 // We return the height for the width as the display is mounted horizontally.
 int LcdDisplay_1_69::get_width() const { return LCD_HEIGHT; };
 
-FontConfiguration LcdDisplay::get_font_configuration() const
+FontConfiguration LcdDisplay_1_69::get_font_configuration() const
 {
         return FontConfiguration{
             .font_dimensions = {.width = 11, .height = 16},
             .heading_font_dimensions = {.width = 17, .height = 24}};
 }
-DisplayDimensions LcdDisplay::get_display_dimensions() const
+DisplayDimensions LcdDisplay_1_69::get_display_dimensions() const
 {
         return DisplayDimensions{.width = LCD_HEIGHT,
                                  .height = LCD_WIDTH,
