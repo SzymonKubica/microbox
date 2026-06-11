@@ -53,3 +53,9 @@ constexpr int DISPLAY_CORNER_RADIUS = 40;
 #endif
 
 extern const std::vector<Color> AVAILABLE_COLORS;
+
+
+struct InputPollingConfiguration {
+        int input_polling_delay;
+        int move_registered_delay;
+};

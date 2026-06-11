@@ -113,6 +113,20 @@ int LcdDisplay::get_height() const { return TFT_WIDTH; };
 // We return the height for the width as the display is mounted horizontally.
 int LcdDisplay::get_width() const { return TFT_HEIGHT; };
 
+FontConfiguration LcdDisplay::get_font_configuration() const
+{
+        return FontConfiguration{
+            .font_dimensions = {.width = 12, .height = 16},
+            .heading_font_dimensions = {.width = 14, .height = 16}};
+}
+DisplayDimensions LcdDisplay::get_display_dimensions() const
+{
+        return DisplayDimensions{.width = TFT_HEIGHT,
+                                 .height = TFT_WIDTH,
+                                 .rounded_corner_radius =
+                                     DISPLAY_CORNER_RADIUS};
+}
+
 int LcdDisplay::get_display_corner_radius() const
 {
         return DISPLAY_CORNER_RADIUS;

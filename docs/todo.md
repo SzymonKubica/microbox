@@ -35,12 +35,6 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 ## Require hardware testing
 ### any platform
 - [ ] ensure that the emulator has pixel precision overrides and not the physical display
-- [ ] clean up constants definiton file to remove platform- / display-specific
-      overrides
-  - [ ] add a structure to represent display dimensional properties (height, width and corner raidus)
-        and have each display implementation return that
-  - [ ] add a structure representing normal font / heading font height and width
-        and return that from the display implementation
 ### Arduino-specific
 ### uno q / raspberry pi
 - [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
@@ -53,6 +47,13 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 - [ ] fix random number API failures (likely need a different provider - looks like no http providers to be found)
 - [ ] game of life rewind likes to crash
 - [ ] fix minesweeper crashing (hard to reproduce)
+
+- [ ] clean up constants definiton file to remove platform- / display-specific
+      overrides
+  - [ ] add a structure to represent display dimensional properties (height, width and corner raidus)
+        and have each display implementation return that
+  - [ ] add a structure representing normal font / heading font height and width
+        and return that from the display implementation
 
 
 # Done

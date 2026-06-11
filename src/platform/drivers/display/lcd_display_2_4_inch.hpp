@@ -93,6 +93,9 @@ class LcdDisplay : public Display, public TftCompatibleDisplay
          */
         virtual int get_width() const override;
 
+        FontConfiguration get_font_configuration() const override;
+        DisplayDimensions get_display_dimensions() const override;
+
         /**
          * For displays with rounded corners it returns the radius in pixels.
          * This is needed for drawing borders with rounded corners around the
@@ -148,7 +151,7 @@ class LcdDisplay : public Display, public TftCompatibleDisplay
         void setTextColor(uint32_t color) override;
         void setTextSize(uint8_t size) override;
         void pushImage(int x, int y, int width, int height,
-                                const uint16_t *image_array) override;
+                       const uint16_t *image_array) override;
 
         TftCompatibleDisplay *cast_into_tft_compatible() override;
 };

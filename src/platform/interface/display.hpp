@@ -4,6 +4,28 @@
 #include "../../common/color.hpp"
 #include <cstdint>
 
+struct FontDimensions {
+        int width;
+        int height;
+};
+
+/**
+ * Each platform provides slightly different fonts. To ensure that the display
+ * can e.g. center text properly, each display implementation needs to declare
+ * exact (or estimated if the font is not monospaced) dimensions of each
+ * character in the normal fonr and the heading font.
+ */
+struct FontConfiguration {
+        FontDimensions font_dimensions;
+        FontDimensions heading_font_dimensions;
+};
+
+struct DisplayDimensions {
+        int width;
+        int height;
+        int rounded_corner_radius;
+};
+
 /**
  * A display interface that is drop-in compatible with the interface exposed
  * by the TFT_eSPI library for LCD displays. The idea here is to expose an
@@ -50,7 +72,7 @@ class TftCompatibleDisplay
         // Set character size multiplier (this increases pixel size)
         virtual void setTextSize(uint8_t size) = 0;
         virtual void pushImage(int x, int y, int width, int height,
-                                const uint16_t *image_array) = 0;
+                               const uint16_t *image_array) = 0;
 };
 
 /*
@@ -137,6 +159,9 @@ class Display
          * Returns the width of the display.
          */
         virtual int get_width() const = 0;
+
+        virtual FontConfiguration get_font_configuration() const = 0;
+        virtual DisplayDimensions get_display_dimensions() const = 0;
 
         /**
          * For displays with rounded corners it returns the radius in pixels.

@@ -3,9 +3,9 @@
 #include <SFML/Graphics/Color.hpp>
 #include "sfml_display.hpp"
 #include <SFML/Graphics.hpp>
-#include "../../common/constants.hpp"
 
 #define SCREEN_BORDER_WIDTH 3
+#define DISPLAY_CORNER_RADIUS 40
 
 void SfmlDisplay::setup() const {};
 
@@ -228,6 +228,20 @@ void SfmlDisplay::clear_region(Point top_left, Point bottom_right,
 int SfmlDisplay::get_height() const { return DISPLAY_HEIGHT; }
 
 int SfmlDisplay::get_width() const { return DISPLAY_WIDTH; }
+
+FontConfiguration LcdDisplay::get_font_configuration() const
+{
+        return FontConfiguration{
+            .font_dimensions = {.width = 10, .height = 16},
+            .heading_font_dimensions = {.width = 15, .height = 24}};
+}
+DisplayDimensions LcdDisplay::get_display_dimensions() const
+{
+        return DisplayDimensions{.width = DISPLAY_WIDTH,
+                                 .height = DISPLAY_HEIGHT,
+                                 .rounded_corner_radius =
+                                     DISPLAY_CORNER_RADIUS};
+}
 
 int SfmlDisplay::get_display_corner_radius() const { return 40; };
 

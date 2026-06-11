@@ -93,6 +93,9 @@ class LcdDisplay_1_69 : public Display
          */
         virtual int get_width() const override;
 
+        FontConfiguration get_font_configuration() const override;
+        DisplayDimensions get_display_dimensions() const override;
+
         /**
          * For displays with rounded corners it returns the radius in pixels.
          * This is needed for drawing borders with rounded corners around the
