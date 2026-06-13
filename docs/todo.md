@@ -45,8 +45,9 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 - [ ] ensure that the pixel precision overrides are applied in the emulator display
       implementation and not in the physical display. (the reasoning here is that
       the target display rendering should be pixel-accurate)
-  - [ ] remove adjustments from the 2_4 inch display code
-  - [ ] fix up all rendering code to account for the removed adjustments
+  - [x] remove adjustments from the 2_4 inch display code
+  - [x] fix up all rendering code to account for the removed adjustments
+  - [ ] remove adjustments from the 1_69 inch display code
   - [ ] add overrides in the emulator to make it look acceptable
 
 
