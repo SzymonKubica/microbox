@@ -4,14 +4,14 @@
 
 void display_input_clafification(const Display &display)
 {
-
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         {
                 const char *msg = "Press 'left' to exit.";
 
                 int height = display.get_height();
                 int width = display.get_width();
-                int x_pos = (width - strlen(msg) * FONT_WIDTH) / 2;
-                int y_pos = (height - FONT_SIZE) / 2 + 2 * FONT_SIZE;
+                int x_pos = (width - strlen(msg) * fw) / 2;
+                int y_pos = (height - fh) / 2 + 2 * fh;
                 Point text_position = {.x = x_pos, .y = y_pos};
 
                 display.draw_string(text_position, (char *)msg, Size16, Black,
@@ -23,8 +23,8 @@ void display_input_clafification(const Display &display)
 
                 int height = display.get_height();
                 int width = display.get_width();
-                int x_pos = (width - strlen(msg) * FONT_WIDTH) / 2;
-                int y_pos = (height - FONT_SIZE) / 2 + 3 * FONT_SIZE;
+                int x_pos = (width - strlen(msg) * fw) / 2;
+                int y_pos = (height - fh) / 2 + 3 * fh;
                 Point text_position = {.x = x_pos, .y = y_pos};
 
                 display.draw_string(text_position, (char *)msg, Size16, Black,
@@ -35,6 +35,7 @@ void display_input_clafification(const Display &display)
 void display_game_over(const Display &display,
                        const UserInterfaceCustomization &customization)
 {
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         if (customization.rendering_mode == Detailed) {
                 display.draw_rounded_border(Red);
                 display.clear(Black);
@@ -47,8 +48,8 @@ void display_game_over(const Display &display,
 
         int height = display.get_height();
         int width = display.get_width();
-        int x_pos = (width - strlen(msg) * FONT_WIDTH) / 2;
-        int y_pos = (height - FONT_SIZE) / 2;
+        int x_pos = (width - strlen(msg) * fw) / 2;
+        int y_pos = (height - fh) / 2;
 
         Point text_position = {.x = x_pos, .y = y_pos};
 
@@ -59,6 +60,7 @@ void display_game_over(const Display &display,
 void display_game_won(const Display &display,
                       const UserInterfaceCustomization &customization)
 {
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         if (customization.rendering_mode == Detailed) {
                 display.draw_rounded_border(Green);
         } else {
@@ -70,8 +72,8 @@ void display_game_won(const Display &display,
 
         int height = display.get_height();
         int width = display.get_width();
-        int x_pos = (width - strlen(msg) * FONT_WIDTH) / 2;
-        int y_pos = (height - FONT_SIZE) / 2;
+        int x_pos = (width - strlen(msg) * fw) / 2;
+        int y_pos = (height - fh) / 2;
         Point text_position = {.x = x_pos, .y = y_pos};
 
         display.draw_string(text_position, (char *)msg, Size16, Black, Green);

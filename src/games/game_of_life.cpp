@@ -794,6 +794,7 @@ void render_help_hints(const Display &display,
                        const SquareCellGridDimensions &dimensions,
                        int border_offset)
 {
+        auto [fh, fw] = display.get_font_configuration().font_dimensions;
 
         int x_margin = dimensions.left_horizontal_margin;
         int y_margin = dimensions.top_vertical_margin;
@@ -804,13 +805,13 @@ void render_help_hints(const Display &display,
         int text_below_grid_y = y_margin + actual_height + 1 * border_offset;
         int r = 2;
         int d = 2 * r;
-        int circle_y_axis = text_below_grid_y + FONT_SIZE / 2 + r / 4;
+        int circle_y_axis = text_below_grid_y + fh / 2 + r / 4;
         const char *select = "Spawn";
-        int select_len = strlen(select) * FONT_WIDTH;
+        int select_len = strlen(select) * fw;
         const char *exit = "Exit";
-        int exit_len = strlen(exit) * FONT_WIDTH;
+        int exit_len = strlen(exit) * fw;
         const char *pause = "Pause";
-        int pause_len = strlen(pause) * FONT_WIDTH;
+        int pause_len = strlen(pause) * fw;
         // We calculate the even spacing for the two indicators
         int explanations_num = 3;
         int circles_width = explanations_num * d;
@@ -847,13 +848,13 @@ void render_help_hints(const Display &display,
         int text_grid_spacing = 4;
         // Because of slightly different font dimensions, we need this offset
         // override to ensure proper vertical space above the game grid.
-        int text_above_grid_y = y_margin - border_offset - FONT_SIZE -
+        int text_above_grid_y = y_margin - border_offset - fh -
                                 EXPLANATION_ABOVE_GRID_OFFEST;
         int circle_y_axis_above_grid =
-            text_above_grid_y + (FONT_SIZE / 2 + r / 2);
+            text_above_grid_y + (fh / 2 + r / 2);
 
         const char *toggle = "Rewind mode on/off";
-        int toggle_len = strlen(toggle) * FONT_WIDTH;
+        int toggle_len = strlen(toggle) * fw;
 
         int total_width_above_grid = toggle_len + d + text_circle_spacing_width;
         int centering_margin = (available_width - total_width_above_grid) / 2;

@@ -492,6 +492,7 @@ void update_duel_score(const Platform &p, SquareCellGridDimensions *dimensions,
                        bool is_secondary)
 {
 
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
         char buffer[4];
         sprintf(buffer, "%3d", score);
         // We start n letters after the end of the text end location.
@@ -506,7 +507,7 @@ void update_duel_score(const Platform &p, SquareCellGridDimensions *dimensions,
         // are updating the score of the second player, we need to set the
         // offset as 11 to start writing after the 'P2:' text.
         int offset = is_secondary ? 3 : 11;
-        int start_position = score_text_end_location - offset * FONT_WIDTH;
+        int start_position = score_text_end_location - offset * fw;
         render_text_above_frame_starting_from(p, *dimensions, buffer,
                                               start_position, true);
 }

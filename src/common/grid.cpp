@@ -120,6 +120,7 @@ int render_centered_above_frame(const Platform &p,
 
         int y_margin = dimensions.top_vertical_margin;
         int x_margin = dimensions.left_horizontal_margin;
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
 
         int available_width = p.display->get_width() - 2 * x_margin;
         // We need to ensure that the border is slightly larger than the
@@ -130,10 +131,10 @@ int render_centered_above_frame(const Platform &p,
 
         // Because of slightly different font dimensions, we need this offset
         // override to ensure proper vertical space above the game grid.
-        int text_above_grid_y = y_margin - border_offset - FONT_SIZE -
-                                EXPLANATION_ABOVE_GRID_OFFEST;
+        int text_above_grid_y =
+            y_margin - border_offset - fh - EXPLANATION_ABOVE_GRID_OFFEST;
 
-        int text_pixel_len = text.size() * FONT_WIDTH;
+        int text_pixel_len = text.size() * fw;
 
         int centering_margin = (available_width - text_pixel_len) / 2;
 
@@ -149,6 +150,7 @@ int render_text_above_frame_starting_from(
     const Platform &p, const SquareCellGridDimensions &dimensions, char *text,
     int position, bool erase_previous)
 {
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
         // We need to ensure that the border is slightly larger than the
         // drawable grid area so that the border edges don't overlap with the
         // grid area. Otherwise, rendering items in the grid could 'clip' parts
@@ -157,14 +159,14 @@ int render_text_above_frame_starting_from(
         int y_margin = dimensions.top_vertical_margin;
         // Because of slightly different font dimensions, we need this offset
         // override to ensure proper vertical space above the game grid.
-        int text_above_grid_y = y_margin - border_offset - FONT_SIZE -
-                                EXPLANATION_ABOVE_GRID_OFFEST;
+        int text_above_grid_y =
+            y_margin - border_offset - fh - EXPLANATION_ABOVE_GRID_OFFEST;
 
-        int text_pixel_len = strlen(text) * FONT_WIDTH;
+        int text_pixel_len = strlen(text) * fw;
         if (erase_previous) {
                 p.display->clear_region({.x = position, .y = text_above_grid_y},
                                         {.x = position + text_pixel_len,
-                                         .y = text_above_grid_y + FONT_SIZE},
+                                         .y = text_above_grid_y + fh},
                                         Black);
         }
         p.display->draw_string({.x = position, .y = text_above_grid_y},

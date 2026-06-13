@@ -36,9 +36,8 @@ void render_text_bar_centered(const Display &display, int y_start,
                               int option_text_max_len, int value_text_max_len,
                               const char *text, bool is_already_rendered,
                               UserInterfaceRenderingMode rendering_mode,
-                              Color background_color = Black,
+                              int font_width, Color background_color = Black,
                               Color text_color = White,
-                              int font_width = FONT_WIDTH,
                               FontSize font_size = Size16, int x_offset = 0);
 void render_config_bar_centered(
     const Display &display, int y_start, int option_text_max_len,
@@ -132,8 +131,8 @@ void render_config_bar_centered(const Display &display, int y_start,
 
         int h = display.get_height();
         int w = display.get_width();
-        int fw = FONT_WIDTH;
-        int fh = FONT_SIZE;
+        int fw = fw;
+        int fh = fh;
 
         int left_margin = get_centering_margin(w, fw, text_len);
 
@@ -300,8 +299,9 @@ void render_text_bar_centered(const Display &display, int y_start,
                               int option_text_max_len, int value_text_max_len,
                               const char *text, bool is_already_rendered,
                               UserInterfaceRenderingMode rendering_mode,
-                              Color background_color, Color text_color,
-                              int font_width, FontSize font_size, int x_offset)
+                              int font_width, Color background_color,
+                              Color text_color, FontSize font_size,
+                              int x_offset)
 {
 
         // We calculate the total width using the same logic as for the config
@@ -472,15 +472,17 @@ void render_menu_heading(const Display &display, const Configuration &config,
                          const UserInterfaceCustomization &customization,
                          bool should_render_logo)
 {
+        auto [heading_fw, heading_fh] =
+            display.get_font_configuration().heading_font_dimensions;
         int y_spacing = find_y_spacing_between_bars(
             config.options.size(), FontSize::Size24, display.get_height());
 
         int logo_offset = should_render_logo ? LOGO_CUBE_SIZE : 0;
 
-        render_text_bar_centered(
-            display, y_spacing, text_max_length, 0, config.name,
-            text_update_only, customization.rendering_mode, Black, White,
-            HEADING_FONT_WIDTH, FontSize::Size24, logo_offset);
+        render_text_bar_centered(display, y_spacing, text_max_length, 0,
+                                 config.name, text_update_only,
+                                 customization.rendering_mode, heading_fw,
+                                 Black, White, FontSize::Size24, logo_offset);
 
         if (should_render_logo) {
                 // This is manually tweaked to make it look good.
@@ -499,13 +501,14 @@ void render_menu_subtitle(const Display &display, const Configuration &config,
                           bool text_update_only, int text_max_length,
                           const UserInterfaceCustomization &customization)
 {
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         int y_spacing = find_y_spacing_between_bars(
             config.options.size(), FontSize::Size16, display.get_height());
 
         render_text_bar_centered(display, 3 * y_spacing, text_max_length, 0,
                                  config.name, text_update_only,
-                                 customization.rendering_mode, Black, White,
-                                 FONT_WIDTH, FontSize::Size16);
+                                 customization.rendering_mode, fw, Black, White,
+                                 FontSize::Size16);
 }
 
 void clear_half_display_and_render_subtitle(
@@ -540,6 +543,9 @@ void render_config_menu(const Display &display, const Configuration &config,
                         const UserInterfaceCustomization &customization,
                         bool should_render_logo)
 {
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
+        auto [heading_fw, heading_fh] =
+            display.get_font_configuration().heading_font_dimensions;
         int max_option_name_length =
             find_max_config_option_name_text_length(config);
         int max_option_value_length =
@@ -550,16 +556,14 @@ void render_config_menu(const Display &display, const Configuration &config,
 
         LOG_DEBUG(TAG, "Found max text length across all config bars: %d",
                   text_max_length);
-        int spacing = (display.get_height() -
-                       config.options.size() * FONT_SIZE - HEADING_FONT_SIZE) /
-                      3;
+        int spacing =
+            (display.get_height() - config.options.size() * fh - heading_fh) /
+            3;
 
         // We exctract the display dimensions and font sizes into shorter
         // variable names to make the code easier to read.
         int h = display.get_height();
         int w = display.get_width();
-        int fw = FONT_WIDTH;
-        int fh = FONT_SIZE;
         int left_margin = get_centering_margin(w, fw, text_max_length);
 
         int bars_num = std::min(config.options.size(), MAX_RENDERED_OPTION_NUM);
@@ -738,8 +742,8 @@ void render_controls_explanations_colored_buttons(
 
         int h = display.get_height();
         int w = display.get_width();
-        int fw = FONT_WIDTH;
-        int fh = FONT_SIZE;
+        int fw = fw;
+        int fh = fh;
 
         // Dynamically find the total text length needed for even spacing
         int total_text_len = 0;
@@ -815,8 +819,8 @@ void render_controls_explanations_letter_buttons(
 
         int h = display.get_height();
         int w = display.get_width();
-        int fw = FONT_WIDTH;
-        int fh = FONT_SIZE;
+        int fw = fw;
+        int fh = fh;
 
         // Dynamically find the total text length needed for even spacing
         int total_text_len = 0;
@@ -884,8 +888,8 @@ void render_controls_explanations_directional_buttons(
 
         int h = display.get_height();
         int w = display.get_width();
-        int fw = FONT_WIDTH;
-        int fh = FONT_SIZE;
+        int fw = fw;
+        int fh = fh;
 
         // Dynamically find the total text length needed for even spacing
         int total_text_len = 0;
@@ -1009,8 +1013,8 @@ void render_wrapped_text(const Platform &p,
         int h = p.display->get_height();
         int w = p.display->get_width();
         int margin = p.display->get_display_corner_radius();
-        int fw = FONT_WIDTH;
-        int fh = FONT_SIZE;
+        int fw = fw;
+        int fh = fh;
 
         // We allow the text to go into 1/2 of the width of the display
         // corner radius
@@ -1075,8 +1079,8 @@ void render_wrapped_help_text(const Platform &p,
         int h = p.display->get_height();
         int w = p.display->get_width();
         int margin = p.display->get_display_corner_radius();
-        int fw = FONT_WIDTH;
-        int fh = FONT_SIZE;
+        int fw = fw;
+        int fh = fh;
 
         // We render the part saying that ok closes the help screen
         const char *ok = "OK";
@@ -1103,7 +1107,7 @@ void render_wrapped_help_text(const Platform &p,
                                FontSize::Size16, Black, ok_color);
 
         // This might need simplification in the future
-        int radius = FONT_SIZE / 4;
+        int radius = fh / 4;
         int d = 2 * radius;
 
         Point center = {.x = ok_green_circle_x, .y = ok_green_circle_y};
@@ -1245,10 +1249,10 @@ void draw_mu_letter(const Display &display, Point position, int size,
 void render_input_prompt(const Platform &p, int display_width,
                          const char *input_prompt)
 {
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
         int prompt_text_centering_margin =
-            (display_width - strlen(input_prompt) * FONT_WIDTH) / 2;
-        Point prompt_text_start = {.x = prompt_text_centering_margin,
-                                   .y = FONT_WIDTH};
+            (display_width - strlen(input_prompt) * fw) / 2;
+        Point prompt_text_start = {.x = prompt_text_centering_margin, .y = fw};
         p.display->draw_string(prompt_text_start, (char *)input_prompt,
                                FontSize::Size16, Black, White);
 }
@@ -1266,6 +1270,7 @@ collect_string_input(const Platform &p,
                      const char *input_prompt, char **input)
 {
         Display *display = p.display;
+        auto [fw, fh] = display->get_font_configuration().font_dimensions;
         LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
 
         // Bind input params to short names for improved readability.
@@ -1277,11 +1282,11 @@ collect_string_input(const Platform &p,
         int usable_width = w - margin / 2;
         int usable_height = h - margin / 2;
 
-        int max_cols = usable_width / FONT_WIDTH;
-        int max_rows = usable_height / FONT_SIZE;
+        int max_cols = usable_width / fw;
+        int max_rows = usable_height / fh;
 
-        int actual_width = max_cols * FONT_WIDTH;
-        int actual_height = max_rows * FONT_SIZE;
+        int actual_width = max_cols * fw;
+        int actual_height = max_rows * fh;
 
         // We calculate centering margins
         int left_horizontal_margin = (w - actual_width) / 2;
@@ -1290,7 +1295,7 @@ collect_string_input(const Platform &p,
         int input_row = 1;
         int spacing = 2;
         int text_rows = keyboard_rows + input_row + spacing;
-        int top_vertical_margin = (h - text_rows * FONT_SIZE) / 2;
+        int top_vertical_margin = (h - text_rows * fh) / 2;
 
         LOG_DEBUG(TAG, "Keyboard grid area has %d available columns", max_cols);
 
@@ -1323,9 +1328,8 @@ collect_string_input(const Platform &p,
 
         Point input_text_start = {.x = left_horizontal_margin,
                                   .y = top_vertical_margin};
-        Point input_text_start_second_line = {.x = left_horizontal_margin,
-                                              .y = top_vertical_margin +
-                                                   FONT_SIZE + 4};
+        Point input_text_start_second_line = {
+            .x = left_horizontal_margin, .y = top_vertical_margin + fh + 4};
 
         // For now we only support up to two lines of user input. Longer
         // strings are not supported.
@@ -1347,27 +1351,27 @@ collect_string_input(const Platform &p,
 
         Point cursor = {0, 0};
 
-        int keyboard_start_y =
-            top_vertical_margin + (input_row + spacing) * FONT_SIZE;
+        int keyboard_start_y = top_vertical_margin + (input_row + spacing) * fh;
 
         auto render_character_at_location =
             [display, &cursor, left_indent_map,
              keyboard_start_y](Point location, Color color,
                                std::vector<const char *> &character_map) {
+                    auto [fw, fh] =
+                        display->get_font_configuration().font_dimensions;
                     int x = location.x;
                     int y = location.y;
                     const char *row = character_map[y];
                     int left_indent = left_indent_map[y];
                     // we mutiply the index by two here to spread out
                     // the keyboard characters a bit.
-                    Point start = {.x = (left_indent + 2 * x) * FONT_WIDTH,
-                                   .y = keyboard_start_y + y * FONT_SIZE};
+                    Point start = {.x = (left_indent + 2 * x) * fw,
+                                   .y = keyboard_start_y + y * fh};
                     char buffer[2];
                     buffer[0] = row[x];
                     buffer[1] = '\0';
                     display->clear_region(
-                        start, {start.x + FONT_WIDTH, start.y + FONT_SIZE + 4},
-                        Black);
+                        start, {start.x + fw, start.y + fh + 4}, Black);
                     display->draw_string(start, buffer, FontSize::Size16, Black,
                                          color);
             };
@@ -1397,14 +1401,16 @@ collect_string_input(const Platform &p,
                                           input_text_start_second_line,
                                           max_cols, output, output_line_1,
                                           output_line_2](int output_idx) {
+                auto [fw, fh] =
+                    display->get_font_configuration().font_dimensions;
                 int line_1_end = std::min(output_idx, max_cols);
                 // We clear one past the end of the line to ensure that
                 // this function also works for re-rendering after
                 // backspace is hit.
                 display->clear_region(
                     input_text_start,
-                    {input_text_start.x + FONT_WIDTH * (line_1_end + 1),
-                     input_text_start.y + FONT_SIZE + 4},
+                    {input_text_start.x + fw * (line_1_end + 1),
+                     input_text_start.y + fh + 4},
                     Black);
 
                 strncpy(output_line_1, output, line_1_end);
@@ -1423,8 +1429,8 @@ collect_string_input(const Platform &p,
                         display->clear_region(
                             input_text_start_second_line,
                             {input_text_start_second_line.x +
-                                 FONT_WIDTH * (line_2_end + 1),
-                             input_text_start_second_line.y + FONT_SIZE + 4},
+                                 fw * (line_2_end + 1),
+                             input_text_start_second_line.y + fh + 4},
                             Black);
                 }
                 if (output_idx > max_cols) {
@@ -1537,6 +1543,7 @@ collect_number_input(const Platform &p,
 {
         Display *display = p.display;
         LOG_DEBUG(TAG, "Entered the user string input collection subroutine.");
+        auto [fw, fh] = display->get_font_configuration().font_dimensions;
 
         // Bind input params to short names for improved readability.
         int w = display->get_width();
@@ -1547,11 +1554,11 @@ collect_number_input(const Platform &p,
         int usable_width = w - margin / 2;
         int usable_height = h - margin / 2;
 
-        int max_cols = usable_width / FONT_WIDTH;
-        int max_rows = usable_height / FONT_SIZE;
+        int max_cols = usable_width / fw;
+        int max_rows = usable_height / fh;
 
-        int actual_width = max_cols * FONT_WIDTH;
-        int actual_height = max_rows * FONT_SIZE;
+        int actual_width = max_cols * fw;
+        int actual_height = max_rows * fh;
 
         // We calculate centering margins
         int left_horizontal_margin = (w - actual_width) / 2;
@@ -1560,7 +1567,7 @@ collect_number_input(const Platform &p,
         int input_row = 1;
         int spacing = 2;
         int text_rows = keyboard_rows + input_row + spacing;
-        int top_vertical_margin = (h - text_rows * FONT_SIZE) / 2;
+        int top_vertical_margin = (h - text_rows * fh) / 2;
 
         LOG_DEBUG(TAG, "Keyboard grid area has %d available columns", max_cols);
 
@@ -1584,8 +1591,7 @@ collect_number_input(const Platform &p,
         Point cancellation_key_location = {2, 3};
 
         int centering_margin =
-            (usable_width - FONT_WIDTH * strlen(base_char_map[0])) / 2 /
-            FONT_WIDTH;
+            (usable_width - fw * strlen(base_char_map[0])) / 2 / fw;
         // This contorls how deep eachr row of the rendered keyboard is
         // indented.
         std::vector<int> left_indent_map =
@@ -1593,9 +1599,8 @@ collect_number_input(const Platform &p,
 
         Point input_text_start = {.x = left_horizontal_margin,
                                   .y = top_vertical_margin};
-        Point input_text_start_second_line = {.x = left_horizontal_margin,
-                                              .y = top_vertical_margin +
-                                                   FONT_SIZE + 4};
+        Point input_text_start_second_line = {
+            .x = left_horizontal_margin, .y = top_vertical_margin + fh + 4};
 
         // For now we only support up to two lines of user input. Longer
         // strings are not supported.
@@ -1617,27 +1622,27 @@ collect_number_input(const Platform &p,
 
         Point cursor = {0, 0};
 
-        int keyboard_start_y =
-            top_vertical_margin + (input_row + spacing) * FONT_SIZE;
+        int keyboard_start_y = top_vertical_margin + (input_row + spacing) * fh;
 
         auto render_character_at_location =
             [display, &cursor, left_indent_map,
              keyboard_start_y](Point location, Color color,
                                std::vector<const char *> &character_map) {
+                    auto [fw, fh] =
+                        display->get_font_configuration().font_dimensions;
                     int x = location.x;
                     int y = location.y;
                     const char *row = character_map[y];
                     int left_indent = left_indent_map[y];
                     // we mutiply the index by two here to spread out
                     // the keyboard characters a bit.
-                    Point start = {.x = (left_indent + 2 * x) * FONT_WIDTH,
-                                   .y = keyboard_start_y + 2 * y * FONT_SIZE};
+                    Point start = {.x = (left_indent + 2 * x) * fw,
+                                   .y = keyboard_start_y + 2 * y * fh};
                     char buffer[2];
                     buffer[0] = row[x];
                     buffer[1] = '\0';
                     display->clear_region(
-                        start, {start.x + FONT_WIDTH, start.y + FONT_SIZE + 4},
-                        Black);
+                        start, {start.x + fw, start.y + fh + 4}, Black);
                     display->draw_string(start, buffer, FontSize::Size16, Black,
                                          color);
             };
@@ -1667,14 +1672,16 @@ collect_number_input(const Platform &p,
                                           input_text_start_second_line,
                                           max_cols, output, output_line_1,
                                           output_line_2](int output_idx) {
+                auto [fw, fh] =
+                    display->get_font_configuration().font_dimensions;
                 int line_1_end = std::min(output_idx, max_cols);
                 // We clear one past the end of the line to ensure that
                 // this function also works for re-rendering after
                 // backspace is hit.
                 display->clear_region(
                     input_text_start,
-                    {input_text_start.x + FONT_WIDTH * (line_1_end + 1),
-                     input_text_start.y + FONT_SIZE + 4},
+                    {input_text_start.x + fw * (line_1_end + 1),
+                     input_text_start.y + fh + 4},
                     Black);
 
                 strncpy(output_line_1, output, line_1_end);
@@ -1693,8 +1700,8 @@ collect_number_input(const Platform &p,
                         display->clear_region(
                             input_text_start_second_line,
                             {input_text_start_second_line.x +
-                                 FONT_WIDTH * (line_2_end + 1),
-                             input_text_start_second_line.y + FONT_SIZE + 4},
+                                 fw * (line_2_end + 1),
+                             input_text_start_second_line.y + fh + 4},
                             Black);
                 }
                 if (output_idx > max_cols) {

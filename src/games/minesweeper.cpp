@@ -46,7 +46,8 @@ struct MinesweeperGridCell {
 };
 
 static MinesweeperGridDimensions *
-calculate_grid_dimensions(int display_width, int display_height,
+calculate_grid_dimensions(FontDimensions font_dimensions, int display_width,
+                          int display_height,
                           int display_rounded_corner_radius);
 static void draw_game_canvas(const Platform &p,
                              const MinesweeperGridDimensions &dimensions,
@@ -101,9 +102,10 @@ Minesweeper::app_loop(const Platform &p,
         LOG_DEBUG(TAG, "Entering Minesweeper game loop");
 
         auto gd = std::unique_ptr<MinesweeperGridDimensions>(
-            calculate_grid_dimensions(p.display->get_width(),
-                                      p.display->get_height(),
-                                      p.display->get_display_corner_radius()));
+            calculate_grid_dimensions(
+                p.display->get_font_configuration().font_dimensions,
+                p.display->get_width(), p.display->get_height(),
+                p.display->get_display_corner_radius()));
         int rows = gd->rows;
         int cols = gd->cols;
 
@@ -347,45 +349,45 @@ void erase_caret(const Display &display, const Point &grid_position,
                  const MinesweeperGridDimensions &dimensions,
                  Color grid_background_color)
 {
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         // We need to ensure that the caret is rendered INSIDE the text
         // cell and its border doesn't overlap the neighbouring cells.
         // Otherwise, we'll get weird rendering artifacts where the
         // border get clipped.
         int border_offset = 1;
-        Point actual_position = {
-            .x = dimensions.left_horizontal_margin +
-                 grid_position.x * FONT_WIDTH + border_offset,
-            .y = dimensions.top_vertical_margin + grid_position.y * FONT_SIZE +
-                 border_offset};
+        Point actual_position = {.x = dimensions.left_horizontal_margin +
+                                      grid_position.x * fw + border_offset,
+                                 .y = dimensions.top_vertical_margin +
+                                      grid_position.y * fh + border_offset};
 
-        display.draw_rectangle(actual_position, FONT_WIDTH - 2 * border_offset,
-                               FONT_SIZE - 2 * border_offset,
-                               grid_background_color, 1, false);
+        display.draw_rectangle(actual_position, fw - 2 * border_offset,
+                               fh - 2 * border_offset, grid_background_color, 1,
+                               false);
 }
 
 void draw_caret(const Display &display, const Point &grid_position,
                 const MinesweeperGridDimensions &dimensions)
 {
 
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         // We need to ensure that the caret is rendered INSIDE the text
         // cell and its border doesn't overlap the neighbouring cells.
         // Otherwise, we'll get weird rendering artifacts.
         int border_offset = 1;
-        Point actual_position = {
-            .x = dimensions.left_horizontal_margin +
-                 grid_position.x * FONT_WIDTH + border_offset,
-            .y = dimensions.top_vertical_margin + grid_position.y * FONT_SIZE +
-                 border_offset};
+        Point actual_position = {.x = dimensions.left_horizontal_margin +
+                                      grid_position.x * fw + border_offset,
+                                 .y = dimensions.top_vertical_margin +
+                                      grid_position.y * fh + border_offset};
 
-        display.draw_rectangle(actual_position, FONT_WIDTH - 2 * border_offset,
-                               FONT_SIZE - 2 * border_offset, White, 1, false);
+        display.draw_rectangle(actual_position, fw - 2 * border_offset,
+                               fh - 2 * border_offset, White, 1, false);
 }
 void uncover_grid_cell(const Display &display, const Point &grid_position,
                        const MinesweeperGridDimensions &dimensions,
                        std::vector<std::vector<MinesweeperGridCell>> &grid,
                        int &total_uncovered)
 {
-
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         char text[2];
 
         MinesweeperGridCell cell = grid[grid_position.y][grid_position.x];
@@ -420,15 +422,14 @@ void uncover_grid_cell(const Display &display, const Point &grid_position,
                         break;
                 }
         }
-        Point actual_position = {.x = dimensions.left_horizontal_margin +
-                                      grid_position.x * FONT_WIDTH,
-                                 .y = dimensions.top_vertical_margin +
-                                      grid_position.y * FONT_SIZE};
+        Point actual_position = {
+            .x = dimensions.left_horizontal_margin + grid_position.x * fw,
+            .y = dimensions.top_vertical_margin + grid_position.y * fh};
         int border_offset = 1;
         display.draw_rectangle({actual_position.x + border_offset,
                                 actual_position.y + border_offset},
-                               FONT_WIDTH - 2 * border_offset,
-                               FONT_SIZE - 2 * border_offset, Black, 1, true);
+                               fw - 2 * border_offset, fh - 2 * border_offset,
+                               Black, 1, true);
 
         display.draw_string(actual_position, text, FontSize::Size16, Black,
                             text_color);
@@ -477,12 +478,11 @@ void flag_grid_cell(const Display &display, const Point &grid_position,
                     std::vector<std::vector<MinesweeperGridCell>> &grid,
                     const UserInterfaceCustomization &customization)
 {
-
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         grid[grid_position.y][grid_position.x].is_flagged = true;
-        Point actual_position = {.x = dimensions.left_horizontal_margin +
-                                      grid_position.x * FONT_WIDTH,
-                                 .y = dimensions.top_vertical_margin +
-                                      grid_position.y * FONT_SIZE};
+        Point actual_position = {
+            .x = dimensions.left_horizontal_margin + grid_position.x * fw,
+            .y = dimensions.top_vertical_margin + grid_position.y * fh};
 
         {
                 char text[2];
@@ -497,17 +497,16 @@ void unflag_grid_cell(const Display &display, const Point &grid_position,
                       std::vector<std::vector<MinesweeperGridCell>> &grid,
                       Color grid_background_color)
 {
-
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         grid[grid_position.y][grid_position.x].is_flagged = false;
-        Point actual_position = {.x = dimensions.left_horizontal_margin +
-                                      grid_position.x * FONT_WIDTH,
-                                 .y = dimensions.top_vertical_margin +
-                                      grid_position.y * FONT_SIZE};
+        Point actual_position = {
+            .x = dimensions.left_horizontal_margin + grid_position.x * fw,
+            .y = dimensions.top_vertical_margin + grid_position.y * fh};
 
-        display.clear_region(actual_position,
-                             {.x = actual_position.x + FONT_WIDTH,
-                              .y = actual_position.y + FONT_SIZE},
-                             grid_background_color);
+        display.clear_region(
+            actual_position,
+            {.x = actual_position.x + fw, .y = actual_position.y + fh},
+            grid_background_color);
 }
 
 Configuration *
@@ -587,10 +586,11 @@ void extract_game_config(MinesweeperConfiguration &game_config,
 }
 
 MinesweeperGridDimensions *
-calculate_grid_dimensions(int display_width, int display_height,
-                          int display_rounded_corner_radius)
+calculate_grid_dimensions(FontDimensions font_dimensions, int display_width,
+                          int display_height, int display_rounded_corner_radius)
 {
         // Bind input params to short names for improved readability.
+        auto [fw, fh] = font_dimensions;
         int w = display_width;
         int h = display_height;
         int r = display_rounded_corner_radius;
@@ -598,11 +598,11 @@ calculate_grid_dimensions(int display_width, int display_height,
         int usable_width = w - r;
         int usable_height = h - r;
 
-        int max_cols = usable_width / FONT_WIDTH;
-        int max_rows = usable_height / FONT_SIZE;
+        int max_cols = usable_width / fw;
+        int max_rows = usable_height / fh;
 
-        int actual_width = max_cols * FONT_WIDTH;
-        int actual_height = max_rows * FONT_SIZE;
+        int actual_width = max_cols * fw;
+        int actual_height = max_rows * fh;
 
         // We calculate centering margins
         int left_horizontal_margin = (w - actual_width) / 2;
@@ -670,6 +670,7 @@ void draw_controls_hints(const Display &display,
                          const MinesweeperGridDimensions &dimensions,
                          int border_offset)
 {
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         int x_margin = dimensions.left_horizontal_margin;
         int y_margin = dimensions.top_vertical_margin;
 
@@ -678,11 +679,11 @@ void draw_controls_hints(const Display &display,
         int text_below_grid_y = y_margin + actual_height + 2 * border_offset;
         int r = 2;
         int d = 2 * r;
-        int circle_y_axis = text_below_grid_y + FONT_SIZE / 2 + r / 4;
+        int circle_y_axis = text_below_grid_y + fh / 2 + r / 4;
         const char *select = "Select";
-        int select_len = strlen(select) * FONT_WIDTH;
+        int select_len = strlen(select) * fw;
         const char *flag = "Flag";
-        int flag_len = strlen(flag) * FONT_WIDTH;
+        int flag_len = strlen(flag) * fw;
         // We calculate the even spacing for the two indicators
         int circles_width = 2 * d;
         int total_width = select_len + flag_len + circles_width;

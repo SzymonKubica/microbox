@@ -651,14 +651,15 @@ class GridDimensions
 
 GridDimensions *calculate_grid_dimensions(const Display &display, int grid_size)
 {
+        auto [fh, fw] = display.get_font_configuration().font_dimensions;
         int height = display.get_height();
         int width = display.get_width();
         int corner_radius = display.get_display_corner_radius();
         int usable_width = width - 2 * SCREEN_BORDER_WIDTH;
         int usable_height = height - 2 * corner_radius;
 
-        int cell_height = FONT_SIZE + FONT_SIZE / 2;
-        int cell_width = 4 * FONT_WIDTH + (FONT_WIDTH / 2);
+        int cell_height = fh + fh / 2;
+        int cell_width = 4 * fw + (fw / 2);
 
         int cell_y_spacing =
             (usable_height - cell_height * grid_size) / (grid_size - 1);
@@ -694,7 +695,7 @@ GridDimensions *calculate_grid_dimensions(const Display &display, int grid_size)
 
         int score_title_x = score_start.x + cell_x_spacing;
 
-        int score_title_y = score_start.y + (score_cell_height - FONT_SIZE) / 2;
+        int score_title_y = score_start.y + (score_cell_height - fh) / 2;
 
         return new GridDimensions(cell_height, cell_width, cell_x_spacing,
                                   cell_y_spacing, remainder_width, grid_start_x,
@@ -794,19 +795,20 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
                        int old_digit_len, int cell_value)
 {
         assert(cell_value <= 4096);
+        auto [fh, fw] = p.display->get_font_configuration().font_dimensions;
         char buffer[5];
         sprintf(buffer, "%4d", cell_value);
         str_replace(buffer, "   0", "    ");
         // The maximum tile number in this version of 2048 is 4096,
         // because of this the maximum width of the cell text area is
         // given below.
-        int max_cell_text_width = 4 * FONT_WIDTH;
+        int max_cell_text_width = 4 * fw;
 
         // We need to center the four characters
         // of text inside the cell.
         int x_margin = (gd->cell_width - max_cell_text_width) / 2;
-        int y_margin = (gd->cell_height - FONT_SIZE) / 2;
-        int old_digit_text_width = old_digit_len * FONT_WIDTH;
+        int y_margin = (gd->cell_height - fh) / 2;
+        int old_digit_text_width = old_digit_len * fw;
 
         // We clear the region where the old number was drawn, note that
         // we need to be efficient, so instead of clearing all 4
@@ -817,7 +819,7 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
                                   old_digit_text_width,
                              .y = start.y + y_margin};
         Point clear_end = {.x = start.x + x_margin + max_cell_text_width,
-                           .y = start.y + y_margin + FONT_SIZE};
+                           .y = start.y + y_margin + fh};
         p.display->clear_region(clear_start, clear_end, GRID_BG_COLOR);
 
         // We only use nice color rendering on platforms
@@ -841,27 +843,26 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
 void update_game_grid(const Platform &p, GameState &gs,
                       const UserInterfaceCustomization &customization)
 {
+        auto [fh, fw] = p.display->get_font_configuration().font_dimensions;
         int grid_size = gs.grid_size;
         auto gd = std::unique_ptr<GridDimensions>(
             calculate_grid_dimensions(*p.display, grid_size));
 
-        int score_title_length = 6 * FONT_WIDTH;
+        int score_title_length = 6 * fw;
         char score_buffer[20];
         sprintf(score_buffer, "%d", gs.score);
 
         int score_rounding_radius = gd->score_cell_height / 2;
 
-        Point clear_start = {.x = gd->score_title_x + score_title_length +
-                                  FONT_WIDTH,
+        Point clear_start = {.x = gd->score_title_x + score_title_length + fw,
                              .y = gd->score_title_y};
         Point clear_end = {.x = gd->score_start_x + gd->score_cell_width -
                                 score_rounding_radius,
-                           .y = gd->score_title_y + FONT_SIZE};
+                           .y = gd->score_title_y + fh};
 
         p.display->clear_region(clear_start, clear_end, GRID_BG_COLOR);
 
-        Point score_start = {.x = gd->score_title_x + score_title_length +
-                                  FONT_WIDTH,
+        Point score_start = {.x = gd->score_title_x + score_title_length + fw,
                              .y = gd->score_title_y};
 
         p.display->draw_string(score_start, score_buffer, Size16, GRID_BG_COLOR,
@@ -919,6 +920,8 @@ static void str_replace(char *str, const char *oldWord, const char *newWord)
 void Clean2048::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
+        auto [fh, fw] =
+            platform.display->get_font_configuration().font_dimensions;
         auto config = std::unique_ptr<Game2048Configuration>(
             load_initial_config(*platform.persistent_storage));
 
@@ -950,12 +953,12 @@ void Clean2048::render_thumbnail(
         };
         auto cell_value = [&](Point position, const char *value) {
                 // We only render single-digit numbers
-                int text_width = FONT_WIDTH;
+                int text_width = fw;
 
                 // We need to center the four characters
                 // of text inside the cell.
                 int x_margin = (width - text_width) / 2;
-                int y_margin = (height - FONT_SIZE) / 2;
+                int y_margin = (height - fh) / 2;
 
                 Point start_with_margin = {.x = position.x + x_margin,
                                            .y = position.y + y_margin};

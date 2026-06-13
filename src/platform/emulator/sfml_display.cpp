@@ -398,7 +398,7 @@ void SfmlDisplay::drawString(const char *string, int32_t x, int32_t y)
         // means that we are scaling the font as 100%, 2 means 200% and so on.
         // Note that internally our FontSize 16 corresponds to the TFT_eSPI font
         // number 1 and size 2. Because of this, the resolved font size divides
-        // the FONT_SIZE by 2 to get our emulated font size back to what
+        // the font size by 2 to get our emulated font size back to what
         // corresponds to TFT_eSPI font size 1.
         auto dimensions = get_font_configuration();
         int resolved_font_size =

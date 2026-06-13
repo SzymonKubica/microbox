@@ -3,7 +3,6 @@
 #include <functional>
 #include <optional>
 #include "../common/grid.hpp"
-#include "../common/constants.hpp"
 #include "../common/maths_utils.hpp"
 #include "sudoku_engine.hpp"
 
@@ -147,7 +146,8 @@ void process_all_cells(
  * Given the grid dimensions and a location on the grid, it calculates the
  * exact start location where the text inside of the cell should be rendered.
  */
-Point calculate_cell_text_start(const SquareCellGridDimensions &dimensions,
+Point calculate_cell_text_start(const FontDimensions &font_dimensions,
+                                const SquareCellGridDimensions &dimensions,
                                 const Point &location)
 {
         int x_margin = dimensions.left_horizontal_margin;
@@ -162,8 +162,7 @@ Point calculate_cell_text_start(const SquareCellGridDimensions &dimensions,
         // character. This is defined by the font height and width. Note
         // that we are subtracting one to take the cell border into
         // account and make it visually centered.
-        int fh = FONT_SIZE;
-        int fw = FONT_WIDTH;
+        auto [fw, fh] = font_dimensions;
 
         int x_padding = (cell_size - fw) / 2;
         int y_padding = (cell_size - fh) / 2;
@@ -186,7 +185,9 @@ void render_digit(const Display &display,
         assert(cell.digit.has_value() &&
                "Only cells with values should be rendered");
 
-        Point start = calculate_cell_text_start(dimensions, location);
+        auto font_dimensions = display.get_font_configuration().font_dimensions;
+        Point start =
+            calculate_cell_text_start(font_dimensions, dimensions, location);
         Color render_color = cell.is_user_defined ? White : Gray;
 
         if (color_override.has_value()) {
@@ -212,11 +213,12 @@ void render_digit_underline(const Display &display, Color color,
                             const SquareCellGridDimensions &dimensions,
                             Point location)
 {
-        Point start = calculate_cell_text_start(dimensions, location);
+        auto font_dimensions = display.get_font_configuration().font_dimensions;
+        auto [fw, fh] = font_dimensions;
+        Point start =
+            calculate_cell_text_start(font_dimensions, dimensions, location);
         int x = start.x;
         int y = start.y;
-        int fh = FONT_SIZE;
-        int fw = FONT_WIDTH;
 
         int underline_digit_spacing = 1;
         int line_inclusive_end_adjustment = 1;
@@ -232,11 +234,12 @@ void erase_digit_underline(const Display &display,
                            const SquareCellGridDimensions &dimensions,
                            Point location)
 {
-        Point start = calculate_cell_text_start(dimensions, location);
+        auto font_dimensions = display.get_font_configuration().font_dimensions;
+        auto [fw, fh] = font_dimensions;
+        Point start =
+            calculate_cell_text_start(font_dimensions, dimensions, location);
         int x = start.x;
         int y = start.y;
-        int fh = FONT_SIZE;
-        int fw = FONT_WIDTH;
         int underline_digit_spacing = 1;
         int underline_thickness = 1;
 
@@ -250,12 +253,12 @@ void erase_digit(const Display &display,
                  const UserInterfaceCustomization &customization,
                  const SquareCellGridDimensions &dimensions, Point location)
 {
-
-        Point start = calculate_cell_text_start(dimensions, location);
+        auto font_dimensions = display.get_font_configuration().font_dimensions;
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
+        Point start =
+            calculate_cell_text_start(font_dimensions, dimensions, location);
         int x = start.x;
         int y = start.y;
-        int fh = FONT_SIZE;
-        int fw = FONT_WIDTH;
 
         display.clear_region({x, y}, {x + fw, y + fh}, Black);
 }

@@ -325,6 +325,7 @@ void update_score(const Platform &p, const SquareCellGridDimensions &dimensions,
                   int score_text_end_location, int score)
 {
 
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
         char buffer[4];
         sprintf(buffer, "%3d", score);
         // We start 3 letters after the end of the text end location.
@@ -335,7 +336,7 @@ void update_score(const Platform &p, const SquareCellGridDimensions &dimensions,
         // entire text above the grid centered). Hence we need to start
         // rendering the actual digits starting after the first space after the
         // colon in 'Score:' text, so we move the start location by 3 spaces.
-        int start_position = score_text_end_location - 3 * FONT_WIDTH;
+        int start_position = score_text_end_location - 3 * fw;
         render_text_above_frame_starting_from(p, dimensions, buffer,
                                               start_position, true);
 }
