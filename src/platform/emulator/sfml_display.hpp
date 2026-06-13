@@ -3,6 +3,10 @@
 #include "../interface/display.hpp"
 #include <SFML/Graphics.hpp>
 
+constexpr int DISPLAY_HEIGHT = 240;
+constexpr int DISPLAY_WIDTH = 320;
+constexpr int DISPLAY_CORNER_RADIUS = 40;
+
 /**
  * @brief SfmlDisplay class that implements the Display interface for the
  * physical SFML library. This is used for emulating the console behaviour on

@@ -8,9 +8,6 @@
 #define SCREEN_BORDER_WIDTH 3
 #define TAG "sfml_display"
 
-constexpr int DISPLAY_HEIGHT = 240;
-constexpr int DISPLAY_WIDTH = 320;
-constexpr int DISPLAY_CORNER_RADIUS = 40;
 
 void SfmlDisplay::setup() const {};
 

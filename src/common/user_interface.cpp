@@ -131,8 +131,7 @@ void render_config_bar_centered(const Display &display, int y_start,
 
         int h = display.get_height();
         int w = display.get_width();
-        int fw = fw;
-        int fh = fh;
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
 
         int left_margin = get_centering_margin(w, fw, text_len);
 
@@ -742,8 +741,7 @@ void render_controls_explanations_colored_buttons(
 
         int h = display.get_height();
         int w = display.get_width();
-        int fw = fw;
-        int fh = fh;
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
 
         // Dynamically find the total text length needed for even spacing
         int total_text_len = 0;
@@ -819,8 +817,7 @@ void render_controls_explanations_letter_buttons(
 
         int h = display.get_height();
         int w = display.get_width();
-        int fw = fw;
-        int fh = fh;
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
 
         // Dynamically find the total text length needed for even spacing
         int total_text_len = 0;
@@ -888,8 +885,7 @@ void render_controls_explanations_directional_buttons(
 
         int h = display.get_height();
         int w = display.get_width();
-        int fw = fw;
-        int fh = fh;
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
 
         // Dynamically find the total text length needed for even spacing
         int total_text_len = 0;
@@ -1013,8 +1009,7 @@ void render_wrapped_text(const Platform &p,
         int h = p.display->get_height();
         int w = p.display->get_width();
         int margin = p.display->get_display_corner_radius();
-        int fw = fw;
-        int fh = fh;
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
 
         // We allow the text to go into 1/2 of the width of the display
         // corner radius
@@ -1079,8 +1074,7 @@ void render_wrapped_help_text(const Platform &p,
         int h = p.display->get_height();
         int w = p.display->get_width();
         int margin = p.display->get_display_corner_radius();
-        int fw = fw;
-        int fh = fh;
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
 
         // We render the part saying that ok closes the help screen
         const char *ok = "OK";

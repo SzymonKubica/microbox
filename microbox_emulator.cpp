@@ -3,7 +3,6 @@
 
 #include "src/menu.hpp"
 #include "src/platform/interface/platform.hpp"
-#include "src/common/constants.hpp"
 #include "src/platform/emulator/sfml_display.hpp"
 #include "src/platform/emulator/emulated_wifi_provider.cpp"
 #include "src/platform/emulator/emulator_http_client.hpp"

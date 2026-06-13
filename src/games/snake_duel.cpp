@@ -743,8 +743,20 @@ struct CompactPoint {
 
 /*
  * To optimize memory usage and avoid fragmentation we statically preallocate
- * all arrays that are used for tracking the state of the traversal.
+ * all arrays that are used for tracking the state of the traversal. Note that
+ * this gets a bit messy here as we need to determinte the display dimensions
+ * at compile time prior to actually initializing the display and providing the
+ * right implementation. Because of this, we are doing conditional compilation
+ * here.
  */
+
+#if defined(WAVESHARE_2_4_INCH_LCD) | defined(EMULATOR)
+const int DISPLAY_WIDTH = 320;
+#else
+const int DISPLAY_WIDTH = 280;
+#endif
+const int DISPLAY_HEIGHT = 240;
+const int DISPLAY_CORNER_RADIUS = 40;
 
 // Compile-time calculation of the number of grid columns.
 constexpr int MAX_COLS =

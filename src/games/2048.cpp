@@ -651,7 +651,7 @@ class GridDimensions
 
 GridDimensions *calculate_grid_dimensions(const Display &display, int grid_size)
 {
-        auto [fh, fw] = display.get_font_configuration().font_dimensions;
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
         int height = display.get_height();
         int width = display.get_width();
         int corner_radius = display.get_display_corner_radius();
@@ -795,7 +795,7 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
                        int old_digit_len, int cell_value)
 {
         assert(cell_value <= 4096);
-        auto [fh, fw] = p.display->get_font_configuration().font_dimensions;
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
         char buffer[5];
         sprintf(buffer, "%4d", cell_value);
         str_replace(buffer, "   0", "    ");
@@ -843,7 +843,7 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
 void update_game_grid(const Platform &p, GameState &gs,
                       const UserInterfaceCustomization &customization)
 {
-        auto [fh, fw] = p.display->get_font_configuration().font_dimensions;
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
         int grid_size = gs.grid_size;
         auto gd = std::unique_ptr<GridDimensions>(
             calculate_grid_dimensions(*p.display, grid_size));
@@ -920,7 +920,7 @@ static void str_replace(char *str, const char *oldWord, const char *newWord)
 void Clean2048::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
-        auto [fh, fw] =
+        auto [fw, fh] =
             platform.display->get_font_configuration().font_dimensions;
         auto config = std::unique_ptr<Game2048Configuration>(
             load_initial_config(*platform.persistent_storage));

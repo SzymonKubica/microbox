@@ -7,7 +7,6 @@
 #include "../menu.hpp"
 
 #include "../common/configuration.hpp"
-#include "../common/constants.hpp"
 #include "../common/grid.hpp"
 #include "../common/logging.hpp"
 

@@ -4,13 +4,11 @@
 #include "game_of_life.hpp"
 
 #include "../common/logging.hpp"
-#include "../common/constants.hpp"
 #include "../common/maths_utils.hpp"
 #include "../common/grid.hpp"
 
 #include "../apps/settings.hpp"
 #include "../menu.hpp"
-#include "2048.hpp"
 
 #define TAG "game_of_life"
 #define GAME_CELL_WIDTH 8
@@ -794,7 +792,7 @@ void render_help_hints(const Display &display,
                        const SquareCellGridDimensions &dimensions,
                        int border_offset)
 {
-        auto [fh, fw] = display.get_font_configuration().font_dimensions;
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
 
         int x_margin = dimensions.left_horizontal_margin;
         int y_margin = dimensions.top_vertical_margin;
@@ -848,10 +846,9 @@ void render_help_hints(const Display &display,
         int text_grid_spacing = 4;
         // Because of slightly different font dimensions, we need this offset
         // override to ensure proper vertical space above the game grid.
-        int text_above_grid_y = y_margin - border_offset - fh -
-                                EXPLANATION_ABOVE_GRID_OFFEST;
-        int circle_y_axis_above_grid =
-            text_above_grid_y + (fh / 2 + r / 2);
+        int text_above_grid_y =
+            y_margin - border_offset - fh - EXPLANATION_ABOVE_GRID_OFFEST;
+        int circle_y_axis_above_grid = text_above_grid_y + (fh / 2 + r / 2);
 
         const char *toggle = "Rewind mode on/off";
         int toggle_len = strlen(toggle) * fw;

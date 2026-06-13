@@ -1,6 +1,5 @@
 #include "grid.hpp"
 #include "logging.hpp"
-#include "constants.hpp"
 #include <cstring>
 
 #define TAG "grid"

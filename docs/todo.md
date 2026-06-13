@@ -57,6 +57,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
   - [ ] remove all references to FONT_SIZE, FONT_WIDTH, HEADING_FONT_SIZE, HEADING_FONT_WIDTH
         constants.
   - [ ] remove all references to display dimension constants.
+  - [ ] delete constant definitions
 
 # Done
 - [x] document patches required on esp32
