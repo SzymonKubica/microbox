@@ -117,15 +117,19 @@ void LcdDisplay_1_69::draw_rectangle(Point start, int width, int height,
                                      Color color, int border_width,
                                      bool filled) const
 {
-
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
-        // Note that drawing the rectangle is 'inclusive' with respect to the
-        // height. We need to adjust here to bring the behaviour in line with
-        // the TFT_eSPI display that we are using for the other target
-        // microcontrollers.
-        int adj = 1;
-        Paint_DrawRectangle(start.x, start.y, start.x + width - adj,
-                            start.y + height - adj, color,
+
+        /**
+         * Because of stupid implementation details, drawing a rectangle that
+         * is filled excludes the last line (while it is included if you draw
+         * the rectangle as 4 lines with no fill).
+         * Because of this, we need to override the height of the rectangle
+         * depending on whether it is filled or not.
+         */
+        int height_adjustment = filled ? 0 : 1;
+
+        Paint_DrawRectangle(start.x, start.y, start.x + width - 1,
+                            start.y + height - height_adjustment, color,
                             static_cast<DOT_PIXEL>(border_width),
                             static_cast<DRAW_FILL>(filled_repr));
 };
@@ -166,12 +170,8 @@ void LcdDisplay_1_69::draw_rounded_rectangle(Point start, int width, int height,
 
 void LcdDisplay_1_69::draw_line(Point start, Point end, Color color) const
 {
-        // For whatever reason lines are getting rendered a bit too low
-        // compared to the other displays. We override here. They also start
-        // a bit too far to the left.
-        int adj = 1;
-        Paint_DrawLine(start.x, start.y - adj, end.x, end.y - adj,
-                       color, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+        Paint_DrawLine(start.x, start.y, end.x, end.y, color,
+                       DOT_PIXEL_1X1, LINE_STYLE_SOLID);
 }
 
 sFONT *map_font_size_1_69_specific(FontSize font_size);

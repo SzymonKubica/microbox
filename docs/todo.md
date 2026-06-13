@@ -45,7 +45,9 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # In Progress
 
+
 # Done
+- [x] debug pixel precision overrides in the 1.69 inch display.
 - [x] update Minesweeper and 'Game of Life' controls explanations to no longer rely on colored buttons.
 - [x] remove emulator font rendering overrides from the user interface code (all but one done)
 - [x] ensure that the pixel precision overrides are applied in the emulator display

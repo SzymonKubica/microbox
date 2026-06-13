@@ -300,7 +300,7 @@ UserAction GameOfLife::app_loop(const Platform &p,
         if (customization.show_help_text) {
                 std::map<Action, std::string> button_hints;
                 button_hints[Action::RED] = "Rewind";
-                button_hints[Action::YELLOW] = "Pause";
+                button_hints[Action::YELLOW] = "Play/Pause";
                 button_hints[Action::GREEN] = "Select";
                 // The game of life grid is a bit large so we need to shift the
                 // UI hints downwards slightly to avoid overlapping with the
@@ -768,10 +768,8 @@ void draw_game_cell(const Display &display,
                                  .y = dimensions.top_vertical_margin +
                                       grid_position.y * GAME_CELL_WIDTH};
 
-        display.clear_region(actual_position,
-                             {.x = actual_position.x + GAME_CELL_WIDTH,
-                              .y = actual_position.y + GAME_CELL_WIDTH},
-                             color);
+        display.draw_rectangle(actual_position, GAME_CELL_WIDTH,
+                               GAME_CELL_WIDTH, color, 1, true);
 }
 
 void erase_caret(const Display &display,
