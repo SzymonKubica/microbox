@@ -9,6 +9,8 @@ TFT_eSPI tft = TFT_eSPI();
 
 #define DEV_BL_PIN 4
 
+#define ADJ 0
+
 uint16_t to_tft_color(Color c) { return static_cast<uint16_t>(c); }
 
 /**
@@ -47,13 +49,12 @@ void LcdDisplay::draw_circle(Point center, int radius, Color color,
                              int border_width, bool filled) const
 {
 
-        int adj = 1;
         if (filled) {
-                tft.fillCircle(center.x - adj, center.y - adj, radius,
+                tft.fillCircle(center.x - ADJ, center.y - ADJ, radius,
                                to_tft_color(color));
         } else {
 
-                tft.drawCircle(center.x - adj, center.y - adj, radius,
+                tft.drawCircle(center.x - ADJ, center.y - ADJ, radius,
                                to_tft_color(color));
         }
 };
@@ -62,28 +63,25 @@ void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
                                 int border_width, bool filled) const
 {
 
-        int adj = 1;
         if (filled) {
-                tft.fillRect(start.x - adj, start.y - adj, width + adj,
-                             height + adj, to_tft_color(color));
+                tft.fillRect(start.x - ADJ, start.y - ADJ, width + ADJ,
+                             height + ADJ, to_tft_color(color));
         } else {
-                tft.drawRect(start.x - adj, start.y - adj, width + adj,
-                             height + adj, to_tft_color(color));
+                tft.drawRect(start.x - ADJ, start.y - ADJ, width + ADJ,
+                             height + ADJ, to_tft_color(color));
         }
 };
 
 void LcdDisplay::draw_rounded_rectangle(Point start, int width, int height,
                                         int radius, Color color) const
 {
-        int adj = 1;
-        tft.fillRoundRect(start.x - adj, start.y - adj, width + adj,
-                          height + adj, radius, to_tft_color(color));
+        tft.fillRoundRect(start.x - ADJ, start.y - ADJ, width + ADJ,
+                          height + ADJ, radius, to_tft_color(color));
 };
 
 void LcdDisplay::draw_line(Point start, Point end, Color color) const
 {
-        tft.drawLine(start.x, start.y - 2, end.x, end.y - 2,
-                     to_tft_color(color));
+        tft.drawLine(start.x, start.y, end.x, end.y, to_tft_color(color));
 }
 
 void LcdDisplay::draw_string(Point start, char *string_buffer,
@@ -101,10 +99,8 @@ void LcdDisplay::clear_region(Point top_left, Point bottom_right,
                               Color clear_color) const
 
 {
-        int adj = 0;
-        tft.fillRect(top_left.x, top_left.y - adj, bottom_right.x - top_left.x,
-                     bottom_right.y - top_left.y - adj,
-                     to_tft_color(clear_color));
+        tft.fillRect(top_left.x, top_left.y, bottom_right.x - top_left.x,
+                     bottom_right.y - top_left.y, to_tft_color(clear_color));
 };
 
 // We return the width for the height as the display is mounted horizontally.

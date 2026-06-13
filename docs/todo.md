@@ -29,37 +29,38 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # TODO
 
-## Doable on the emulator
-- [ ] remove dependency on the corner radius for minimalistic rendering (this is
-      hard as currently many UI items depend on this radius)
-## Require hardware testing
-### any platform
-- [ ] ensure that the emulator has pixel precision overrides and not the physical display
-### Arduino-specific
-### uno q / raspberry pi
-- [ ] ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
-## Low priority
-- [ ] ensure that the display corner radius on the 2_4 inch display can be set to
-      0 and the code still works
-
-# In Progress
-
 - [ ] fix random number API failures (likely need a different provider - looks like no http providers to be found)
 - [ ] game of life rewind likes to crash
 - [ ] fix minesweeper crashing (hard to reproduce)
 
-- [ ] clean up constants definiton file to remove platform- / display-specific
+- [ ] remove dependency on the corner radius for minimalistic rendering (this is
+      hard as currently many UI items depend on this radius)
+- [ ] ensure that the display corner radius on the 2_4 inch display can be set to
+      0 and the code still works
+
+- [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
+
+# In Progress
+
+- [ ] ensure that the pixel precision overrides are applied in the emulator display
+      implementation and not in the physical display. (the reasoning here is that
+      the target display rendering should be pixel-accurate)
+  - [ ] remove adjustments from the 2_4 inch display code
+  - [ ] fix up all rendering code to account for the removed adjustments
+  - [ ] add overrides in the emulator to make it look acceptable
+
+
+# Done
+- [x] clean up constants definiton file to remove platform- / display-specific
       overrides
   - [x] add a structure to represent display dimensional properties (height, width and corner raidus)
         and have each display implementation return that
   - [x] add a structure representing normal font / heading font height and width
         and return that from the display implementation
-  - [ ] remove all references to FONT_SIZE, FONT_WIDTH, HEADING_FONT_SIZE, HEADING_FONT_WIDTH
+  - [x] remove all references to FONT_SIZE, FONT_WIDTH, HEADING_FONT_SIZE, HEADING_FONT_WIDTH
         constants.
-  - [ ] remove all references to display dimension constants.
-  - [ ] delete constant definitions
-
-# Done
+  - [x] remove all references to display dimension constants.
+  - [x] delete constant definitions
 - [x] document patches required on esp32
 - [x] add 'vendoring' for the TFT LCD display library to ensure users don't need to to
       patching of the library code globally in their arduino libs. This is tricky

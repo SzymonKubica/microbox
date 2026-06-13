@@ -1135,17 +1135,18 @@ void draw_cube_perspective(const Display &display, Point position, int size,
 {
         display.draw_rectangle(position, size, size, color, 1, false);
 
-        // When drawing rectangles and lines the positions are slightly
-        // misaligned and don't look pixel-accurate. We need to adjust
-        // the starting positions of the vertices to align with the
-        // rectangle vertices precisely.
-        int alignment_offset = 1;
-
-        Point front_top_left_vertex = {position.x - alignment_offset,
-                                       position.y};
-        Point front_top_right_vertex = {position.x + size, position.y};
-        Point front_bottom_right_vertex = {
-            position.x + size, position.y + size + alignment_offset};
+        /**
+         * We need to render pixel-precise. Note that if we want to start our
+         * square at (0,0) and its width is 5 pixels, its 3 remaining
+         * vertices will be (0, 4), (4, 0), and (4, 4). Because of this, to
+         * accurately determine the position of the next vertex we need to
+         * subtract 1 from the size.
+         */
+        int displacement = size - 1;
+        Point front_top_left_vertex = {position.x, position.y};
+        Point front_top_right_vertex = {position.x + displacement, position.y};
+        Point front_bottom_right_vertex = {position.x + displacement,
+                                           position.y + displacement};
         auto front_vertices = {front_top_left_vertex, front_top_right_vertex,
                                front_bottom_right_vertex};
 
@@ -1192,47 +1193,31 @@ void draw_mu_letter(const Display &display, Point position, int size,
 
         display.draw_line(letter_leg_start, letter_leg_end, color);
 
-        // Controls how much the front of the μ letter sticks out from
-        // the round part.
-        int letter_front_gap = width / 6;
         // Then we draw the front part of the letter
+        // We want the front part to be roughly between 1/2 and 1/3 of the
+        // height of the 'back leg'. Hence we go for 5/12.
+        int letter_front_height = (height * 5) / 12;
         Point letter_front_start = {position.x + h_margin + width,
                                     position.y + v_margin};
-        Point letter_front_end = {letter_front_start.x, letter_front_start.y +
-                                                            height / 2 +
-                                                            letter_front_gap};
+        Point letter_front_end = {letter_front_start.x,
+                                  letter_front_start.y + letter_front_height};
 
         display.draw_line(letter_front_start, letter_front_end, color);
 
         // Now we connect the two parts with a semi-circle
-        int radius = width / 2 - 1;
-#ifdef EMULATOR
-        int adj = 0;
-#else
-        // In the target device the circle does not lign up nicely with
-        // the vertical lines, this is because of differences in how
-        // those shapes are rendered in SFML vs waveshare LCD display
-        // driver. We override here to make the logo look good on both
-        // platforms.
-#if defined(WAVESHARE_2_4_INCH_LCD)
-        int adj = 2;
-#else
-        int adj = 1;
-#endif
-#endif
-        Point center = {letter_leg_start.x + radius + adj,
-                        letter_front_end.y - letter_front_gap};
+        int radius = width / 2;
+        Point center = {letter_leg_start.x + radius, letter_front_end.y};
         // For pixel accuracy we decrease the diameter by 1 as the
         // circle also has some thickness to it.
         display.draw_circle(center, radius, color, 1, false);
 
         // We now clear the top part of the circle to be left with the
-        // mu letter only.
+        // mu letter only. We need to offset it by 1 to not start erasing on
+        // the line.
+        int offset = 1;
 
-        display.clear_region(
-            {letter_leg_start.x + adj, letter_leg_start.y},
-            {letter_front_end.x - 1, letter_front_end.y - letter_front_gap},
-            Black);
+        display.clear_region({letter_leg_start.x + offset, letter_leg_start.y},
+                             {letter_front_end.x, letter_front_end.y}, Black);
 }
 
 /**
