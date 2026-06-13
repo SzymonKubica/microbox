@@ -717,7 +717,8 @@ void render_config_menu(const Display &display, const Configuration &config,
 }
 
 void render_controls_explanations_colored_buttons(
-    const Display &display, std::map<Action, std::string> button_hints)
+    const Display &display, std::map<Action, std::string> button_hints,
+    int y_offset_override)
 {
         std::vector<Color> button_colors(4);
         button_colors[Action::BLUE] = Blue;
@@ -755,9 +756,9 @@ void render_controls_explanations_colored_buttons(
         // This is empiricaly calibrated to look nice. It is set as a negative
         // offset from the bottom of the screen and does not depend on what is
         // rendered above.
-        int help_text_y = h - 3 * fh / 2;
+        int help_text_y = h - 4 * fh / 3 + y_offset_override;
         // Also eye-callibrated, not much logic to the 3/4 * fh.
-        int circle_indicator_y = help_text_y + 3 * fh / 4;
+        int circle_indicator_y = help_text_y + fh / 2;
 
         std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
                                              Action::GREEN, Action::RED};
@@ -766,17 +767,20 @@ void render_controls_explanations_colored_buttons(
         int x_pos = x_margin;
         for (int i = 0; i < buttons_order.size(); i++) {
                 Action button = buttons_order[i];
-                std::string hint = button_hints[button];
-                Color color = button_colors[button];
-                display.draw_circle({.x = x_pos, .y = circle_indicator_y},
-                                    circle_radius, color, 0, true);
-                x_pos += circle_radius + circle_text_gap_width;
-                display.draw_string({.x = x_pos, .y = help_text_y},
-                                    (char *)hint.c_str(), FontSize::Size16,
-                                    Black, White);
+                if (button_hints.contains(button)) {
+                        std::string hint = button_hints[button];
+                        Color color = button_colors[button];
+                        display.draw_circle(
+                            {.x = x_pos, .y = circle_indicator_y},
+                            circle_radius, color, 0, true);
+                        x_pos += circle_radius + circle_text_gap_width;
+                        display.draw_string({.x = x_pos, .y = help_text_y},
+                                            (char *)hint.c_str(),
+                                            FontSize::Size16, Black, White);
 
-                x_pos += hint.length() * fw;
-                x_pos += gap_size;
+                        x_pos += hint.length() * fw;
+                        x_pos += gap_size;
+                }
         }
 }
 
@@ -786,7 +790,8 @@ void render_controls_explanations_colored_buttons(
  * emulator.
  */
 void render_controls_explanations_letter_buttons(
-    const Display &display, std::map<Action, std::string> button_hints)
+    const Display &display, std::map<Action, std::string> button_hints,
+    int y_offset_override)
 {
         std::vector<const char *> button_keys(4);
         button_keys[Action::BLUE] = "a";
@@ -822,7 +827,7 @@ void render_controls_explanations_letter_buttons(
         // This is empiricaly calibrated to look nice. It is set as a negative
         // offset from the bottom of the screen and does not depend on what is
         // rendered above.
-        int help_text_y = h - 3 * fh / 2;
+        int help_text_y = h - 4 * fh / 3 + y_offset_override;
 
         std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
                                              Action::GREEN, Action::RED};
@@ -831,23 +836,26 @@ void render_controls_explanations_letter_buttons(
         int x_pos = x_margin;
         for (int i = 0; i < buttons_order.size(); i++) {
                 Action button = buttons_order[i];
-                std::string hint = button_hints[button];
+                if (button_hints.contains(button)) {
+                        std::string hint = button_hints[button];
 
-                display.draw_string({.x = x_pos, .y = help_text_y},
-                                    (char *)button_keys[button],
-                                    FontSize::Size16, Black, White);
-                x_pos += key_text_len * fw + 2;
-                display.draw_string({.x = x_pos, .y = help_text_y},
-                                    (char *)hint.c_str(), FontSize::Size16,
-                                    Black, Gray);
+                        display.draw_string({.x = x_pos, .y = help_text_y},
+                                            (char *)button_keys[button],
+                                            FontSize::Size16, Black, White);
+                        x_pos += key_text_len * fw + 2;
+                        display.draw_string({.x = x_pos, .y = help_text_y},
+                                            (char *)hint.c_str(),
+                                            FontSize::Size16, Black, Gray);
 
-                x_pos += hint.length() * fw;
-                x_pos += gap_size;
+                        x_pos += hint.length() * fw;
+                        x_pos += gap_size;
+                }
         }
 }
 
 void render_controls_explanations_directional_buttons(
-    const Display &display, std::map<Action, std::string> button_hints)
+    const Display &display, std::map<Action, std::string> button_hints,
+    int y_offset_override)
 {
         std::vector<Point> button_positions(4);
         button_positions[Action::BLUE] = {-1, 0};
@@ -885,9 +893,9 @@ void render_controls_explanations_directional_buttons(
         // This is empiricaly calibrated to look nice. It is set as a negative
         // offset from the bottom of the screen and does not depend on what is
         // rendered above.
-        int help_text_y = h - 3 * fh / 2;
+        int help_text_y = h - 4 * fh / 3 + y_offset_override;
         // Also eye-callibrated, not much logic to the 3/4 * fh.
-        int circle_indicator_y = help_text_y + 3 * fh / 4;
+        int circle_indicator_y = help_text_y + fh / 2;
 
         std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
                                              Action::GREEN, Action::RED};
@@ -896,53 +904,58 @@ void render_controls_explanations_directional_buttons(
         int x_pos = x_margin;
         for (int i = 0; i < buttons_order.size(); i++) {
                 Action button = buttons_order[i];
-                std::string hint = button_hints[button];
-                // We first make all possible displacements in gray.
-                for (const auto &d : button_positions) {
-                        if (!(d == (const Point &)button_positions[button])) {
-                                display.draw_circle(
-                                    {.x = x_pos + 2 * d.x * circle_radius,
-                                     .y = circle_indicator_y +
-                                          2 * d.y * circle_radius},
-                                    circle_radius, Gray, 0, true);
+                if (button_hints.contains(button)) {
+                        std::string hint = button_hints[button];
+                        // We first make all possible displacements in gray.
+                        for (const auto &d : button_positions) {
+                                if (!(d == (const Point &)
+                                               button_positions[button])) {
+                                        display.draw_circle(
+                                            {.x = x_pos +
+                                                  2 * d.x * circle_radius,
+                                             .y = circle_indicator_y +
+                                                  2 * d.y * circle_radius},
+                                            circle_radius, Gray, 0, true);
+                                }
                         }
+
+                        auto displacement = button_positions[button];
+                        Color color = White;
+                        display.draw_circle(
+                            {.x = x_pos + 2 * displacement.x * circle_radius,
+                             .y = circle_indicator_y +
+                                  2 * displacement.y * circle_radius},
+                            circle_radius, color, 0, true);
+
+                        x_pos += 4 * circle_radius + circle_text_gap_width;
+                        display.draw_string({.x = x_pos, .y = help_text_y},
+                                            (char *)hint.c_str(),
+                                            FontSize::Size16, Black, White);
+
+                        x_pos += hint.length() * fw;
+                        x_pos += gap_size;
                 }
-
-                auto displacement = button_positions[button];
-                Color color = White;
-                display.draw_circle(
-                    {.x = x_pos + 2 * displacement.x * circle_radius,
-                     .y = circle_indicator_y +
-                          2 * displacement.y * circle_radius},
-                    circle_radius, color, 0, true);
-
-                x_pos += 4 * circle_radius + circle_text_gap_width;
-                display.draw_string({.x = x_pos, .y = help_text_y},
-                                    (char *)hint.c_str(), FontSize::Size16,
-                                    Black, White);
-
-                x_pos += hint.length() * fw;
-                x_pos += gap_size;
         }
 }
 
 void render_controls_explanations(const Display &display,
                                   ActionButtonKind button_kind,
-                                  std::map<Action, std::string> button_hints)
+                                  std::map<Action, std::string> button_hints,
+                                  int y_offset_override)
 {
 
         switch (button_kind) {
         case ActionButtonKind::Directions:
-                render_controls_explanations_directional_buttons(display,
-                                                                 button_hints);
+                render_controls_explanations_directional_buttons(
+                    display, button_hints, y_offset_override);
                 break;
         case ActionButtonKind::Letters:
-                render_controls_explanations_letter_buttons(display,
-                                                            button_hints);
+                render_controls_explanations_letter_buttons(
+                    display, button_hints, y_offset_override);
                 break;
         case ActionButtonKind::Colors:
-                render_controls_explanations_colored_buttons(display,
-                                                             button_hints);
+                render_controls_explanations_colored_buttons(
+                    display, button_hints, y_offset_override);
                 break;
         }
 }

@@ -40,9 +40,12 @@ void render_logo(const Display &display,
                  const UserInterfaceCustomization &customization,
                  Point position);
 void render_default_controls_explanations(const Platform &p);
+/**
+ * We expose ability to override the Y-axis plancement of the control explanations.
+ */
 void render_controls_explanations(const Display &display,
                                   ActionButtonKind button_kind,
-                                  std::map<Action, std::string> button_hints);
+                                  std::map<Action, std::string> button_hints, int y_offset_override = 0);
 
 void render_wrapped_help_text(const Platform &p,
                               const UserInterfaceCustomization &customization,

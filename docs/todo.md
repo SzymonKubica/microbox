@@ -27,6 +27,9 @@ todo. They usually start with a 'theme' headline to give the overall idea.
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
+
+- apply strategy pattern to reduce duplication in the UI hints rendering code
+
 # TODO
 
 - [ ] fix random number API failures (likely need a different provider - looks like no http providers to be found)
@@ -40,12 +43,10 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
-- [ ] update Minesweeper controls explanations to no longer rely on colored buttons.
-
-
 # In Progress
 
 # Done
+- [x] update Minesweeper and 'Game of Life' controls explanations to no longer rely on colored buttons.
 - [x] remove emulator font rendering overrides from the user interface code (all but one done)
 - [x] ensure that the pixel precision overrides are applied in the emulator display
       implementation and not in the physical display. (the reasoning here is that

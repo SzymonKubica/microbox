@@ -258,10 +258,6 @@ const char *GameOfLife::get_help_text() const
                "the simulation";
 }
 
-void render_help_hints(const Display &display,
-                       const SquareCellGridDimensions &dimensions,
-                       int border_offset);
-
 void evolution_tick(const Display &display, GameOfLifeState &state);
 UserAction GameOfLife::app_loop(const Platform &p,
                                 const UserInterfaceCustomization &customization,
@@ -301,8 +297,19 @@ UserAction GameOfLife::app_loop(const Platform &p,
         // function can be reused for snake. Ideally we need to separate the two
         // concepts in a clean way
         int border_offset = 2;
-        if (customization.show_help_text)
-                render_help_hints(display, state.dimensions, border_offset);
+        if (customization.show_help_text) {
+                std::map<Action, std::string> button_hints;
+                button_hints[Action::RED] = "Rewind";
+                button_hints[Action::YELLOW] = "Pause";
+                button_hints[Action::GREEN] = "Select";
+                // The game of life grid is a bit large so we need to shift the
+                // UI hints downwards slightly to avoid overlapping with the
+                // grid.
+                int y_offset_override = 3;
+                render_controls_explanations(*p.display,
+                                             p.capabilities.action_button_kind,
+                                             button_hints, y_offset_override);
+        }
         if (config.prepopulate_grid)
                 spawn_cells_randomly(display, state.dimensions, state.grid);
         draw_caret(display, state.dimensions, state.caret, accent);
@@ -786,82 +793,6 @@ void erase_caret(const Display &display,
                                GAME_CELL_WIDTH - 2 * border_offset,
                                GAME_CELL_WIDTH - 2 * border_offset,
                                grid_background_color, 1, false);
-}
-
-void render_help_hints(const Display &display,
-                       const SquareCellGridDimensions &dimensions,
-                       int border_offset)
-{
-        auto [fw, fh] = display.get_font_configuration().font_dimensions;
-
-        int x_margin = dimensions.left_horizontal_margin;
-        int y_margin = dimensions.top_vertical_margin;
-
-        int actual_width = dimensions.actual_width;
-        int actual_height = dimensions.actual_height;
-
-        int text_below_grid_y = y_margin + actual_height + 1 * border_offset;
-        int r = 2;
-        int d = 2 * r;
-        int circle_y_axis = text_below_grid_y + fh / 2 + r / 4;
-        const char *select = "Spawn";
-        int select_len = strlen(select) * fw;
-        const char *exit = "Exit";
-        int exit_len = strlen(exit) * fw;
-        const char *pause = "Pause";
-        int pause_len = strlen(pause) * fw;
-        // We calculate the even spacing for the two indicators
-        int explanations_num = 3;
-        int circles_width = explanations_num * d;
-        int text_circle_spacing_width = d;
-        int total_width = select_len + exit_len + pause_len + circles_width +
-                          (explanations_num - 1) * text_circle_spacing_width;
-        int available_width = display.get_width() - 2 * x_margin;
-        int remainder_space = available_width - total_width;
-        int even_separator = remainder_space / explanations_num;
-
-        int green_circle_x = x_margin + even_separator;
-        display.draw_circle({.x = green_circle_x, .y = circle_y_axis}, r, Green,
-                            0, true);
-
-        int spawn_text_x = green_circle_x + d;
-        display.draw_string({.x = spawn_text_x, .y = text_below_grid_y},
-                            (char *)select, FontSize::Size16, Black, White);
-
-        int yellow_circle_x = spawn_text_x + select_len + even_separator;
-        display.draw_circle({.x = yellow_circle_x, .y = circle_y_axis}, r,
-                            Yellow, 0, true);
-        int pause_text_x = yellow_circle_x + d;
-        display.draw_string({.x = pause_text_x, .y = text_below_grid_y},
-                            (char *)pause, FontSize::Size16, Black, White);
-
-        int red_circle_x = pause_text_x + select_len + even_separator;
-        display.draw_circle({.x = red_circle_x, .y = circle_y_axis}, r, Red, 0,
-                            true);
-        int exit_text_x = red_circle_x + d;
-        display.draw_string({.x = exit_text_x, .y = text_below_grid_y},
-                            (char *)exit, FontSize::Size16, Black, White);
-
-        /* Rendering of help indicators above the grid */
-        int text_grid_spacing = 4;
-        // Because of slightly different font dimensions, we need this offset
-        // override to ensure proper vertical space above the game grid.
-        int text_above_grid_y =
-            y_margin - border_offset - fh - EXPLANATION_ABOVE_GRID_OFFEST;
-        int circle_y_axis_above_grid = text_above_grid_y + (fh / 2 + r / 2);
-
-        const char *toggle = "Rewind mode on/off";
-        int toggle_len = strlen(toggle) * fw;
-
-        int total_width_above_grid = toggle_len + d + text_circle_spacing_width;
-        int centering_margin = (available_width - total_width_above_grid) / 2;
-
-        int blue_circle_x = x_margin + centering_margin;
-        display.draw_circle({.x = blue_circle_x, .y = circle_y_axis_above_grid},
-                            r, DarkBlue, 0, true);
-        int toggle_text_x = blue_circle_x + d;
-        display.draw_string({.x = toggle_text_x, .y = text_above_grid_y},
-                            (char *)toggle, FontSize::Size16, Black, White);
 }
 
 void draw_rewind_mode_indicator(const Display &display,

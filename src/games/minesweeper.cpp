@@ -620,9 +620,6 @@ calculate_grid_dimensions(FontDimensions font_dimensions, int display_width,
             actual_width, actual_height);
 }
 
-void draw_controls_hints(const Display &display,
-                         const MinesweeperGridDimensions &dimensions,
-                         int border_offset);
 void draw_game_canvas(const Platform &p,
                       const MinesweeperGridDimensions &dimensions,
                       const UserInterfaceCustomization &customization)
@@ -662,49 +659,14 @@ void draw_game_canvas(const Platform &p,
             Gray, border_width, false);
 
         if (customization.show_help_text) {
-                draw_controls_hints(*p.display, dimensions, border_offset);
+                std::map<Action, std::string> button_hints;
+                button_hints[Action::BLUE] = "Quit";
+                button_hints[Action::RED] = "Flag";
+                button_hints[Action::GREEN] = "Inspect";
+                render_controls_explanations(*p.display,
+                                             p.capabilities.action_button_kind,
+                                             button_hints);
         }
-}
-
-void draw_controls_hints(const Display &display,
-                         const MinesweeperGridDimensions &dimensions,
-                         int border_offset)
-{
-        auto [fw, fh] = display.get_font_configuration().font_dimensions;
-        int x_margin = dimensions.left_horizontal_margin;
-        int y_margin = dimensions.top_vertical_margin;
-
-        int actual_width = dimensions.actual_width;
-        int actual_height = dimensions.actual_height;
-        int text_below_grid_y = y_margin + actual_height + 2 * border_offset;
-        int r = 2;
-        int d = 2 * r;
-        int circle_y_axis = text_below_grid_y + fh / 2 + r / 4;
-        const char *select = "Select";
-        int select_len = strlen(select) * fw;
-        const char *flag = "Flag";
-        int flag_len = strlen(flag) * fw;
-        // We calculate the even spacing for the two indicators
-        int circles_width = 2 * d;
-        int total_width = select_len + flag_len + circles_width;
-        int available_width = display.get_width() - 2 * x_margin;
-        int remainder_space = available_width - total_width;
-        int even_separator = remainder_space / 3;
-
-        int green_circle_x = x_margin + even_separator;
-        display.draw_circle({.x = green_circle_x, .y = circle_y_axis}, r, Green,
-                            0, true);
-
-        int select_text_x = green_circle_x + d;
-        display.draw_string({.x = select_text_x, .y = text_below_grid_y},
-                            (char *)select, FontSize::Size16, Black, White);
-
-        int flag_red_circle_x = select_text_x + select_len + even_separator;
-        display.draw_circle({.x = flag_red_circle_x, .y = circle_y_axis}, r,
-                            Red, 0, true);
-        int flag_text_x = flag_red_circle_x + d;
-        display.draw_string({.x = flag_text_x, .y = text_below_grid_y},
-                            (char *)flag, FontSize::Size16, Black, White);
 }
 
 void Minesweeper::render_thumbnail(
