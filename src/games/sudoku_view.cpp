@@ -122,7 +122,8 @@ void SimpleSudokuView::remove_underline_all_instances(int digit,
         auto remove_underline_if_value_present = [&](const SudokuCell &cell,
                                                      const Point &location) {
                 if (cell.digit.has_value() && cell.digit.value() == digit) {
-                        erase_cell_contents(location);
+                        erase_digit_underline(*display, customization,
+                                              dimensions, location);
                         render_digit(*display, customization, dimensions,
                                      location, cell);
                 }

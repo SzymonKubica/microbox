@@ -55,6 +55,11 @@ void LcdDisplay::draw_circle(Point center, int radius, Color color,
         }
 };
 
+/**
+ * Note that the target TFT_eSPI display doesn't expose border width so we
+ * might need to update the display interface to also not expose that (TFT_eSPI
+ * is the current go-to display).
+ */
 void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
                                 int border_width, bool filled) const
 {

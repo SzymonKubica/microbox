@@ -165,8 +165,27 @@ void SfmlDisplay::draw_rectangle(Point start, int width, int height,
         // We set the outline thickness to be negative so that the border is
         // rendered inside of the rectangle. That way, we are pixel-accurate
         // with the embedded displays.
-        rectangle.setOutlineThickness(-border_width);
+        rectangle.setOutlineThickness(-1);
+
         texture->draw(rectangle);
+
+        /**
+         * For border width larger than 1, we let it spill to the outside of the
+         * rectangle. This simultates the embedded display behaviour where
+         * width 1 is connecting vertices exactly, while larger widths are
+         * 'centered' around the actual lines between vertices.
+         */
+        if (border_width > 1) {
+                sf::RectangleShape border({(float)width, (float)height});
+                border.setPosition({(float)start.x, (float)start.y});
+                border.setFillColor(sf::Color::Transparent);
+                border.setOutlineColor(map_to_sf_color(color));
+                // We set the outline thickness to be negative so that the
+                // border is rendered inside of the rectangle. That way, we are
+                // pixel-accurate with the embedded displays.
+                border.setOutlineThickness(border_width - 1);
+                texture->draw(border);
+        }
         texture->display();
 };
 void SfmlDisplay::draw_rounded_rectangle(Point start, int width, int height,

@@ -170,8 +170,8 @@ void LcdDisplay_1_69::draw_rounded_rectangle(Point start, int width, int height,
 
 void LcdDisplay_1_69::draw_line(Point start, Point end, Color color) const
 {
-        Paint_DrawLine(start.x, start.y, end.x, end.y, color,
-                       DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+        Paint_DrawLine(start.x, start.y, end.x, end.y, color, DOT_PIXEL_1X1,
+                       LINE_STYLE_SOLID);
 }
 
 sFONT *map_font_size_1_69_specific(FontSize font_size);

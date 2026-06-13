@@ -429,7 +429,7 @@ void uncover_grid_cell(const Display &display, const Point &grid_position,
         display.draw_rectangle({actual_position.x + border_offset,
                                 actual_position.y + border_offset},
                                fw - 2 * border_offset, fh - 2 * border_offset,
-                               Black, 1, true);
+                               Black, 2, true);
 
         display.draw_string(actual_position, text, FontSize::Size16, Black,
                             text_color);
