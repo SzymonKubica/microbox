@@ -298,6 +298,7 @@ UserAction SudokuGame::app_loop(const Platform &p,
                         view.move_caret(previous, caret);
                         auto &cell = state.grid[previous.y][previous.x];
                         if (cell.digit.has_value()) {
+                                view.erase_cell_contents(previous);
                                 view.render_cell(cell, previous);
                         }
                         if (cell.digit.has_value() &&

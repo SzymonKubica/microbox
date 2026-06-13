@@ -40,20 +40,21 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
-- [ ] remove emulator font rendering overrides from the user interface code
 
 # In Progress
 
-- [ ] ensure that the pixel precision overrides are applied in the emulator display
+
+
+# Done
+- [x] remove emulator font rendering overrides from the user interface code (all but one done)
+- [x] ensure that the pixel precision overrides are applied in the emulator display
       implementation and not in the physical display. (the reasoning here is that
       the target display rendering should be pixel-accurate)
   - [x] remove adjustments from the 2_4 inch display code
   - [x] fix up all rendering code to account for the removed adjustments
-  - [ ] remove adjustments from the 1_69 inch display code
-  - [ ] add overrides in the emulator to make it look acceptable
-
-
-# Done
+  - [x] remove adjustments from the 1_69 inch display code (removed what was possible)
+        Some adjustments were necessary to match the TFT_eSPI behaviour.
+  - [x] add overrides in the emulator to make it look acceptable
 - [x] clean up constants definiton file to remove platform- / display-specific
       overrides
   - [x] add a structure to represent display dimensional properties (height, width and corner raidus)

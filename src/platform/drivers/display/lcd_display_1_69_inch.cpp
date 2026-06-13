@@ -108,15 +108,7 @@ void LcdDisplay_1_69::draw_circle(Point center, int radius, Color color,
 {
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
 
-        /*
-         * We need to add the adjustment because of the pixel-precision
-         * inconsistency between the sfml emulator and the lcd display. The
-         * Paint_DrawRectangle starts drawing one unit too far to the right and
-         * ends one unit too high, so we need to add the adjustment
-         * To achieve consistency, we need to adjust the circle as well
-         */
-        int adj = 1;
-        Paint_DrawCircle(center.x - 1, center.y - 1, radius, color,
+        Paint_DrawCircle(center.x, center.y, radius, color,
                          static_cast<DOT_PIXEL>(border_width),
                          static_cast<DRAW_FILL>(filled_repr));
 };
@@ -127,17 +119,13 @@ void LcdDisplay_1_69::draw_rectangle(Point start, int width, int height,
 {
 
         int filled_repr = filled ? DRAW_FILL_FULL : DRAW_FILL_EMPTY;
-
-        /*
-         * We need to add the adjustment because of the pixel-precision
-         * inconsistency between the sfml emulator and the lcd display. The
-         * Paint_DrawRectangle starts drawing one unit too far to the right and
-         * ends one unit too high, so we need to add the adjustment
-         * Note that the width works as expected, so we do not adjust anything.
-         */
+        // Note that drawing the rectangle is 'inclusive' with respect to the
+        // height. We need to adjust here to bring the behaviour in line with
+        // the TFT_eSPI display that we are using for the other target
+        // microcontrollers.
         int adj = 1;
-        Paint_DrawRectangle(start.x - adj, start.y - adj, start.x + width,
-                            start.y + height, color,
+        Paint_DrawRectangle(start.x, start.y, start.x + width - adj,
+                            start.y + height - adj, color,
                             static_cast<DOT_PIXEL>(border_width),
                             static_cast<DRAW_FILL>(filled_repr));
 };
@@ -178,16 +166,12 @@ void LcdDisplay_1_69::draw_rounded_rectangle(Point start, int width, int height,
 
 void LcdDisplay_1_69::draw_line(Point start, Point end, Color color) const
 {
-        /*
-         * We need to add the adjustment because of the pixel-precision
-         * inconsistency between the sfml emulator and the lcd display. The
-         * Paint_DrawRectangle starts drawing one unit too far to the right and
-         * ends one unit too high, we need to add a simlar adjustment to the
-         * lines to ensure consistency
-         */
+        // For whatever reason lines are getting rendered a bit too low
+        // compared to the other displays. We override here. They also start
+        // a bit too far to the left.
         int adj = 1;
-        Paint_DrawLine(start.x, start.y - adj, end.x, end.y - adj, color,
-                       DOT_PIXEL_1X1, LINE_STYLE_SOLID);
+        Paint_DrawLine(start.x, start.y - adj, end.x, end.y - adj,
+                       color, DOT_PIXEL_1X1, LINE_STYLE_SOLID);
 }
 
 sFONT *map_font_size_1_69_specific(FontSize font_size);
@@ -195,15 +179,7 @@ void LcdDisplay_1_69::draw_string(Point start, char *string_buffer,
                                   FontSize font_size, Color bg_color,
                                   Color fg_color) const
 {
-        /*
-         * We need to add the adjustment because of the pixel-precision
-         * inconsistency between the sfml emulator and the lcd display. The
-         * Paint_DrawRectangle starts drawing one unit too far to the right and
-         * ends one unit too high, we need to add a simlar adjustment to the
-         * text rendering function to achieve consistency
-         */
-        int adj = 1;
-        Paint_DrawString_EN(start.x - 1, start.y - 1, string_buffer,
+        Paint_DrawString_EN(start.x, start.y, string_buffer,
                             map_font_size_1_69_specific(font_size), bg_color,
                             fg_color);
 };
@@ -212,17 +188,15 @@ void LcdDisplay_1_69::clear_region(Point top_left, Point bottom_right,
                                    Color clear_color) const
 
 {
-        /*
-         * We need to add the adjustment because of the pixel-precision
-         * inconsistency between the sfml emulator and the lcd display. The
-         * Paint_DrawRectangle starts drawing one unit too far to the right and
-         * ends one unit too high, we need to add a simlar adjustment to the
-         * region clearing function to ensure consistency.
-         */
+
+        // Clearing is also inclusive and goes too far compared to the other
+        // displays. We need to adjust here to bring the behaviour in line with
+        // the TFT_eSPI display that we are using for the other target
+        // microcontrollers. For some reason it also starts about 1 pixel off
+        // to the right so we need to decrease the starting point.
         int adj = 1;
-        Paint_ClearWindows(top_left.x - adj, top_left.y - adj,
-                           bottom_right.x - adj, bottom_right.y - adj,
-                           clear_color);
+        Paint_ClearWindows(top_left.x - adj, top_left.y, bottom_right.x - adj,
+                           bottom_right.y - adj, clear_color);
 };
 
 sFONT *map_font_size_1_69_specific(FontSize font_size)

@@ -246,9 +246,9 @@ void render_config_bar_centered(const Display &display, int y_start,
                         // We need to clear the background in black so that it
                         // is the previous text is erased. Note that this is
                         // only required on the emulator as the actual LCD
-                        // display always clears the background of the text.
-                        // TODO: maybe this should be baked into the emulator
-                        // text rendering function.
+                        // display clears the text area before printing again.
+                        // TODO: check if we can fix this to not expose
+                        // emulator internals here.
                         display.draw_rectangle(
                             value_cell_start, value_cell_width,
                             value_cell_height, Black, 0, true);
@@ -759,13 +759,6 @@ void render_controls_explanations_colored_buttons(
         // Also eye-callibrated, not much logic to the 3/4 * fh.
         int circle_indicator_y = help_text_y + 3 * fh / 4;
 
-#ifndef EMULATOR
-        // The font on the emulator differs slightly from the target
-        // LCD display font, so we need to apply this vertical alignment
-        // override.
-        help_text_y += fh / 4;
-#endif
-
         std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
                                              Action::GREEN, Action::RED};
 
@@ -831,13 +824,6 @@ void render_controls_explanations_letter_buttons(
         // rendered above.
         int help_text_y = h - 3 * fh / 2;
 
-#ifndef EMULATOR
-        // The font on the emulator differs slightly from the target
-        // LCD display font, so we need to apply this vertical alignment
-        // override.
-        help_text_y += fh / 4;
-#endif
-
         std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
                                              Action::GREEN, Action::RED};
 
@@ -902,13 +888,6 @@ void render_controls_explanations_directional_buttons(
         int help_text_y = h - 3 * fh / 2;
         // Also eye-callibrated, not much logic to the 3/4 * fh.
         int circle_indicator_y = help_text_y + 3 * fh / 4;
-
-#ifndef EMULATOR
-        // The font on the emulator differs slightly from the target
-        // LCD display font, so we need to apply this vertical alignment
-        // override.
-        help_text_y += fh / 4;
-#endif
 
         std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
                                              Action::GREEN, Action::RED};
@@ -1071,13 +1050,6 @@ void render_wrapped_help_text(const Platform &p,
 
         int ok_green_circle_x = ok_text_x + (ok_text_len + 1) * fw;
         int ok_green_circle_y = ok_text_y + 3 * fh / 4;
-
-        // The font on the emulator differs slightly from the target
-        // LCD display font, so we need to apply this vertical alignment
-        // override.
-#ifndef EMULATOR
-        ok_text_y += fh / 4;
-#endif
 
         Color ok_color =
             p.capabilities.action_button_kind == ActionButtonKind::Letters

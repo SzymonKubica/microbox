@@ -167,11 +167,8 @@ Point calculate_cell_text_start(const FontDimensions &font_dimensions,
         int x_padding = (cell_size - fw) / 2;
         int y_padding = (cell_size - fh) / 2;
 
-        // We ned to shift the digits slightly upwards to make them visually
-        // separate from the underline.
-        int y_adjustment = 1;
         int x = x_margin + x_offset + x_padding;
-        int y = y_margin + y_offset + y_padding - y_adjustment;
+        int y = y_margin + y_offset + y_padding;
 
         return {x, y};
 }
@@ -221,12 +218,10 @@ void render_digit_underline(const Display &display, Color color,
         int y = start.y;
 
         int underline_digit_spacing = 1;
-        int line_inclusive_end_adjustment = 1;
+        int width = fw - 1;
 
-        display.draw_line({x, y + fh + underline_digit_spacing},
-                          {x + fw - line_inclusive_end_adjustment,
-                           y + fh + underline_digit_spacing},
-                          color);
+        display.draw_line({x + 1, y + fh + underline_digit_spacing},
+                          {x + width, y + fh + underline_digit_spacing}, color);
 }
 
 void erase_digit_underline(const Display &display,
@@ -242,9 +237,8 @@ void erase_digit_underline(const Display &display,
         int y = start.y;
         int underline_digit_spacing = 1;
         int underline_thickness = 1;
-
         display.clear_region(
-            {x, y + fh + underline_digit_spacing},
+            {x, y + fh},
             {x + fw, y + fh + underline_digit_spacing + underline_thickness},
             Black);
 }
