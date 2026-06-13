@@ -767,7 +767,7 @@ void render_controls_explanations_colored_buttons(
         int x_pos = x_margin;
         for (int i = 0; i < buttons_order.size(); i++) {
                 Action button = buttons_order[i];
-                if (button_hints.contains(button)) {
+                if (button_hints.find(button) != button_hints.end()) {
                         std::string hint = button_hints[button];
                         Color color = button_colors[button];
                         display.draw_circle(
@@ -836,7 +836,7 @@ void render_controls_explanations_letter_buttons(
         int x_pos = x_margin;
         for (int i = 0; i < buttons_order.size(); i++) {
                 Action button = buttons_order[i];
-                if (button_hints.contains(button)) {
+                if (button_hints.find(button) != button_hints.end()) {
                         std::string hint = button_hints[button];
 
                         display.draw_string({.x = x_pos, .y = help_text_y},
@@ -904,7 +904,7 @@ void render_controls_explanations_directional_buttons(
         int x_pos = x_margin;
         for (int i = 0; i < buttons_order.size(); i++) {
                 Action button = buttons_order[i];
-                if (button_hints.contains(button)) {
+                if (button_hints.find(button) != button_hints.end()) {
                         std::string hint = button_hints[button];
                         // We first make all possible displacements in gray.
                         for (const auto &d : button_positions) {
