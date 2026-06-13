@@ -301,7 +301,7 @@ UserAction GameOfLife::app_loop(const Platform &p,
         if (customization.show_help_text) {
                 std::map<Action, std::string> button_hints;
                 button_hints[Action::RED] = "Rewind";
-                button_hints[Action::YELLOW] = "Play/Pause";
+                button_hints[Action::YELLOW] = "(Un)Pause";
                 button_hints[Action::GREEN] = "Select";
                 // The game of life grid is a bit large so we need to shift the
                 // UI hints downwards slightly to avoid overlapping with the
@@ -380,6 +380,7 @@ void evolution_tick(const Display &display, GameOfLifeState &state)
         save_grid_state_in_rewind_buffer(state.rewind_buff,
                                          state.curr_rewind_buff_idx, state.grid,
                                          total_cells);
+        delete[] state.grid;
         state.grid = evolution.second;
 }
 
@@ -530,9 +531,6 @@ void render_state_change(const Display &display,
 }
 
 Grid copy_grid(Grid source, int total_cells);
-/**
- * Note: this deletes the 'grid'.
- */
 void save_grid_state_in_rewind_buffer(std::vector<Grid> &rewind_buffer,
                                       int &rewind_buf_idx, Grid grid,
                                       int grid_cell_count)
@@ -557,7 +555,6 @@ void save_grid_state_in_rewind_buffer(std::vector<Grid> &rewind_buffer,
         // would get a double-free error.
         Grid copy = copy_grid(grid, grid_cell_count);
         rewind_buffer[idx] = copy;
-        delete[] grid;
 }
 
 void handle_rewind(const Display &display, GameOfLifeState &state,
@@ -603,6 +600,7 @@ void handle_rewind(const Display &display, GameOfLifeState &state,
                           rewind_buf_idx);
                 // Defensive copy to prevent double-freeing in cases the same
                 // grid state got persisted twice.
+                delete[] state.grid;
                 state.grid = copy_grid(next_state, total_cells);
         } else if (back_in_time) {
                 auto previous_state = rewind_buffer[rewind_buf_idx];
@@ -630,6 +628,7 @@ void handle_rewind(const Display &display, GameOfLifeState &state,
                         rewind_buf_idx =
                             (rewind_buf_idx + 1) % rewind_buffer.size();
                 }
+                delete[] state.grid;
                 state.grid = copy_grid(previous_state, total_cells);
         }
 }
@@ -748,6 +747,8 @@ void flip_curr_cell(const Display &display,
         // drawn a cell by clearing the region
         draw_caret(display, gd, caret, customization.accent_color);
 
+        // The grid was saved down in the rewind buffer so it can be freed now.
+        delete[] state.grid;
         state.grid = new_grid;
 }
 
