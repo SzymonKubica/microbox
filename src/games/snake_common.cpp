@@ -92,18 +92,15 @@ void render_snake_head(const Display &display, Color snake_color,
                 break;
         }
 
-        display.draw_rectangle({.x = start.x + offset.x + snake_padding,
-                                .y = start.y + offset.y + snake_padding},
-                               rectangle_w, rectangle_h, snake_color,
+        Point padded_start = start + Point{snake_padding, snake_padding};
+        Point neck = padded_start + Point{offset.x, offset.y};
+        Point forehead_center = padded_start + Point{snake_w / 2, snake_h / 2};
+        Point eye_center = neck + Point{rectangle_w / 2 + eye_offset.x,
+                                        rectangle_h / 2 + eye_offset.y};
+        display.draw_rectangle(neck, rectangle_w, rectangle_h, snake_color,
                                border_width, true);
-        Point cell_center = {.x = start.x + width / 2,
-                             .y = start.y + height / 2};
-        Point eye_center = {.x = start.x + offset.x + snake_padding +
-                                 rectangle_w / 2 + eye_offset.x,
-                            .y = start.y + offset.y + snake_padding +
-                                 rectangle_h / 2 + eye_offset.y};
-        display.draw_circle(cell_center, (width - 2 * snake_padding) / 2,
-                            snake_color, border_width, true);
+        display.draw_circle(forehead_center, snake_w / 2 - 1, snake_color,
+                            border_width, true);
         display.draw_circle(eye_center, 1, Black, 0, true);
 }
 
@@ -126,7 +123,6 @@ void render_segment_connection(const Display &display, Color snake_color,
         // function or merged into grid dimensions struct if it becomes useful
         // somewhere else.
         int padding = SNAKE_SEGMENT_PADDING;
-        int cell_padding = DEFAULT_PADDING;
         // Rectangle border width needs to be non-zero, else the physical LCD
         // display will not render rectangles.
         int border_width = 1;
@@ -155,10 +151,10 @@ void render_segment_connection(const Display &display, Color snake_color,
                 // add `width - padding below to get to that point` also note
                 // that we need to start drawing from the padded vertical start
                 // hence we add the padding in the y coordinate
-                start = {.x = left_margin + (left_point.x + 1) * width -
-                              cell_padding,
+                start = {.x =
+                             left_margin + (left_point.x + 1) * width - padding,
                          .y = top_margin + left_point.y * height + padding};
-                segment_width = 2 * cell_padding;
+                segment_width = 2 * padding;
                 segment_height = height - 2 * padding;
 
         } else {
@@ -169,10 +165,10 @@ void render_segment_connection(const Display &display, Color snake_color,
                 // left corner), hence we add `height - padding below to get to
                 // that point`
                 start = {.x = left_margin + top_point.x * width + padding,
-                         .y = top_margin + (top_point.y + 1) * height -
-                              cell_padding};
+                         .y =
+                             top_margin + (top_point.y + 1) * height - padding};
                 segment_width = width - 2 * padding;
-                segment_height = 2 * cell_padding;
+                segment_height = 2 * padding;
         }
 
         display.draw_rectangle(start, segment_width, segment_height,
@@ -224,8 +220,8 @@ void render_grid_cell(const Display &display, Color snake_color,
                 // We shrink the erased area to account for the border. This
                 // prevents the snake from clipping its tail segment that
                 // contains a consumed apple.
-                display.draw_rectangle(start, width - 1, height - 1,
-                                       Color::Black, 1, true);
+                display.draw_rectangle(start, width, height, Color::Black, 1,
+                                       true);
                 break;
         }
         case Cell::AppleSnake: {
