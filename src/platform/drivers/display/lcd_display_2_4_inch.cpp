@@ -48,12 +48,10 @@ void LcdDisplay::draw_circle(Point center, int radius, Color color,
 {
 
         if (filled) {
-                tft.fillCircle(center.x, center.y, radius,
-                               to_tft_color(color));
+                tft.fillCircle(center.x, center.y, radius, to_tft_color(color));
         } else {
 
-                tft.drawCircle(center.x, center.y, radius,
-                               to_tft_color(color));
+                tft.drawCircle(center.x, center.y, radius, to_tft_color(color));
         }
 };
 
@@ -62,19 +60,19 @@ void LcdDisplay::draw_rectangle(Point start, int width, int height, Color color,
 {
 
         if (filled) {
-                tft.fillRect(start.x , start.y , width ,
-                             height , to_tft_color(color));
+                tft.fillRect(start.x, start.y, width, height,
+                             to_tft_color(color));
         } else {
-                tft.drawRect(start.x , start.y , width ,
-                             height , to_tft_color(color));
+                tft.drawRect(start.x, start.y, width, height,
+                             to_tft_color(color));
         }
 };
 
 void LcdDisplay::draw_rounded_rectangle(Point start, int width, int height,
                                         int radius, Color color) const
 {
-        tft.fillRoundRect(start.x , start.y , width ,
-                          height , radius, to_tft_color(color));
+        tft.fillRoundRect(start.x, start.y, width, height, radius,
+                          to_tft_color(color));
 };
 
 void LcdDisplay::draw_line(Point start, Point end, Color color) const

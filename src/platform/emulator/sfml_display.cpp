@@ -8,7 +8,6 @@
 #define SCREEN_BORDER_WIDTH 3
 #define TAG "sfml_display"
 
-
 void SfmlDisplay::setup() const {};
 
 void SfmlDisplay::initialize() const {}
@@ -146,7 +145,7 @@ void SfmlDisplay::draw_circle(Point center, int radius, Color color,
         }
 
         circle.setOutlineColor(map_to_sf_color(color));
-        circle.setOutlineThickness(border_width);
+        circle.setOutlineThickness(-border_width);
         texture->draw(circle);
         texture->display();
 };
@@ -163,7 +162,10 @@ void SfmlDisplay::draw_rectangle(Point start, int width, int height,
                 rectangle.setFillColor(sf::Color::Transparent);
         }
         rectangle.setOutlineColor(map_to_sf_color(color));
-        rectangle.setOutlineThickness(border_width);
+        // We set the outline thickness to be negative so that the border is
+        // rendered inside of the rectangle. That way, we are pixel-accurate
+        // with the embedded displays.
+        rectangle.setOutlineThickness(-border_width);
         texture->draw(rectangle);
         texture->display();
 };
@@ -201,9 +203,17 @@ void SfmlDisplay::draw_rounded_rectangle(Point start, int width, int height,
 
 void SfmlDisplay::draw_line(Point start, Point end, Color color) const
 {
+        /**
+         * SFML aligns lines to pixel edges. LCD libraries align to the pixel
+         * center. We need to add an offset of 0.5 to make the line properly
+         * aligned and pixel accurate against the target emulated LCD displays.
+         */
+        float offset = 0.5;
         sf::Vertex line[] = {
-            sf::Vertex(sf::Vector2f(start.x, start.y), map_to_sf_color(color)),
-            sf::Vertex(sf::Vector2f(end.x, end.y), map_to_sf_color(color))};
+            sf::Vertex(sf::Vector2f(start.x + offset, start.y + offset),
+                       map_to_sf_color(color)),
+            sf::Vertex(sf::Vector2f(end.x + offset, end.y + offset),
+                       map_to_sf_color(color))};
 
         texture->draw(line, 2, sf::PrimitiveType::Lines);
         texture->display();
@@ -314,7 +324,7 @@ void SfmlDisplay::drawRect(int x, int y, int w, int h, int color)
         rectangle.setPosition({(float)x, (float)y});
         rectangle.setFillColor(sf::Color::Transparent);
         rectangle.setOutlineColor(map_to_sf_color(color));
-        rectangle.setOutlineThickness(1);
+        rectangle.setOutlineThickness(-1);
         texture->draw(rectangle);
         texture->display();
 }
@@ -326,7 +336,7 @@ void SfmlDisplay::fillRect(int32_t x, int32_t y, int32_t w, int32_t h,
         sf::Color sf_color = map_to_sf_color(color);
         rectangle.setFillColor(sf_color);
         rectangle.setOutlineColor(sf_color);
-        rectangle.setOutlineThickness(1);
+        rectangle.setOutlineThickness(-1);
         texture->draw(rectangle);
         texture->display();
 }
@@ -366,7 +376,7 @@ void SfmlDisplay::drawEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
         ellipse.setScale({1.0f, (float)ry / rx});
         sf::Color sf_color = map_to_sf_color(color);
         ellipse.setOutlineColor(sf_color);
-        ellipse.setOutlineThickness(1);
+        ellipse.setOutlineThickness(-1);
         ellipse.setFillColor(sf::Color::Transparent);
         texture->draw(ellipse);
         texture->display();
@@ -380,7 +390,7 @@ void SfmlDisplay::fillEllipse(int32_t x, int32_t y, int32_t rx, int32_t ry,
         sf::Color sf_color = map_to_sf_color(color);
         ellipse.setFillColor(sf_color);
         ellipse.setOutlineColor(sf_color);
-        ellipse.setOutlineThickness(1);
+        ellipse.setOutlineThickness(-1);
         texture->draw(ellipse);
         texture->display();
 }

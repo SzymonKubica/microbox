@@ -40,6 +40,8 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
+- [ ] remove emulator font rendering overrides from the user interface code
+
 # In Progress
 
 - [ ] ensure that the pixel precision overrides are applied in the emulator display

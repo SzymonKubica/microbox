@@ -190,11 +190,7 @@ void render_config_bar_centered(const Display &display, int y_start,
                 if (customization.rendering_mode == Detailed) {
 
                         if (update_option_name) {
-#ifdef EMULATOR
-                                int border = 0;
-#else
                                 int border = 1;
-#endif
                                 display.draw_rectangle(bar_name_str_start,
                                                        option_text_max_len * fw,
                                                        fh + v_padding / 2 - 1,
@@ -209,27 +205,15 @@ void render_config_bar_centered(const Display &display, int y_start,
 
                 } else {
 
+                        // Erase the previous option text.
+                        // we need to account for long letters like 'p' or 'j'
+                        // for target fonts that are not monospaced.
+                        int long_letter_adj = 3;
                         if (update_option_name) {
-                                // We need to clear the background in black so
-                                // that it is the previous text is erased. Note
-                                // that on the emulator the border needs to be 0
-                                // else it will overflow the config bar border.
-#ifdef EMULATOR
-                                int border = 0;
-                                int adj = 0;
-#else
-#if defined(WAVESHARE_2_4_INCH_LCD)
-                                int border = 0;
-                                int adj = v_padding;
-#else
-                                int border = 1;
-                                int adj = 0;
-#endif
-#endif
                                 display.draw_rectangle(bar_name_str_start,
                                                        option_text_max_len * fw,
-                                                       fh + v_padding - adj,
-                                                       Black, border, true);
+                                                       fh + long_letter_adj,
+                                                       Black, 0, true);
                         }
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
@@ -263,6 +247,8 @@ void render_config_bar_centered(const Display &display, int y_start,
                         // is the previous text is erased. Note that this is
                         // only required on the emulator as the actual LCD
                         // display always clears the background of the text.
+                        // TODO: maybe this should be baked into the emulator
+                        // text rendering function.
                         display.draw_rectangle(
                             value_cell_start, value_cell_width,
                             value_cell_height, Black, 0, true);
