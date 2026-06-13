@@ -33,7 +33,6 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 # TODO
 
 - [ ] fix random number API failures (likely need a different provider - looks like no http providers to be found)
-- [ ] game of life rewind likes to crash
 - [ ] fix minesweeper crashing (hard to reproduce)
 
 - [ ] remove dependency on the corner radius for minimalistic rendering (this is
@@ -47,6 +46,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] game of life rewind likes to crash
 - [x] debug pixel precision overrides in the 1.69 inch display.
 - [x] update Minesweeper and 'Game of Life' controls explanations to no longer rely on colored buttons.
 - [x] remove emulator font rendering overrides from the user interface code (all but one done)

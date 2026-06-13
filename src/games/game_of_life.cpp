@@ -182,7 +182,8 @@ void spawn_cells_randomly(const Display &display,
                           const SquareCellGridDimensions &dimensions,
                           Grid grid);
 void save_grid_state_in_rewind_buffer(std::vector<Grid> &rewind_buffer,
-                                      int &rewind_buf_idx, Grid grid);
+                                      int &rewind_buf_idx, Grid grid,
+                                      int grid_cell_count);
 void handle_rewind(const Display &display, GameOfLifeState &state,
                    Direction dir);
 void move_caret(const Display &display,
@@ -372,8 +373,13 @@ void evolution_tick(const Display &display, GameOfLifeState &state)
         StateEvolution evolution = take_simulation_step(
             state.dimensions, state.grid, state.config.use_toroidal_array);
         render_state_change(display, state.dimensions, evolution);
-        save_grid_state_in_rewind_buffer(
-            state.rewind_buff, state.curr_rewind_buff_idx, state.grid);
+        auto &gd = state.dimensions;
+        int rows = gd.rows;
+        int cols = gd.cols;
+        int total_cells = rows * cols;
+        save_grid_state_in_rewind_buffer(state.rewind_buff,
+                                         state.curr_rewind_buff_idx, state.grid,
+                                         total_cells);
         state.grid = evolution.second;
 }
 
@@ -523,8 +529,13 @@ void render_state_change(const Display &display,
         }
 }
 
+Grid copy_grid(Grid source, int total_cells);
+/**
+ * Note: this deletes the 'grid'.
+ */
 void save_grid_state_in_rewind_buffer(std::vector<Grid> &rewind_buffer,
-                                      int &rewind_buf_idx, Grid grid)
+                                      int &rewind_buf_idx, Grid grid,
+                                      int grid_cell_count)
 {
 
         // We need to increment the index and wrap it around as we are using
@@ -541,7 +552,12 @@ void save_grid_state_in_rewind_buffer(std::vector<Grid> &rewind_buffer,
                           rewind_buf_idx);
                 delete[] (rewind_buffer[idx]);
         }
-        rewind_buffer[idx] = grid;
+        // We always do a defensive copy here to ensure that a single grid
+        // doesn't get saved in the buffer twice. If that were to happen, we
+        // would get a double-free error.
+        Grid copy = copy_grid(grid, grid_cell_count);
+        rewind_buffer[idx] = copy;
+        delete[] grid;
 }
 
 void handle_rewind(const Display &display, GameOfLifeState &state,
@@ -562,6 +578,10 @@ void handle_rewind(const Display &display, GameOfLifeState &state,
         std::vector<uint8_t *> &rewind_buffer = state.rewind_buff;
         const SquareCellGridDimensions &gd = state.dimensions;
 
+        int rows = gd.rows;
+        int cols = gd.cols;
+        int total_cells = rows * cols;
+
         // Rewind cannot go back in time past oldest state as it would
         // wrap around to the latest state.
         if (back_in_time &&
@@ -581,7 +601,9 @@ void handle_rewind(const Display &display, GameOfLifeState &state,
                 rewind_buf_idx = (rewind_buf_idx + 1) % rewind_buffer.size();
                 LOG_DEBUG(TAG, "Rewinding forward to index %d.",
                           rewind_buf_idx);
-                state.grid = next_state;
+                // Defensive copy to prevent double-freeing in cases the same
+                // grid state got persisted twice.
+                state.grid = copy_grid(next_state, total_cells);
         } else if (back_in_time) {
                 auto previous_state = rewind_buffer[rewind_buf_idx];
                 render_state_change(display, gd,
@@ -608,7 +630,7 @@ void handle_rewind(const Display &display, GameOfLifeState &state,
                         rewind_buf_idx =
                             (rewind_buf_idx + 1) % rewind_buffer.size();
                 }
-                state.grid = previous_state;
+                state.grid = copy_grid(previous_state, total_cells);
         }
 }
 
@@ -681,6 +703,14 @@ void toggle_rewind(const Display &display,
         }
 }
 
+Grid copy_grid(Grid source, int total_cells)
+{
+        Grid new_grid = allocate_grid(total_cells);
+        int size = (total_cells + 7) / 8;
+        std::memcpy(new_grid, source, size * sizeof(uint8_t));
+        return new_grid;
+}
+
 void flip_curr_cell(const Display &display,
                     const UserInterfaceCustomization &customization,
                     GameOfLifeState &state)
@@ -700,9 +730,7 @@ void flip_curr_cell(const Display &display,
 
         // We copy the current state and only modify the
         // caret position.
-        Grid new_grid = allocate_grid(total_cells);
-        int size = (total_cells + 7) / 8;
-        std::memcpy(new_grid, state.grid, size * sizeof(uint8_t));
+        Grid new_grid = copy_grid(state.grid, total_cells);
 
         GameOfLifeCell curr = get_cell(caret.x, caret.y, gd.cols, state.grid);
         if (curr == EMPTY) {
@@ -714,7 +742,7 @@ void flip_curr_cell(const Display &display,
         }
 
         save_grid_state_in_rewind_buffer(
-            rewind_buffer, state.curr_rewind_buff_idx, state.grid);
+            rewind_buffer, state.curr_rewind_buff_idx, state.grid, total_cells);
         draw_game_cell(display, gd, caret, new_cell_color);
         // we need to redraw the caret as we have just
         // drawn a cell by clearing the region
