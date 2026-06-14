@@ -25,10 +25,7 @@ class Esp32PersistentStorage : AbstractPersistentStorage<Esp32PersistentStorage>
          * to be careful we are handling it properly and not writing in tight
          * loops or by default where there is no explicit request from the user.
          */
-        void setup()
-        {
-                EEPROM.begin(3072);
-        }
+        void setup() { EEPROM.begin(3072); }
 };
 
 #endif

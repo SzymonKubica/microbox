@@ -236,13 +236,8 @@ void Settings::render_thumbnail(const Platform &platform,
                                 const UserInterfaceCustomization &customization)
 {
         const auto &display = *platform.display;
-        int available_height =
-            display.get_height() - display.get_display_corner_radius();
-        display.clear_region({0, available_height / 2},
-                             {display.get_width(), available_height}, Black);
-        const char *subtitle = "Settings";
         clear_half_display_and_render_subtitle(platform, customization,
-                                               subtitle);
+                                               "Settings");
 
         TftCompatibleDisplay &tft =
             *platform.display->cast_into_tft_compatible();

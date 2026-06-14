@@ -34,17 +34,16 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] fix random number API failures (likely need a different provider - looks like no http providers to be found)
 
-- [ ] remove dependency on the corner radius for minimalistic rendering (this is
-      hard as currently many UI items depend on this radius)
-- [ ] ensure that the display corner radius on the 2_4 inch display can be set to
-      0 and the code still works
-
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
 # In Progress
 
 
 # Done
+- [x] remove dependency on the corner radius for minimalistic rendering (this is
+      hard as currently many UI items depend on this radius)
+- [x] ensure that the display corner radius on the 2_4 inch display can be set to
+      0 and the code still works
 - [x] fix minesweeper crashing (hard to reproduce)
 - [x] game of life rewind likes to crash
 - [x] debug pixel precision overrides in the 1.69 inch display.

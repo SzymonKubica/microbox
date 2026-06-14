@@ -274,7 +274,10 @@ DisplayDimensions SfmlDisplay::get_display_dimensions() const
                                      DISPLAY_CORNER_RADIUS};
 }
 
-int SfmlDisplay::get_display_corner_radius() const { return DISPLAY_CORNER_RADIUS; };
+int SfmlDisplay::get_display_corner_radius() const
+{
+        return DISPLAY_CORNER_RADIUS;
+};
 
 bool SfmlDisplay::refresh() const
 {

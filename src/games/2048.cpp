@@ -24,6 +24,8 @@
 #define DOWN 2
 #define LEFT 3
 
+#define MINIMUM_MARGIN 40
+
 GameState *initialize_game_state(int gridSize, int target_max_tile);
 void update_game_grid(const Platform &p, GameState &gs,
                       const UserInterfaceCustomization &customization);
@@ -654,7 +656,12 @@ GridDimensions *calculate_grid_dimensions(const Display &display, int grid_size)
         auto [fw, fh] = display.get_font_configuration().font_dimensions;
         int height = display.get_height();
         int width = display.get_width();
-        int corner_radius = display.get_display_corner_radius();
+
+        // For displays that don't have rouned corners we add a small margin
+        // here.
+        int corner_radius =
+            std::max(display.get_display_corner_radius(), MINIMUM_MARGIN);
+
         int usable_width = width - 2 * SCREEN_BORDER_WIDTH;
         int usable_height = height - 2 * corner_radius;
 

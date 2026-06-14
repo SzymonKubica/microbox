@@ -27,8 +27,7 @@ int font_type_from_size(FontSize font_size)
         }
 }
 
-// TODO: ensure that this can be set to 0 without bricking the console.
-#define DISPLAY_CORNER_RADIUS 40
+#define DISPLAY_CORNER_RADIUS 0
 #define SCREEN_BORDER_WIDTH 3
 void LcdDisplay::setup() const
 {

@@ -20,8 +20,8 @@
  * & R4 wifi) crash when trying to generate Sudoku grids.
  *
  * This happens when we try to validate if a solution is unique and we allocate
- * a vector of possible valid numbers for each cell (and keep it) on each recursive
- * iteration.
+ * a vector of possible valid numbers for each cell (and keep it) on each
+ * recursive iteration.
  */
 using ValidNumberSetMask = uint16_t;
 

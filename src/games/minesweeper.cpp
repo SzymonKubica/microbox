@@ -13,6 +13,8 @@
 
 #define TAG "minesweeper"
 
+#define MINIMUM_MARGIN 40
+
 MinesweeperConfiguration DEFAULT_MINESWEEPER_CONFIG = {
     .header = {.magic = CONFIGURATION_MAGIC, .version = 1}, .mines_num = 25};
 
@@ -101,11 +103,14 @@ Minesweeper::app_loop(const Platform &p,
 {
         LOG_DEBUG(TAG, "Entering Minesweeper game loop");
 
+        // If the display as no rounded corners, we still impose some margin to
+        // make the UI look good.
+        int margin =
+            std::max(MINIMUM_MARGIN, p.display->get_display_corner_radius());
         auto gd = std::unique_ptr<MinesweeperGridDimensions>(
             calculate_grid_dimensions(
                 p.display->get_font_configuration().font_dimensions,
-                p.display->get_width(), p.display->get_height(),
-                p.display->get_display_corner_radius()));
+                p.display->get_width(), p.display->get_height(), margin));
         int rows = gd->rows;
         int cols = gd->cols;
 

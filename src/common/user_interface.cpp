@@ -18,6 +18,7 @@
 #define TAG "user_interface"
 
 #define SELECTOR_CIRCLE_RADIUS 5
+#define MINIMUM_MARGIN 40
 
 const int LOGO_CUBE_SIZE = 24;
 
@@ -501,11 +502,12 @@ void clear_half_display_and_render_subtitle(
     const char *subtitle)
 {
         const Display &display = *platform.display;
-        int available_height =
-            display.get_height() - display.get_display_corner_radius();
+        int margin =
+            std::max(MINIMUM_MARGIN, display.get_display_corner_radius());
+        int available_height = display.get_height() - margin;
         // We need to start erasing from a bit higher. This is required because
         // some thumbnails for the games render more stuff.
-        int adjustment = 25;
+        int adjustment = 5;
         display.clear_region({0, available_height / 2 - adjustment},
                              {display.get_width(), available_height}, Black);
 
@@ -986,7 +988,10 @@ void render_wrapped_text(const Platform &p,
         // shorter variable names to make the code easier to read.
         int h = p.display->get_height();
         int w = p.display->get_width();
-        int margin = p.display->get_display_corner_radius();
+        // If the corner radius of the display is 0, we still need to add some
+        // margin.
+        int margin =
+            std::max(MINIMUM_MARGIN, p.display->get_display_corner_radius());
         auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
 
         // We allow the text to go into 1/2 of the width of the display
@@ -1051,7 +1056,6 @@ void render_wrapped_help_text(const Platform &p,
         // shorter variable names to make the code easier to read.
         int h = p.display->get_height();
         int w = p.display->get_width();
-        int margin = p.display->get_display_corner_radius();
         auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
 
         // We render the part saying that ok closes the help screen
@@ -1226,7 +1230,7 @@ collect_string_input(const Platform &p,
         // Bind input params to short names for improved readability.
         int w = display->get_width();
         int h = display->get_height();
-        int r = display->get_display_corner_radius();
+        int r = std::max(MINIMUM_MARGIN, display->get_display_corner_radius());
 
         int margin = r / 4;
         int usable_width = w - margin / 2;
@@ -1498,7 +1502,7 @@ collect_number_input(const Platform &p,
         // Bind input params to short names for improved readability.
         int w = display->get_width();
         int h = display->get_height();
-        int r = display->get_display_corner_radius();
+        int r = std::max(MINIMUM_MARGIN, display->get_display_corner_radius());
 
         int margin = r / 4;
         int usable_width = w - margin / 2;

@@ -18,6 +18,8 @@
 
 #define TAG "sudoku"
 
+#define MINIMUM_MARGIN 20
+
 /**
  * When compiling for Arduino R4, we get errors about non-trivial designated
  * initializers not being supported. Because of this we need to assign all
@@ -211,10 +213,12 @@ UserAction SudokuGame::app_loop(const Platform &p,
 {
         LOG_DEBUG(TAG, "Entering sudoku game loop");
 
+        int margin =
+            std::max(MINIMUM_MARGIN, p.display->get_display_corner_radius());
         auto gd =
             std::unique_ptr<SquareCellGridDimensions>(calculate_grid_dimensions(
-                p.display->get_width(), p.display->get_height(),
-                p.display->get_display_corner_radius(), 9, 9, true));
+                p.display->get_width(), p.display->get_height(), margin, 9, 9,
+                true));
 
         SimpleSudokuView view{customization, *gd, p.display};
 
