@@ -505,7 +505,7 @@ void clear_half_display_and_render_subtitle(
             display.get_height() - display.get_display_corner_radius();
         // We need to start erasing from a bit higher. This is required because
         // some thumbnails for the games render more stuff.
-        int adjustment = 5;
+        int adjustment = 25;
         display.clear_region({0, available_height / 2 - adjustment},
                              {display.get_width(), available_height}, Black);
 

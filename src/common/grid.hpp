@@ -3,6 +3,13 @@
 #include "user_interface_customization.hpp"
 
 /**
+ * We cannot occupy the entire screen and fill it using the grid. Because of
+ * this, we set a default margin that needs to be left on either side of the
+ * grid.
+ */
+#define DEFAULT_MARGIN 20
+
+/**
  * Stores all dimension information required for rendering a grid with square
  * cells.
  */
@@ -24,13 +31,21 @@ struct SquareCellGridDimensions {
 constexpr int grid_max_cols(int display_width,
                             int display_rounded_corner_radius, int cell_width)
 {
-        return (display_width - display_rounded_corner_radius) / cell_width;
+        // If the display does not have rounded corners, we need to ensure that
+        // some margin is still there. Note that if the display does have
+        // rounded corners, the default margin is the half of that corner radius
+        // so that the grid goes into the corners a bit.
+        int margin =
+            std::max(display_rounded_corner_radius / 2, DEFAULT_MARGIN);
+        return (display_width - 2 * margin) / cell_width;
 }
 
 constexpr int grid_max_rows(int display_height,
                             int display_rounded_corner_radius, int cell_width)
 {
-        return (display_height - display_rounded_corner_radius) / cell_width;
+        int margin =
+            std::max(display_rounded_corner_radius / 2, DEFAULT_MARGIN);
+        return (display_height - 2 * margin) / cell_width;
 }
 
 SquareCellGridDimensions *

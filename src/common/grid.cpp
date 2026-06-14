@@ -6,6 +6,7 @@
 
 #define EXPLANATION_ABOVE_GRID_OFFEST 3
 
+
 SquareCellGridDimensions *
 calculate_grid_dimensions(int display_width, int display_height,
                           int display_rounded_corner_radius, int cell_width)

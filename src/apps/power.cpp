@@ -49,9 +49,8 @@ void PowerManagementApp::render_thumbnail(
         display.clear_region({0, available_height / 2},
                              {display.get_width(), available_height}, Black);
         const char *subtitle = "Power Off";
-        render_menu_subtitle(
-            display, Configuration(subtitle, {new ConfigurationOption()}),
-            false, strlen(subtitle), customization);
+        clear_half_display_and_render_subtitle(platform, customization,
+                                               subtitle);
 
         TftCompatibleDisplay &tft =
             *platform.display->cast_into_tft_compatible();

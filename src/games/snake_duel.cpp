@@ -752,11 +752,12 @@ struct CompactPoint {
 
 #if defined(WAVESHARE_2_4_INCH_LCD) | defined(EMULATOR)
 const int DISPLAY_WIDTH = 320;
+const int DISPLAY_CORNER_RADIUS = 0;
 #else
 const int DISPLAY_WIDTH = 280;
+const int DISPLAY_CORNER_RADIUS = 40;
 #endif
 const int DISPLAY_HEIGHT = 240;
-const int DISPLAY_CORNER_RADIUS = 40;
 
 // Compile-time calculation of the number of grid columns.
 constexpr int MAX_COLS =
