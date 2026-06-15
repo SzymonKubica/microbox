@@ -27,12 +27,16 @@ todo. They usually start with a 'theme' headline to give the overall idea.
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
-
 - apply strategy pattern to reduce duplication in the UI hints rendering code
 
 # TODO
 
-- [ ] fix random number API failures (likely need a different provider - looks like no http providers to be found)
+- [ ] update the Arduino R4 wifi provider to support https
+- [ ] figure out how to deal with certificates on the arduino WifiS3Client that
+      doesn't support `.setInsecure()`
+- [ ] add wifi configuration property to tell if a URL is http or https and
+      switch the implementation accordingly (or check if the https clients are
+      smart enough to handle that)
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
@@ -40,6 +44,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] fix random number API failures (likely need a different provider - looks like no http providers to be found)
 - [x] remove dependency on the corner radius for minimalistic rendering (this is
       hard as currently many UI items depend on this radius)
 - [x] ensure that the display corner radius on the 2_4 inch display can be set to
