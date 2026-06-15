@@ -4,53 +4,30 @@
 #include "../../../common/logging.hpp"
 #include <WiFi.h>
 #include <cstdint>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
 
 #define TAG "http_client"
 
 std::optional<std::string> Esp32HttpClient::get(const ConnectionConfig &config,
                                                 const std::string &url)
 {
-        WiFiClient client;
+        WiFiClientSecure client;
+        HTTPClient https;
+        client.setInsecure();
         LOG_DEBUG("wifi_client", "Connecting to host...");
-        if (client.connect(config.host.c_str(), (uint16_t)config.port)) {
+        if (https.begin(client, url.c_str())) {
                 LOG_DEBUG("wifi_client",
                           "Connected to host, sending request...");
-                std::string get_request = "GET " + url + " HTTP/1.1";
-                std::string host = "Host: " + config.host;
-                client.println(get_request.c_str());
-                client.println(host.c_str());
-                client.println("Connection: close");
-                client.println();
 
-                std::string response;
-                char buf[64];
-                unsigned long start = millis();
-                while (client.connected() || client.available()) {
-                        if (client.available()) {
-                                int len = client.readBytes(buf, sizeof(buf));
-                                response.append(buf, len);
+                int httpCode = https.GET();
 
-                                start =
-                                    millis(); // reset timeout after each chunk
-                        } else {
-                                // No data, wait a tiny bit
-                                delay(1);
-                        }
-
-                        // Timeout guard
-                        if (millis() - start > 3000) { // 3s without data
-                                break;
-                        }
+                if (httpCode > 0) {
+                        Serial.printf("HTTP code: %d\n", httpCode);
+                        String payload = https.getString();
+                        std::string output = std::string(payload.c_str());
+                        return output;
                 }
-
-                int body_start = response.find("\r\n\r\n");
-                if (body_start != -1) {
-                        std::string body = response.substr(body_start + 4);
-                        return body;
-                } else {
-                        return std::nullopt;
-                }
-
         } else {
                 LOG_INFO(TAG, "Connection to host failed");
                 return std::nullopt;

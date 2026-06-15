@@ -89,13 +89,13 @@ RandomSeedPicker::app_loop(const Platform &p,
                 const char *downloading_text = "Fetching new random seed...";
                 render_wrapped_text(p, customization, downloading_text);
 
-                const char *host = "www.randomnumberapi.com";
+                const char *host = "www.random.org";
                 std::string host_string(host);
-                const int port = 80;
-                auto resp =
-                    p.client->get({.host = host_string, .port = port},
-                                  "http://www.randomnumberapi.com/api/v1.0/"
-                                  "random?min=0&max=10000&count=1");
+                const int port = 443;
+                auto resp = p.client->get({.host = host_string, .port = port},
+                                          "https://www.random.org/integers/"
+                                          "?num=1&min=1&max=10000&col=1&base="
+                                          "10&format=plain&rnd=new");
                 if (!resp.has_value()) {
                         LOG_DEBUG(TAG, "Did not receive a successful response "
                                        "from the API.");
@@ -103,9 +103,6 @@ RandomSeedPicker::app_loop(const Platform &p,
                 int new_seed = 0;
                 LOG_DEBUG(TAG, "Response from API: %s", resp.value().c_str());
                 std::string response = resp.value();
-                response.replace(response.find("["), 1, "");
-                response.replace(response.find("]"), 1, "");
-                response.erase(response.find_last_not_of(" \t\n\r\f\v") + 1);
                 unsigned long seed = std::stoi(response);
                 LOG_DEBUG(TAG, "Random seed from API: %d", seed);
                 srand(seed);
