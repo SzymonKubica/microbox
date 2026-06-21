@@ -719,75 +719,12 @@ void render_config_menu(const Display &display, const Configuration &config,
         free(bar_positions);
 }
 
-void render_controls_explanations_colored_buttons(
-    const Display &display, std::map<Action, std::string> button_hints,
-    int y_offset_override)
-{
-
-        int h = display.get_height();
-        int w = display.get_width();
-        auto [fw, fh] = display.get_font_configuration().font_dimensions;
-
-        // Dynamically find the total text length needed for even spacing
-        int total_text_len = 0;
-        for (auto textMapping : button_hints) {
-                total_text_len += textMapping.second.length();
-        }
-
-        int circle_radius = 2;
-
-        // Given that the help text is rendred at the bottom and the screen
-        // has rounded corners, we need to set a fixed margin to ensure that
-        // nothing is cropped by the corners.
-        int x_margin = 2 * fw;
-
-        int circle_text_gap_width = fw / 4;
-        int total_len_to_render =
-            button_hints.size() * (circle_radius + circle_text_gap_width) +
-            fw * total_text_len + 2 * x_margin;
-
-        int remainder_width = w - total_len_to_render;
-        int gaps = button_hints.size() - 1;
-
-        int gap_size = remainder_width / gaps;
-
-        // This is empiricaly calibrated to look nice. It is set as a negative
-        // offset from the bottom of the screen and does not depend on what is
-        // rendered above.
-        int help_text_y = h - 4 * fh / 3 + y_offset_override;
-        // Also eye-callibrated, not much logic to the 3/4 * fh.
-        int circle_indicator_y = help_text_y + fh / 2;
-
-        std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
-                                             Action::GREEN, Action::RED};
-
-        // We keep track of the current x position as we render hint items.
-        // Only this is specific to rendering button hints
-        int x_pos = x_margin;
-        std::vector<Color> button_colors(4);
-        button_colors[Action::BLUE] = Blue;
-        button_colors[Action::YELLOW] = Yellow;
-        button_colors[Action::RED] = Red;
-        button_colors[Action::GREEN] = Green;
-        for (int i = 0; i < buttons_order.size(); i++) {
-                Action button = buttons_order[i];
-                if (button_hints.find(button) != button_hints.end()) {
-                        std::string hint = button_hints[button];
-                        Color color = button_colors[button];
-                        display.draw_circle(
-                            {.x = x_pos, .y = circle_indicator_y},
-                            circle_radius, color, 0, true);
-                        x_pos += circle_radius + circle_text_gap_width;
-                        display.draw_string({.x = x_pos, .y = help_text_y},
-                                            (char *)hint.c_str(),
-                                            FontSize::Size16, Black, White);
-
-                        x_pos += hint.length() * fw;
-                        x_pos += gap_size;
-                }
-        }
-}
-
+/**
+ * 'Strategy' container encapsulating the functionality of rendering the
+ * 'button icons' in front of the UI hints. This is needed because different
+ * platforms use different buttons and so we need to be able to change
+ * this conditionally based on the target build.
+ */
 struct HintIndicatorRenderingStrategy {
         int indicator_width;
         /**
@@ -804,167 +741,7 @@ struct HintIndicatorRenderingStrategy {
             render_action_indicator;
 };
 
-/**
- * Renders the explanations of the console action controls in terms of
- * keyboard letters that trigger them. Note that this is only uesd on the
- * emulator.
- */
-void render_controls_explanations_letter_buttons(
-    const Display &display, std::map<Action, std::string> button_hints,
-    int y_offset_override)
-{
-        int h = display.get_height();
-        int w = display.get_width();
-        auto [fw, fh] = display.get_font_configuration().font_dimensions;
-
-        // Dynamically find the total text length needed for even spacing
-        int total_text_len = 0;
-        for (auto textMapping : button_hints) {
-                total_text_len += textMapping.second.length();
-        }
-        // Given that the help text is rendred at the bottom and the screen
-        // has rounded corners, we need to set a fixed margin to ensure that
-        // nothing is cropped by the corners.
-        int x_margin = fw / 2;
-
-        int key_text_len = 1;
-        int indicator_width = key_text_len * fw;
-
-        int total_len_to_render = button_hints.size() * indicator_width +
-                                  fw * total_text_len + 2 * x_margin;
-
-        int remainder_width = w - total_len_to_render;
-        int gaps = button_hints.size() - 1;
-
-        int gap_size = remainder_width / gaps;
-
-        // This is empiricaly calibrated to look nice. It is set as a negative
-        // offset from the bottom of the screen and does not depend on what is
-        // rendered above.
-        int help_text_y = h - 4 * fh / 3 + y_offset_override;
-
-        std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
-                                             Action::GREEN, Action::RED};
-
-        // We keep track of the current x position as we render hint items.
-        int x_pos = x_margin;
-        for (int i = 0; i < buttons_order.size(); i++) {
-                Action button = buttons_order[i];
-                if (button_hints.find(button) != button_hints.end()) {
-                        std::string hint = button_hints[button];
-
-                        // this is the strategy part to be extracted
-                        // render_indicator(Action button);
-                        {
-                                std::vector<const char *> button_keys(4);
-                                button_keys[Action::BLUE] = "a";
-                                button_keys[Action::YELLOW] = "s";
-                                button_keys[Action::RED] = "f";
-                                button_keys[Action::GREEN] = "d";
-                                display.draw_string(
-                                    {.x = x_pos, .y = help_text_y},
-                                    (char *)button_keys[button],
-                                    FontSize::Size16, Black, White);
-                        }
-
-                        x_pos += indicator_width + 2;
-                        display.draw_string({.x = x_pos, .y = help_text_y},
-                                            (char *)hint.c_str(),
-                                            FontSize::Size16, Black, Gray);
-
-                        x_pos += hint.length() * fw;
-                        x_pos += gap_size;
-                }
-        }
-}
-
-void render_controls_explanations_directional_buttons(
-    const Display &display, std::map<Action, std::string> button_hints,
-    int y_offset_override)
-{
-
-        int h = display.get_height();
-        int w = display.get_width();
-        auto [fw, fh] = display.get_font_configuration().font_dimensions;
-
-        // Dynamically find the total text length needed for even spacing
-        int total_text_len = 0;
-        for (auto textMapping : button_hints) {
-                total_text_len += textMapping.second.length();
-        }
-
-        // Given that the help text is rendred at the bottom and the screen
-        // has rounded corners, we need to set a fixed margin to ensure that
-        // nothing is cropped by the corners.
-        int x_margin = 1 * fw;
-
-        int circle_radius = 2;
-        int circle_text_gap_width = fw / 4;
-
-        int total_len_to_render =
-            button_hints.size() * 3 * (circle_radius + circle_text_gap_width) +
-            fw * total_text_len + 2 * x_margin;
-
-        int remainder_width = w - total_len_to_render;
-        int gaps = button_hints.size() - 1;
-
-        int gap_size = remainder_width / gaps;
-
-        // This is empiricaly calibrated to look nice. It is set as a negative
-        // offset from the bottom of the screen and does not depend on what is
-        // rendered above.
-        int help_text_y = h - 4 * fh / 3 + y_offset_override;
-
-        std::vector<Action> buttons_order = {Action::BLUE, Action::YELLOW,
-                                             Action::GREEN, Action::RED};
-
-        // We keep track of the current x position as we render hint items.
-        int x_pos = x_margin;
-        for (int i = 0; i < buttons_order.size(); i++) {
-                Action button = buttons_order[i];
-                if (button_hints.find(button) != button_hints.end()) {
-                        std::string hint = button_hints[button];
-
-                        std::vector<Point> button_positions(4);
-                        button_positions[Action::BLUE] = {-1, 0};
-                        button_positions[Action::YELLOW] = {0, -1};
-                        button_positions[Action::RED] = {1, 0};
-                        button_positions[Action::GREEN] = {0, 1};
-                        // This is also eye-callibrated, not much logic to the
-                        // 3/4 * fh.
-                        int circle_indicator_y = help_text_y + fh / 2;
-                        // We first make all possible displacements in gray.
-                        for (const auto &d : button_positions) {
-                                if (!(d == (const Point &)
-                                               button_positions[button])) {
-                                        display.draw_circle(
-                                            {.x = x_pos +
-                                                  2 * d.x * circle_radius,
-                                             .y = circle_indicator_y +
-                                                  2 * d.y * circle_radius},
-                                            circle_radius, Gray, 0, true);
-                                }
-                        }
-                        auto displacement = button_positions[button];
-                        Color color = White;
-                        display.draw_circle(
-                            {.x = x_pos + 2 * displacement.x * circle_radius,
-                             .y = circle_indicator_y +
-                                  2 * displacement.y * circle_radius},
-                            circle_radius, color, 0, true);
-
-                        x_pos += 4 * circle_radius + circle_text_gap_width;
-                        display.draw_string({.x = x_pos, .y = help_text_y},
-                                            (char *)hint.c_str(),
-                                            FontSize::Size16, Black, White);
-
-                        x_pos += hint.length() * fw;
-                        x_pos += gap_size;
-                }
-        }
-}
-
-void render_controls_explanations_generic(
+void render_controls_explanations(
     const Display &display, std::map<Action, std::string> button_hints,
     int y_offset_override, const HintIndicatorRenderingStrategy &hint_renderer)
 {
@@ -1023,37 +800,89 @@ void render_controls_explanations(const Display &display,
                                   std::map<Action, std::string> button_hints,
                                   int y_offset_override)
 {
+        auto dimensions = display.get_font_configuration().font_dimensions;
+        int fw = dimensions.width;
+        int fh = dimensions.height;
 
-        int spacing = 2;
-        HintIndicatorRenderingStrategy letter_indicator_renderer{
-            .indicator_width =
-                display.get_font_configuration().font_dimensions.width +
-                spacing,
-            .render_action_indicator = [&](Action button, Point position) {
-                    std::vector<const char *> button_keys(4);
-                    button_keys[Action::BLUE] = "a";
-                    button_keys[Action::YELLOW] = "s";
-                    button_keys[Action::RED] = "f";
-                    button_keys[Action::GREEN] = "d";
-                    display.draw_string(position, (char *)button_keys[button],
-                                        FontSize::Size16, Black, White);
-            }};
+        HintIndicatorRenderingStrategy indicator_renderer;
 
         switch (button_kind) {
-        case ActionButtonKind::Directions:
-                render_controls_explanations_directional_buttons(
-                    display, button_hints, y_offset_override);
-                break;
-        case ActionButtonKind::Letters:
-                render_controls_explanations_letter_buttons(
-                    display, button_hints, y_offset_override);
-                break;
-        case ActionButtonKind::Colors:
-                render_controls_explanations_generic(display, button_hints,
-                                                     y_offset_override,
-                                                     letter_indicator_renderer);
+        case ActionButtonKind::Letters: {
+                int spacing = 2;
+                int indicator_width = fw + spacing;
+                auto render_strategy = [&](Action button, Point position) {
+                        std::vector<const char *> key_map(4);
+                        key_map[Action::BLUE] = "a";
+                        key_map[Action::YELLOW] = "s";
+                        key_map[Action::RED] = "f";
+                        key_map[Action::GREEN] = "d";
+                        display.draw_string(position, (char *)key_map[button],
+                                            FontSize::Size16, Black, Gray);
+                };
+                indicator_renderer = {indicator_width, render_strategy};
                 break;
         }
+        case ActionButtonKind::Directions: {
+                int circle_radius = 2;
+                int circle_text_gap_width = fw / 4;
+                int indicator_width = 4 * circle_radius + circle_text_gap_width;
+                auto render_strategy = [&display, fh, fw, circle_radius](
+                                           Action button, Point position) {
+                        std::vector<Point> button_offsets(4);
+                        button_offsets[Action::BLUE] = {-1, 0};
+                        button_offsets[Action::YELLOW] = {0, -1};
+                        button_offsets[Action::RED] = {1, 0};
+                        button_offsets[Action::GREEN] = {0, 1};
+                        int circle_indicator_y_offset = fh / 2;
+                        // We first make all possible displacements in gray.
+                        for (const auto &d : button_offsets) {
+                                if (!(d ==
+                                      (const Point &)button_offsets[button])) {
+                                        display.draw_circle(
+                                            {.x = position.x +
+                                                  2 * d.x * circle_radius,
+                                             .y = position.y +
+                                                  circle_indicator_y_offset +
+                                                  2 * d.y * circle_radius},
+                                            circle_radius, Gray, 0, true);
+                                }
+                        }
+                        auto displacement = button_offsets[button];
+                        Color color = White;
+                        display.draw_circle(
+                            {.x = position.x +
+                                  2 * displacement.x * circle_radius,
+                             .y = position.y + circle_indicator_y_offset +
+                                  2 * displacement.y * circle_radius},
+                            circle_radius, color, 0, true);
+                };
+                indicator_renderer = {indicator_width, render_strategy};
+        } break;
+        case ActionButtonKind::Colors: {
+                int circle_radius = 2;
+                int circle_text_gap_width = fw / 4;
+                int indicator_width = circle_radius + circle_text_gap_width;
+                auto render_strategy = [&display, fh, fw, circle_radius](
+                                           Action button, Point position) {
+                        std::vector<Color> button_colors(4);
+                        button_colors[Action::BLUE] = Blue;
+                        button_colors[Action::YELLOW] = Yellow;
+                        button_colors[Action::RED] = Red;
+                        button_colors[Action::GREEN] = Green;
+                        Color color = button_colors[button];
+                        int circle_indicator_y_offset = fh / 2;
+                        display.draw_circle(
+                            {.x = position.x,
+                             .y = position.y + circle_indicator_y_offset},
+                            circle_radius, color, 0, true);
+                };
+                indicator_renderer = {indicator_width, render_strategy};
+                break;
+        }
+        }
+
+        render_controls_explanations(display, button_hints, y_offset_override,
+                                     indicator_renderer);
 }
 
 /**

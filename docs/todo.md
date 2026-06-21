@@ -27,9 +27,11 @@ todo. They usually start with a 'theme' headline to give the overall idea.
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
-- apply strategy pattern to reduce duplication in the UI hints rendering code
 
 # TODO
+
+- [ ] apply strategy pattern to reduce duplication in the UI hints rendering code
+- [ ] ensure emulator circle rendering is pixel-accurate
 
 - [ ] update the Arduino R4 wifi provider to support https
 - [ ] figure out how to deal with certificates on the arduino WifiS3Client that
