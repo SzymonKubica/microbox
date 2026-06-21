@@ -30,8 +30,6 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # TODO
 
-- [ ] apply strategy pattern to reduce duplication in the UI hints rendering code
-- [ ] ensure emulator circle rendering is pixel-accurate
 
 - [ ] update the Arduino R4 wifi provider to support https
 - [ ] figure out how to deal with certificates on the arduino WifiS3Client that
@@ -46,6 +44,9 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] fix snake settings saving
+- [x] ensure emulator circle rendering is pixel-accurate (it is as accurate as it can be)
+- [x] apply strategy pattern to reduce duplication in the UI hints rendering code
 - [x] fix random number API failures (likely need a different provider - looks like no http providers to be found)
 - [x] remove dependency on the corner radius for minimalistic rendering (this is
       hard as currently many UI items depend on this radius)

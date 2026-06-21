@@ -16,7 +16,7 @@ struct ConfigurationHeader {
 
       public:
         uint32_t magic = CONFIGURATION_MAGIC;
-        uint16_t version;
+        uint16_t version = 1;
         bool has_valid_magic() const
         {
                 return this->magic == CONFIGURATION_MAGIC;
