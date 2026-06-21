@@ -7,6 +7,7 @@
 #include "../common/configuration.hpp"
 #include "../application_executor.hpp"
 #include "../common/logging.hpp"
+#include "display_scale.hpp"
 #include "settings.hpp"
 #include "power.hpp"
 #include "wifi.hpp"
@@ -82,6 +83,9 @@ UserAction UtilityApplicationMenu::app_loop(
         case Game::DefaultsSetting:
                 execute_app(*new Settings(), p, customization).value();
                 break;
+        case Game::DisplaySizeSetting:
+                execute_app(*new DisplayScaleApp(), p, customization).value();
+                break;
         default:
                 LOG_DEBUG(TAG, "Unsupported application selected, exiting...");
                 return UserAction::Exit;
@@ -106,6 +110,9 @@ Configuration *assemble_utility_selector_configuration(
                 available_apps.push_back(game_to_string(Game::WifiApp));
         if (p.capabilities.can_sleep)
                 available_apps.push_back(game_to_string(Game::Power));
+        if (p.capabilities.has_resizable_display)
+                available_apps.push_back(
+                    game_to_string(Game::DisplaySizeSetting));
 
         auto *app = ConfigurationOption::of_strings(
             "Configure", available_apps, game_to_string(initial_config.app));

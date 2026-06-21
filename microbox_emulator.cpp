@@ -82,7 +82,8 @@ int main(int argc, char *argv[])
             .client = client,
             .capabilities = {.has_wifi = true,
                              .can_sleep = true,
-                             .action_button_kind = ActionButtonKind::Letters}};
+                             .action_button_kind = ActionButtonKind::Letters,
+                             .has_resizable_display = true}};
 
         while (window.isOpen()) {
                 LOG_DEBUG(TAG, "Entering game loop...");

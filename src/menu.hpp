@@ -18,6 +18,7 @@ enum class Game : int {
         Power = 11,
         Brightness = 12,
         DefaultsSetting = 13,
+        DisplaySizeSetting = 14,
 };
 
 struct GameMenuConfiguration {

@@ -15,6 +15,7 @@ constexpr int DISPLAY_CORNER_RADIUS = 0;
 class SfmlDisplay : public Display, public TftCompatibleDisplay
 {
       public:
+        void set_scale(unsigned int scale) const;
         /**
          * Performs the setup of the display. This is intended for performing
          * initialization of the modules that are responsible for driving the

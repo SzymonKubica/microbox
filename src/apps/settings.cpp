@@ -4,6 +4,7 @@
 #include "settings.hpp"
 #include "app_menu.hpp"
 #include "brightness.hpp"
+#include "display_scale.hpp"
 #include "random_seed_picker.hpp"
 #include "wifi.hpp"
 #include "../menu.hpp"
@@ -143,6 +144,14 @@ UserAction Settings::app_loop(const Platform &p,
                         return action.value();
                 storage.put(offset, config);
         } break;
+        case Game::DisplaySizeSetting: {
+                DisplayScaleConfiguration config;
+                auto game = std::make_unique<DisplayScaleApp>();
+                auto action = game->collect_config(p, custom, config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
         default:
                 return UserAction::Exit;
         }
@@ -166,14 +175,14 @@ std::vector<int> get_settings_storage_offsets()
             {Game::Sudoku, sizeof(SudokuConfiguration)},
             {Game::Brightness, sizeof(BrightnessConfiguration)},
             {Game::Settings, sizeof(AppMenuConfiguration)},
+            {Game::DisplaySizeSetting, sizeof(DisplayScaleConfiguration)},
         };
 
         std::vector<Game> games = {
             Game::MainMenu,   Game::Clean2048,        Game::Minesweeper,
             Game::GameOfLife, Game::RandomSeedPicker, Game::Snake,
             Game::SnakeDuel,  Game::WifiApp,          Game::Sudoku,
-            Game::Brightness, Game::Settings,
-        };
+            Game::Brightness, Game::Settings,         Game::DisplaySizeSetting};
 
         // We make the offsets size a two element bigger as the game enum starts
         // at 1 and we skip number 5 as that is the 'Settings' app itself. We
@@ -218,6 +227,11 @@ Configuration *assemble_settings_menu_configuration(const Platform &p)
 
         if (p.capabilities.has_wifi) {
                 available_games.push_back(game_to_string(Game::WifiApp));
+        }
+
+        if (p.capabilities.has_resizable_display) {
+                available_games.push_back(
+                    game_to_string(Game::DisplaySizeSetting));
         }
 
         auto *menu = ConfigurationOption::of_strings(

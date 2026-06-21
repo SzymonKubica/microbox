@@ -348,6 +348,8 @@ Game game_from_string(const char *name)
                 return Game::Brightness;
         if (strcmp(name, game_to_string(Game::DefaultsSetting)) == 0)
                 return Game::DefaultsSetting;
+        if (strcmp(name, game_to_string(Game::DisplaySizeSetting)) == 0)
+                return Game::DisplaySizeSetting;
         return Game::Unknown;
 }
 
@@ -399,6 +401,8 @@ const char *game_to_string(Game game)
                 return "Brightness";
         case Game::DefaultsSetting:
                 return "Defaults";
+        case Game::DisplaySizeSetting:
+                return "Display Size";
         default:
                 return "Unknown";
         }

@@ -9,6 +9,11 @@
 #define TAG "sfml_display"
 
 void SfmlDisplay::setup() const {};
+void SfmlDisplay::set_scale(unsigned int scale) const
+{
+        this->window->setSize(
+            {scale * this->get_width(), scale * this->get_height()});
+};
 
 void SfmlDisplay::initialize() const {}
 

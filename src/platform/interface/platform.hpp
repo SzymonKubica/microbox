@@ -54,6 +54,7 @@ struct PlatformCapabilities {
          */
         bool supports_power_off = true;
         bool has_display_with_rounded_corners = false;
+        bool has_resizable_display = false;
 };
 
 /**
