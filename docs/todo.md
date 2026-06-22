@@ -30,15 +30,10 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # TODO
 
-- [ ] add emulator settings menu to adjust screen scale
-
-
-- [ ] update the Arduino R4 wifi provider to support https
-- [ ] figure out how to deal with certificates on the arduino WifiS3Client that
-      doesn't support `.setInsecure()`
 - [ ] add wifi configuration property to tell if a URL is http or https and
       switch the implementation accordingly (or check if the https clients are
       smart enough to handle that)
+- [ ] clean up confirmation hints icons so that they look nice on all platforms (especially focus on V1)
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
@@ -46,6 +41,10 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] update the Arduino R4 wifi provider to support https
+- [x] figure out how to deal with certificates on the arduino WifiS3Client that
+      doesn't support `.setInsecure()` (not needed as it turns out we can access random.org just fine)
+- [x] add emulator settings menu to adjust screen scale
 - [x] add ability for the emulator to scale the display 2x
 - [x] fix snake settings saving
 - [x] ensure emulator circle rendering is pixel-accurate (it is as accurate as it can be)

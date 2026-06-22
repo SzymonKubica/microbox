@@ -83,10 +83,7 @@ assemble_configuration(const DisplayScaleConfiguration &initial_config)
 {
         auto *scale = ConfigurationOption::of_integers("Scale", {1, 2},
                                                        initial_config.scale);
-
-        auto options = {scale};
-
-        return new Configuration("Display Scale", options);
+        return new Configuration("Display Scale", {scale});
 }
 
 std::optional<UserAction>
