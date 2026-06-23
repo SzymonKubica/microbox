@@ -32,7 +32,8 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] add wifi configuration property to tell if a URL is http or https and
       switch the implementation accordingly (or check if the https clients are
-      smart enough to handle that)
+      smart enough to handle that) (this is only required if we have a use case for hitting http endpoints)
+
 - [ ] clean up confirmation hints icons so that they look nice on all platforms (especially focus on V1)
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)

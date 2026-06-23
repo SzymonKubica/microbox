@@ -988,9 +988,6 @@ void render_wrapped_help_text(const Platform &p,
         int ok_text_x = w - fw * (ok_text_len + 3);
         int ok_text_y = h - 2 * fh;
 
-        int ok_green_circle_x = ok_text_x + (ok_text_len + 1) * fw;
-        int ok_green_circle_y = ok_text_y + 3 * fh / 4;
-
         Color ok_color =
             p.capabilities.action_button_kind == ActionButtonKind::Letters
                 ? Gray
@@ -998,9 +995,11 @@ void render_wrapped_help_text(const Platform &p,
         p.display->draw_string({.x = ok_text_x, .y = ok_text_y}, (char *)ok,
                                FontSize::Size16, Black, ok_color);
 
-        // This might need simplification in the future
-        int radius = fh / 4;
+        int radius = 2;
         int d = 2 * radius;
+        int circle_text_gap_width = fw / 2;
+        int ok_green_circle_x = ok_text_x - circle_text_gap_width;
+        int ok_green_circle_y = ok_text_y + fh / 2;
 
         Point center = {.x = ok_green_circle_x, .y = ok_green_circle_y};
         if (p.capabilities.action_button_kind == ActionButtonKind::Directions) {
@@ -1013,8 +1012,10 @@ void render_wrapped_help_text(const Platform &p,
                 int circle_radius = 2;
                 for (const auto &d : displacements) {
                         Color color = d == Point{0, 1} ? White : Gray;
-                        p.display->draw_circle(center + (d * 2 * circle_radius),
-                                               circle_radius, color, 0, true);
+                        p.display->draw_circle(
+                            Point{center.x - circle_text_gap_width, center.y} +
+                                (d * 2 * circle_radius),
+                            circle_radius, color, 0, true);
                 }
         } else if (p.capabilities.action_button_kind ==
                    ActionButtonKind::Letters) {
@@ -1023,8 +1024,7 @@ void render_wrapped_help_text(const Platform &p,
                     FontSize::Size16, Black, White);
 
         } else {
-                int circle_radius = 5;
-                p.display->draw_circle(center, circle_radius, Green, 0, true);
+                p.display->draw_circle(center, radius, Green, 0, true);
         }
 }
 
