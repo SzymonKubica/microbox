@@ -34,7 +34,9 @@ todo. They usually start with a 'theme' headline to give the overall idea.
       switch the implementation accordingly (or check if the https clients are
       smart enough to handle that) (this is only required if we have a use case for hitting http endpoints)
 
-- [ ] clean up confirmation hints icons so that they look nice on all platforms (especially focus on V1)
+- [ ] fix 2048 failure detection
+- [ ] design and add a testsuite for core game logic
+
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
@@ -42,6 +44,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] clean up confirmation hints icons so that they look nice on all platforms (especially focus on V1)
 - [x] update the Arduino R4 wifi provider to support https
 - [x] figure out how to deal with certificates on the arduino WifiS3Client that
       doesn't support `.setInsecure()` (not needed as it turns out we can access random.org just fine)

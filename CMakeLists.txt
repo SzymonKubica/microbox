@@ -7,6 +7,8 @@ project(MicroBoxEmulator
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+enable_testing()
+
 
 # This provides the dynamic setup where the version from the project() function
 # above gets inserted into the emulator_config.h header file.
@@ -26,15 +28,51 @@ file(GLOB TOP_LEVEL_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
-add_executable(microbox-emulator
+add_library(microbox-core
   ${SFML_PLATFORM_SOURCES}
   ${PLATFORM_DEFS}
   ${COMMON_SOURCES}
   ${GAME_SOURCES}
   ${APP_SOURCES}
   ${TOP_LEVEL_SOURCES}
-  microbox_emulator.cpp)
+)
+
+
+target_include_directories(microbox-core PUBLIC
+  "${PROJECT_BINARY_DIR}"
+)
+
+target_link_libraries(microbox-core PRIVATE
+  SFML::Graphics
+  CURL::libcurl
+)
+
+add_executable(microbox-emulator
+  microbox_emulator.cpp
+)
+
+# Ensure that we can fetch dependencies from the internet.
+include(FetchContent)
+
+# Set up SFML dependency
+FetchContent_Declare(SFML
+    GIT_REPOSITORY https://github.com/SFML/SFML.git
+    GIT_TAG 3.0.1
+    GIT_SHALLOW ON
+    EXCLUDE_FROM_ALL
+    SYSTEM)
+FetchContent_MakeAvailable(SFML)
+
+# This downloads the Catch2 testing framework.
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG v3.5.4
+)
+FetchContent_MakeAvailable(Catch2)
+
+# We assume that libcurl is installed on the system. If not, you may need to install it manually.
+find_package(CURL REQUIRED)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_compile_definitions(microbox-emulator PRIVATE DEBUG_BUILD)
@@ -48,21 +86,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
 endif()
 
-target_include_directories(microbox-emulator PUBLIC
-  "${PROJECT_BINARY_DIR}"
+target_link_libraries(microbox-emulator PRIVATE
+  microbox-core
+  SFML::Graphics
+  CURL::libcurl
 )
 
-# Set up SFML dependency
-include(FetchContent)
-FetchContent_Declare(SFML
-    GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 3.0.1
-    GIT_SHALLOW ON
-    EXCLUDE_FROM_ALL
-    SYSTEM)
-FetchContent_MakeAvailable(SFML)
-target_link_libraries(microbox-emulator PRIVATE SFML::Graphics)
-find_package(CURL REQUIRED)
-target_link_libraries(microbox-emulator PRIVATE CURL::libcurl)
-
-
+# This ensures that the `tests/` directory in our project is recognized as part of
+# the cmake build.
+add_subdirectory(tests)

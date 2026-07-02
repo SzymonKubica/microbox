@@ -80,11 +80,16 @@ GameState *load_saved_game_state(Game2048Configuration config)
         int size = config.saved_grid_size;
         GameState *state =
             initialize_game_state(size, config.saved_target_max_tile);
+        int occupied_tiles = 0;
         for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
                         state->grid[i][j] = config.saved_grid[i][j];
+                        if (state->grid[i][j] != 0) {
+                                occupied_tiles++;
+                        }
                 }
         }
+        state->occupied_tiles = occupied_tiles;
         return state;
 }
 
