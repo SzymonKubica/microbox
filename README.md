@@ -1,7 +1,6 @@
 # [μ] MicroBox
 <p align="left">
-  <img src="https://img.shields.io/github/stars/SzymonKubica/microbox?style=social" />
-  <img src="https://img.shields.io/github/forks/SzymonKubica/microbox?style=social" />
+  <img src="https://img.shields.io/github/stars/SzymonKubica/microbox?style=plastic" />
 </p>
 
 <p align="center">

@@ -29,28 +29,37 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - make microbox emulator available online in a web UI
 
+- Integrate with Weather Station project to communicate over Bluetooth and get
+  outside temperature and humidity data on demand.
 
 # TODO
+
+- [ ] Improve Wi-Fi integration
+  - [ ] add connect on startup for esp32 targets (on Arduino R4 wifi connection is blocking so we can't do this on startup)
+  - [ ] add graceful handling if the connection on startup fails
+  - [ ] add main menu indicator showing if we are connected to the wifi
+    - [ ] wifi signal strength would be nice to have
+  - [ ] add weather API integration to allow for checking daily weather before running in the morning
 
 - [ ] add wifi configuration property to tell if a URL is http or https and
       switch the implementation accordingly (or check if the https clients are
       smart enough to handle that) (this is only required if we have a use case for hitting http endpoints)
+      (this should be done after all wifi improvements above).
 
-- [ ] MicroBox 2 release
+- [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
+
+# In Progress
+
+
+# Done
+- [x] share MicroBox 2 on Arduino forum
+- [x] MicroBox 2 release
   - [x] learn how to record emulator scenes
   - [x] learn how to embed gifs on github
   - [x] add gameplay gifs (for each game have one screen from the emulator and another one from the physical device)
   - [x] add microbox 2 DIY items list
   - [x] add microbox 2 3d printing items list
   - [x] add V2 images
-
-
-
-# In Progress
-
-- [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
-
-# Done
 - [x] fix 2048 failure detection
 - [x] design and add a testsuite for core game logic
 - [x] clean up confirmation hints icons so that they look nice on all platforms (especially focus on V1)
