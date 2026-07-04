@@ -71,4 +71,8 @@ STL file: [stand.stl](https://github.com/SzymonKubica/microbox-stl-assets/blob/m
 > You need to figure out when to pause your print to safely insert the magnets before the last 2
 > layers get printed and cover the holes.
 
+Please reach out to me directly if you need guidance with printing any of the above.
+I'm not 100% sure if the stl file versions above are the final versions that
+I used for my build.
+
 
