@@ -5,18 +5,11 @@
 <img src="/assets/images/two-boxes-slanted-main-view.jpg"alt="assembled-case" height="239px"/>
 </p>
 
-MicroBox is a handheld retro game console built using microcontroller components and 3D printing.
+MicroBox is a handheld game console built using microcontroller components and 3D printing.
 
-All of the its code and [CAD files](docs/3d-printing.md) open-source. Follow the [DIY guide](docs/diy-guide.md) if you want to build your own MicroBox.
+All of the its code and [CAD files](docs/3d-printing.md) open-source. Follow the [DIY guide](docs/diy-guide.md) if you want to build your own.
 
-If you want to try the games, you can use the [emulator](docs/emulator.md) and run games on your PC/laptop.
-
-## [μ] MicroBox - Microcontroller Game Console :video_game:
-
-**MicroBox** is a custom game console system designed for **Arduino-compatible microcontrollers**
-Currently we support [Arduino R4](https://store.arduino.cc/pages/uno-r4?utm_source=google&utm_medium=cpc&utm_campaign=EU-Pmax-Promo-UNOQ&gad_source=1&gad_campaignid=23949451143&gbraid=0AAAAACbEa86jbu5K_aK8YhOaAkHfuOvje&gclid=Cj0KCQjw3qLSBhDaARIsAFTiVh6PsJ9t0oZNf-3HO38Iwn47vgRDVPXCsDwB_7ZLmn2OcOjjYAtl91kaAnYSEALw_wcB) (both WiFi and Minima) and [Adafruit ESP32 Feather V2](https://learn.adafruit.com/adafruit-esp32-feather-v2/overview).
-
-Featured games: **2048**, **Minesweeper**, **Conway's Game of Life**, **Snake**, **Snake Duel and Sudoku**
+## Featuring: **2048**, **Minesweeper**, **Game of Life**, **Snake**, **Sudoku**
 <p align="center">
 <img src="./assets/gif/2048-gameplay-demo.gif" alt="2048-gameplay"/>
 <img src="./assets/gif/minesweeper-gameplay-demo.gif" alt="minesweeper-gameplay"/>
@@ -28,6 +21,13 @@ Featured games: **2048**, **Minesweeper**, **Conway's Game of Life**, **Snake**,
 
 You can see more screenshots from the games [here](docs/gameplay-overview.md).
 
+If you want to try the games, you can use the [emulator](docs/emulator.md) and run games on your PC/laptop.
+
+## [μ] MicroBox - Microcontroller Game Console System :video_game:
+
+**MicroBox** is a custom game console system designed for **Arduino-compatible microcontrollers**
+Currently we support [Arduino R4](https://store.arduino.cc/pages/uno-r4?utm_source=google&utm_medium=cpc&utm_campaign=EU-Pmax-Promo-UNOQ&gad_source=1&gad_campaignid=23949451143&gbraid=0AAAAACbEa86jbu5K_aK8YhOaAkHfuOvje&gclid=Cj0KCQjw3qLSBhDaARIsAFTiVh6PsJ9t0oZNf-3HO38Iwn47vgRDVPXCsDwB_7ZLmn2OcOjjYAtl91kaAnYSEALw_wcB) (both WiFi and Minima) and [Adafruit ESP32 Feather V2](https://learn.adafruit.com/adafruit-esp32-feather-v2/overview).
+
 ## :sparkles: Showcase
 <p align="center">
 <img src="/assets/images/black-console-facing-front.jpg"alt="assembled-case" width="400px"/>
@@ -37,10 +37,6 @@ You can see more screenshots from the games [here](docs/gameplay-overview.md).
 </p>
 
 Check out more pictures of the MicroBox case [here](docs/travel-case.md).
-
-## :rocket: Future Plans
-
-- The next iteration of MicroBox will feature a custom PCB and a bigger display.
 
 ## :handshake: Contributing
 
