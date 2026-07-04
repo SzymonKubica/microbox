@@ -1,5 +1,7 @@
 # [μ] MicroBox
 
+![menu-preview]("/assets/gif/microbox-main-menu-preview.gif")
+
 <p align="center">
 <img src="/assets/images/microbox-home-screen.png"alt="microbox-home-screen"/>
 <img src="/assets/images/two-boxes-slanted-main-view.jpg"alt="assembled-case" height="239px"/>
