@@ -34,10 +34,10 @@ todo. They usually start with a 'theme' headline to give the overall idea.
       switch the implementation accordingly (or check if the https clients are
       smart enough to handle that) (this is only required if we have a use case for hitting http endpoints)
 
-- [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
 # In Progress
 
+- [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
 # Done
 - [x] fix 2048 failure detection
