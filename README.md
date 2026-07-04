@@ -1,33 +1,30 @@
 # [μ] MicroBox
 
 <p align="center">
-<img src="/assets/images/microbox-home-screen.png"alt="microbox-home-screen"/>
+<img src="/assets/gif/main-menu-carousel.gif" alt="microbox-home-screen"/>
 <img src="/assets/images/two-boxes-slanted-main-view.jpg"alt="assembled-case" height="239px"/>
 </p>
 
-![menu-preview](./assets/gif/microbox-main-menu-preview.gif)
+MicroBox is a handheld retro game console built using microcontroller components and 3D printing.
 
-MicroBox is a handheld retro game console built using off-the-shelf microcontroller
-components. All of the its code and [CAD files](docs/3d-printing.md) open-source.
-Follow the [DIY guide](docs/diy-guide.md) if you want to build your own MicroBox.
+All of the its code and [CAD files](docs/3d-printing.md) open-source. Follow the [DIY guide](docs/diy-guide.md) if you want to build your own MicroBox.
 
-Want to see if the games are any good? Why not try out the [emulator](docs/emulator.md) and run games
-on your machine?
+If you want to try the games, you can use the [emulator](docs/emulator.md) and run games on your PC/laptop.
 
 ## [μ] MicroBox - Microcontroller Game Console :video_game:
 
-**MicroBox** is a custom-built **game console powered by the Arduino UNO R4**,
-designed to allow for implementing various retro games and switch between them
-using an intuitive UI.
+**MicroBox** is a custom game console system designed for **Arduino-compatible microcontrollers**
+Currently we support [Arduino R4](https://store.arduino.cc/pages/uno-r4?utm_source=google&utm_medium=cpc&utm_campaign=EU-Pmax-Promo-UNOQ&gad_source=1&gad_campaignid=23949451143&gbraid=0AAAAACbEa86jbu5K_aK8YhOaAkHfuOvje&gclid=Cj0KCQjw3qLSBhDaARIsAFTiVh6PsJ9t0oZNf-3HO38Iwn47vgRDVPXCsDwB_7ZLmn2OcOjjYAtl91kaAnYSEALw_wcB) (both WiFi and Minima) and [Adafruit ESP32 Feather V2](https://learn.adafruit.com/adafruit-esp32-feather-v2/overview).
 
-Currently, MicroBox features the following games:
-
-- :abacus: **2048** - Merge the tiles to reach the 2048.
-- :boom: **Minesweeper** - Avoid hidden mines using logical reasoning.
-- :seedling: **Game of Life** - Watch and interact with a cellular automata evolving based on Conway’s rules.
-- :snake: **Snake** - the most iconic retro game.
-- :snake: :snake: **Snake Duel** - two snakes compete against each other.
-- :1234: **Sudoku** - Fill a 9x9 grid without violating Sudoku constraints.
+Featured games: **2048**, **Minesweeper**, **Conway's Game of Life**, **Snake**, **Snake Duel and Sudoku**
+<p align="center">
+<img src="./assets/gif/2048-gameplay-demo.gif" alt="2048-gameplay"/>
+<img src="./assets/gif/minesweeper-gameplay-demo.gif" alt="minesweeper-gameplay"/>
+<img src="./assets/gif/snake-gameplay-demo.gif" alt="snake-gameplay"/>
+<img src="./assets/gif/snake-duel-gameplay-demo.gif" alt="snake-duel-gameplay"/>
+<img src="./assets/gif/game-of-life-gameplay-demo.gif" alt="game-of-life-gameplay"/>
+<img src="./assets/gif/sudoku-gameplay-demo.gif" alt="sudoku-gameplay"/>
+</p>
 
 You can see more screenshots from the games [here](docs/gameplay-overview.md).
 
@@ -48,7 +45,7 @@ Check out more pictures of the MicroBox case [here](docs/travel-case.md).
 ## :handshake: Contributing
 
 Contributions are welcome!
-If you have ideas for new games, optimizations, or hardware improvements, feel free to fork the repo and open a pull request.
+If you have ideas for new games, optimizations, or hardware improvements, feel free to fork the repo, open a pull request, or contact me directly.
 
 ## :scroll: License
 

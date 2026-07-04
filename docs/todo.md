@@ -27,12 +27,21 @@ todo. They usually start with a 'theme' headline to give the overall idea.
   - animated buttons
   - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
 
+- make microbox emulator available online in a web UI
+
 
 # TODO
 
 - [ ] add wifi configuration property to tell if a URL is http or https and
       switch the implementation accordingly (or check if the https clients are
       smart enough to handle that) (this is only required if we have a use case for hitting http endpoints)
+
+- [ ] MicroBox 2 release
+  - [x] learn how to record emulator scenes
+  - [x] learn how to embed gifs on github
+  - [ ] add gameplay gifs (for each game have one screen from the emulator and another one from the physical device)
+  - [ ] add microbox 2 DIY items list
+
 
 
 # In Progress
