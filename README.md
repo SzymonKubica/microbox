@@ -5,14 +5,18 @@
 </p>
 
 <p align="center">
-<img src="/assets/gif/main-menu-carousel.gif" alt="microbox-home-screen"/>
+<img src="/assets/images/microbox-2-front.jpg"alt="microbox-2-front" height="239"/>
 <img src="/assets/images/two-boxes-slanted-main-view.jpg"alt="assembled-case" height="239px"/>
 </p>
 
 MicroBox is a handheld game console built using microcontroller components and 3D printing.
 In February 2026 it was featured in the official [Arduino blog](https://blog.arduino.cc/2026/02/10/the-microbox-is-a-handheld-game-console-that-runs-on-an-arduino-uno-r4/).
 
-All of the its code and [CAD files](docs/3d-printing.md) open-source. Follow the [DIY guide](docs/diy-guide.md) if you want to build your own.
+All of the its code and [CAD files](docs/3d-printing.md) open-source. Follow the [DIY guide](docs/diy-guide.md) if you want to build your own box.
+
+<p align="center">
+<img src="/assets/gif/main-menu-carousel.gif" alt="microbox-home-screen"/>
+</p>
 
 
 ## Featuring: **2048**, **Minesweeper**, **Game of Life**, **Snake**, **Sudoku**
@@ -53,7 +57,6 @@ Currently we support [Arduino R4](https://store.arduino.cc/pages/uno-r4?utm_sour
 
 <p align="center">
 <img src="/assets/images/side-by-side.jpg"alt="microbox-1-and-2-side-by-side" height="239"/>
-<img src="/assets/images/microbox-2-front.jpg"alt="microbox-2-front" height="239"/>
 <img src="/assets/images/microbox-2-slanted-view.jpg"alt="microbox-2-slanted" height="239px"/>
 <p/>
 
