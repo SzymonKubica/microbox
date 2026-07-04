@@ -89,3 +89,16 @@ This project is released under the MIT License — free to use, modify, and shar
 <p align="center">
 <img src="/assets/images/front-view-handheld.jpg"alt="assembled-case" width="400px"/>
 </p>
+
+## GitHub Stats
+
+<p align="center">
+  <a href="https://github.com/SzymonKubica/microbox">
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=SzymonKubica&repo=microbox&theme=tokyonight" />
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/SzymonKubica/microbox?style=social" />
+  <img src="https://img.shields.io/github/forks/SzymonKubica/microbox?style=social" />
+</p>
