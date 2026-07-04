@@ -1,4 +1,4 @@
-# MicroBox CAD Files
+# MicroBox 1 CAD Files
 <p align="center">
 <img src="/assets/images/fully-assembled-case.png"alt="assembled-case" height="400"/>
 </p>
@@ -44,3 +44,31 @@ STL file: [travel-case-2.1.stl](https://github.com/SzymonKubica/microbox-stl-ass
 </p>
 
 STL file: [stand.stl](https://github.com/SzymonKubica/microbox-stl-assets/blob/master/stl-objects/stand.stl)
+
+# MicroBox 2 CAD Files
+
+## Main Enclosure
+
+<p align="center">
+<img src="/assets/images/microbox-2-back.png" alt="Stand" height="200"/>
+<img src="/assets/images/microbox-2-front.png" alt="Stand" height="200"/>
+</p>
+
+[Front](https://github.com/SzymonKubica/microbox-stl-assets/blob/master/stl-objects/microbox-slim-case-2.1-front.stl)
+[Back](https://github.com/SzymonKubica/microbox-stl-assets/blob/master/stl-objects/microbox-slim-case-2.2-back-with-magnets.stl)
+
+## Travel Case
+
+<p align="center">
+<img src="/assets/images/microbox-2-travel-case-back.png" alt="Stand" height="200"/>
+<img src="/assets/images/microbox-2-travel-case-front.png" alt="Stand" height="200"/>
+</p>
+
+[Front](https://github.com/SzymonKubica/microbox-stl-assets/blob/master/stl-objects/microbox-slim-case-v2.1-invisible-magnets-case-top.stl)
+[Back](https://github.com/SzymonKubica/microbox-stl-assets/blob/master/stl-objects/microbox-slim-case-v2.2-button.stl)
+
+> Note: the travel case is designed for 8x3 mm magnets that are inserted mid-print.
+> You need to figure out when to pause your print to safely insert the magnets before the last 2
+> layers get printed and cover the holes.
+
+

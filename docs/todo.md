@@ -39,8 +39,9 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 - [ ] MicroBox 2 release
   - [x] learn how to record emulator scenes
   - [x] learn how to embed gifs on github
-  - [ ] add gameplay gifs (for each game have one screen from the emulator and another one from the physical device)
+  - [x] add gameplay gifs (for each game have one screen from the emulator and another one from the physical device)
   - [ ] add microbox 2 DIY items list
+  - [ ] add microbox 2 3d printing items list
 
 
 
