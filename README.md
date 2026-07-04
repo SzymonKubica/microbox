@@ -1,4 +1,8 @@
 # [μ] MicroBox
+<p align="left">
+  <img src="https://img.shields.io/github/stars/SzymonKubica/microbox?style=social" />
+  <img src="https://img.shields.io/github/forks/SzymonKubica/microbox?style=social" />
+</p>
 
 <p align="center">
 <img src="/assets/gif/main-menu-carousel.gif" alt="microbox-home-screen"/>
@@ -6,8 +10,10 @@
 </p>
 
 MicroBox is a handheld game console built using microcontroller components and 3D printing.
+In February 2026 it was featured in the official [Arduino blog](https://blog.arduino.cc/2026/02/10/the-microbox-is-a-handheld-game-console-that-runs-on-an-arduino-uno-r4/).
 
 All of the its code and [CAD files](docs/3d-printing.md) open-source. Follow the [DIY guide](docs/diy-guide.md) if you want to build your own.
+
 
 ## Featuring: **2048**, **Minesweeper**, **Game of Life**, **Snake**, **Sudoku**
 <p align="center">
@@ -90,15 +96,3 @@ This project is released under the MIT License — free to use, modify, and shar
 <img src="/assets/images/front-view-handheld.jpg"alt="assembled-case" width="400px"/>
 </p>
 
-## GitHub Stats
-
-<p align="center">
-  <a href="https://github.com/SzymonKubica/microbox">
-    <img src="https://github-readme-stats.vercel.app/api/pin/?username=SzymonKubica&repo=microbox&theme=tokyonight" />
-  </a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/github/stars/SzymonKubica/microbox?style=social" />
-  <img src="https://img.shields.io/github/forks/SzymonKubica/microbox?style=social" />
-</p>
