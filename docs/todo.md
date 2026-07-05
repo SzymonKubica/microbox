@@ -40,8 +40,9 @@ todo. They usually start with a 'theme' headline to give the overall idea.
   - [ ] add main menu indicator showing if we are connected to the wifi
     - [ ] wifi signal strength would be nice to have
 
-
 - [ ] add weather API integration to allow for checking daily weather before running in the morning
+  - [ ] Step 1: simple integration - hard-code the location and get back weather data.
+  - [ ] Step 2: find a geolocation API to map from street and city names and get back coordinates
 
 - [ ] add wifi configuration property to tell if a URL is http or https and
       switch the implementation accordingly (or check if the https clients are

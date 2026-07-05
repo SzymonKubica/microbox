@@ -145,10 +145,6 @@ get_thumbnail_renderer(Game game)
 {
 
         switch (game) {
-        case Game::WifiApp:
-                return simple_name_renderer<WifiApp>();
-        case Game::RandomSeedPicker:
-                return simple_name_renderer<RandomSeedPicker>();
         case Game::Minesweeper:
                 return custom_renderer<Minesweeper>();
         case Game::Clean2048:
@@ -165,8 +161,6 @@ get_thumbnail_renderer(Game game)
                 return custom_renderer<SudokuGame>();
         case Game::Power:
                 return custom_renderer<PowerManagementApp>();
-        case Game::Brightness:
-                return simple_name_renderer<BrightnessApp>();
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return std::nullopt;
