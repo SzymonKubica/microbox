@@ -164,7 +164,7 @@ RandomSeedPicker::app_loop(const Platform &p,
 }
 
 RandomSeedPickerConfiguration *
-load_initial_seed_picker_config(PersistentStorage *storage)
+load_initial_random_seed_picker_config(PersistentStorage *storage)
 {
 
         int storage_offset =
@@ -213,7 +213,7 @@ std::optional<UserAction> RandomSeedPicker::collect_config(
     RandomSeedPickerConfiguration &game_config) const
 {
         auto initial_config = std::unique_ptr<RandomSeedPickerConfiguration>(
-            load_initial_seed_picker_config(p.persistent_storage));
+            load_initial_random_seed_picker_config(p.persistent_storage));
         auto config = std::unique_ptr<Configuration>(
             assemble_random_seed_picker_configuration(p, *initial_config));
 

@@ -405,6 +405,15 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
         };
         render_thumbnail_for_current_selection();
 
+        // This is needed to avoid re-rendering the wifi icon each time the user
+        // scrolls through the configuration options. We still need to call the
+        // function in case the wifi status changes while the user is in the
+        // configuration menu.
+        bool wifi_status_rendered = false;
+        if (p.capabilities.has_wifi) {
+                update_wifi_status_indicator(p, wifi_status_rendered);
+        }
+
         if (customization.show_help_text) {
                 render_default_controls_explanations(p);
         }
@@ -428,6 +437,10 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
                                  */
                                 increment_option_value(option);
                                 render_thumbnail_for_current_selection();
+                                if (p.capabilities.has_wifi) {
+                                        update_wifi_status_indicator(
+                                            p, wifi_status_rendered);
+                                }
                                 if (!p.display->refresh())
                                         return UserAction::CloseWindow;
                                 move_registered_delay();
@@ -454,6 +467,10 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
                                 increment_option_value(option);
                         if (dir == LEFT || dir == RIGHT) {
                                 render_thumbnail_for_current_selection();
+                                if (p.capabilities.has_wifi) {
+                                        update_wifi_status_indicator(
+                                            p, wifi_status_rendered);
+                                }
                         }
                         if (!p.display->refresh())
                                 return UserAction::CloseWindow;

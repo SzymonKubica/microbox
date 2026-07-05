@@ -34,12 +34,6 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # TODO
 
-- [ ] Improve Wi-Fi integration
-  - [x] add connect on startup for esp32 targets (on Arduino R4 wifi connection is blocking so we can't do this on startup)
-  - [x] add graceful handling if the connection on startup fails
-  - [ ] add main menu indicator showing if we are connected to the wifi
-    - [ ] wifi signal strength would be nice to have
-
 - [ ] add weather API integration to allow for checking daily weather before running in the morning
   - [ ] Step 1: simple integration - hard-code the location and get back weather data.
   - [ ] Step 2: find a geolocation API to map from street and city names and get back coordinates
@@ -55,6 +49,11 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] Improve Wi-Fi integration
+  - [x] add connect on startup for esp32 targets (on Arduino R4 wifi connection is blocking so we can't do this on startup)
+  - [x] add graceful handling if the connection on startup fails
+  - [x] add main menu indicator showing if we are connected to the wifi
+    - [x] wifi signal strength would be nice to have (we don't care about that yet, as our wifi usecases don't depend on connection speed)
 - [x] share MicroBox 2 on Arduino forum
 - [x] MicroBox 2 release
   - [x] learn how to record emulator scenes

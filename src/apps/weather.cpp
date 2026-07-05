@@ -17,11 +17,7 @@ UserAction random_seed_picker_loop(Platform *p,
 const char *WeatherApp::get_game_name() const { return "Weather App"; }
 const char *WeatherApp::get_help_text() const
 {
-        return "Select 'Modify' action and press next (red) to change the seed"
-               "Select 'Download' to fetch a new seed from API (wifi "
-               "connection "
-               "required)."
-               "Select 'Spin' to srand";
+  return "TODO";
 }
 
 UserAction WeatherApp::app_loop(const Platform &p,

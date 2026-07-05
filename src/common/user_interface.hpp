@@ -40,6 +40,7 @@ void render_logo(const Display &display,
                  const UserInterfaceCustomization &customization,
                  Point position);
 void render_default_controls_explanations(const Platform &p);
+void update_wifi_status_indicator(const Platform &p, bool &is_rendered);
 /**
  * We expose ability to override the Y-axis plancement of the control
  * explanations.
