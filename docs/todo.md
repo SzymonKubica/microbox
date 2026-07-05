@@ -35,7 +35,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 # TODO
 
 - [ ] Improve Wi-Fi integration
-  - [ ] add connect on startup for esp32 targets (on Arduino R4 wifi connection is blocking so we can't do this on startup)
+  - [x] add connect on startup for esp32 targets (on Arduino R4 wifi connection is blocking so we can't do this on startup)
   - [ ] add graceful handling if the connection on startup fails
   - [ ] add main menu indicator showing if we are connected to the wifi
     - [ ] wifi signal strength would be nice to have

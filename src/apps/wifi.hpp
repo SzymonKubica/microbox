@@ -56,6 +56,9 @@ struct WifiAppConfiguration {
         bool is_initialized() const;
 };
 
+bool wifi_should_connect_at_startup(const Platform &p);
+void wifi_connect_async(const Platform &p);
+
 class WifiApp : public ApplicationExecutor<WifiAppConfiguration>
 {
       public:

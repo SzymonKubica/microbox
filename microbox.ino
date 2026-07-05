@@ -1,10 +1,10 @@
 #include "src/menu.hpp"
 #include "src/apps/brightness.hpp"
+#include "src/apps/wifi.hpp"
 #include "src/platform/target/target_resolution.hpp"
 #include "src/common/logging.hpp"
 
 #define TAG "microbox_entrypoint"
-
 
 /**
  * The platform object that bundles up all handles to the platform-specific
@@ -40,6 +40,10 @@ void loop(void)
 {
         LOG_INFO(TAG, "MicroBox started!");
         set_brightness_from_storage(*platform->persistent_storage);
+
+        if (wifi_should_connect_at_startup(*platform)) {
+                wifi_connect_async(*platform);
+        }
 
         while (true) {
                 select_app_and_run(*platform);

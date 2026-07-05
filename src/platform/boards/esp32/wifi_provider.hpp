@@ -21,6 +21,9 @@ class Esp32WifiProvider : public WifiProvider
          */
         std::optional<std::unique_ptr<WifiData>>
         connect_to_network(const char *ssid, const char *password) override;
+
+        virtual void
+        connect_to_network_async(const char *ssid, const char *password) override;
         bool is_connected() override;
 };
 #endif

@@ -21,23 +21,6 @@
 #define DOWN 2
 #define LEFT 3
 
-/**
- *  We always render white on black. This is because of the rendering
- *  speed constraints. 2048 required a lot of re-rendering and the UI
- *  needs to be snappy for the proper experience (we don't want the numbers
- *  slowly trickling in when the grid shifts). After testing empirically,
- *  rendering black on white is by far the fastest.
- */
-const Color GRID_BG_COLOR = White;
-/**
- *  We always render white on black. This is because of the rendering
- *  speed constraints. 2048 required a lot of re-rendering and the UI
- *  needs to be snappy for the proper experience (we don't want the numbers
- *  slowly trickling in when the grid shifts). After testing empirically,
- *  rendering black on white is by far the fastest.
- */
-const Color TEXT_COLOR = Black;
-
 WifiAppConfiguration DEFAULT_WIFI_APP_CONFIG;
 
 const char *WifiApp::get_game_name() const { return "Wifi App"; }
@@ -473,4 +456,29 @@ bool WifiAppConfiguration::is_initialized() const
 const char *WifiAppConfiguration::get_currently_selected_ssid() const
 {
         return saved_configurations[curr_config_idx].ssid;
+}
+
+// Startup WiFi connection handling
+
+/**
+ * Tells us if the WiFi app should try to connect to the WiFi immediately after
+ * the microcontroller boots up.
+ */
+bool wifi_should_connect_at_startup(const Platform &p)
+{
+        auto initial_config = std::unique_ptr<WifiAppConfiguration>(
+            load_initial_wifi_app_config(p.persistent_storage));
+        return initial_config->connect_on_startup;
+}
+
+void wifi_connect_async(const Platform &p)
+{
+        LOG_DEBUG(TAG, "Connecting to Wi-Fi network in the background...");
+        auto initial_config = std::unique_ptr<WifiAppConfiguration>(
+            load_initial_wifi_app_config(p.persistent_storage));
+        const char *ssid = initial_config->get_currently_selected_ssid();
+        const char *password =
+            initial_config->get_currently_selected_password();
+        LOG_DEBUG(TAG, "Connecting to %s with password %s", ssid, password);
+        p.wifi_provider->connect_to_network_async(ssid, password);
 }

@@ -57,6 +57,13 @@ class WifiProvider
         virtual std::optional<std::unique_ptr<WifiData>>
         connect_to_network(const char *ssid, const char *password) = 0;
         /**
+         * On platforms that allow for spawning multiple threads (e.g. esp32)
+         * wifi providers should be capable of connecting to wifi in the
+         * background.
+         */
+        virtual void
+        connect_to_network_async(const char *ssid, const char *password) {}
+        /**
          * Returns true if we are currently connected to a WiFi network,
          */
         virtual bool is_connected() = 0;
