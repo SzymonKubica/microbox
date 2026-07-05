@@ -35,15 +35,25 @@ Esp32WifiProvider::connect_to_network(const char *ssid, const char *password)
         LOG_INFO(TAG, "Connecting to network %s with password %s", ssid,
                  password);
         unsigned long start = millis();
-        while (WiFi.status() != WL_CONNECTED) {
+        int max_retries = 10;
+        int attempts = 0;
+        while (WiFi.status() != WL_CONNECTED && attempts < max_retries) {
                 if (millis() - start > 10000) {
                         LOG_INFO(TAG, "Retrying...");
                         WiFi.disconnect(true);
                         delay(1000);
                         WiFi.begin(ssid, password);
                         start = millis();
+                        attempts++;
                 }
                 delay(500);
+        }
+        if (WiFi.status() != WL_CONNECTED) {
+                LOG_INFO(
+                    TAG,
+                    "Unable to connect to network (%d unsuccessful attempts).",
+                    attempts);
+                return std::nullopt;
         }
 
         // you're connected now, so print out the data:

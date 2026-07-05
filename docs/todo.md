@@ -36,10 +36,12 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] Improve Wi-Fi integration
   - [x] add connect on startup for esp32 targets (on Arduino R4 wifi connection is blocking so we can't do this on startup)
-  - [ ] add graceful handling if the connection on startup fails
+  - [x] add graceful handling if the connection on startup fails
   - [ ] add main menu indicator showing if we are connected to the wifi
     - [ ] wifi signal strength would be nice to have
-  - [ ] add weather API integration to allow for checking daily weather before running in the morning
+
+
+- [ ] add weather API integration to allow for checking daily weather before running in the morning
 
 - [ ] add wifi configuration property to tell if a URL is http or https and
       switch the implementation accordingly (or check if the https clients are
