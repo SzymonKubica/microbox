@@ -35,6 +35,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 # TODO
 
 - [ ] add weather API integration to allow for checking daily weather before running in the morning
+  - [ ] design application capability model (enum actions) and a way for displaying the data
   - [ ] Step 1: simple integration - hard-code the location and get back weather data.
   - [ ] Step 2: find a geolocation API to map from street and city names and get back coordinates
 

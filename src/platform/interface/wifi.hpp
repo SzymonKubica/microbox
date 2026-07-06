@@ -61,8 +61,10 @@ class WifiProvider
          * wifi providers should be capable of connecting to wifi in the
          * background.
          */
-        virtual void
-        connect_to_network_async(const char *ssid, const char *password) {}
+        virtual void connect_to_network_async(const char *ssid,
+                                              const char *password)
+        {
+        }
         /**
          * Returns true if we are currently connected to a WiFi network,
          */

@@ -906,8 +906,8 @@ void render_wifi_status_indicator(const Platform &p)
         tft.fillEllipse(299, 22, 7, 7, 0xFFFF);
         tft.fillEllipse(299, 22, 5, 5, 0x0);
         tft.fillEllipse(299, 22, 3, 3, 0xFFFF);
-        tft.fillTriangle(291, 15, 278, 28, 304, 28, 0x0);
         tft.fillRect(284, 24, 32, 12, 0x0);
+        tft.fillTriangle(291, 15, 278, 28, 304, 28, 0x0);
         tft.fillTriangle(310, 11, 296, 26, 324, 26, 0x0);
 }
 void clear_wifi_status_indicator(const Platform &p)

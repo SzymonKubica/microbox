@@ -4,7 +4,11 @@
 #include "../common/configuration.hpp"
 
 enum class WeatherQueryType : uint8_t { Current, Forecast, Both };
-enum class WeatherMetric : uint8_t { Temperature, Rain, PrecipitationProbability };
+enum class WeatherMetric : uint8_t {
+        Temperature,
+        Rain,
+        PrecipitationProbability
+};
 
 struct WeatherAppConfiguration {
         ConfigurationHeader header;
@@ -18,7 +22,10 @@ const char *query = "https://api.open-meteo.com/v1/"
                     "forecast?latitude=51.47&longitude=-0.1673&current="
                     "temperature_2m&hourly=temperature_2m";
 
-const char *query2 = "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m,rain,precipitation_probability&forecast_days=3";
+const char *query2 =
+    "https://api.open-meteo.com/v1/"
+    "forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m,rain,"
+    "precipitation_probability&forecast_days=3";
 
 class WeatherApp : public ApplicationExecutor<WeatherAppConfiguration>
 {

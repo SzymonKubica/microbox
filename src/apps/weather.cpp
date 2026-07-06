@@ -15,10 +15,7 @@ UserAction random_seed_picker_loop(Platform *p,
                                    UserInterfaceCustomization *customization);
 
 const char *WeatherApp::get_game_name() const { return "Weather App"; }
-const char *WeatherApp::get_help_text() const
-{
-  return "TODO";
-}
+const char *WeatherApp::get_help_text() const { return "TODO"; }
 
 UserAction WeatherApp::app_loop(const Platform &p,
                                 const UserInterfaceCustomization &customization,
