@@ -10,6 +10,7 @@
 #include "display_scale.hpp"
 #include "settings.hpp"
 #include "power.hpp"
+#include "weather.hpp"
 #include "wifi.hpp"
 #include "brightness.hpp"
 #include "settings.hpp"
@@ -106,8 +107,9 @@ Configuration *assemble_utility_selector_configuration(
             game_to_string(Game::DefaultsSetting),
         };
 
-        if (p.capabilities.has_wifi)
+        if (p.capabilities.has_wifi) {
                 available_apps.push_back(game_to_string(Game::WifiApp));
+        }
         if (p.capabilities.can_sleep)
                 available_apps.push_back(game_to_string(Game::Power));
         if (p.capabilities.has_resizable_display)

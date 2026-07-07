@@ -2,8 +2,48 @@
 #include "../application_executor.hpp"
 #include "../common/common_transitions.hpp"
 #include "../common/configuration.hpp"
+#include <string.h>
 
 enum class WeatherQueryType : uint8_t { Current, Forecast, Both };
+
+namespace WeatherQueryTypeUtils
+{
+constexpr std::pair<WeatherQueryType, const char *> TABLE[] = {
+    {WeatherQueryType::Current, "Current"},
+    {WeatherQueryType::Forecast, "Forecast"},
+    {WeatherQueryType::Both, "Both"}};
+constexpr const char *to_cstr(WeatherQueryType type)
+{
+        for (auto [t, str] : TABLE) {
+                if (t == type)
+                        return str;
+        }
+        return "UNKNOWN";
+}
+std::optional<WeatherQueryType> from_cstr(const char *str);
+} // namespace WeatherQueryTypeUtils
+
+enum class WeatherAppAction : uint8_t {
+        Fetch,
+        UpdateLocation,
+};
+
+namespace WeatherAppActionUtils
+{
+constexpr std::pair<WeatherAppAction, const char *> TABLE[] = {
+    {WeatherAppAction::Fetch, "Fetch"},
+    {WeatherAppAction::UpdateLocation, "Update Location"}};
+constexpr const char *to_cstr(WeatherAppAction action)
+{
+        for (auto [a, str] : TABLE) {
+                if (a == action)
+                        return str;
+        }
+        return "UNKNOWN";
+}
+std::optional<WeatherAppAction> from_cstr(const char *str);
+} // namespace WeatherAppActionUtils
+
 enum class WeatherMetric : uint8_t {
         Temperature,
         Rain,
@@ -12,20 +52,11 @@ enum class WeatherMetric : uint8_t {
 
 struct WeatherAppConfiguration {
         ConfigurationHeader header;
-        float latitude;
-        float longitude;
+        char location[100];
         WeatherQueryType query_type;
+        WeatherAppAction action;
         int forecast_days;
 };
-
-const char *query = "https://api.open-meteo.com/v1/"
-                    "forecast?latitude=51.47&longitude=-0.1673&current="
-                    "temperature_2m&hourly=temperature_2m";
-
-const char *query2 =
-    "https://api.open-meteo.com/v1/"
-    "forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m,rain,"
-    "precipitation_probability&forecast_days=3";
 
 class WeatherApp : public ApplicationExecutor<WeatherAppConfiguration>
 {

@@ -9,7 +9,33 @@
 
 #define TAG "random_seed_picker"
 
-WeatherAppConfiguration DEFAULT_WEATHER_APP_CONFIG = {};
+/*
+Design draft
+
+https://nominatim.openstreetmap.org/search?q=3+Ethelburga+Street,+London&format=json
+
+input parameters:
+1. query type
+2. location description (string provided by the user)
+3. action to perform (fetch, update location)
+
+
+ */
+
+const char *query = "https://api.open-meteo.com/v1/"
+                    "forecast?latitude=51.47&longitude=-0.1673&current="
+                    "temperature_2m&hourly=temperature_2m";
+const char *query2 =
+    "https://api.open-meteo.com/v1/"
+    "forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m,rain,"
+    "precipitation_probability&forecast_days=3";
+
+WeatherAppConfiguration DEFAULT_WEATHER_APP_CONFIG = {
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 2},
+    .location = "London, UK",
+    .query_type = WeatherQueryType::Both,
+    .action = WeatherAppAction::Fetch,
+    .forecast_days = 3};
 
 UserAction random_seed_picker_loop(Platform *p,
                                    UserInterfaceCustomization *customization);
@@ -87,8 +113,31 @@ Configuration *assemble_weather_app_configuration(
     const Platform &p, const WeatherAppConfiguration &initial_config)
 
 {
-        // TODO
-        return new Configuration("Weather", {});
+        std::vector<const char *> available_query_types = {
+            WeatherQueryTypeUtils::to_cstr(WeatherQueryType::Current),
+            WeatherQueryTypeUtils::to_cstr(WeatherQueryType::Forecast),
+            WeatherQueryTypeUtils::to_cstr(WeatherQueryType::Both),
+        };
+
+        std::vector<const char *> availabe_actions = {
+            WeatherAppActionUtils::to_cstr(WeatherAppAction::Fetch),
+            WeatherAppActionUtils::to_cstr(WeatherAppAction::UpdateLocation),
+        };
+
+        auto *query_type = ConfigurationOption::of_strings(
+            "Query", available_query_types,
+            WeatherQueryTypeUtils::to_cstr(initial_config.query_type));
+        auto *action = ConfigurationOption::of_strings(
+            "Action", availabe_actions,
+            WeatherAppActionUtils::to_cstr(initial_config.action));
+
+        auto *location = ConfigurationOption::of_strings(
+            "Where", {initial_config.location}, initial_config.location);
+        auto *forecast_days = ConfigurationOption::of_integers(
+            "Days", {1, 2, 3, 4, 5, 6, 7}, initial_config.forecast_days);
+
+        return new Configuration("Weather",
+                                 {query_type, forecast_days, location, action});
 }
 
 void extract_weather_app_config(
@@ -96,4 +145,24 @@ void extract_weather_app_config(
     const Configuration &config)
 {
         // TODO
+}
+
+std::optional<WeatherQueryType>
+WeatherQueryTypeUtils::from_cstr(const char *str)
+{
+        for (auto [t, s] : TABLE) {
+                if (strcmp(s, str) == 0)
+                        return t;
+        }
+        return std::nullopt;
+}
+
+std::optional<WeatherAppAction>
+WeatherAppActionUtils::from_cstr(const char *str)
+{
+        for (auto [a, s] : TABLE) {
+                if (strcmp(s, str) == 0)
+                        return a;
+        }
+        return std::nullopt;
 }

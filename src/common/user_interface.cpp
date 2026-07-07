@@ -1768,6 +1768,14 @@ void NameBoxRenderer::render_thumbnail(
         int available_height =
             display.get_height() - display.get_display_corner_radius();
 
+        int margin =
+            std::max(MINIMUM_MARGIN, display.get_display_corner_radius());
+        // We need to start erasing from a bit higher. This is required because
+        // some thumbnails for the games render more stuff.
+        int adjustment = 20;
+        display.clear_region({0, available_height / 2 - adjustment},
+                             {display.get_width(), available_height}, Black);
+
         render_config_bar_centered(display, available_height * 2 / 3,
                                    strlen(header), strlen(option_name), header,
                                    option_name, false, true, true, true,

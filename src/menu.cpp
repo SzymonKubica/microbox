@@ -5,6 +5,7 @@
 #include "menu.hpp"
 #include "application_executor.hpp"
 
+#include "apps/weather.hpp"
 #include "common/configuration.hpp"
 #include "common/logging.hpp"
 #include "common/color.hpp"
@@ -105,6 +106,8 @@ std::optional<UserAction> select_app_and_run(const Platform &p)
                 return execute_app(*make<PowerManagementApp>().get(), p, c);
         case Game::Brightness:
                 return execute_app(*make<BrightnessApp>().get(), p, c);
+        case Game::WeatherApp:
+                return execute_app(*make<WeatherApp>().get(), p, c);
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return UserAction::Exit;
@@ -161,6 +164,8 @@ get_thumbnail_renderer(Game game)
                 return custom_renderer<SudokuGame>();
         case Game::Power:
                 return custom_renderer<PowerManagementApp>();
+        case Game::WeatherApp:
+                return simple_name_renderer<WeatherApp>();
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return std::nullopt;
@@ -202,10 +207,13 @@ main_menu_interaction_loop(const Platform &p,
         std::optional<UserAction> maybe_interrupt = std::nullopt;
         if (p.capabilities.has_fast_display) {
                 std::vector<std::unique_ptr<ThumbnailRenderer>> renderers;
-                std::vector<Game> games = {Game::Clean2048,  Game::Minesweeper,
-                                           Game::GameOfLife, Game::Snake,
-                                           Game::SnakeDuel,  Game::Sudoku,
-                                           Game::Settings,   Game::Power};
+                // TODO: make this in sync with the set of available games as it
+                // causes out of sync issues when we add new games and forget to
+                // update this list.
+                std::vector<Game> games = {
+                    Game::Clean2048, Game::Minesweeper, Game::GameOfLife,
+                    Game::Snake,     Game::SnakeDuel,   Game::Sudoku,
+                    Game::Settings,  Game::Power,       Game::WeatherApp};
                 for (auto game : games) {
                         renderers.emplace_back(
                             std::move(get_thumbnail_renderer(game).value()));
@@ -296,6 +304,9 @@ Configuration *assemble_game_selector_configuration(
         if (p.capabilities.supports_power_off) {
                 available_games.push_back(game_to_string(Game::Power));
         }
+        if (p.capabilities.has_wifi) {
+                available_games.push_back(game_to_string(Game::WeatherApp));
+        }
 
         auto *game = ConfigurationOption::of_strings(
             "Game", available_games, game_to_string(initial_config.game));
@@ -344,6 +355,8 @@ Game game_from_string(const char *name)
                 return Game::DefaultsSetting;
         if (strcmp(name, game_to_string(Game::DisplaySizeSetting)) == 0)
                 return Game::DisplaySizeSetting;
+        if (strcmp(name, game_to_string(Game::WeatherApp)) == 0)
+                return Game::WeatherApp;
         return Game::Unknown;
 }
 
@@ -397,6 +410,8 @@ const char *game_to_string(Game game)
                 return "Defaults";
         case Game::DisplaySizeSetting:
                 return "Display Size";
+        case Game::WeatherApp:
+                return "Weather";
         default:
                 return "Unknown";
         }

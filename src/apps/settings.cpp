@@ -6,6 +6,7 @@
 #include "brightness.hpp"
 #include "display_scale.hpp"
 #include "random_seed_picker.hpp"
+#include "weather.hpp"
 #include "wifi.hpp"
 #include "../menu.hpp"
 #include "../common/configuration.hpp"
@@ -176,13 +177,15 @@ std::vector<int> get_settings_storage_offsets()
             {Game::Brightness, sizeof(BrightnessConfiguration)},
             {Game::Settings, sizeof(AppMenuConfiguration)},
             {Game::DisplaySizeSetting, sizeof(DisplayScaleConfiguration)},
+            {Game::WeatherApp, sizeof(WeatherAppConfiguration)},
         };
 
         std::vector<Game> games = {
             Game::MainMenu,   Game::Clean2048,        Game::Minesweeper,
             Game::GameOfLife, Game::RandomSeedPicker, Game::Snake,
             Game::SnakeDuel,  Game::WifiApp,          Game::Sudoku,
-            Game::Brightness, Game::Settings,         Game::DisplaySizeSetting};
+            Game::Brightness, Game::Settings,         Game::DisplaySizeSetting,
+            Game::WeatherApp};
 
         // We make the offsets size a two element bigger as the game enum starts
         // at 1 and we skip number 5 as that is the 'Settings' app itself. We
