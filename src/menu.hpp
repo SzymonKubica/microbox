@@ -22,6 +22,36 @@ enum class Game : int {
         WeatherApp = 15,
 };
 
+namespace GameStr
+{
+constexpr std::pair<Game, const char *> TABLE[] = {
+    {Game::MainMenu, "Main Menu"},
+    {Game::Clean2048, "2048"},
+    {Game::Minesweeper, "Minesweeper"},
+    {Game::GameOfLife, "Game Of Life"},
+    {Game::Settings, "Settings"},
+    {Game::Snake, "Snake"},
+    {Game::SnakeDuel, "Snake Duel"},
+    {Game::WifiApp, "Wi-Fi"},
+    {Game::Sudoku, "Sudoku"},
+    {Game::RandomSeedPicker, "Randomness"},
+    {Game::Power, "Power Off"},
+    {Game::Brightness, "Brightness"},
+    {Game::DefaultsSetting, "Defaults"},
+    {Game::DisplaySizeSetting, "Display Size"},
+    {Game::WeatherApp, "Weather"},
+};
+constexpr const char *to_cstr(Game type)
+{
+        for (auto [t, str] : TABLE) {
+                if (t == type)
+                        return str;
+        }
+        return "UNKNOWN";
+}
+std::optional<Game> from_cstr(const char *str);
+} // namespace GameStr
+
 struct GameMenuConfiguration {
         ConfigurationHeader header;
         Game game;
@@ -29,12 +59,6 @@ struct GameMenuConfiguration {
         UserInterfaceRenderingMode rendering_mode;
         bool show_help_text;
 };
-
-bool is_valid_game(Game game);
-
-Game game_from_string(const char *name);
-
-const char *game_to_string(Game game);
 
 std::optional<UserAction> select_app_and_run(const Platform &p);
 

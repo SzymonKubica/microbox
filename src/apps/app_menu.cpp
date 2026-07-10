@@ -10,7 +10,6 @@
 #include "display_scale.hpp"
 #include "settings.hpp"
 #include "power.hpp"
-#include "weather.hpp"
 #include "wifi.hpp"
 #include "brightness.hpp"
 #include "settings.hpp"
@@ -102,22 +101,22 @@ Configuration *assemble_utility_selector_configuration(
 {
 
         std::vector<const char *> available_apps = {
-            game_to_string(Game::Brightness),
-            game_to_string(Game::RandomSeedPicker),
-            game_to_string(Game::DefaultsSetting),
+            GameStr::to_cstr(Game::Brightness),
+            GameStr::to_cstr(Game::RandomSeedPicker),
+            GameStr::to_cstr(Game::DefaultsSetting),
         };
 
         if (p.capabilities.has_wifi) {
-                available_apps.push_back(game_to_string(Game::WifiApp));
+                available_apps.push_back(GameStr::to_cstr(Game::WifiApp));
         }
         if (p.capabilities.can_sleep)
-                available_apps.push_back(game_to_string(Game::Power));
+                available_apps.push_back(GameStr::to_cstr(Game::Power));
         if (p.capabilities.has_resizable_display)
                 available_apps.push_back(
-                    game_to_string(Game::DisplaySizeSetting));
+                    GameStr::to_cstr(Game::DisplaySizeSetting));
 
         auto *app = ConfigurationOption::of_strings(
-            "Configure", available_apps, game_to_string(initial_config.app));
+            "Configure", available_apps, GameStr::to_cstr(initial_config.app));
 
         auto options = {app};
 
@@ -129,7 +128,7 @@ void extract_app_selection(AppMenuConfiguration &menu_configuration,
 {
         ConfigurationOption *app_option = config.options[0];
         menu_configuration.app =
-            game_from_string(app_option->get_current_str_value());
+            GameStr::from_cstr(app_option->get_current_str_value()).value();
 }
 
 /**

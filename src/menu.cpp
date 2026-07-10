@@ -36,8 +36,6 @@ GameMenuConfiguration DEFAULT_MENU_CONFIGURATION = {
     .show_help_text = true,
 };
 
-const char *game_to_string(Game game);
-
 template <typename T> std::unique_ptr<T> make()
 {
         return std::make_unique<T>();
@@ -82,7 +80,7 @@ std::optional<UserAction> select_app_and_run(const Platform &p)
          * would be different in each branch and so we then cannot pass that
          * through a single call to `execute_app`.
          */
-        LOG_INFO(TAG, "User selected game: %s.", game_to_string(config.game));
+        LOG_INFO(TAG, "User selected game: %s.", GameStr::to_cstr(config.game));
         switch (config.game) {
         case Game::Clean2048:
                 return execute_app(*make<Clean2048>().get(), p, c);
@@ -295,21 +293,24 @@ Configuration *assemble_game_selector_configuration(
 {
 
         std::vector<const char *> available_games = {
-            game_to_string(Game::Clean2048),  game_to_string(Game::Minesweeper),
-            game_to_string(Game::GameOfLife), game_to_string(Game::Snake),
-            game_to_string(Game::SnakeDuel),  game_to_string(Game::Sudoku),
-            game_to_string(Game::Settings),
+            GameStr::to_cstr(Game::Clean2048),
+            GameStr::to_cstr(Game::Minesweeper),
+            GameStr::to_cstr(Game::GameOfLife),
+            GameStr::to_cstr(Game::Snake),
+            GameStr::to_cstr(Game::SnakeDuel),
+            GameStr::to_cstr(Game::Sudoku),
+            GameStr::to_cstr(Game::Settings),
         };
 
         if (p.capabilities.supports_power_off) {
-                available_games.push_back(game_to_string(Game::Power));
+                available_games.push_back(GameStr::to_cstr(Game::Power));
         }
         if (p.capabilities.has_wifi) {
-                available_games.push_back(game_to_string(Game::WeatherApp));
+                available_games.push_back(GameStr::to_cstr(Game::WeatherApp));
         }
 
         auto *game = ConfigurationOption::of_strings(
-            "Game", available_games, game_to_string(initial_config.game));
+            "Game", available_games, GameStr::to_cstr(initial_config.game));
 
         auto options = {game};
 
@@ -322,42 +323,16 @@ void extract_app_selection(GameMenuConfiguration &menu_configuration,
         ConfigurationOption *game_option = config.options[0];
 
         menu_configuration.game =
-            game_from_string(game_option->get_current_str_value());
+            GameStr::from_cstr(game_option->get_current_str_value()).value();
 }
 
-Game game_from_string(const char *name)
+std::optional<Game> GameStr::from_cstr(const char *name)
 {
-        if (strcmp(name, game_to_string(Game::Clean2048)) == 0)
-                return Game::Clean2048;
-        if (strcmp(name, game_to_string(Game::Minesweeper)) == 0)
-                return Game::Minesweeper;
-        if (strcmp(name, game_to_string(Game::GameOfLife)) == 0)
-                return Game::GameOfLife;
-        if (strcmp(name, game_to_string(Game::MainMenu)) == 0)
-                return Game::MainMenu;
-        if (strcmp(name, game_to_string(Game::Settings)) == 0)
-                return Game::Settings;
-        if (strcmp(name, game_to_string(Game::Snake)) == 0)
-                return Game::Snake;
-        if (strcmp(name, game_to_string(Game::SnakeDuel)) == 0)
-                return Game::SnakeDuel;
-        if (strcmp(name, game_to_string(Game::WifiApp)) == 0)
-                return Game::WifiApp;
-        if (strcmp(name, game_to_string(Game::RandomSeedPicker)) == 0)
-                return Game::RandomSeedPicker;
-        if (strcmp(name, game_to_string(Game::Sudoku)) == 0)
-                return Game::Sudoku;
-        if (strcmp(name, game_to_string(Game::Power)) == 0)
-                return Game::Power;
-        if (strcmp(name, game_to_string(Game::Brightness)) == 0)
-                return Game::Brightness;
-        if (strcmp(name, game_to_string(Game::DefaultsSetting)) == 0)
-                return Game::DefaultsSetting;
-        if (strcmp(name, game_to_string(Game::DisplaySizeSetting)) == 0)
-                return Game::DisplaySizeSetting;
-        if (strcmp(name, game_to_string(Game::WeatherApp)) == 0)
-                return Game::WeatherApp;
-        return Game::Unknown;
+        for (auto [t, s] : TABLE) {
+                if (strcmp(s, name) == 0)
+                        return t;
+        }
+        return std::nullopt;
 }
 
 bool is_valid_game(Game game)
@@ -379,67 +354,29 @@ bool is_valid_game(Game game)
         }
 }
 
-const char *game_to_string(Game game)
-{
-        switch (game) {
-        case Game::MainMenu:
-                return "Main Menu";
-        case Game::Clean2048:
-                return "2048";
-        case Game::Minesweeper:
-                return "Minesweeper";
-        case Game::GameOfLife:
-                return "Game Of Life";
-        case Game::Settings:
-                return "Settings";
-        case Game::Snake:
-                return "Snake";
-        case Game::SnakeDuel:
-                return "Snake Duel";
-        case Game::WifiApp:
-                return "Wi-Fi";
-        case Game::Sudoku:
-                return "Sudoku";
-        case Game::RandomSeedPicker:
-                return "Randomness";
-        case Game::Power:
-                return "Power Off";
-        case Game::Brightness:
-                return "Brightness";
-        case Game::DefaultsSetting:
-                return "Defaults";
-        case Game::DisplaySizeSetting:
-                return "Display Size";
-        case Game::WeatherApp:
-                return "Weather";
-        default:
-                return "Unknown";
-        }
-}
-
 Configuration *assemble_menu_defaults_configuration(
     const Platform &p, const GameMenuConfiguration &initial_config)
 {
 
         std::vector<const char *> available_games = {
-            game_to_string(Game::Minesweeper),
-            game_to_string(Game::Clean2048),
-            game_to_string(Game::GameOfLife),
-            game_to_string(Game::Snake),
-            game_to_string(Game::SnakeDuel),
-            game_to_string(Game::Sudoku),
-            game_to_string(Game::Settings),
-            game_to_string(Game::RandomSeedPicker),
-            game_to_string(Game::Brightness),
+            GameStr::to_cstr(Game::Minesweeper),
+            GameStr::to_cstr(Game::Clean2048),
+            GameStr::to_cstr(Game::GameOfLife),
+            GameStr::to_cstr(Game::Snake),
+            GameStr::to_cstr(Game::SnakeDuel),
+            GameStr::to_cstr(Game::Sudoku),
+            GameStr::to_cstr(Game::Settings),
+            GameStr::to_cstr(Game::RandomSeedPicker),
+            GameStr::to_cstr(Game::Brightness),
         };
 
         if (p.capabilities.has_wifi)
-                available_games.push_back(game_to_string(Game::WifiApp));
+                available_games.push_back(GameStr::to_cstr(Game::WifiApp));
         if (p.capabilities.can_sleep)
-                available_games.push_back(game_to_string(Game::Power));
+                available_games.push_back(GameStr::to_cstr(Game::Power));
 
         auto *game = ConfigurationOption::of_strings(
-            "Game", available_games, game_to_string(initial_config.game));
+            "Game", available_games, GameStr::to_cstr(initial_config.game));
 
         auto *accent_color = ConfigurationOption::of_colors(
             "Color", AVAILABLE_COLORS, initial_config.accent_color);
@@ -470,7 +407,7 @@ void extract_defaults_config(GameMenuConfiguration &menu_configuration,
         ConfigurationOption *show_help_text = config.options[3];
 
         menu_configuration.game =
-            game_from_string(game_option->get_current_str_value());
+            GameStr::from_cstr(game_option->get_current_str_value()).value();
         menu_configuration.accent_color =
             accent_color->get_current_color_value();
         menu_configuration.rendering_mode =

@@ -1,4 +1,3 @@
-#include <cstring>
 #include <memory>
 
 #include "settings.hpp"
@@ -56,7 +55,7 @@ UserAction Settings::app_loop(const Platform &p,
         Game selected_game = config.selected_game;
         int offset = get_settings_storage_offset(selected_game);
         LOG_DEBUG(TAG, "Computed configuration storage offset for game %s: %d",
-                  game_to_string(selected_game), offset);
+                  GameStr::to_cstr(selected_game), offset);
 
         const PersistentStorage &storage = *(p.persistent_storage);
 
@@ -218,27 +217,27 @@ Configuration *assemble_settings_menu_configuration(const Platform &p)
 {
 
         std::vector<const char *> available_games = {
-            game_to_string(Game::MainMenu),
-            game_to_string(Game::Minesweeper),
-            game_to_string(Game::Clean2048),
-            game_to_string(Game::GameOfLife),
-            game_to_string(Game::Snake),
-            game_to_string(Game::SnakeDuel),
-            game_to_string(Game::RandomSeedPicker),
-            game_to_string(Game::Sudoku),
+            GameStr::to_cstr(Game::MainMenu),
+            GameStr::to_cstr(Game::Minesweeper),
+            GameStr::to_cstr(Game::Clean2048),
+            GameStr::to_cstr(Game::GameOfLife),
+            GameStr::to_cstr(Game::Snake),
+            GameStr::to_cstr(Game::SnakeDuel),
+            GameStr::to_cstr(Game::RandomSeedPicker),
+            GameStr::to_cstr(Game::Sudoku),
         };
 
         if (p.capabilities.has_wifi) {
-                available_games.push_back(game_to_string(Game::WifiApp));
+                available_games.push_back(GameStr::to_cstr(Game::WifiApp));
         }
 
         if (p.capabilities.has_resizable_display) {
                 available_games.push_back(
-                    game_to_string(Game::DisplaySizeSetting));
+                    GameStr::to_cstr(Game::DisplaySizeSetting));
         }
 
         auto *menu = ConfigurationOption::of_strings(
-            "Modify", available_games, game_to_string(Game::MainMenu));
+            "Modify", available_games, GameStr::to_cstr(Game::MainMenu));
 
         return new Configuration("Set Defaults", {menu});
 }
@@ -246,7 +245,8 @@ Configuration *assemble_settings_menu_configuration(const Platform &p)
 void extract_menu_setting(Game &selection, const Configuration &config)
 {
         ConfigurationOption menu_option = *config.options[0];
-        selection = game_from_string(menu_option.get_current_str_value());
+        selection =
+            GameStr::from_cstr(menu_option.get_current_str_value()).value();
 }
 
 void Settings::render_thumbnail(const Platform &platform,
