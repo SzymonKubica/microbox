@@ -335,24 +335,6 @@ std::optional<Game> GameStr::from_cstr(const char *name)
         return std::nullopt;
 }
 
-bool is_valid_game(Game game)
-{
-        switch (game) {
-        case Game::MainMenu:
-        case Game::Clean2048:
-        case Game::Minesweeper:
-        case Game::GameOfLife:
-        case Game::Settings:
-        case Game::Snake:
-        case Game::SnakeDuel:
-        case Game::WifiApp:
-        case Game::RandomSeedPicker:
-        case Game::Sudoku:
-                return true;
-        default:
-                return false;
-        }
-}
 
 Configuration *assemble_menu_defaults_configuration(
     const Platform &p, const GameMenuConfiguration &initial_config)

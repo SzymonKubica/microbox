@@ -1,3 +1,4 @@
+#include "src/apps/display_scale.hpp"
 #ifdef EMULATOR
 #include "emulator_config.h"
 
@@ -11,7 +12,6 @@
 #include "src/platform/emulator/sfml_asdf_controller.hpp"
 #include "src/platform/emulator/sfml_hjkl_controller.hpp"
 #include "src/platform/emulator/sfml_action_controller.hpp"
-#include "src/platform/emulator/persistent_storage.hpp"
 #include "src/common/logging.hpp"
 
 #define TAG "emulator_entrypoint"
@@ -84,6 +84,16 @@ int main(int argc, char *argv[])
                              .can_sleep = true,
                              .action_button_kind = ActionButtonKind::Letters,
                              .has_resizable_display = true}};
+
+        /**
+         * We allow the users of the emulator to configure an override for the
+         * default display size (2x instead of the normal 1:1 size). This is
+         * needed on high DPI displays where the emulator window is super small.
+         *
+         * If the user overrides the default, it will be loaded from the storage
+         * file here and SFML window will be resized.
+         */
+        DisplayScaleApp{}.set_default_display_size(platform);
 
         while (window.isOpen()) {
                 LOG_DEBUG(TAG, "Entering game loop...");

@@ -26,4 +26,6 @@ class DisplayScaleApp : public ApplicationExecutor<DisplayScaleConfiguration>
                        DisplayScaleConfiguration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+
+        void set_default_display_size(const Platform &p) const;
 };

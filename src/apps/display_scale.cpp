@@ -3,7 +3,6 @@
 #include "display_scale.hpp"
 
 #include "../common/configuration.hpp"
-#include "../common/grid.hpp"
 #include "settings.hpp"
 
 #define TAG "sleep_app"
@@ -17,7 +16,7 @@
 #endif
 
 const DisplayScaleConfiguration DEFAULT_SCALE_CONFIGURATION = {
-    .header = ConfigurationHeader{.magic = CONFIGURATION_MAGIC, .version = 2},
+    .header = ConfigurationHeader{.magic = CONFIGURATION_MAGIC, .version = 1},
     .scale = 1,
 };
 
@@ -104,4 +103,16 @@ DisplayScaleApp::collect_config(const Platform &p,
         game_config.scale = scale_option.get_curr_int_value();
 
         return std::nullopt;
+}
+
+void DisplayScaleApp::set_default_display_size(const Platform &p) const
+{
+        auto config = std::unique_ptr<DisplayScaleConfiguration>(
+            load_initial_display_size_config(*p.persistent_storage));
+
+#if defined(EMULATOR)
+        LOG_DEBUG(TAG, "Setting display scale to %d", config->scale);
+        ((SfmlDisplay *)p.display)->set_scale(config->scale);
+#endif
+        p.time_provider->delay_ms(150);
 }
