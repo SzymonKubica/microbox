@@ -35,7 +35,6 @@ constexpr const char *to_cstr(WifiAppAction action)
 std::optional<WifiAppAction> from_cstr(const char *str);
 } // namespace WifiActionStr
 
-
 /**
  * We need to store the WiFI parameters in fixed-size arrays, otherwise saving
  * it to/from persistent memory only saves down pointers and not the actual

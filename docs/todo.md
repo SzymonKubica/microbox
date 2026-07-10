@@ -37,6 +37,9 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 - [ ] migrate all enums <> string conversions to the new dynamic pattern and
       namespaced to/from c_str converters
 
+- [ ] figure out how to implicitly convert enum classes to their base int
+      superclass
+
 - [ ] add weather API integration to allow for checking daily weather before running in the morning
   - [ ] design application capability model (enum actions) and a way for displaying the data
   - [ ] Step 1: simple integration - hard-code the location and get back weather data.

@@ -333,11 +333,11 @@ UserAction SudokuGame::app_loop(const Platform &p,
                 // this iteration.
                 input_registered_last_iteration = true;
                 switch (act) {
-                case YELLOW:
-                case GREEN: {
+                case Action::YELLOW:
+                case Action::GREEN: {
                         int old_selected = state.active_digit;
 
-                        act == GREEN ? state.increment_active_digit()
+                        act == Action::GREEN ? state.increment_active_digit()
                                      : state.decrement_active_digit();
 
                         view.move_active_digit_selection_indicator(
@@ -353,7 +353,7 @@ UserAction SudokuGame::app_loop(const Platform &p,
                         view.rerender_caret(caret);
                         break;
                 }
-                case RED: {
+                case Action::RED: {
                         auto &cell = state.grid[caret.y][caret.x];
                         if (cell.is_user_defined && cell.digit.has_value()) {
                                 int erased = state.erase_digit(caret);
@@ -382,7 +382,7 @@ UserAction SudokuGame::app_loop(const Platform &p,
                         break;
                 }
 
-                case BLUE: {
+                case Action::BLUE: {
                         LOG_DEBUG(TAG, "User requested to exit game.");
                         const char *help_text =
                             "Would you like to save your current game "

@@ -154,7 +154,7 @@ Minesweeper::app_loop(const Platform &p,
                 if (maybe_direction) {
                         Direction dir = maybe_direction.value();
                         LOG_DEBUG(TAG, "Directional input received: %s",
-                                  direction_to_str(dir));
+                                  DirectionStr::to_cstr(dir));
 
                         if (!bombs_placed) {
                                 /* Before the bombs are placed, we spin the
@@ -213,7 +213,7 @@ Minesweeper::app_loop(const Platform &p,
                         Action act = maybe_action.value();
                         action_input_on_last_iteration = true;
                         LOG_DEBUG(TAG, "Action input received: %s",
-                                  action_to_str(act));
+                                  ActionStr::to_cstr(act));
 
                         MinesweeperGridCell cell =
                             grid[caret_position.y][caret_position.x];
@@ -269,7 +269,7 @@ Minesweeper::app_loop(const Platform &p,
                                 return UserAction::Exit;
                         default:
                                 LOG_DEBUG(TAG, "Irrelevant action input: %s",
-                                          action_to_str(act));
+                                          ActionStr::to_cstr(act));
                                 break;
                         }
                         if (!p.display->refresh()) {

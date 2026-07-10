@@ -812,11 +812,12 @@ void render_controls_explanations(const Display &display,
                 int indicator_width = fw + spacing;
                 auto render_strategy = [&](Action button, Point position) {
                         std::vector<const char *> key_map(4);
-                        key_map[Action::BLUE] = "a";
-                        key_map[Action::YELLOW] = "s";
-                        key_map[Action::RED] = "f";
-                        key_map[Action::GREEN] = "d";
-                        display.draw_string(position, (char *)key_map[button],
+                        key_map[(uint8_t)Action::BLUE] = "a";
+                        key_map[(uint8_t)Action::YELLOW] = "s";
+                        key_map[(uint8_t)Action::RED] = "f";
+                        key_map[(uint8_t)Action::GREEN] = "d";
+                        display.draw_string(position,
+                                            (char *)key_map[(uint8_t)button],
                                             FontSize::Size16, Black, Gray);
                 };
                 indicator_renderer = {indicator_width, render_strategy};
@@ -829,15 +830,16 @@ void render_controls_explanations(const Display &display,
                 auto render_strategy = [&display, fh, fw, circle_radius](
                                            Action button, Point position) {
                         std::vector<Point> button_offsets(4);
-                        button_offsets[Action::BLUE] = {-1, 0};
-                        button_offsets[Action::YELLOW] = {0, -1};
-                        button_offsets[Action::RED] = {1, 0};
-                        button_offsets[Action::GREEN] = {0, 1};
+                        button_offsets[(uint8_t)Action::BLUE] = {-1, 0};
+                        button_offsets[(uint8_t)Action::YELLOW] = {0, -1};
+                        button_offsets[(uint8_t)Action::RED] = {1, 0};
+                        button_offsets[(uint8_t)Action::GREEN] = {0, 1};
                         int circle_indicator_y_offset = fh / 2;
                         // We first make all possible displacements in gray.
                         for (const auto &d : button_offsets) {
                                 if (!(d ==
-                                      (const Point &)button_offsets[button])) {
+                                      (const Point &)
+                                          button_offsets[(uint8_t)button])) {
                                         display.draw_circle(
                                             {.x = position.x +
                                                   2 * d.x * circle_radius,
@@ -847,7 +849,7 @@ void render_controls_explanations(const Display &display,
                                             circle_radius, Gray, 0, true);
                                 }
                         }
-                        auto displacement = button_offsets[button];
+                        auto displacement = button_offsets[(uint8_t)button];
                         Color color = White;
                         display.draw_circle(
                             {.x = position.x +
@@ -865,11 +867,11 @@ void render_controls_explanations(const Display &display,
                 auto render_strategy = [&display, fh, fw, circle_radius](
                                            Action button, Point position) {
                         std::vector<Color> button_colors(4);
-                        button_colors[Action::BLUE] = Blue;
-                        button_colors[Action::YELLOW] = Yellow;
-                        button_colors[Action::RED] = Red;
-                        button_colors[Action::GREEN] = Green;
-                        Color color = button_colors[button];
+                        button_colors[(uint8_t)Action::BLUE] = Blue;
+                        button_colors[(uint8_t)Action::YELLOW] = Yellow;
+                        button_colors[(uint8_t)Action::RED] = Red;
+                        button_colors[(uint8_t)Action::GREEN] = Green;
+                        Color color = button_colors[(uint8_t)button];
                         int circle_indicator_y_offset = fh / 2;
                         display.draw_circle(
                             {.x = position.x,
@@ -1387,17 +1389,17 @@ collect_string_input(const Platform &p,
                 if (maybe_action) {
                         Action act = maybe_action.value();
                         switch (act) {
-                        case YELLOW: {
+                        case Action::YELLOW: {
                                 is_capitalized = !is_capitalized;
                                 curr_char_map = is_capitalized ? shift_char_map
                                                                : base_char_map;
                                 render_keyboard(curr_char_map);
                                 break;
                         }
-                        case RED:
+                        case Action::RED:
                                 input_confirmed = true;
                                 break;
-                        case GREEN: {
+                        case Action::GREEN: {
                                 if (cursor.x == cancellation_key_location.x &&
                                     cursor.y == cancellation_key_location.y) {
                                         LOG_DEBUG(TAG, "User selected the "
@@ -1422,7 +1424,7 @@ collect_string_input(const Platform &p,
                                 }
                                 break;
                         }
-                        case BLUE:
+                        case Action::BLUE:
                                 if (output_idx > 0) {
                                         output_idx--;
                                         output[output_idx] = '\0';
@@ -1657,10 +1659,10 @@ collect_number_input(const Platform &p,
                 if (maybe_action.has_value()) {
                         Action act = maybe_action.value();
                         switch (act) {
-                        case RED:
+                        case Action::RED:
                                 input_confirmed = true;
                                 break;
-                        case GREEN: {
+                        case Action::GREEN: {
                                 if (cursor.x == cancellation_key_location.x &&
                                     cursor.y == cancellation_key_location.y) {
                                         LOG_DEBUG(TAG, "User selected the "
@@ -1685,14 +1687,14 @@ collect_number_input(const Platform &p,
                                 }
                                 break;
                         }
-                        case BLUE:
+                        case Action::BLUE:
                                 if (output_idx > 0) {
                                         output_idx--;
                                         output[output_idx] = '\0';
                                         render_current_input_text(output_idx);
                                 }
                                 break;
-                        case YELLOW:
+                        case Action::YELLOW:
                                 break;
                         }
                         p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);

@@ -340,16 +340,16 @@ collect_configuration(const Platform &p, Configuration &config,
                 if (maybe_direction.has_value()) {
                         dir = maybe_direction.value();
                         switch (dir) {
-                        case DOWN:
+                        case Direction::DOWN:
                                 switch_edited_config_option_down(config, diff);
                                 break;
-                        case UP:
+                        case Direction::UP:
                                 switch_edited_config_option_up(config, diff);
                                 break;
-                        case LEFT:
+                        case Direction::LEFT:
                                 decrement_current_option_value(config, diff);
                                 break;
-                        case RIGHT:
+                        case Direction::RIGHT:
                                 increment_current_option_value(config, diff);
                                 break;
                         }
@@ -460,12 +460,12 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
                 if (maybe_direction.has_value()) {
                         dir = maybe_direction.value();
                         // We only have a single option to configure. Because of
-                        // this there is no point to handle UP/DOWN inputs.
-                        if (dir == LEFT)
+                        // this there is no point to handle Direction::UP/DOWN inputs.
+                        if (dir == Direction::LEFT)
                                 decrement_option_value(option);
-                        if (dir == RIGHT)
+                        if (dir == Direction::RIGHT)
                                 increment_option_value(option);
-                        if (dir == LEFT || dir == RIGHT) {
+                        if (dir == Direction::LEFT || dir == Direction::RIGHT) {
                                 render_thumbnail_for_current_selection();
                                 if (p.capabilities.has_wifi) {
                                         update_wifi_status_indicator(

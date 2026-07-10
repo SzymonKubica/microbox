@@ -19,10 +19,6 @@
 #include "../apps/settings.hpp"
 
 #define TAG "2048"
-#define UP 0
-#define RIGHT 1
-#define DOWN 2
-#define LEFT 3
 
 #define MINIMUM_MARGIN 40
 
@@ -31,7 +27,7 @@ void update_game_grid(const Platform &p, GameState &gs,
                       const UserInterfaceCustomization &customization);
 bool is_game_over(const GameState &gs);
 bool is_game_finished(const GameState &gs);
-void take_turn(GameState &gs, int direction);
+void take_turn(GameState &gs, Direction direction);
 
 /**
  *  We always render white on black. This is because of the rendering
@@ -159,8 +155,8 @@ UserAction Clean2048::app_loop(const Platform &p,
                 if (maybe_direction.has_value()) {
                         Direction dir = maybe_direction.value();
                         LOG_DEBUG(TAG, "Input received: %s",
-                                  direction_to_str(dir));
-                        take_turn(*state, (int)dir);
+                                  DirectionStr::to_cstr(dir));
+                        take_turn(*state, dir);
                         update_game_grid(p, *state, customization);
                         p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 } else if (maybe_action.has_value()) {
@@ -392,7 +388,7 @@ static void spawn_tile(GameState &gs)
 /* Helper functions for tile merging */
 
 // Merges the i-th row of tiles in the given direction (left/right).
-static void merge_row(GameState &gs, int i, int direction);
+static void merge_row(GameState &gs, int i, Direction direction);
 // Reverses a given row of `row_size` elements in place.
 static void reverse(int *row, int row_size);
 // Transposes the game trid in place to allow for merging vertically.
@@ -405,9 +401,9 @@ static int get_successor_index(const GameState &gs, int i, int current_index);
  * merge the tiles in a vertical direction we first transpose the grid,
  * merge and then transpose back.
  */
-static void merge(GameState &gs, int direction)
+static void merge(GameState &gs, Direction direction)
 {
-        if (direction == UP || direction == DOWN) {
+        if (direction == Direction::UP || direction == Direction::DOWN) {
                 transpose(gs);
         }
 
@@ -415,12 +411,12 @@ static void merge(GameState &gs, int direction)
                 merge_row(gs, i, direction);
         }
 
-        if (direction == UP || direction == DOWN) {
+        if (direction == Direction::UP || direction == Direction::DOWN) {
                 transpose(gs);
         }
 }
 
-static void merge_row(GameState &gs, int i, int direction)
+static void merge_row(GameState &gs, int i, Direction direction)
 {
         int curr = 0;
         int *merged_row = (int *)malloc(gs.grid_size * sizeof(int));
@@ -434,7 +430,7 @@ static void merge_row(GameState &gs, int i, int direction)
         // We always merge to the left (or up if we have previously
         // transposed the grid), in other cases we reverse the row,
         // merge and reverse back.
-        if (direction == DOWN || direction == RIGHT) {
+        if (direction == Direction::DOWN || direction == Direction::RIGHT) {
                 reverse(gs.grid[i], size);
         }
 
@@ -466,7 +462,8 @@ static void merge_row(GameState &gs, int i, int direction)
         }
 
         for (int j = 0; j < size; j++) {
-                if (direction == DOWN || direction == RIGHT) {
+                if (direction == Direction::DOWN ||
+                    direction == Direction::RIGHT) {
                         gs.grid[i][gs.grid_size - 1 - j] = merged_row[j];
                 } else {
                         gs.grid[i][j] = merged_row[j];
@@ -534,7 +531,7 @@ static bool is_board_full(const GameState &gs)
         return gs.occupied_tiles >= gs.grid_size * gs.grid_size;
 }
 
-void take_turn(GameState &gs, int direction)
+void take_turn(GameState &gs, Direction direction)
 {
         int **oldGrid = create_game_grid(gs.grid_size);
         copy_grid(gs.grid, oldGrid, gs.grid_size);

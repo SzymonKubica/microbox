@@ -2,7 +2,9 @@
 /**
  * The four possible directions of user input.
  */
-typedef enum Direction { UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3 } Direction;
+#include <cstdint>
+#include <utility>
+enum class Direction : uint8_t { UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3 };
 
 bool is_opposite(const Direction direction, const Direction other_direction);
 Direction get_opposite(const Direction direction);
@@ -11,13 +13,51 @@ Direction get_opposite(const Direction direction);
  * The four possible 'user actions' that are mapped to the colors of
  * the directional keypad on the Arduino physical controller shield.
  */
-typedef enum Action { YELLOW = 0, RED = 1, GREEN = 2, BLUE = 3 } Action;
+enum class Action : uint8_t { YELLOW = 0, RED = 1, GREEN = 2, BLUE = 3 };
 
 const Action CONFIRM_ACTION = Action::GREEN;
 const Action BACK_ACTION = Action::BLUE;
 const Action HELP_ACTION = Action::YELLOW;
 const Action FORWARD_ACTION = Action::RED;
 
-const char *direction_to_str(Direction direction);
-const char *action_to_str(Action action);
 const Direction action_to_direction(Action action);
+
+namespace ActionStr
+{
+constexpr std::pair<Action, const char *> TABLE[] = {
+    {Action::YELLOW, "Yellow"},
+    {Action::RED, "Red"},
+    {Action::GREEN, "Green"},
+    {Action::BLUE, "Blue"},
+};
+
+constexpr const char *to_cstr(Action action)
+{
+        for (auto [v, s] : TABLE) {
+                if (action == v) {
+                        return s;
+                }
+        }
+        return "UNKNOWN";
+}
+} // namespace ActionStr
+
+namespace DirectionStr
+{
+constexpr std::pair<Direction, const char *> TABLE[] = {
+    {Direction::UP, "Up"},
+    {Direction::DOWN, "Down"},
+    {Direction::LEFT, "Left"},
+    {Direction::RIGHT, "Right"},
+};
+
+constexpr const char *to_cstr(Direction action)
+{
+        for (auto [v, s] : TABLE) {
+                if (action == v) {
+                        return s;
+                }
+        }
+        return "UNKNOWN";
+}
+} // namespace DirectionStr

@@ -345,7 +345,7 @@ UserAction GameOfLife::app_loop(const Platform &p,
                 if (maybe_action.has_value() && !action_on_last_iteration) {
                         Action act = maybe_action.value();
                         switch (act) {
-                        case YELLOW:
+                        case Action::YELLOW:
                                 toggle_pause(display, customization, state);
                                 break;
                         case FORWARD_ACTION:
@@ -561,13 +561,13 @@ void handle_rewind(const Display &display, GameOfLifeState &state,
                    Direction dir)
 {
         // Ignore irrelevant input.
-        if (dir == UP || dir == DOWN) {
+        if (dir == Direction::UP || dir == Direction::DOWN) {
                 return;
         }
 
         // First we short-circuit if the user tries to go back too far.
-        bool forward_in_time = dir == RIGHT;
-        bool back_in_time = dir == LEFT;
+        bool forward_in_time = dir == Direction::RIGHT;
+        bool back_in_time = dir == Direction::LEFT;
 
         /* We unwrap the state here to make the code below less verbose */
         int &rewind_buf_idx = state.curr_rewind_buff_idx;

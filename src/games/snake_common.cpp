@@ -61,32 +61,32 @@ void render_snake_head(const Display &display, Color snake_color,
         int rectangle_w, rectangle_h;
 
         switch (snake.direction) {
-        case UP:
-        case DOWN:
+        case Direction::UP:
+        case Direction::DOWN:
                 rectangle_w = snake_w;
                 rectangle_h = snake_h / 2;
                 break;
-        case RIGHT:
-        case LEFT:
+        case Direction::RIGHT:
+        case Direction::LEFT:
                 rectangle_w = snake_w / 2;
                 rectangle_h = snake_h;
         }
 
         Point offset, eye_offset;
         switch (snake.direction) {
-        case UP:
+        case Direction::UP:
                 offset = {.x = 0, .y = rectangle_h};
                 eye_offset = {.x = -rectangle_w / 4, .y = 0};
                 break;
-        case LEFT:
+        case Direction::LEFT:
                 offset = {.x = rectangle_w, .y = 0};
                 eye_offset = {.x = 0, .y = rectangle_h / 4};
                 break;
-        case DOWN:
+        case Direction::DOWN:
                 offset = {.x = 0, .y = 0};
                 eye_offset = {.x = rectangle_w / 4, .y = 0};
                 break;
-        case RIGHT:
+        case Direction::RIGHT:
                 offset = {.x = 0, .y = 0};
                 eye_offset = {.x = 0, .y = -rectangle_h / 4};
                 break;

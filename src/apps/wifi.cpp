@@ -16,10 +16,6 @@
 #include "settings.hpp"
 
 #define TAG "WifiApp"
-#define UP 0
-#define RIGHT 1
-#define DOWN 2
-#define LEFT 3
 
 WifiAppConfiguration DEFAULT_WIFI_APP_CONFIG;
 
@@ -72,13 +68,13 @@ UserAction WifiApp::app_loop(const Platform &p,
         WifiAppConfiguration config_copy = config;
 
         switch (config.action) {
-        case AddNew:
+        case WifiAppAction::AddNew:
                 handle_add_new(config_copy, p, customization);
                 break;
-        case Modify:
+        case WifiAppAction::Modify:
                 handle_modify(config_copy, p, customization);
                 break;
-        case Connect:
+        case WifiAppAction::Connect:
                 handle_connect(config_copy, p, customization);
                 break;
         }
@@ -378,7 +374,8 @@ void extract_game_config(WifiAppConfiguration &app_config,
         app_config.connect_on_startup = extract_yes_or_no_option(
             connect_on_startup.get_current_str_value());
         app_config.action =
-            WifiActionStr::from_cstr(app_action.get_current_str_value()).value();
+            WifiActionStr::from_cstr(app_action.get_current_str_value())
+                .value();
 }
 
 std::optional<UserAction>
