@@ -9,15 +9,32 @@
 #define AVAILABLE_CONFIGURATION_SLOTS 5
 #define INITIALIZATION_MAGIC_NUMBER 12345
 
-typedef enum WifiAppAction {
+enum class WifiAppAction {
         AddNew = 0,
         // ShowPassword, future idea
         Modify = 1,
         Connect = 2,
-} WifiAppAction;
+};
 
-const char *wifi_app_action_to_string(WifiAppAction action);
-WifiAppAction action_from_string(char *string);
+namespace WifiActionStr
+{
+constexpr std::pair<WifiAppAction, const char *> TABLE[] = {
+    {WifiAppAction::AddNew, "Add New"},
+    {WifiAppAction::Modify, "Modify"},
+    {WifiAppAction::Connect, "Connect"}};
+
+constexpr const char *to_cstr(WifiAppAction action)
+{
+        for (auto [v, s] : TABLE) {
+                if (action == v) {
+                        return s;
+                }
+        }
+        return "UNKNOWN";
+}
+std::optional<WifiAppAction> from_cstr(const char *str);
+} // namespace WifiActionStr
+
 
 /**
  * We need to store the WiFI parameters in fixed-size arrays, otherwise saving

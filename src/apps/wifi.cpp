@@ -313,15 +313,15 @@ assemble_wifi_app_configuration(WifiAppConfiguration &initial_config)
             map_boolean_to_yes_or_no(initial_config.connect_on_startup));
 
         auto available_actions = {
-            wifi_app_action_to_string(WifiAppAction::Connect),
-            wifi_app_action_to_string(WifiAppAction::AddNew),
-            wifi_app_action_to_string(WifiAppAction::Modify)};
+            WifiActionStr::to_cstr(WifiAppAction::Connect),
+            WifiActionStr::to_cstr(WifiAppAction::AddNew),
+            WifiActionStr::to_cstr(WifiAppAction::Modify)};
 
         LOG_DEBUG(TAG, "Current initial config wifi action: %d",
                   initial_config.action);
         auto *app_action = ConfigurationOption::of_strings(
             "Action", available_actions,
-            wifi_app_action_to_string(initial_config.action));
+            WifiActionStr::to_cstr(initial_config.action));
 
         auto options = {ssid, password, connect_on_startup, app_action};
 
@@ -378,7 +378,7 @@ void extract_game_config(WifiAppConfiguration &app_config,
         app_config.connect_on_startup = extract_yes_or_no_option(
             connect_on_startup.get_current_str_value());
         app_config.action =
-            action_from_string(app_action.get_current_str_value());
+            WifiActionStr::from_cstr(app_action.get_current_str_value()).value();
 }
 
 std::optional<UserAction>
@@ -400,32 +400,14 @@ WifiApp::collect_config(const Platform &p,
         return std::nullopt;
 }
 
-const char *wifi_app_action_to_string(WifiAppAction action)
+std::optional<WifiAppAction> WifiActionStr::from_cstr(const char *str)
 {
-        switch (action) {
-        case WifiAppAction::AddNew:
-                return "Add New";
-        case WifiAppAction::Modify:
-                return "Modify";
-        case WifiAppAction::Connect:
-                return "Connect";
-        default:
-                return "UNKNOWN";
+        for (auto [v, s] : TABLE) {
+                if (strcmp(s, str) == 0) {
+                        return v;
+                }
         }
-        return "UNKNOWN";
-}
-
-WifiAppAction action_from_string(char *name)
-{
-        if (strcmp(name, wifi_app_action_to_string(WifiAppAction::AddNew)) == 0)
-                return WifiAppAction::AddNew;
-        if (strcmp(name, wifi_app_action_to_string(WifiAppAction::Modify)) == 0)
-                return WifiAppAction::Modify;
-        if (strcmp(name, wifi_app_action_to_string(WifiAppAction::Connect)) ==
-            0)
-                return WifiAppAction::Connect;
-        // For now we fallback on this one as a default.
-        return WifiAppAction::Connect;
+        return std::nullopt;
 }
 
 /**

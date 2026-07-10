@@ -37,8 +37,6 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 - [ ] migrate all enums <> string conversions to the new dynamic pattern and
       namespaced to/from c_str converters
 
-- [ ] fix persistence of the display size setting
-
 - [ ] add weather API integration to allow for checking daily weather before running in the morning
   - [ ] design application capability model (enum actions) and a way for displaying the data
   - [ ] Step 1: simple integration - hard-code the location and get back weather data.
@@ -55,6 +53,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] fix persistence of the display size setting
 - [x] Improve Wi-Fi integration
   - [x] add connect on startup for esp32 targets (on Arduino R4 wifi connection is blocking so we can't do this on startup)
   - [x] add graceful handling if the connection on startup fails
