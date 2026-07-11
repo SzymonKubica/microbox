@@ -200,7 +200,8 @@ UserAction SnakeGame::app_loop(const Platform &p,
                 auto maybe_action = poll_action_input(p.action_controllers);
                 bool action_taken = maybe_action.has_value();
 
-                if (config.allow_pause && action_taken && act == Action::YELLOW &&
+                if (config.allow_pause && action_taken &&
+                    act == Action::YELLOW &&
                     !state.action_input_on_last_iteration) {
                         state.toggle_pause();
                         state.action_input_on_last_iteration = true;

@@ -4,6 +4,7 @@
  */
 #include <cstdint>
 #include <utility>
+#include "../../common/string_enum.hpp"
 enum class Direction : uint8_t { UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3 };
 
 bool is_opposite(const Direction direction, const Direction other_direction);
@@ -33,12 +34,7 @@ constexpr std::pair<Action, const char *> TABLE[] = {
 
 constexpr const char *to_cstr(Action action)
 {
-        for (auto [v, s] : TABLE) {
-                if (action == v) {
-                        return s;
-                }
-        }
-        return "UNKNOWN";
+        return StrEnum::to_cstr(action, TABLE);
 }
 } // namespace ActionStr
 
@@ -50,14 +46,8 @@ constexpr std::pair<Direction, const char *> TABLE[] = {
     {Direction::LEFT, "Left"},
     {Direction::RIGHT, "Right"},
 };
-
 constexpr const char *to_cstr(Direction action)
 {
-        for (auto [v, s] : TABLE) {
-                if (action == v) {
-                        return s;
-                }
-        }
-        return "UNKNOWN";
+        return StrEnum::to_cstr(action, TABLE);
 }
 } // namespace DirectionStr

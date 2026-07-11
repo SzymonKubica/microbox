@@ -328,13 +328,8 @@ void extract_app_selection(GameMenuConfiguration &menu_configuration,
 
 std::optional<Game> GameStr::from_cstr(const char *name)
 {
-        for (auto [t, s] : TABLE) {
-                if (strcmp(s, name) == 0)
-                        return t;
-        }
-        return std::nullopt;
+        return StrEnum::from_cstr(name, TABLE);
 }
-
 
 Configuration *assemble_menu_defaults_configuration(
     const Platform &p, const GameMenuConfiguration &initial_config)

@@ -1,6 +1,7 @@
 #pragma once
 #include "platform/interface/platform.hpp"
 #include "common/configuration.hpp"
+#include "common/string_enum.hpp"
 #include <optional>
 
 enum class Game : int {
@@ -43,11 +44,7 @@ constexpr std::pair<Game, const char *> TABLE[] = {
 };
 constexpr const char *to_cstr(Game type)
 {
-        for (auto [t, str] : TABLE) {
-                if (t == type)
-                        return str;
-        }
-        return "UNKNOWN";
+        return StrEnum::to_cstr(type, TABLE);
 }
 std::optional<Game> from_cstr(const char *str);
 } // namespace GameStr

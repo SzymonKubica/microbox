@@ -150,19 +150,5 @@ void extract_weather_app_config(
 std::optional<WeatherQueryType>
 WeatherQueryTypeUtils::from_cstr(const char *str)
 {
-        for (auto [t, s] : TABLE) {
-                if (strcmp(s, str) == 0)
-                        return t;
-        }
-        return std::nullopt;
-}
-
-std::optional<WeatherAppAction>
-WeatherAppActionUtils::from_cstr(const char *str)
-{
-        for (auto [a, s] : TABLE) {
-                if (strcmp(s, str) == 0)
-                        return a;
-        }
-        return std::nullopt;
+        return StrEnum::from_cstr(str, TABLE);
 }

@@ -338,7 +338,7 @@ UserAction SudokuGame::app_loop(const Platform &p,
                         int old_selected = state.active_digit;
 
                         act == Action::GREEN ? state.increment_active_digit()
-                                     : state.decrement_active_digit();
+                                             : state.decrement_active_digit();
 
                         view.move_active_digit_selection_indicator(
                             old_selected, state.active_digit);

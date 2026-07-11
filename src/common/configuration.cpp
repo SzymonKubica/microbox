@@ -460,7 +460,8 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
                 if (maybe_direction.has_value()) {
                         dir = maybe_direction.value();
                         // We only have a single option to configure. Because of
-                        // this there is no point to handle Direction::UP/DOWN inputs.
+                        // this there is no point to handle Direction::UP/DOWN
+                        // inputs.
                         if (dir == Direction::LEFT)
                                 decrement_option_value(option);
                         if (dir == Direction::RIGHT)

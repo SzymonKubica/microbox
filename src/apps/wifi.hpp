@@ -2,6 +2,7 @@
 
 #include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
+#include "../common/string_enum.hpp"
 
 #include "../common/common_transitions.hpp"
 #include "../application_executor.hpp"
@@ -25,12 +26,7 @@ constexpr std::pair<WifiAppAction, const char *> TABLE[] = {
 
 constexpr const char *to_cstr(WifiAppAction action)
 {
-        for (auto [v, s] : TABLE) {
-                if (action == v) {
-                        return s;
-                }
-        }
-        return "UNKNOWN";
+        return StrEnum::to_cstr<WifiAppAction>(action, TABLE);
 }
 std::optional<WifiAppAction> from_cstr(const char *str);
 } // namespace WifiActionStr

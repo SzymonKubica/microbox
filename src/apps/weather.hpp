@@ -2,7 +2,7 @@
 #include "../application_executor.hpp"
 #include "../common/common_transitions.hpp"
 #include "../common/configuration.hpp"
-#include <string.h>
+#include "../common/string_enum.hpp"
 
 enum class WeatherQueryType : uint8_t { Current, Forecast, Both };
 
@@ -14,11 +14,7 @@ constexpr std::pair<WeatherQueryType, const char *> TABLE[] = {
     {WeatherQueryType::Both, "Both"}};
 constexpr const char *to_cstr(WeatherQueryType type)
 {
-        for (auto [t, str] : TABLE) {
-                if (t == type)
-                        return str;
-        }
-        return "UNKNOWN";
+        return StrEnum::to_cstr(type, TABLE);
 }
 std::optional<WeatherQueryType> from_cstr(const char *str);
 } // namespace WeatherQueryTypeUtils

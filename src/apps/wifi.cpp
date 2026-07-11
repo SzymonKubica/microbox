@@ -7,6 +7,7 @@
 #include "wifi.hpp"
 
 #include "../common/logging.hpp"
+#include "../common/string_enum.hpp"
 #include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
 #include "../platform/wifi_ssid_password_secrets.hpp"
@@ -397,16 +398,6 @@ WifiApp::collect_config(const Platform &p,
         return std::nullopt;
 }
 
-std::optional<WifiAppAction> WifiActionStr::from_cstr(const char *str)
-{
-        for (auto [v, s] : TABLE) {
-                if (strcmp(s, str) == 0) {
-                        return v;
-                }
-        }
-        return std::nullopt;
-}
-
 /**
  * Returns the saved configurations as a vector. This is used to allow
  * for more convenient processing even though the actual representation
@@ -460,4 +451,8 @@ void wifi_connect_async(const Platform &p)
             initial_config->get_currently_selected_password();
         LOG_DEBUG(TAG, "Connecting to %s with password %s", ssid, password);
         p.wifi_provider->connect_to_network_async(ssid, password);
+}
+std::optional<WifiAppAction> WifiActionStr::from_cstr(const char *str)
+{
+        return StrEnum::from_cstr<WifiAppAction>(str, TABLE);
 }
