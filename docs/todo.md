@@ -34,10 +34,8 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # TODO
 
-- [ ] migrate all enums <> string conversions to the new dynamic pattern and
-      namespaced to/from c_str converters
 
-- [ ] figure out how to implicitly convert enum classes to their base int
+- [x] figure out how to implicitly convert enum classes to their base int
       superclass
 
 - [ ] add weather API integration to allow for checking daily weather before running in the morning
@@ -56,6 +54,8 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] migrate all enums <> string conversions to the new dynamic pattern and
+      namespaced to/from c_str converters
 - [x] fix persistence of the display size setting
 - [x] Improve Wi-Fi integration
   - [x] add connect on startup for esp32 targets (on Arduino R4 wifi connection is blocking so we can't do this on startup)

@@ -812,13 +812,14 @@ void render_controls_explanations(const Display &display,
                 int indicator_width = fw + spacing;
                 auto render_strategy = [&](Action button, Point position) {
                         std::vector<const char *> key_map(4);
-                        key_map[(uint8_t)Action::BLUE] = "a";
-                        key_map[(uint8_t)Action::YELLOW] = "s";
-                        key_map[(uint8_t)Action::RED] = "f";
-                        key_map[(uint8_t)Action::GREEN] = "d";
-                        display.draw_string(position,
-                                            (char *)key_map[(uint8_t)button],
-                                            FontSize::Size16, Black, Gray);
+                        key_map[static_cast<uint8_t>(Action::BLUE)] = "a";
+                        key_map[static_cast<uint8_t>(Action::YELLOW)] = "s";
+                        key_map[static_cast<uint8_t>(Action::RED)] = "f";
+                        key_map[static_cast<uint8_t>(Action::GREEN)] = "d";
+                        display.draw_string(
+                            position,
+                            (char *)key_map[static_cast<uint8_t>(button)],
+                            FontSize::Size16, Black, Gray);
                 };
                 indicator_renderer = {indicator_width, render_strategy};
                 break;
@@ -830,16 +831,21 @@ void render_controls_explanations(const Display &display,
                 auto render_strategy = [&display, fh, fw, circle_radius](
                                            Action button, Point position) {
                         std::vector<Point> button_offsets(4);
-                        button_offsets[(uint8_t)Action::BLUE] = {-1, 0};
-                        button_offsets[(uint8_t)Action::YELLOW] = {0, -1};
-                        button_offsets[(uint8_t)Action::RED] = {1, 0};
-                        button_offsets[(uint8_t)Action::GREEN] = {0, 1};
+                        button_offsets[static_cast<uint8_t>(Action::BLUE)] = {
+                            -1, 0};
+                        button_offsets[static_cast<uint8_t>(Action::YELLOW)] = {
+                            0, -1};
+                        button_offsets[static_cast<uint8_t>(Action::RED)] = {1,
+                                                                             0};
+                        button_offsets[static_cast<uint8_t>(Action::GREEN)] = {
+                            0, 1};
                         int circle_indicator_y_offset = fh / 2;
                         // We first make all possible displacements in gray.
                         for (const auto &d : button_offsets) {
                                 if (!(d ==
                                       (const Point &)
-                                          button_offsets[(uint8_t)button])) {
+                                          button_offsets[static_cast<uint8_t>(
+                                              button)])) {
                                         display.draw_circle(
                                             {.x = position.x +
                                                   2 * d.x * circle_radius,
@@ -849,7 +855,8 @@ void render_controls_explanations(const Display &display,
                                             circle_radius, Gray, 0, true);
                                 }
                         }
-                        auto displacement = button_offsets[(uint8_t)button];
+                        auto displacement =
+                            button_offsets[static_cast<uint8_t>(button)];
                         Color color = White;
                         display.draw_circle(
                             {.x = position.x +
@@ -867,11 +874,15 @@ void render_controls_explanations(const Display &display,
                 auto render_strategy = [&display, fh, fw, circle_radius](
                                            Action button, Point position) {
                         std::vector<Color> button_colors(4);
-                        button_colors[(uint8_t)Action::BLUE] = Blue;
-                        button_colors[(uint8_t)Action::YELLOW] = Yellow;
-                        button_colors[(uint8_t)Action::RED] = Red;
-                        button_colors[(uint8_t)Action::GREEN] = Green;
-                        Color color = button_colors[(uint8_t)button];
+                        button_colors[static_cast<uint8_t>(Action::BLUE)] =
+                            Blue;
+                        button_colors[static_cast<uint8_t>(Action::YELLOW)] =
+                            Yellow;
+                        button_colors[static_cast<uint8_t>(Action::RED)] = Red;
+                        button_colors[static_cast<uint8_t>(Action::GREEN)] =
+                            Green;
+                        Color color =
+                            button_colors[static_cast<uint8_t>(button)];
                         int circle_indicator_y_offset = fh / 2;
                         display.draw_circle(
                             {.x = position.x,
