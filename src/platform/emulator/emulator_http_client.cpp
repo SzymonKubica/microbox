@@ -20,8 +20,14 @@ EmulatorHttpClient::get(const ConnectionConfig &config, const std::string &url)
 
         curl = curl_easy_init();
         if (curl) {
+
                 curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
                 curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+                // We set the User-Agent headers so that picky APIs don't reject
+                // our requests
+                curl_easy_setopt(
+                    curl, CURLOPT_USERAGENT,
+                    "MicroBox/1.0 (https://github.com/SzymonKubica/microbox)");
                 curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
                 res = curl_easy_perform(curl);

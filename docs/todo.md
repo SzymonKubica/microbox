@@ -34,14 +34,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # TODO
 
-
-- [x] figure out how to implicitly convert enum classes to their base int
-      superclass
-
-- [ ] add weather API integration to allow for checking daily weather before running in the morning
-  - [ ] design application capability model (enum actions) and a way for displaying the data
-  - [ ] Step 1: simple integration - hard-code the location and get back weather data.
-  - [ ] Step 2: find a geolocation API to map from street and city names and get back coordinates
+- [ ] figure out how to set the User-Agent header in the esp32 library.
 
 - [ ] add wifi configuration property to tell if a URL is http or https and
       switch the implementation accordingly (or check if the https clients are
@@ -52,8 +45,15 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # In Progress
 
+- [ ] add weather API integration to allow for checking daily weather before running in the morning
+  - [ ] design application capability model (enum actions) and a way for displaying the data
+  - [ ] Step 1: simple integration - hard-code the location and get back weather data.
+  - [ ] Step 2: find a geolocation API to map from street and city names and get back coordinates
+
 
 # Done
+- [x] figure out how to implicitly convert enum classes to their base int
+      superclass
 - [x] migrate all enums <> string conversions to the new dynamic pattern and
       namespaced to/from c_str converters
 - [x] fix persistence of the display size setting

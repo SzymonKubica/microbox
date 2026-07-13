@@ -30,6 +30,9 @@ const char *query2 =
     "forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m,rain,"
     "precipitation_probability&forecast_days=3";
 
+const char *quer3 = "https://nominatim.openstreetmap.org/"
+                    "search?q=10+Downing+Street,+London&format=json";
+
 WeatherAppConfiguration DEFAULT_WEATHER_APP_CONFIG = {
     .header = {.magic = CONFIGURATION_MAGIC, .version = 2},
     .location = "London, UK",
@@ -152,3 +155,4 @@ WeatherQueryTypeUtils::from_cstr(const char *str)
 {
         return StrEnum::from_cstr(str, TABLE);
 }
+
