@@ -155,4 +155,3 @@ WeatherQueryTypeUtils::from_cstr(const char *str)
 {
         return StrEnum::from_cstr(str, TABLE);
 }
-

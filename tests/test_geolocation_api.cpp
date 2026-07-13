@@ -4,7 +4,6 @@
 
 TEST_CASE("Geolocation API works", "[geolocation]")
 {
-
         GeolocationProvider provider{};
         Platform p{};
         EmulatorHttpClient client{};

@@ -19,10 +19,8 @@ Location GeolocationProvider::search_location(const Platform &p,
                                               std::string query)
 {
         auto response = fetch_geolocation(p, query);
-
-        if (!response.has_value()) {
+        if (!response.has_value())
                 return {0.0f, 0.0f};
-        }
 
         Location location = parse_location(response.value());
         LOG_DEBUG(TAG, "Received geolocation: \nLatitude: %f, Longitude: %f",
@@ -56,34 +54,27 @@ std::optional<std::string> fetch_geolocation(const Platform &p,
  */
 std::string assemble_query_url(const std::string &query)
 {
-        std::stringstream ss(query);
-
         std::vector<std::string> parts;
 
+        std::stringstream ss(query);
         std::string token;
         while (getline(ss, token, ' ')) {
                 parts.push_back(token);
         }
 
         std::string url = std::string(BASE_URL);
-
         for (int i = 0; i < parts.size() - 1; i++) {
                 url += parts[i];
                 url += "+";
         }
-
         url += parts[parts.size() - 1];
         url += FORMAT_SUFFIX;
-
         return url;
 }
 
 Location parse_location(std::string response)
 {
-        // Allocate a document
         JsonDocument doc;
-
-        // Parse
         DeserializationError err = deserializeJson(doc, response);
         if (err) {
                 LOG_DEBUG(TAG, "Failed to parse response %s", err.c_str());
@@ -92,6 +83,5 @@ Location parse_location(std::string response)
 
         float latitude = doc[0]["lat"].as<float>();
         float longitude = doc[0]["lon"].as<float>();
-
         return {latitude, longitude};
 }
