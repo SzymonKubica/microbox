@@ -42,9 +42,11 @@ struct WeatherData {
 
 class WeatherProvider
 {
+        const Platform &platform;
+
       public:
-        WeatherData get_weather_data(const Platform &p, Location location,
-                                     int forecast_days);
+        WeatherProvider(const Platform &platform) : platform(platform) {}
+        WeatherData get_weather_data(Location location, int forecast_days);
 };
 
 class WeatherApp : public ApplicationExecutor<WeatherAppConfiguration>

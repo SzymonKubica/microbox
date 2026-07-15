@@ -4,13 +4,13 @@
 
 TEST_CASE("Weather API works", "[weather]")
 {
-        WeatherProvider provider{};
         Platform p{};
         EmulatorHttpClient client{};
         p.client = &client;
+        WeatherProvider provider{p};
 
         WeatherData response = provider.get_weather_data(
-            p, {.latitude = 50.40, .longitude = 18.70}, 5);
+            {.latitude = 50.40, .longitude = 18.70}, 5);
 
         std::cout << "Current weather:" << std::endl;
         std::cout << "Time: " << response.current.timestamp

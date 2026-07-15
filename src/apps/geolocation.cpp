@@ -15,10 +15,9 @@ const std::string FORMAT_SUFFIX = "&format=json";
 std::optional<std::string> fetch_geolocation(const Platform &p,
                                              std::string query);
 Location parse_location(std::string response);
-Location GeolocationProvider::search_location(const Platform &p,
-                                              std::string query)
+Location GeolocationProvider::search_location(std::string query)
 {
-        auto response = fetch_geolocation(p, query);
+        auto response = fetch_geolocation(platform, query);
         if (!response.has_value())
                 return {0.0f, 0.0f};
 

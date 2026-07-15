@@ -38,7 +38,9 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] figure out how to set the User-Agent header in the esp32 library.
 - [x] add weather provider module
-- [ ] integrate end-to-end weather application workflow
+- [x] integrate end-to-end weather application workflow
+- [ ] add temperature graph rendering
+- [ ] design weather app thumbnail
 
 - [ ] add wifi configuration property to tell if a URL is http or https and
       switch the implementation accordingly (or check if the https clients are

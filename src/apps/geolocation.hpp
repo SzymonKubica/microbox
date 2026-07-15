@@ -9,6 +9,9 @@ struct Location {
 
 class GeolocationProvider
 {
+        const Platform &platform;
+
       public:
-        Location search_location(const Platform &p, std::string query);
+        GeolocationProvider(const Platform &platform) : platform(platform) {}
+        Location search_location(std::string query);
 };

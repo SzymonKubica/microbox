@@ -4,12 +4,12 @@
 
 TEST_CASE("Geolocation API works", "[geolocation]")
 {
-        GeolocationProvider provider{};
         Platform p{};
         EmulatorHttpClient client{};
         p.client = &client;
+        GeolocationProvider provider{p};
 
-        Location response = provider.search_location(p, "Sosnowa 3, Kamieniec");
+        Location response = provider.search_location("Sosnowa 3, Kamieniec");
         std::cout << "Latitude: " << response.latitude
                   << ", Longitude: " << response.longitude << std::endl;
         REQUIRE(response.latitude != 0.0f);

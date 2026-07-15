@@ -74,16 +74,15 @@ UserAction handle_fetch(const Platform &p,
                         const WeatherAppConfiguration &config)
 {
 
-        GeolocationProvider geolocation{};
-        WeatherProvider weather{};
+        GeolocationProvider geolocation{p};
+        WeatherProvider weather{p};
 
-        Location location = geolocation.search_location(p, config.location);
-        WeatherData data =
-            weather.get_weather_data(p, location, config.forecast_days);
-
-        char buffer[200];
+        Location location = geolocation.search_location(config.location);
+        auto data = weather.get_weather_data(location, config.forecast_days);
 
         auto [time, temp, rain, precipitation] = data.current;
+
+        char buffer[200];
         sprintf(buffer,
                 "Time: %s Temperature: %.3f C Rainfall: %.3f mm/h Rain "
                 "Probability: %.1f %%",
@@ -204,17 +203,16 @@ const std::string BASE_URL = "https://api.open-meteo.com//v1/forecast?";
 const std::string METRICS_TO_QUERY =
     "current=temperature_2m,rain,precipitation_probability&hourly=temperature_"
     "2m,rain,"
-    "precipitation_probability";
+    "precipitation_probability&timezone=auto";
 
 std::string assemble_query_url(Location location, int forecast_days);
 WeatherData parse_weather_data(std::string response);
-WeatherData WeatherProvider::get_weather_data(const Platform &p,
-                                              Location location,
+WeatherData WeatherProvider::get_weather_data(Location location,
                                               int forecast_days)
 {
         ConnectionConfig config{HOST, 443};
         std::string query_url = assemble_query_url(location, forecast_days);
-        auto maybe_response = p.client->get(config, query_url);
+        auto maybe_response = platform.client->get(config, query_url);
 
         if (!maybe_response.has_value()) {
                 LOG_ERROR(TAG, "Failed to fetch weather data!");
@@ -256,16 +254,15 @@ WeatherData parse_weather_data(std::string response)
         };
 
         const auto &hourly = doc["hourly"];
-        int size = hourly["time"].size();
-        std::vector<WeatherDatapoint> hourly_datapoints(size,
-                                                        WeatherDatapoint{});
-
         const auto &time = hourly["time"];
         const auto &rain = hourly["rain"];
         const auto &temperature = hourly["temperature_2m"];
         const auto &precipitation_probability =
             hourly["precipitation_probability"];
 
+        int size = hourly["time"].size();
+        auto empty = WeatherDatapoint{};
+        std::vector<WeatherDatapoint> hourly_datapoints(size, empty);
         for (int i = 0; i < size; i++) {
                 hourly_datapoints[i] = {
                     time[i],
