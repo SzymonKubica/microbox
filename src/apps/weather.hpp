@@ -3,6 +3,7 @@
 #include "../common/common_transitions.hpp"
 #include "../common/configuration.hpp"
 #include "../common/string_enum.hpp"
+#include "geolocation.hpp"
 
 enum class WeatherQueryType : uint8_t { Current, Forecast, Both };
 
@@ -31,20 +32,10 @@ constexpr std::pair<WeatherAppAction, const char *> TABLE[] = {
     {WeatherAppAction::UpdateLocation, "Update Location"}};
 constexpr const char *to_cstr(WeatherAppAction action)
 {
-        for (auto [a, str] : TABLE) {
-                if (a == action)
-                        return str;
-        }
-        return "UNKNOWN";
+        return StrEnum::to_cstr(action, TABLE);
 }
 std::optional<WeatherAppAction> from_cstr(const char *str);
 } // namespace WeatherAppActionUtils
-
-enum class WeatherMetric : uint8_t {
-        Temperature,
-        Rain,
-        PrecipitationProbability
-};
 
 struct WeatherAppConfiguration {
         ConfigurationHeader header;
@@ -52,6 +43,26 @@ struct WeatherAppConfiguration {
         WeatherQueryType query_type;
         WeatherAppAction action;
         int forecast_days;
+};
+
+struct WeatherDatapoint {
+        std::string timestamp;
+        float temperature;
+        float rain;
+        float precipitation_probability;
+};
+
+struct WeatherData {
+        WeatherDatapoint current;
+        std::vector<WeatherDatapoint> hourly;
+};
+
+class WeatherProvider
+{
+      public:
+        WeatherData get_weather_data(const Platform &p,
+                                     WeatherQueryType query_type,
+                                     Location location, int forecast_days);
 };
 
 class WeatherApp : public ApplicationExecutor<WeatherAppConfiguration>
