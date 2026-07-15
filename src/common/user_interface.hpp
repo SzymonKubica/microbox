@@ -60,4 +60,10 @@ std::optional<UserAction> wait_until_green_pressed(const Platform &p);
 std::optional<UserAction> wait_until_action_input(const Platform &p,
                                                   Action &action);
 
+void render_bar_graph(const Platform &p,
+                      const UserInterfaceCustomization &customization,
+                      int y_start,
+                      const std::vector<float> &x_labels,
+                      const std::vector<float> &y_labels);
+
 ConfigurationDiff *empty_diff();

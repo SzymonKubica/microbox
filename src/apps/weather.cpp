@@ -89,6 +89,16 @@ UserAction handle_fetch(const Platform &p,
                 time.c_str(), temp, rain, precipitation);
         render_wrapped_help_text(p, customization, buffer);
 
+        int y_start =
+            p.display->get_font_configuration().font_dimensions.height * 6;
+
+        std::vector<float> temperatures;
+        for (const auto &datapoint : data.hourly) {
+                temperatures.push_back(datapoint.temperature);
+        }
+
+        render_bar_graph(p, customization, y_start, {}, temperatures);
+
         auto maybe_interrupt = wait_until_green_pressed(p);
         // Applicable on the emulator only: if the window is closed while
         // waiting for input we need to propagate the `CloseWindow` action back

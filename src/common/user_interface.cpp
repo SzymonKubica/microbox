@@ -1771,6 +1771,42 @@ std::optional<UserAction> wait_until_action_input(const Platform &p,
         }
 }
 
+void render_bar_graph(const Platform &p,
+                      const UserInterfaceCustomization &customization,
+                      int y_start, const std::vector<float> &x_labels,
+                      const std::vector<float> &y_values)
+{
+        auto [width, height, _radius] = p.display->get_display_dimensions();
+
+        const auto &display = *p.display;
+
+        int margin = 15;
+        int available_width = width - 2 * margin;
+        int available_height = height - y_start - margin;
+        int bar_width = available_width / y_values.size();
+
+        auto origin = Point{margin, y_start + available_height};
+        display.draw_line({margin, y_start}, origin, Color::White);
+        display.draw_line(origin, origin + Point{available_width, 0},
+                          Color::White);
+
+        auto it = std::max_element(y_values.begin(), y_values.end());
+        float maximum = *it;
+
+        auto scale = [&](float x) {
+                float scale = x / maximum;
+                return (int)available_height * scale;
+        };
+
+        for (int i = 0; i < y_values.size(); i++) {
+                int h = y_values[i];
+                int height = scale(h);
+                display.draw_rectangle({margin + i * bar_width, origin.y - height},
+                                       bar_width, height,
+                                       customization.accent_color, 1, true);
+        }
+}
+
 void NameBoxRenderer::render_thumbnail(
     const Platform &platform, const UserInterfaceCustomization &customization)
 {
