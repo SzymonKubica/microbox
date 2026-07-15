@@ -34,8 +34,10 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # TODO
 
+- [ ] clean up keyboard input functions (remove duplicate letters and ordering artifacts when capslock is on)
+
 - [ ] figure out how to set the User-Agent header in the esp32 library.
-- [ ] add weather provider module
+- [x] add weather provider module
 - [ ] integrate end-to-end weather application workflow
 
 - [ ] add wifi configuration property to tell if a URL is http or https and

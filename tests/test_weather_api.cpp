@@ -10,8 +10,7 @@ TEST_CASE("Weather API works", "[weather]")
         p.client = &client;
 
         WeatherData response = provider.get_weather_data(
-            p, WeatherQueryType::Current,
-            {.latitude = 50.40, .longitude = 18.70}, 5);
+            p, {.latitude = 50.40, .longitude = 18.70}, 5);
 
         std::cout << "Current weather:" << std::endl;
         std::cout << "Time: " << response.current.timestamp

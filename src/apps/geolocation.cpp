@@ -40,8 +40,7 @@ std::optional<std::string> fetch_geolocation(const Platform &p,
         auto maybe_response = p.client->get(config, url);
 
         if (maybe_response.has_value()) {
-                LOG_DEBUG(TAG, "Geolocation response: \n%s",
-                          maybe_response.value().c_str());
+                LOG_DEBUG(TAG, "Received geolocation response!");
         }
         return maybe_response;
 }

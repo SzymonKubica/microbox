@@ -5,31 +5,15 @@
 #include "../common/string_enum.hpp"
 #include "geolocation.hpp"
 
-enum class WeatherQueryType : uint8_t { Current, Forecast, Both };
-
-namespace WeatherQueryTypeUtils
-{
-constexpr std::pair<WeatherQueryType, const char *> TABLE[] = {
-    {WeatherQueryType::Current, "Current"},
-    {WeatherQueryType::Forecast, "Forecast"},
-    {WeatherQueryType::Both, "Both"}};
-constexpr const char *to_cstr(WeatherQueryType type)
-{
-        return StrEnum::to_cstr(type, TABLE);
-}
-std::optional<WeatherQueryType> from_cstr(const char *str);
-} // namespace WeatherQueryTypeUtils
-
 enum class WeatherAppAction : uint8_t {
         Fetch,
         UpdateLocation,
 };
-
 namespace WeatherAppActionUtils
 {
 constexpr std::pair<WeatherAppAction, const char *> TABLE[] = {
     {WeatherAppAction::Fetch, "Fetch"},
-    {WeatherAppAction::UpdateLocation, "Update Location"}};
+    {WeatherAppAction::UpdateLocation, "Change Place"}};
 constexpr const char *to_cstr(WeatherAppAction action)
 {
         return StrEnum::to_cstr(action, TABLE);
@@ -40,7 +24,6 @@ std::optional<WeatherAppAction> from_cstr(const char *str);
 struct WeatherAppConfiguration {
         ConfigurationHeader header;
         char location[100];
-        WeatherQueryType query_type;
         WeatherAppAction action;
         int forecast_days;
 };
@@ -60,9 +43,8 @@ struct WeatherData {
 class WeatherProvider
 {
       public:
-        WeatherData get_weather_data(const Platform &p,
-                                     WeatherQueryType query_type,
-                                     Location location, int forecast_days);
+        WeatherData get_weather_data(const Platform &p, Location location,
+                                     int forecast_days);
 };
 
 class WeatherApp : public ApplicationExecutor<WeatherAppConfiguration>

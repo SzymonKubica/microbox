@@ -17,6 +17,7 @@ std::optional<std::string> Esp32HttpClient::get(const ConnectionConfig &config,
         client.setInsecure();
         LOG_DEBUG("wifi_client", "Connecting to host...");
         if (https.begin(client, url.c_str())) {
+                https.addHeader("User-Agent", "MicroBox/1.0 (ESP32)");
                 LOG_DEBUG("wifi_client",
                           "Connected to host, sending request...");
 
