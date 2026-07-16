@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cstring>
 #include <cassert>
 
@@ -87,17 +88,31 @@ UserAction handle_fetch(const Platform &p,
                 "Time: %s Temperature: %.3f C Rainfall: %.3f mm/h Rain "
                 "Probability: %.1f %%",
                 time.c_str(), temp, rain, precipitation);
-        render_wrapped_help_text(p, customization, buffer);
+        render_wrapped_text(p, customization, buffer);
 
         int y_start =
-            p.display->get_font_configuration().font_dimensions.height * 6;
+            p.display->get_font_configuration().font_dimensions.height * 7;
 
         std::vector<float> temperatures;
         for (const auto &datapoint : data.hourly) {
                 temperatures.push_back(datapoint.temperature);
         }
 
-        render_bar_graph(p, customization, y_start, {}, temperatures);
+        std::vector<std::string> labels;
+        std::istringstream iss{data.current.timestamp};
+        std::chrono::year_month_day ymd;
+        iss >> std::chrono::parse("%FT%R", ymd);
+        std::chrono::sys_days sd{ymd};
+        for (int i = 0; i < config.forecast_days; i++) {
+                sd += std::chrono::days{1};
+                char buffer[6];
+                std::chrono::year_month_day curr{sd};
+                sprintf(buffer, "%d-%d", unsigned(curr.month()),
+                        unsigned(curr.day()));
+                labels.push_back(std::string(buffer));
+        }
+
+        render_bar_graph(p, customization, y_start, labels, temperatures);
 
         auto maybe_interrupt = wait_until_green_pressed(p);
         // Applicable on the emulator only: if the window is closed while

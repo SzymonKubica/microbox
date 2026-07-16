@@ -13,6 +13,7 @@
 #include "user_interface.hpp"
 #include "configuration.hpp"
 #include "constants.hpp"
+#include "font_size.hpp"
 #include "point.hpp"
 
 #define GRID_BG_COLOR White
@@ -1773,37 +1774,90 @@ std::optional<UserAction> wait_until_action_input(const Platform &p,
 
 void render_bar_graph(const Platform &p,
                       const UserInterfaceCustomization &customization,
-                      int y_start, const std::vector<float> &x_labels,
+                      int y_start, const std::vector<std::string> &x_labels,
                       const std::vector<float> &y_values)
 {
+        const auto &display = *p.display;
         auto [width, height, _radius] = p.display->get_display_dimensions();
 
-        const auto &display = *p.display;
+        // Before we can calculate the margins we need to know the max width
+        // of the y-axis label to the left of the graph.
+        float maximum, minimum;
+        {
+                auto it = std::max_element(y_values.begin(), y_values.end());
+                maximum = *it;
+        }
+        {
+                auto it = std::min_element(y_values.begin(), y_values.end());
+                minimum = *it;
+        }
+        char min_str[5], max_str[5];
+        sprintf(max_str, "%.1f", maximum);
+        sprintf(min_str, "%.1f", minimum);
+        int max_label_len = std::max(strlen(min_str), strlen(max_str));
 
+        auto [fw, fh] = display.get_font_configuration().font_dimensions;
+
+        int left_margin = 5 + fw * max_label_len;
         int margin = 15;
-        int available_width = width - 2 * margin;
-        int available_height = height - y_start - margin;
-        int bar_width = available_width / y_values.size();
+        int bottom_margin = 3 + fh;
+        int bar_spacing = 1;
+        int available_width = width - margin - left_margin;
+        int available_height = height - y_start - bottom_margin;
+        int bar_width = available_width / y_values.size() - bar_spacing;
 
-        auto origin = Point{margin, y_start + available_height};
-        display.draw_line({margin, y_start}, origin, Color::White);
+        auto origin = Point{left_margin, y_start + available_height};
+        display.draw_line({left_margin, y_start}, origin, Color::White);
         display.draw_line(origin, origin + Point{available_width, 0},
                           Color::White);
 
-        auto it = std::max_element(y_values.begin(), y_values.end());
-        float maximum = *it;
+        auto draw_y_label = [&](char *label, int height_offset) {
+                int label_len = fw * strlen(label);
+                display.draw_string(
+                    {left_margin - label_len, y_start + height_offset}, label,
+                    FontSize::Size16, Color::Black, Color::White);
+        };
 
         auto scale = [&](float x) {
-                float scale = x / maximum;
-                return (int)available_height * scale;
+                int min_height = 10;
+                int max_height = available_height;
+                int range = maximum - minimum;
+                if (range == 0)
+                        return (int)(min_height + max_height) / 2;
+                int baseline = min_height;
+                // We need this for floating-point stability. When x is equal to
+                // max, the calculation (x- min) / range reduces to 1 but it is
+                // not quite 1 sometimes because of fp inaccuracies.
+                if (x == maximum)
+                        return max_height;
+                return (int)(baseline +
+                             (max_height - min_height) * (x - minimum) / range);
         };
+
+        draw_y_label(max_str, 0);
+        draw_y_label(min_str, available_height - scale(minimum));
 
         for (int i = 0; i < y_values.size(); i++) {
                 int h = y_values[i];
                 int height = scale(h);
-                display.draw_rectangle({margin + i * bar_width, origin.y - height},
-                                       bar_width, height,
+                int bar_x =
+                    left_margin + bar_spacing + i * (bar_width + bar_spacing);
+                Point bar_start = {bar_x, origin.y - height};
+                display.draw_rectangle(bar_start, bar_width, height,
                                        customization.accent_color, 1, true);
+
+                // Draw x axis labels
+                if (x_labels.empty()) {
+                        continue;
+                }
+                int label_period = y_values.size() / x_labels.size();
+
+                if (i % label_period == 0) {
+                        int idx = i / label_period;
+                        display.draw_string(
+                            {bar_x, origin.y}, (char *)x_labels[idx].c_str(),
+                            FontSize::Size16, Color::Black, Color::White);
+                }
         }
 }
 
