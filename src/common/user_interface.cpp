@@ -1241,12 +1241,12 @@ collect_string_input(const Platform &p,
         std::vector<const char *> shift_char_map = {
             "~!@#$%^&*()_+",
             "QWERTYUIOP{}|",
-            "ASDDFGHJKL:\" ",
-            "ZXCVBNM<>?  x ",
+            "ASDFGHJKL:\"  ",
+            "ZXCVBNM<>? x ",
         };
         Point cancellation_key_location = {11, 3};
 
-        std::vector<int> left_indent_map = {0, 1, 2, 3};
+        std::vector<int> left_indent_map = {1, 2, 3, 4};
 
         Point input_text_start = {.x = left_horizontal_margin,
                                   .y = top_vertical_margin};
@@ -1293,9 +1293,23 @@ collect_string_input(const Platform &p,
                     buffer[0] = row[x];
                     buffer[1] = '\0';
                     display->clear_region(
-                        start, {start.x + fw, start.y + fh + 4}, Black);
+                        start, {start.x + fw + 2, start.y + fh + 4}, Black);
                     display->draw_string(start, buffer, FontSize::Size16, Black,
                                          color);
+                    if (row[x] == ' ') {
+                            // We make the character slightly smaller so that
+                            // it doesn't get clipped by the clear region from
+                            // the characters around it
+                            auto space_start = start + Point{1, fh - 2};
+                            auto space_end = space_start + Point{fw - 2, 0};
+                            // Main underline
+                            display->draw_line(space_start, space_end, color);
+                            // Small vertical lines to indicate the space symbol
+                            display->draw_line(
+                                space_start, space_start + Point{0, -5}, color);
+                            display->draw_line(space_end,
+                                               space_end + Point{0, -5}, color);
+                    }
             };
 
         // We define this reusasble lambda so that we can easily
