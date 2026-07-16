@@ -5,15 +5,19 @@
 #include "../common/string_enum.hpp"
 #include "geolocation.hpp"
 
+#define AVAILABLE_CONFIGURATION_SLOTS 5
+
 enum class WeatherAppAction : uint8_t {
         Fetch,
         UpdateLocation,
+        AddNew,
 };
 namespace WeatherAppActionUtils
 {
 constexpr std::pair<WeatherAppAction, const char *> TABLE[] = {
     {WeatherAppAction::Fetch, "Fetch"},
-    {WeatherAppAction::UpdateLocation, "Change Place"}};
+    {WeatherAppAction::UpdateLocation, "Update Place"},
+    {WeatherAppAction::AddNew, "Add New"}};
 constexpr const char *to_cstr(WeatherAppAction action)
 {
         return StrEnum::to_cstr(action, TABLE);
@@ -23,9 +27,13 @@ std::optional<WeatherAppAction> from_cstr(const char *str);
 
 struct WeatherAppConfiguration {
         ConfigurationHeader header;
-        char location[100];
+        std::size_t curr_config_idx;
+        int occupied_config_slots;
+        char locations[AVAILABLE_CONFIGURATION_SLOTS][100];
         WeatherAppAction action;
         int forecast_days;
+
+        std::vector<const char *> get_saved_locations() const;
 };
 
 struct WeatherDatapoint {

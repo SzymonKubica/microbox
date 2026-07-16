@@ -90,7 +90,8 @@ void LcdDisplay::draw_string(Point start, char *string_buffer,
 {
         tft.setTextColor(to_tft_color(fg_color), to_tft_color(bg_color));
         tft.setTextFont(font_type_from_size(font_size));
-        tft.setTextSize(2);
+        int text_size = font_size == FontSize::Size8 ? 1 : 2;
+        tft.setTextSize(text_size);
         tft.setCursor(start.x, start.y);
         tft.print(string_buffer);
 };

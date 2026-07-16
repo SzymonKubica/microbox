@@ -13,9 +13,11 @@
 
 WeatherAppConfiguration DEFAULT_WEATHER_APP_CONFIG = {
     .header = {.magic = CONFIGURATION_MAGIC, .version = 2},
-    .location = "Peniche, PT",
+    .curr_config_idx = 0,
+    .occupied_config_slots = 3,
+    .locations = {"Peniche, PT", "London, UK", "Sosnowa 3, Kamieniec, PL"},
     .action = WeatherAppAction::Fetch,
-    .forecast_days = 3};
+    .forecast_days = 5};
 
 UserAction random_seed_picker_loop(Platform *p,
                                    UserInterfaceCustomization *customization);
@@ -25,19 +27,25 @@ const char *WeatherApp::get_help_text() const { return "TODO"; }
 
 UserAction
 handle_update_location(const Platform &p,
-                       const UserInterfaceCustomization &customization);
+                       const UserInterfaceCustomization &customization,
+                       const WeatherAppConfiguration &config);
 UserAction handle_fetch(const Platform &p,
                         const UserInterfaceCustomization &customization,
                         const WeatherAppConfiguration &config);
+UserAction handle_add_new(const Platform &p,
+                          const UserInterfaceCustomization &customization,
+                          const WeatherAppConfiguration &config);
 UserAction WeatherApp::app_loop(const Platform &p,
                                 const UserInterfaceCustomization &customization,
                                 const WeatherAppConfiguration &config) const
 {
         switch (config.action) {
         case WeatherAppAction::UpdateLocation:
-                return handle_update_location(p, customization);
+                return handle_update_location(p, customization, config);
         case WeatherAppAction::Fetch:
                 return handle_fetch(p, customization, config);
+        case WeatherAppAction::AddNew:
+                return handle_add_new(p, customization, config);
         }
         return UserAction::PlayAgain;
 }
@@ -46,7 +54,8 @@ WeatherAppConfiguration *
 load_initial_weather_app_config(PersistentStorage *storage);
 UserAction
 handle_update_location(const Platform &p,
-                       const UserInterfaceCustomization &customization)
+                       const UserInterfaceCustomization &customization,
+                       const WeatherAppConfiguration &config)
 {
         char *location;
         auto maybe_interrupt = collect_string_input(
@@ -60,12 +69,11 @@ handle_update_location(const Platform &p,
                 return action;
         }
 
+        WeatherAppConfiguration copy = config;
         const auto storage = p.persistent_storage;
-        WeatherAppConfiguration *initial_config =
-            load_initial_weather_app_config(storage);
-        sprintf(initial_config->location, "%s", location);
+        sprintf(copy.locations[config.curr_config_idx], "%s", location);
         int storage_offset = get_settings_storage_offset(Game::WeatherApp);
-        storage->put(storage_offset, *initial_config);
+        storage->put(storage_offset, copy);
 
         return UserAction::PlayAgain;
 }
@@ -78,16 +86,23 @@ UserAction handle_fetch(const Platform &p,
         GeolocationProvider geolocation{p};
         WeatherProvider weather{p};
 
-        Location location = geolocation.search_location(config.location);
+        std::string location_description =
+            std::string(config.locations[config.curr_config_idx]);
+        LOG_DEBUG(TAG, "Fetching weather data for location: %s",
+                  location_description.c_str());
+
+        Location location = geolocation.search_location(location_description);
         auto data = weather.get_weather_data(location, config.forecast_days);
 
         auto [time, temp, rain, precipitation] = data.current;
 
         char buffer[200];
         sprintf(buffer,
-                "Time: %s Temperature: %.3f C Rainfall: %.3f mm/h Rain "
-                "Probability: %.1f %%",
-                time.c_str(), temp, rain, precipitation);
+                "Time: %s "
+                "Temperature: %.1f Celsius "
+                "Precipitation: %.0f %% "
+                "Temperature over %d days:",
+                time.c_str(), temp, precipitation, config.forecast_days);
         render_wrapped_text(p, customization, buffer);
 
         int y_start =
@@ -121,6 +136,46 @@ UserAction handle_fetch(const Platform &p,
         if (maybe_interrupt.has_value()) {
                 return maybe_interrupt.value();
         }
+        return UserAction::PlayAgain;
+}
+
+UserAction handle_add_new(const Platform &p,
+                          const UserInterfaceCustomization &customization,
+                          const WeatherAppConfiguration &config)
+{
+        if (config.occupied_config_slots >= AVAILABLE_CONFIGURATION_SLOTS) {
+                render_wrapped_text(
+                    p, customization,
+                    "You have reached the maximum number of saved "
+                    "locations. Please overwrite an existing location to add a "
+                    "new one.");
+                auto maybe_interrupt = wait_until_green_pressed(p);
+                if (maybe_interrupt.has_value()) {
+                        return maybe_interrupt.value();
+                }
+                return UserAction::PlayAgain;
+        }
+
+        char *location;
+        auto maybe_interrupt = collect_string_input(
+            p, customization, "Enter location:", &location);
+        if (maybe_interrupt.has_value()) {
+                UserAction action = maybe_interrupt.value();
+                if (action == UserAction::Exit) {
+                        LOG_DEBUG(TAG, "User cancelled modifying the weather "
+                                       "query location.");
+                }
+                return action;
+        }
+
+        WeatherAppConfiguration copy = config;
+        const auto storage = p.persistent_storage;
+        int new_config_idx = config.occupied_config_slots;
+        copy.occupied_config_slots++;
+        sprintf(copy.locations[new_config_idx], "%s", location);
+        int storage_offset = get_settings_storage_offset(Game::WeatherApp);
+        storage->put(storage_offset, copy);
+
         return UserAction::PlayAgain;
 }
 
@@ -182,22 +237,42 @@ WeatherApp::collect_config(const Platform &p,
         return std::nullopt;
 }
 
+/**
+ * Returns the saved configurations as a vector. This is used to allow
+ * for more convenient processing even though the actual representation
+ * needs to be a simple array so that we can safely serialize it to raw
+ * bytes in EEPROM.
+ */
+std::vector<const char *> WeatherAppConfiguration::get_saved_locations() const
+{
+        std::vector<const char *> output;
+        for (std::size_t i = 0; i < occupied_config_slots; i++) {
+                output.push_back(this->locations[i]);
+        }
+        return output;
+}
+
 Configuration *assemble_weather_app_configuration(
     const Platform &p, const WeatherAppConfiguration &initial_config)
 {
         std::vector<const char *> availabe_actions = {
             WeatherAppActionUtils::to_cstr(WeatherAppAction::Fetch),
             WeatherAppActionUtils::to_cstr(WeatherAppAction::UpdateLocation),
+            WeatherAppActionUtils::to_cstr(WeatherAppAction::AddNew),
         };
 
         auto *action = ConfigurationOption::of_strings(
             ">", availabe_actions,
             WeatherAppActionUtils::to_cstr(initial_config.action));
 
+        int occupied_slots = initial_config.occupied_config_slots;
+        std::vector<const char *> locations =
+            initial_config.get_saved_locations();
+
         auto *location = ConfigurationOption::of_strings(
-            "Where", {initial_config.location}, initial_config.location);
+            "Where", locations, locations[initial_config.curr_config_idx]);
         auto *forecast_days = ConfigurationOption::of_integers(
-            "Days", {1, 2, 3, 4, 5, 6, 7}, initial_config.forecast_days);
+            "Days", {1, 2, 3, 4, 5}, initial_config.forecast_days);
 
         return new Configuration("Weather", {forecast_days, location, action});
 }
@@ -218,8 +293,11 @@ void extract_weather_app_config(WeatherAppConfiguration &initial_config,
         weather_query_config.action =
             WeatherAppActionUtils::from_cstr(action->get_current_str_value())
                 .value();
-        memcpy(weather_query_config.location, initial_config.location,
-               sizeof(char[100]));
+        weather_query_config.curr_config_idx = selected_location_idx;
+        weather_query_config.occupied_config_slots =
+            initial_config.occupied_config_slots;
+        memcpy(weather_query_config.locations, initial_config.locations,
+               sizeof(char[AVAILABLE_CONFIGURATION_SLOTS][100]));
 }
 
 const std::string HOST = "api.open-meteo.com";

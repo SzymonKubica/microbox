@@ -36,11 +36,14 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] clean up keyboard input functions (remove duplicate letters and ordering artifacts when capslock is on)
 
-- [ ] figure out how to set the User-Agent header in the esp32 library.
+- [x] figure out how to set the User-Agent header in the esp32 library.
 - [x] add weather provider module
 - [x] integrate end-to-end weather application workflow
-- [ ] add temperature graph rendering
+- [x] add temperature graph rendering
+- [x] add 'Font8' support for the 2.4 inch display
+- [x] add support for having multiple saved weather query locations
 - [ ] design weather app thumbnail
+
 
 - [ ] add wifi configuration property to tell if a URL is http or https and
       switch the implementation accordingly (or check if the https clients are

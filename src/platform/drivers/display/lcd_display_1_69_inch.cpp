@@ -202,6 +202,8 @@ void LcdDisplay_1_69::clear_region(Point top_left, Point bottom_right,
 sFONT *map_font_size_1_69_specific(FontSize font_size)
 {
         switch (font_size) {
+        case Size8:
+                return &Font8;
         case Size16:
                 return &Font16;
         case Size24:

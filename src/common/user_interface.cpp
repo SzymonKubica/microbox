@@ -1819,7 +1819,7 @@ void render_bar_graph(const Platform &p,
         };
 
         auto scale = [&](float x) {
-                int min_height = 10;
+                int min_height = available_height / 5;
                 int max_height = available_height;
                 int range = maximum - minimum;
                 if (range == 0)
@@ -1854,9 +1854,10 @@ void render_bar_graph(const Platform &p,
 
                 if (i % label_period == 0) {
                         int idx = i / label_period;
-                        display.draw_string(
-                            {bar_x, origin.y}, (char *)x_labels[idx].c_str(),
-                            FontSize::Size16, Color::Black, Color::White);
+                        display.draw_string({bar_x, origin.y + 5},
+                                            (char *)x_labels[idx].c_str(),
+                                            FontSize::Size8, Color::Black,
+                                            Color::White);
                 }
         }
 }
