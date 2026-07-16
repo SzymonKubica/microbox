@@ -12,7 +12,7 @@
 #define TAG "random_seed_picker"
 
 WeatherAppConfiguration DEFAULT_WEATHER_APP_CONFIG = {
-    .header = {.magic = CONFIGURATION_MAGIC, .version = 2},
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 10},
     .curr_config_idx = 0,
     .occupied_config_slots = 3,
     .locations = {"Peniche, PT", "London, UK", "Sosnowa 3, Kamieniec, PL"},
@@ -99,10 +99,10 @@ UserAction handle_fetch(const Platform &p,
         char buffer[200];
         sprintf(buffer,
                 "Time: %s "
-                "Temperature: %.1f Celsius "
-                "Precipitation: %.0f %% "
-                "Temperature over %d days:",
-                time.c_str(), temp, precipitation, config.forecast_days);
+                "Precipitation: %.1f %% "
+                "Temperature: %.1f Cel. "
+                "Forecast %d days:",
+                time.c_str(), precipitation, temp, config.forecast_days);
         render_wrapped_text(p, customization, buffer);
 
         int y_start =
@@ -381,4 +381,32 @@ std::optional<WeatherAppAction>
 WeatherAppActionUtils::from_cstr(const char *str)
 {
         return StrEnum::from_cstr(str, TABLE);
+}
+
+void WeatherApp::render_thumbnail(
+    const Platform &platform, const UserInterfaceCustomization &customization)
+{
+        const auto &display = *platform.display;
+        clear_half_display_and_render_subtitle(platform, customization,
+                                               "Weather");
+
+        TftCompatibleDisplay &tft =
+            *platform.display->cast_into_tft_compatible();
+
+        // ellipse 18
+        tft.fillEllipse(159, 152, 14, 16, 0xFFFF);
+        // ellipse 18 copy 1
+        tft.fillEllipse(180, 157, 13, 13, 0xFFFF);
+        // ellipse 18 copy 2
+        tft.fillEllipse(138, 159, 11, 11, 0xFFFF);
+        // rect 21
+        tft.fillRect(139, 159, 43, 12, 0xFFFF);
+        // ellipse 22
+        tft.fillEllipse(144, 121, 17, 17, 0xFF47);
+        // ellipse 18 copy 3
+        tft.fillEllipse(186, 111, 7, 7, 0xFFFF);
+        // ellipse 18 copy 4
+        tft.fillEllipse(176, 115, 7, 7, 0xFFFF);
+        // ellipse 18 copy 5
+        tft.fillEllipse(184, 118, 7, 7, 0xFFFF);
 }

@@ -34,33 +34,24 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 # TODO
 
-- [x] clean up keyboard input functions (remove duplicate letters and ordering artifacts when capslock is on)
+- [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
+# In Progress
+
+
+# Done
+- [x] add weather API integration to allow for checking daily weather before running in the morning
+  - [x] design application capability model (enum actions) and a way for displaying the data
+  - [x] Step 1: simple integration - hard-code the location and get back weather data.
+  - [x] Step 2: find a geolocation API to map from street and city names and get back coordinates
+- [x] clean up keyboard input functions (remove duplicate letters and ordering artifacts when capslock is on)
 - [x] figure out how to set the User-Agent header in the esp32 library.
 - [x] add weather provider module
 - [x] integrate end-to-end weather application workflow
 - [x] add temperature graph rendering
 - [x] add 'Font8' support for the 2.4 inch display
 - [x] add support for having multiple saved weather query locations
-- [ ] design weather app thumbnail
-
-
-- [ ] add wifi configuration property to tell if a URL is http or https and
-      switch the implementation accordingly (or check if the https clients are
-      smart enough to handle that) (this is only required if we have a use case for hitting http endpoints)
-      (this should be done after all wifi improvements above).
-
-- [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
-
-# In Progress
-
-- [ ] add weather API integration to allow for checking daily weather before running in the morning
-  - [ ] design application capability model (enum actions) and a way for displaying the data
-  - [ ] Step 1: simple integration - hard-code the location and get back weather data.
-  - [ ] Step 2: find a geolocation API to map from street and city names and get back coordinates
-
-
-# Done
+- [x] design weather app thumbnail
 - [x] figure out how to implicitly convert enum classes to their base int
       superclass
 - [x] migrate all enums <> string conversions to the new dynamic pattern and

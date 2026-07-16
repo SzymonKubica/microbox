@@ -57,7 +57,8 @@ class WeatherProvider
         WeatherData get_weather_data(Location location, int forecast_days);
 };
 
-class WeatherApp : public ApplicationExecutor<WeatherAppConfiguration>
+class WeatherApp : public ApplicationExecutor<WeatherAppConfiguration>,
+                   public ThumbnailRenderer
 {
       public:
         UserAction
@@ -70,6 +71,9 @@ class WeatherApp : public ApplicationExecutor<WeatherAppConfiguration>
                        WeatherAppConfiguration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
 
         WeatherApp() {}
 };

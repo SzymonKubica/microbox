@@ -163,7 +163,7 @@ get_thumbnail_renderer(Game game)
         case Game::Power:
                 return custom_renderer<PowerManagementApp>();
         case Game::WeatherApp:
-                return simple_name_renderer<WeatherApp>();
+                return custom_renderer<WeatherApp>();
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return std::nullopt;
