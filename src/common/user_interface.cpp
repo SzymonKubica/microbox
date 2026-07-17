@@ -1293,7 +1293,7 @@ collect_string_input(const Platform &p,
                     buffer[0] = row[x];
                     buffer[1] = '\0';
                     display->clear_region(
-                        start, {start.x + fw + 2, start.y + fh + 4}, Black);
+                        start, {start.x + fw, start.y + fh + 3}, Black);
                     display->draw_string(start, buffer, FontSize::Size16, Black,
                                          color);
                     if (row[x] == ' ') {

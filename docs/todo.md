@@ -35,6 +35,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 # TODO
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
+- [ ] fix keyboard erase clear rendering
 
 - [ ] add graph current value highlighting
 
