@@ -1812,7 +1812,9 @@ void render_bar_graph(const Platform &p,
 
         auto [fw, fh] = display.get_font_configuration().font_dimensions;
 
-        int left_margin = 5 + fw * max_label_len;
+        // We divide fw by 2 as we are using FontSize 8 for the labels that
+        // is two times smaller compared to the default font 16.
+        int left_margin = 5 + fw / 2 * (max_label_len + 1);
         int margin = 15;
         int bottom_margin = 3 + fh;
         int bar_spacing = 1;
@@ -1826,16 +1828,16 @@ void render_bar_graph(const Platform &p,
                           Color::White);
 
         auto draw_y_label = [&](char *label, int height_offset) {
-                int label_len = fw * strlen(label);
+                int label_len = (fw / 2) * (strlen(label) + 1);
                 display.draw_string(
                     {left_margin - label_len, y_start + height_offset}, label,
-                    FontSize::Size16, Color::Black, Color::White);
+                    FontSize::Size8, Color::Black, Color::White);
         };
 
-        auto scale = [&](float x) {
+        auto scale = [&](double x) {
                 int min_height = available_height / 5;
                 int max_height = available_height;
-                int range = maximum - minimum;
+                float range = maximum - minimum;
                 if (range == 0)
                         return (int)(min_height + max_height) / 2;
                 int baseline = min_height;
@@ -1844,15 +1846,17 @@ void render_bar_graph(const Platform &p,
                 // not quite 1 sometimes because of fp inaccuracies.
                 if (x == maximum)
                         return max_height;
-                return (int)(baseline +
-                             (max_height - min_height) * (x - minimum) / range);
+                int scaled = (int)(baseline +
+                                   (max_height - min_height) * (x - minimum)) /
+                             range;
+                return scaled;
         };
 
         draw_y_label(max_str, 0);
         draw_y_label(min_str, available_height - scale(minimum));
 
         for (int i = 0; i < y_values.size(); i++) {
-                int h = y_values[i];
+                double h = y_values[i];
                 int height = scale(h);
                 int bar_x =
                     left_margin + bar_spacing + i * (bar_width + bar_spacing);

@@ -35,7 +35,6 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 # TODO
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
-- [ ] fix keyboard erase clear rendering
 
 - [ ] add graph current value highlighting
 
@@ -43,6 +42,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] fix keyboard erase clear rendering
 - [x] fix stale header validations
 - [x] make the thumbnail look better
 - [x] add settings and defaults integration for the weather app
