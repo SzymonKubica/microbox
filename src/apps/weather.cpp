@@ -12,7 +12,7 @@
 #define TAG "random_seed_picker"
 
 WeatherAppConfiguration DEFAULT_WEATHER_APP_CONFIG = {
-    .header = {.magic = CONFIGURATION_MAGIC, .version = 10},
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 2},
     .curr_config_idx = 0,
     .occupied_config_slots = 3,
     .locations = {"Peniche, PT", "London, UK", "Sosnowa 3, Kamieniec, PL"},
@@ -70,6 +70,8 @@ handle_update_location(const Platform &p,
         }
 
         WeatherAppConfiguration copy = config;
+        // We need to ensure that the header version is not outdated
+        copy.header.version = DEFAULT_WEATHER_APP_CONFIG.header.version;
         const auto storage = p.persistent_storage;
         sprintf(copy.locations[config.curr_config_idx], "%s", location);
         int storage_offset = get_settings_storage_offset(Game::WeatherApp);
@@ -169,6 +171,8 @@ UserAction handle_add_new(const Platform &p,
         }
 
         WeatherAppConfiguration copy = config;
+        // We need to ensure that the header version is not outdated
+        copy.header.version = DEFAULT_WEATHER_APP_CONFIG.header.version;
         const auto storage = p.persistent_storage;
         int new_config_idx = config.occupied_config_slots;
         copy.occupied_config_slots++;
@@ -392,21 +396,52 @@ void WeatherApp::render_thumbnail(
 
         TftCompatibleDisplay &tft =
             *platform.display->cast_into_tft_compatible();
-
-        // ellipse 18
-        tft.fillEllipse(159, 152, 14, 16, 0xFFFF);
-        // ellipse 18 copy 1
-        tft.fillEllipse(180, 157, 13, 13, 0xFFFF);
-        // ellipse 18 copy 2
-        tft.fillEllipse(138, 159, 11, 11, 0xFFFF);
-        // rect 21
-        tft.fillRect(139, 159, 43, 12, 0xFFFF);
+        // [BEGIN lopaka generated]
         // ellipse 22
-        tft.fillEllipse(144, 121, 17, 17, 0xFF47);
+        tft.fillEllipse(142, 119, 16, 16, 0xFF47);
+        // ellipse 18
+        tft.fillEllipse(158, 135, 14, 16, 0xFFFF);
+        // ellipse 18 copy 1
+        tft.fillEllipse(181, 144, 13, 13, 0xFFFF);
+        // ellipse 18 copy 2
+        tft.fillEllipse(138, 146, 11, 11, 0xFFFF);
+        // rect 21
+        tft.fillRect(139, 146, 43, 12, 0xFFFF);
         // ellipse 18 copy 3
-        tft.fillEllipse(186, 111, 7, 7, 0xFFFF);
+        tft.fillEllipse(163, 149, 8, 8, 0xEF7D);
         // ellipse 18 copy 4
-        tft.fillEllipse(176, 115, 7, 7, 0xFFFF);
+        tft.fillEllipse(172, 155, 8, 8, 0xEF7D);
         // ellipse 18 copy 5
-        tft.fillEllipse(184, 118, 7, 7, 0xFFFF);
+        tft.fillEllipse(154, 155, 8, 8, 0xEF7D);
+        // rect 26
+        tft.fillRect(155, 153, 15, 11, 0xEF7D);
+        // line 27
+        tft.drawLine(157, 164, 157, 170, 0x24BE);
+        // line 27 copy 1
+        tft.drawLine(162, 164, 162, 170, 0x24BE);
+        // line 27 copy 2
+        tft.drawLine(167, 164, 167, 170, 0x24BE);
+        // ellipse 18 copy 6
+        tft.fillEllipse(186, 111, 8, 8, 0xEF7D);
+        // ellipse 18 copy 7
+        tft.fillEllipse(177, 112, 9, 9, 0xEF7D);
+        // ellipse 18 copy 8
+        tft.fillEllipse(186, 118, 8, 8, 0xEF7D);
+        // line 27 copy 3
+        tft.drawLine(172, 164, 172, 170, 0x24BE);
+        // line 27 copy 4
+        tft.drawLine(152, 164, 152, 170, 0x24BE);
+        // line 27 copy 5
+        tft.drawLine(177, 162, 177, 168, 0x24BE);
+        // line 27 copy 6
+        tft.drawLine(182, 158, 182, 164, 0x24BE);
+        // line 27 copy 7
+        tft.drawLine(187, 157, 187, 163, 0x24BE);
+        // line 27 copy 8
+        tft.drawLine(147, 160, 147, 166, 0x24BE);
+        // line 27 copy 9
+        tft.drawLine(142, 158, 142, 164, 0x24BE);
+        // line 27 copy 10
+        tft.drawLine(137, 158, 137, 164, 0x24BE);
+        // [END lopaka generated]
 }

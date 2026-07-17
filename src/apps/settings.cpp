@@ -152,6 +152,14 @@ UserAction Settings::app_loop(const Platform &p,
                         return action.value();
                 storage.put(offset, config);
         } break;
+        case Game::WeatherApp: {
+                WeatherAppConfiguration config;
+                auto game = std::make_unique<WeatherApp>();
+                auto action = game->collect_config(p, custom, config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
         default:
                 return UserAction::Exit;
         }
@@ -229,6 +237,7 @@ Configuration *assemble_settings_menu_configuration(const Platform &p)
 
         if (p.capabilities.has_wifi) {
                 available_games.push_back(GameStr::to_cstr(Game::WifiApp));
+                available_games.push_back(GameStr::to_cstr(Game::WeatherApp));
         }
 
         if (p.capabilities.has_resizable_display) {

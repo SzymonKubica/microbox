@@ -288,10 +288,9 @@ load_initial_menu_configuration(const PersistentStorage &storage)
         return output;
 }
 
-Configuration *assemble_game_selector_configuration(
-    const Platform &p, const GameMenuConfiguration &initial_config)
+std::vector<const char *>
+get_available_games(const PlatformCapabilities &capabilities)
 {
-
         std::vector<const char *> available_games = {
             GameStr::to_cstr(Game::Clean2048),
             GameStr::to_cstr(Game::Minesweeper),
@@ -302,12 +301,19 @@ Configuration *assemble_game_selector_configuration(
             GameStr::to_cstr(Game::Settings),
         };
 
-        if (p.capabilities.supports_power_off) {
+        if (capabilities.supports_power_off) {
                 available_games.push_back(GameStr::to_cstr(Game::Power));
         }
-        if (p.capabilities.has_wifi) {
+        if (capabilities.has_wifi) {
                 available_games.push_back(GameStr::to_cstr(Game::WeatherApp));
         }
+        return available_games;
+}
+
+Configuration *assemble_game_selector_configuration(
+    const Platform &p, const GameMenuConfiguration &initial_config)
+{
+        auto available_games = get_available_games(p.capabilities);
 
         auto *game = ConfigurationOption::of_strings(
             "Game", available_games, GameStr::to_cstr(initial_config.game));
@@ -335,22 +341,7 @@ Configuration *assemble_menu_defaults_configuration(
     const Platform &p, const GameMenuConfiguration &initial_config)
 {
 
-        std::vector<const char *> available_games = {
-            GameStr::to_cstr(Game::Minesweeper),
-            GameStr::to_cstr(Game::Clean2048),
-            GameStr::to_cstr(Game::GameOfLife),
-            GameStr::to_cstr(Game::Snake),
-            GameStr::to_cstr(Game::SnakeDuel),
-            GameStr::to_cstr(Game::Sudoku),
-            GameStr::to_cstr(Game::Settings),
-            GameStr::to_cstr(Game::RandomSeedPicker),
-            GameStr::to_cstr(Game::Brightness),
-        };
-
-        if (p.capabilities.has_wifi)
-                available_games.push_back(GameStr::to_cstr(Game::WifiApp));
-        if (p.capabilities.can_sleep)
-                available_games.push_back(GameStr::to_cstr(Game::Power));
+        auto available_games = get_available_games(p.capabilities);
 
         auto *game = ConfigurationOption::of_strings(
             "Game", available_games, GameStr::to_cstr(initial_config.game));

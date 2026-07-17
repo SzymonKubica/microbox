@@ -36,10 +36,15 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
+- [ ] add graph current value highlighting
+
 # In Progress
 
 
 # Done
+- [x] fix stale header validations
+- [x] make the thumbnail look better
+- [x] add settings and defaults integration for the weather app
 - [x] add weather API integration to allow for checking daily weather before running in the morning
   - [x] design application capability model (enum actions) and a way for displaying the data
   - [x] Step 1: simple integration - hard-code the location and get back weather data.

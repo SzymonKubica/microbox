@@ -1234,19 +1234,19 @@ collect_string_input(const Platform &p,
         std::vector<const char *> base_char_map = {
             "`1234567890-=",
             "qwertyuiop[]\\",
-            "asdfghjkl;'  ",
-            "zxcvbnm,./ x ",
+            "asdfghjkl;' ",
+            "zxcvbnm,./ x",
         };
 
         std::vector<const char *> shift_char_map = {
             "~!@#$%^&*()_+",
             "QWERTYUIOP{}|",
-            "ASDFGHJKL:\"  ",
-            "ZXCVBNM<>? x ",
+            "ASDFGHJKL:\" ",
+            "ZXCVBNM<>? x",
         };
         Point cancellation_key_location = {11, 3};
 
-        std::vector<int> left_indent_map = {1, 2, 3, 4};
+        std::vector<int> left_indent_map = {0, 1, 2, 3};
 
         Point input_text_start = {.x = left_horizontal_margin,
                                   .y = top_vertical_margin};
