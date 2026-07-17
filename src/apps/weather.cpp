@@ -111,25 +111,41 @@ UserAction handle_fetch(const Platform &p,
             p.display->get_font_configuration().font_dimensions.height * 7;
 
         std::vector<float> temperatures;
+        std::vector<std::string> timestamps;
         for (const auto &datapoint : data.hourly) {
                 temperatures.push_back(datapoint.temperature);
+                timestamps.push_back(datapoint.timestamp);
         }
-
         std::vector<std::string> labels;
         std::istringstream iss{data.current.timestamp};
         std::chrono::year_month_day ymd;
         iss >> std::chrono::parse("%FT%R", ymd);
         std::chrono::sys_days sd{ymd};
         for (int i = 0; i < config.forecast_days; i++) {
-                sd += std::chrono::days{1};
                 char buffer[6];
                 std::chrono::year_month_day curr{sd};
                 sprintf(buffer, "%d-%d", unsigned(curr.month()),
                         unsigned(curr.day()));
                 labels.push_back(std::string(buffer));
+                sd += std::chrono::days{1};
         }
 
-        render_bar_graph(p, customization, y_start, labels, temperatures);
+        std::string s = data.current.timestamp;
+        int curr_hour = std::stoi(s.substr(11, 2));
+
+        int current_idx = timestamps.size();
+        for (int i = 0; i < timestamps.size(); i++) {
+                std::string s = timestamps[i];
+                int hour = std::stoi(s.substr(11, 2));
+
+                if (curr_hour == hour) {
+                        current_idx = i;
+                        break;
+                }
+        }
+
+        render_bar_graph(p, customization, y_start, labels, temperatures,
+                         current_idx);
 
         auto maybe_interrupt = wait_until_green_pressed(p);
         // Applicable on the emulator only: if the window is closed while

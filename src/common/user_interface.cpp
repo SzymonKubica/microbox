@@ -1789,7 +1789,8 @@ std::optional<UserAction> wait_until_action_input(const Platform &p,
 void render_bar_graph(const Platform &p,
                       const UserInterfaceCustomization &customization,
                       int y_start, const std::vector<std::string> &x_labels,
-                      const std::vector<float> &y_values)
+                      const std::vector<float> &y_values,
+                      std::optional<int> highlighted_bar_index)
 {
         const auto &display = *p.display;
         auto [width, height, _radius] = p.display->get_display_dimensions();
@@ -1841,14 +1842,8 @@ void render_bar_graph(const Platform &p,
                 if (range == 0)
                         return (int)(min_height + max_height) / 2;
                 int baseline = min_height;
-                // We need this for floating-point stability. When x is equal to
-                // max, the calculation (x- min) / range reduces to 1 but it is
-                // not quite 1 sometimes because of fp inaccuracies.
-                if (x == maximum)
-                        return max_height;
-                int scaled = (int)(baseline +
-                                   (max_height - min_height) * (x - minimum)) /
-                             range;
+                int scaled = baseline + ((max_height - min_height) *
+                                         (x - minimum) / range);
                 return scaled;
         };
 
@@ -1858,11 +1853,16 @@ void render_bar_graph(const Platform &p,
         for (int i = 0; i < y_values.size(); i++) {
                 double h = y_values[i];
                 int height = scale(h);
-                int bar_x =
-                    left_margin + bar_spacing + i * (bar_width + bar_spacing);
+                int bar_x = left_margin + (i + 1) * (bar_width + bar_spacing);
                 Point bar_start = {bar_x, origin.y - height};
-                display.draw_rectangle(bar_start, bar_width, height,
-                                       customization.accent_color, 1, true);
+
+                Color color = highlighted_bar_index.has_value() &&
+                                      highlighted_bar_index.value() == i
+                                  ? Color::Red
+                                  : customization.accent_color;
+
+                display.draw_rectangle(bar_start, bar_width, height, color, 1,
+                                       true);
 
                 // Draw x axis labels
                 if (x_labels.empty()) {
