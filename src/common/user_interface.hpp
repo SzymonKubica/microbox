@@ -63,6 +63,7 @@ std::optional<UserAction> wait_until_action_input(const Platform &p,
 void render_bar_graph(const Platform &p,
                       const UserInterfaceCustomization &customization,
                       int y_start, const std::vector<std::string> &x_labels,
-                      const std::vector<float> &y_labels, std::optional<int> highlighted_bar_index = std::nullopt);
+                      const std::vector<float> &y_labels,
+                      std::optional<int> highlighted_bar_index = std::nullopt);
 
 ConfigurationDiff *empty_diff();

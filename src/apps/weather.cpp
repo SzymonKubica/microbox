@@ -75,6 +75,14 @@ handle_update_location(const Platform &p,
         const auto storage = p.persistent_storage;
         sprintf(copy.locations[config.curr_config_idx], "%s", location);
         int storage_offset = get_settings_storage_offset(Game::WeatherApp);
+
+        // Before saving the updated values we need to restore the default
+        // action to avoid overwriting it with the 'update location' action that
+        // we have received in the current `config`
+        auto initial_config = std::unique_ptr<WeatherAppConfiguration>(
+            load_initial_weather_app_config(p.persistent_storage));
+        copy.action = initial_config->action;
+
         storage->put(storage_offset, copy);
 
         return UserAction::PlayAgain;
@@ -194,6 +202,14 @@ UserAction handle_add_new(const Platform &p,
         copy.occupied_config_slots++;
         sprintf(copy.locations[new_config_idx], "%s", location);
         int storage_offset = get_settings_storage_offset(Game::WeatherApp);
+
+        // Before saving the updated values we need to restore the default
+        // action to avoid overwriting it with the 'add new' action that
+        // we have received in the current `config`
+        auto initial_config = std::unique_ptr<WeatherAppConfiguration>(
+            load_initial_weather_app_config(p.persistent_storage));
+        copy.action = initial_config->action;
+
         storage->put(storage_offset, copy);
 
         return UserAction::PlayAgain;
