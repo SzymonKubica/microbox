@@ -44,6 +44,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 
 # Done
+- [x] fix control hints alignment
 - [x] fix weather update / add-new saving functionality to avoid overriding the default action
 - [x] add graph current value highlighting
 - [x] fix keyboard erase clear rendering

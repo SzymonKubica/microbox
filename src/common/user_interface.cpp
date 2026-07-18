@@ -759,7 +759,7 @@ void render_controls_explanations(
 
         // We need to leave some space between the hints and the edges of the
         // display
-        int x_margin = 2 * fw;
+        int x_margin = fw;
 
         int total_len_to_render =
             button_hints.size() * hint_renderer.indicator_width +
@@ -827,7 +827,7 @@ void render_controls_explanations(const Display &display,
         }
         case ActionButtonKind::Directions: {
                 int circle_radius = 2;
-                int circle_text_gap_width = fw / 4;
+                int circle_text_gap_width = 2;
                 int indicator_width = 4 * circle_radius + circle_text_gap_width;
                 auto render_strategy = [&display, fh, fw, circle_radius](
                                            Action button, Point position) {
