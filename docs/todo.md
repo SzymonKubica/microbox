@@ -38,6 +38,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] design the workflow of switching between current / hourly-scrollable data.
 - [ ] clean up time parsing logic in the weather app
+- [x] ensure that saving defaults doesn't erase the set of saved configs
 
 
 # In Progress

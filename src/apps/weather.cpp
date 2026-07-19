@@ -334,6 +334,10 @@ void extract_weather_app_config(WeatherAppConfiguration &initial_config,
             initial_config.occupied_config_slots;
         memcpy(weather_query_config.locations, initial_config.locations,
                sizeof(char[AVAILABLE_CONFIGURATION_SLOTS][100]));
+
+        // We need to ensure that the header version is not outdated
+        weather_query_config.header.version =
+            DEFAULT_WEATHER_APP_CONFIG.header.version;
 }
 
 const std::string HOST = "api.open-meteo.com";
