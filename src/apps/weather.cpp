@@ -150,7 +150,7 @@ UserAction handle_fetch(const Platform &p,
 
         // We need to extract the list of temperatures for the y-values on the
         // graph.
-        std::vector<float> temperatures;
+        std::vector<float> temperatures(data.hourly.size());
         std::transform(
             data.hourly.begin(), data.hourly.end(), temperatures.begin(),
             [](WeatherDatapoint datapoint) { return datapoint.temperature; });
