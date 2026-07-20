@@ -37,14 +37,14 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
 - [ ] design the workflow of switching between current / hourly-scrollable data.
-- [ ] clean up time parsing logic in the weather app
-- [x] ensure that saving defaults doesn't erase the set of saved configs
 
 
 # In Progress
 
 
 # Done
+- [x] clean up time parsing logic in the weather app
+- [x] ensure that saving defaults doesn't erase the set of saved configs
 - [x] fix control hints alignment
 - [x] fix weather update / add-new saving functionality to avoid overriding the default action
 - [x] add graph current value highlighting

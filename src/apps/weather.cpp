@@ -88,6 +88,10 @@ handle_update_location(const Platform &p,
         return UserAction::PlayAgain;
 }
 
+std::vector<std::string> get_month_day_labels(std::chrono::year_month_day start,
+                                              int days);
+std::chrono::year_month_day from_timestamp_string(std::string timestamp);
+int get_hour_from_timestamp(std::string timestamp);
 UserAction handle_fetch(const Platform &p,
                         const UserInterfaceCustomization &customization,
                         const WeatherAppConfiguration &config)
@@ -106,6 +110,9 @@ UserAction handle_fetch(const Platform &p,
 
         auto [time, temp, rain, precipitation] = data.current;
 
+        // This is a temporary solution leveraging the default text wrapping
+        // before we have a hand-crafted way of displaying a single datapoint as
+        // a map of key-values
         char buffer[200];
         sprintf(buffer,
                 "Time: %s "
@@ -115,43 +122,43 @@ UserAction handle_fetch(const Platform &p,
                 time.c_str(), precipitation, temp, config.forecast_days);
         render_wrapped_text(p, customization, buffer);
 
-        int y_start =
-            p.display->get_font_configuration().font_dimensions.height * 7;
+        // This is needed for the x-axis day labels on the graph.
+        std::chrono::year_month_day today = from_timestamp_string(time);
+        std::vector<std::string> labels =
+            get_month_day_labels(today, config.forecast_days);
 
-        std::vector<float> temperatures;
-        std::vector<std::string> timestamps;
-        for (const auto &datapoint : data.hourly) {
-                temperatures.push_back(datapoint.temperature);
-                timestamps.push_back(datapoint.timestamp);
-        }
-        std::vector<std::string> labels;
-        std::istringstream iss{data.current.timestamp};
-        std::chrono::year_month_day ymd;
-        iss >> std::chrono::parse("%FT%R", ymd);
-        std::chrono::sys_days sd{ymd};
-        for (int i = 0; i < config.forecast_days; i++) {
-                char buffer[6];
-                std::chrono::year_month_day curr{sd};
-                sprintf(buffer, "%d-%d", unsigned(curr.month()),
-                        unsigned(curr.day()));
-                labels.push_back(std::string(buffer));
-                sd += std::chrono::days{1};
-        }
-
-        std::string s = data.current.timestamp;
-        int curr_hour = std::stoi(s.substr(11, 2));
-
-        int current_idx = timestamps.size();
-        for (int i = 0; i < timestamps.size(); i++) {
-                std::string s = timestamps[i];
-                int hour = std::stoi(s.substr(11, 2));
-
+        // We need to determine the index of the current time in the set of
+        // hourly datapoints. Note that the weather API returns hourly
+        // datapoints starting from the beginning of today (00:00) and so our
+        // current datapoint is not equal to the firsts datapoint in the hourly
+        // forecast. This index is then used to highlight the current datapoint
+        // in the bar graph.
+        int curr_hour = get_hour_from_timestamp(time);
+        int current_idx = data.hourly.size();
+        for (int i = 0; i < data.hourly.size(); i++) {
+                int hour = get_hour_from_timestamp(data.hourly[i].timestamp);
+                // we break as soon as we get a match on the hour as
+                // `timestamps`
+                // are hourly datapoint. For example, if the current datapoint
+                // is for 5:45, we want to pick up the 5:00 hourly datapoint and
+                // highlight that on the graph.
                 if (curr_hour == hour) {
                         current_idx = i;
                         break;
                 }
         }
 
+        // We need to extract the list of temperatures for the y-values on the
+        // graph.
+        std::vector<float> temperatures;
+        std::transform(
+            data.hourly.begin(), data.hourly.end(), temperatures.begin(),
+            [](WeatherDatapoint datapoint) { return datapoint.temperature; });
+
+        // Note: the Y-start is hand-callibrated. This will be dynamically
+        // calculated in the proper solution.
+        int y_start =
+            p.display->get_font_configuration().font_dimensions.height * 7;
         render_bar_graph(p, customization, y_start, labels, temperatures,
                          current_idx);
 
@@ -163,6 +170,38 @@ UserAction handle_fetch(const Platform &p,
                 return maybe_interrupt.value();
         }
         return UserAction::PlayAgain;
+}
+
+std::chrono::year_month_day from_timestamp_string(std::string timestamp)
+{
+        std::istringstream iss{timestamp};
+        std::chrono::year_month_day ymd;
+        iss >> std::chrono::parse("%FT%R", ymd);
+        return ymd;
+}
+
+/**
+ * This assumes timestamps formatted like: "2026-07-19T21:00".
+ */
+int get_hour_from_timestamp(std::string timestamp)
+{
+        return std::stoi(timestamp.substr(11, 2));
+}
+std::vector<std::string> get_month_day_labels(std::chrono::year_month_day start,
+                                              int day_count)
+{
+        using namespace std::chrono;
+        std::vector<std::string> labels;
+        sys_days sd{start};
+        for (int i = 0; i < day_count; i++) {
+                char buffer[6];
+                year_month_day curr{sd};
+                sprintf(buffer, "%d-%d", unsigned(curr.month()),
+                        unsigned(curr.day()));
+                labels.push_back(std::string(buffer));
+                sd += days{1};
+        }
+        return labels;
 }
 
 UserAction handle_add_new(const Platform &p,
