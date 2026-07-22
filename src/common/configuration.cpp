@@ -307,7 +307,7 @@ collect_configuration(const Platform &p, Configuration &config,
                         /* To make the UI more intuitive, we also allow users to
                         cycle configuration options. This change was inspired by
                         initial play testing by Tomek. */
-                        if (act == CONFIRM_ACTION) {
+                        if (act == FORWARD_ACTION) {
                                 /*
                                  Note that we re-render before peforming the
                                  move_registered_delay to ensure that the UI is
@@ -330,7 +330,7 @@ collect_configuration(const Platform &p, Configuration &config,
                         if (act == HELP_ACTION) {
                                 return UserAction::ShowHelp;
                         }
-                        if (act == FORWARD_ACTION) {
+                        if (act == CONFIRM_ACTION) {
                                 break;
                         }
                 }
@@ -429,7 +429,7 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
                         /* To make the UI more intuitive, we also allow users to
                         cycle configuration options. This change was inspired by
                         initial play testing by Tomek. */
-                        if (act == CONFIRM_ACTION) {
+                        if (act == FORWARD_ACTION) {
                                 /*
                                  Note that we re-render before peforming the
                                  move_registered_delay to ensure that the UI is
@@ -451,7 +451,7 @@ std::optional<UserAction> collect_configuration_single_option_with_thumbnails(
                                 return UserAction::Exit;
                         if (act == HELP_ACTION)
                                 return UserAction::ShowHelp;
-                        if (act == FORWARD_ACTION)
+                        if (act == CONFIRM_ACTION)
                                 break;
                 }
                 auto maybe_direction =

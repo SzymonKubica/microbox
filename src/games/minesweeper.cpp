@@ -665,8 +665,8 @@ void draw_game_canvas(const Platform &p,
 
         if (customization.show_help_text) {
                 std::map<Action, std::string> button_hints;
-                button_hints[Action::BLUE] = "Quit";
-                button_hints[Action::RED] = "Flag";
+                button_hints[Action::RED] = "Quit";
+                button_hints[Action::BLUE] = "Flag";
                 button_hints[Action::GREEN] = "Inspect";
                 render_controls_explanations(*p.display,
                                              p.capabilities.action_button_kind,

@@ -300,7 +300,7 @@ UserAction GameOfLife::app_loop(const Platform &p,
         int border_offset = 2;
         if (customization.show_help_text) {
                 std::map<Action, std::string> button_hints;
-                button_hints[Action::RED] = "Rewind";
+                button_hints[Action::BLUE] = "Rewind";
                 button_hints[Action::YELLOW] = "(Un)Pause";
                 button_hints[Action::GREEN] = "Select";
                 // The game of life grid is a bit large so we need to shift the

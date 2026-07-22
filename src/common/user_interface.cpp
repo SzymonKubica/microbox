@@ -937,10 +937,10 @@ void render_default_controls_explanations(const Platform &p)
 {
 
         std::map<Action, std::string> button_hints;
-        button_hints[Action::BLUE] = "Back";
+        button_hints[Action::BLUE] = "Next";
         button_hints[Action::YELLOW] = "Help";
-        button_hints[Action::RED] = "Next";
-        button_hints[Action::GREEN] = "Toggle";
+        button_hints[Action::RED] = "Back";
+        button_hints[Action::GREEN] = "Confirm";
 
         render_controls_explanations(
             *p.display, p.capabilities.action_button_kind, button_hints);
@@ -1384,9 +1384,9 @@ collect_string_input(const Platform &p,
 
         if (customization.show_help_text) {
                 std::map<Action, std::string> button_hints;
-                button_hints[Action::BLUE] = "Erase";
+                button_hints[Action::RED] = "Erase";
                 button_hints[Action::YELLOW] = "Caps";
-                button_hints[Action::RED] = "Done";
+                button_hints[Action::BLUE] = "Done";
                 button_hints[Action::GREEN] = "Select";
                 render_controls_explanations(*p.display,
                                              p.capabilities.action_button_kind,
@@ -1422,7 +1422,7 @@ collect_string_input(const Platform &p,
                                 render_keyboard(curr_char_map);
                                 break;
                         }
-                        case Action::RED:
+                        case Action::BLUE:
                                 input_confirmed = true;
                                 break;
                         case Action::GREEN: {
@@ -1450,7 +1450,7 @@ collect_string_input(const Platform &p,
                                 }
                                 break;
                         }
-                        case Action::BLUE:
+                        case Action::RED:
                                 if (output_idx > 0) {
                                         output_idx--;
                                         output[output_idx] = '\0';
@@ -1655,9 +1655,9 @@ collect_number_input(const Platform &p,
 
         if (customization.show_help_text) {
                 std::map<Action, std::string> button_hints;
-                button_hints[Action::BLUE] = "Erase";
+                button_hints[Action::RED] = "Erase";
                 button_hints[Action::YELLOW] = "Caps";
-                button_hints[Action::RED] = "Done";
+                button_hints[Action::BLUE] = "Done";
                 button_hints[Action::GREEN] = "Select";
                 render_controls_explanations(*p.display,
                                              p.capabilities.action_button_kind,
@@ -1685,7 +1685,7 @@ collect_number_input(const Platform &p,
                 if (maybe_action.has_value()) {
                         Action act = maybe_action.value();
                         switch (act) {
-                        case Action::RED:
+                        case Action::BLUE:
                                 input_confirmed = true;
                                 break;
                         case Action::GREEN: {
@@ -1713,7 +1713,7 @@ collect_number_input(const Platform &p,
                                 }
                                 break;
                         }
-                        case Action::BLUE:
+                        case Action::RED:
                                 if (output_idx > 0) {
                                         output_idx--;
                                         output[output_idx] = '\0';

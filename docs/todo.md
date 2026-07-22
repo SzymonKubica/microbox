@@ -38,11 +38,14 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] design the workflow of switching between current / hourly-scrollable data.
 
+- [ ] add graceful error handling and reporting when there is no wifi and the user tries to use wifi apps
+
 
 # In Progress
 
-
 # Done
+- [x] change UI flow to confirm on 'x'
+- [x] update UI hints to reflect that
 - [x] clean up time parsing logic in the weather app
 - [x] ensure that saving defaults doesn't erase the set of saved configs
 - [x] fix control hints alignment

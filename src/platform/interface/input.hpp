@@ -17,9 +17,9 @@ Direction get_opposite(const Direction direction);
 enum class Action : uint8_t { YELLOW = 0, RED = 1, GREEN = 2, BLUE = 3 };
 
 const Action CONFIRM_ACTION = Action::GREEN;
-const Action BACK_ACTION = Action::BLUE;
+const Action BACK_ACTION = Action::RED;
 const Action HELP_ACTION = Action::YELLOW;
-const Action FORWARD_ACTION = Action::RED;
+const Action FORWARD_ACTION = Action::BLUE;
 
 const Direction action_to_direction(Action action);
 
