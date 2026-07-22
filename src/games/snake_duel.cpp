@@ -305,7 +305,7 @@ UserAction SnakeDuel::app_loop(const Platform &p,
                         // If the player 1 is dead and we are running in the AI
                         // mode, we let the player quit early by pressing blue.
                         if (config.enable_ai && state.is_snake_one_dead &&
-                            act == Action::BLUE) {
+                            act == Action::RED) {
                                 delay_millis(MOVE_REGISTERED_DELAY);
                                 return UserAction::PauseAndPlayAgain;
                         }

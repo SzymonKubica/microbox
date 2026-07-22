@@ -161,7 +161,7 @@ UserAction Clean2048::app_loop(const Platform &p,
                         p.time_provider->delay_ms(MOVE_REGISTERED_DELAY);
                 } else if (maybe_action.has_value()) {
                         Action act = maybe_action.value();
-                        if (act == Action::BLUE) {
+                        if (act == Action::RED) {
                                 LOG_DEBUG(TAG, "User requested to exit game.");
                                 const char *help_text =
                                     "Would you like to save your current game "

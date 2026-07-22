@@ -154,7 +154,7 @@ execute_app(const ApplicationExecutor<ConfigStruct> &executor,
                                 return UserAction::CloseWindow;
                         }
 
-                        if (act == Action::BLUE) {
+                        if (act == Action::RED) {
                                 return UserAction::Exit;
                         }
                         continue;

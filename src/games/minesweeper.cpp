@@ -218,7 +218,7 @@ Minesweeper::app_loop(const Platform &p,
                         MinesweeperGridCell cell =
                             grid[caret_position.y][caret_position.x];
                         switch (act) {
-                        case Action::RED:
+                        case Action::BLUE:
                                 if (!cell.is_uncovered) {
                                         if (!cell.is_flagged) {
                                                 flag_grid_cell(
@@ -264,7 +264,7 @@ Minesweeper::app_loop(const Platform &p,
                                         break;
                                 }
 
-                        case Action::BLUE:
+                        case Action::RED:
                                 p.time_provider->delay_ms(INPUT_POLLING_DELAY);
                                 return UserAction::Exit;
                         default:
