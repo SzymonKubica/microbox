@@ -3,3 +3,5 @@
  * negative.
  */
 int mathematical_modulo(int a, int b);
+int modulo_increment(int a, int b);
+int modulo_decrement(int a, int b);

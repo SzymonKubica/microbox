@@ -1790,7 +1790,8 @@ void render_bar_graph(const Platform &p,
                       const UserInterfaceCustomization &customization,
                       int y_start, const std::vector<std::string> &x_labels,
                       const std::vector<float> &y_values,
-                      std::optional<int> highlighted_bar_index)
+                      std::optional<int> highlighted_bar_index,
+                      Color highlighted_bar_color, bool update_highlight_only)
 {
         const auto &display = *p.display;
         auto [width, height, _radius] = p.display->get_display_dimensions();
@@ -1824,9 +1825,6 @@ void render_bar_graph(const Platform &p,
         int bar_width = available_width / y_values.size() - bar_spacing;
 
         auto origin = Point{left_margin, y_start + available_height};
-        display.draw_line({left_margin, y_start}, origin, Color::White);
-        display.draw_line(origin, origin + Point{available_width, 0},
-                          Color::White);
 
         auto draw_y_label = [&](char *label, int height_offset) {
                 int label_len = (fw / 2) * (strlen(label) + 1);
@@ -1847,8 +1845,13 @@ void render_bar_graph(const Platform &p,
                 return scaled;
         };
 
-        draw_y_label(max_str, 0);
-        draw_y_label(min_str, available_height - scale(minimum));
+        if (!update_highlight_only) {
+                display.draw_line({left_margin, y_start}, origin, Color::White);
+                display.draw_line(origin, origin + Point{available_width, 0},
+                                  Color::White);
+                draw_y_label(max_str, 0);
+                draw_y_label(min_str, available_height - scale(minimum));
+        }
 
         for (int i = 0; i < y_values.size(); i++) {
                 double h = y_values[i];
@@ -1858,11 +1861,14 @@ void render_bar_graph(const Platform &p,
 
                 Color color = highlighted_bar_index.has_value() &&
                                       highlighted_bar_index.value() == i
-                                  ? Color::Red
+                                  ? highlighted_bar_color
                                   : customization.accent_color;
 
-                display.draw_rectangle(bar_start, bar_width, height, color, 1,
-                                       true);
+                if (!update_highlight_only ||
+                    highlighted_bar_index.value() == i) {
+                        display.draw_rectangle(bar_start, bar_width, height,
+                                               color, 1, true);
+                }
 
                 // Draw x axis labels
                 if (x_labels.empty()) {
@@ -1872,10 +1878,13 @@ void render_bar_graph(const Platform &p,
 
                 if (i % label_period == 0) {
                         int idx = i / label_period;
-                        display.draw_string({bar_x, origin.y + 5},
-                                            (char *)x_labels[idx].c_str(),
-                                            FontSize::Size8, Color::Black,
-                                            Color::White);
+                        if (!update_highlight_only) {
+                                display.draw_string(
+                                    {bar_x, origin.y + 5},
+                                    (char *)x_labels[idx].c_str(),
+                                    FontSize::Size8, Color::Black,
+                                    Color::White);
+                        }
                 }
         }
 }

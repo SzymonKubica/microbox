@@ -36,14 +36,17 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] (uno-q / raspberry pi) ensure emulator compiles & runs on commodity hardware (e.g. uno q / raspberry pi)
 
-- [ ] design the workflow of switching between current / hourly-scrollable data.
 
 - [ ] add graceful error handling and reporting when there is no wifi and the user tries to use wifi apps
+
+- [ ] ensure weather app compatibility on V1
+- [ ] add rain probability as a secondary measure on the graph
 
 
 # In Progress
 
 # Done
+- [x] design the workflow of switching between current / hourly-scrollable data.
 - [x] change UI flow to confirm on 'x'
 - [x] update UI hints to reflect that
 - [x] clean up time parsing logic in the weather app

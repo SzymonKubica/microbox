@@ -11,6 +11,9 @@
 
 #define TAG "random_seed_picker"
 
+#define CONTROL_POLLING_DELAY 10
+#define LOOP_DELAY 30
+
 WeatherAppConfiguration DEFAULT_WEATHER_APP_CONFIG = {
     .header = {.magic = CONFIGURATION_MAGIC, .version = 2},
     .curr_config_idx = 0,
@@ -91,6 +94,9 @@ handle_update_location(const Platform &p,
 std::vector<std::string> get_month_day_labels(std::chrono::year_month_day start,
                                               int days);
 std::chrono::year_month_day from_timestamp_string(std::string timestamp);
+void render_weather_data(const Platform &p, const WeatherDatapoint &datapoint,
+                         int forecast_days_count, bool refresh_values_only);
+
 int get_hour_from_timestamp(std::string timestamp);
 UserAction handle_fetch(const Platform &p,
                         const UserInterfaceCustomization &customization,
@@ -110,17 +116,8 @@ UserAction handle_fetch(const Platform &p,
 
         auto [time, temp, rain, precipitation] = data.current;
 
-        // This is a temporary solution leveraging the default text wrapping
-        // before we have a hand-crafted way of displaying a single datapoint as
-        // a map of key-values
-        char buffer[200];
-        sprintf(buffer,
-                "Time: %s "
-                "Precipitation: %.1f %% "
-                "Temperature: %.1f Cel. "
-                "Forecast %d days:",
-                time.c_str(), precipitation, temp, config.forecast_days);
-        render_wrapped_text(p, customization, buffer);
+        p.display->clear(Color::Black);
+        render_weather_data(p, data.current, config.forecast_days, false);
 
         // This is needed for the x-axis day labels on the graph.
         std::chrono::year_month_day today = from_timestamp_string(time);
@@ -134,7 +131,7 @@ UserAction handle_fetch(const Platform &p,
         // forecast. This index is then used to highlight the current datapoint
         // in the bar graph.
         int curr_hour = get_hour_from_timestamp(time);
-        int current_idx = data.hourly.size();
+        int curr_idx = data.hourly.size();
         for (int i = 0; i < data.hourly.size(); i++) {
                 int hour = get_hour_from_timestamp(data.hourly[i].timestamp);
                 // we break as soon as we get a match on the hour as
@@ -143,10 +140,11 @@ UserAction handle_fetch(const Platform &p,
                 // is for 5:45, we want to pick up the 5:00 hourly datapoint and
                 // highlight that on the graph.
                 if (curr_hour == hour) {
-                        current_idx = i;
+                        curr_idx = i;
                         break;
                 }
         }
+        int current_time_idx = curr_idx;
 
         // We need to extract the list of temperatures for the y-values on the
         // graph.
@@ -160,16 +158,173 @@ UserAction handle_fetch(const Platform &p,
         int y_start =
             p.display->get_font_configuration().font_dimensions.height * 7;
         render_bar_graph(p, customization, y_start, labels, temperatures,
-                         current_idx);
+                         curr_idx);
+
+        auto move_datapoint_selection = [&](int prev_idx, int new_idx) {
+                render_bar_graph(p, customization, y_start, labels,
+                                 temperatures, prev_idx,
+                                 customization.accent_color, true);
+                render_bar_graph(p, customization, y_start, labels,
+                                 temperatures, new_idx, Color::Red, true);
+
+                const auto &datapoint = new_idx == current_time_idx
+                                            ? data.current
+                                            : data.hourly[new_idx];
+                render_weather_data(p, datapoint, config.forecast_days, true);
+        };
+
+        bool input_registered_last_iteration = false;
+        while (true) {
+                if (!p.display->refresh()) {
+                        return UserAction::CloseWindow;
+                }
+                auto maybe_direction =
+                    poll_directional_input(p.directional_controllers);
+                auto maybe_action = poll_action_input(p.action_controllers);
+                if (!maybe_direction.has_value() && !maybe_action.has_value()) {
+                        input_registered_last_iteration = false;
+                        p.time_provider->delay_ms(CONTROL_POLLING_DELAY);
+                        continue;
+                }
+
+                if (maybe_direction.has_value()) {
+                        Direction dir = maybe_direction.value();
+                        if (dir == Direction::LEFT) {
+                                int prev = curr_idx;
+                                curr_idx = modulo_decrement(curr_idx,
+                                                            data.hourly.size());
+                                move_datapoint_selection(prev, curr_idx);
+                        } else if (dir == Direction::RIGHT) {
+                                int prev = curr_idx;
+                                curr_idx = modulo_increment(curr_idx,
+                                                            data.hourly.size());
+                                move_datapoint_selection(prev, curr_idx);
+                        }
+                }
+
+                if (maybe_action.has_value()) {
+                        Action act = maybe_action.value();
+                        // If the user holds the button depressed, we still only
+                        // act once to avoid double-processing of slow presses
+                        // caused by button debounce issues.
+                        if (input_registered_last_iteration) {
+                                p.time_provider->delay_ms(
+                                    CONTROL_POLLING_DELAY);
+                                continue;
+                        }
+                        switch (act) {
+                        case CONFIRM_ACTION: {
+                                int prev = curr_idx;
+                                curr_idx = current_time_idx;
+                                move_datapoint_selection(prev, curr_idx);
+                        } break;
+                        case BACK_ACTION:
+                                p.time_provider->delay_ms(LOOP_DELAY);
+                                return UserAction::PlayAgain;
+                        case FORWARD_ACTION: {
+                                int prev = curr_idx;
+                                curr_idx = modulo_increment(curr_idx,
+                                                            data.hourly.size());
+                                move_datapoint_selection(prev, curr_idx);
+                                // Wait a bit longer on forward scroll on button
+                                // presses. This is needed for higher precision
+                                // steering of the highlight selection.
+                                p.time_provider->delay_ms(2 * LOOP_DELAY);
+                        } break;
+                        case HELP_ACTION:
+                                const char *message =
+                                    "Use the joystick to scroll through hourly "
+                                    "datapoints. Press down to go back to the "
+                                    "current time. Press left to advance "
+                                    "slowly advance by one datapoint. Press "
+                                    "right to exit.";
+                                render_wrapped_help_text(p, customization,
+                                                         message);
+                                wait_until_green_pressed(p);
+                                p.display->clear(Black);
+                                render_weather_data(p, data.current,
+                                                    config.forecast_days,
+                                                    false);
+                                render_bar_graph(p, customization, y_start,
+                                                 labels, temperatures,
+                                                 curr_idx);
+                        }
+                }
+                input_registered_last_iteration = true;
+
+                // We wait slightly longer after an action is
+                // selected.
+                p.time_provider->delay_ms(LOOP_DELAY);
+        }
 
         auto maybe_interrupt = wait_until_green_pressed(p);
-        // Applicable on the emulator only: if the window is closed while
-        // waiting for input we need to propagate the `CloseWindow` action back
-        // to the top level so that the SFML window can be closed properly.
+        // Applicable on the emulator only: if the window is closed
+        // while waiting for input we need to propagate the
+        // `CloseWindow` action back to the top level so that the SFML
+        // window can be closed properly.
         if (maybe_interrupt.has_value()) {
                 return maybe_interrupt.value();
         }
         return UserAction::PlayAgain;
+}
+
+void render_weather_data(const Platform &p, const WeatherDatapoint &datapoint,
+                         int forecast_days_count, bool refresh_values_only)
+{
+        auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
+        auto [time, temp, rain, precipitation] = datapoint;
+
+        const char *time_heading = "Time: ";
+        const char *temperature_heading = "Tempearture: ";
+        const char *precipitation_heading = "Rain Probability: ";
+        const char *forecast_days_heading = "Forecast ";
+
+        char time_buffer[20];
+        char temperature_buffer[10];
+        char precipitation_buffer[10];
+        char forecast_days_buffer[10];
+
+        sprintf(time_buffer, "%s", time.c_str());
+        sprintf(temperature_buffer, "%.1f Cel.", temp);
+        sprintf(precipitation_buffer, "%.1f %%", precipitation);
+        sprintf(forecast_days_buffer, "%d days:", forecast_days_count);
+
+        std::vector<std::pair<const char *, char *>> headings_and_values = {
+            {time_heading, time_buffer},
+            {temperature_heading, temperature_buffer},
+            {precipitation_heading, precipitation_buffer},
+            {forecast_days_heading, forecast_days_buffer},
+        };
+
+        // Start with a decent margin.
+        Point first_line_start{fw, fw};
+        Point start = first_line_start;
+
+        for (auto [heading, value] : headings_and_values) {
+                auto value_start = start + Point{(int)strlen(heading) * fw, 0};
+
+                if (refresh_values_only) {
+                        // We need to erase a bit further in case a numerical
+                        // value flips from double digits to a single digit,
+                        // which will shorten it. If that happens, the current
+                        // strlen(value) not enough and we need to erase
+                        // further to reach the end of the previous value.
+                        auto value_end =
+                            value_start +
+                            Point{((int)strlen(value) + 2) * fw, fh};
+                        p.display->clear_region(value_start, value_end,
+                                                Color::Black);
+                } else {
+                        p.display->draw_string(start, (char *)heading,
+                                               FontSize::Size16, Color::Black,
+                                               Color::White);
+                }
+
+                p.display->draw_string(value_start, value, FontSize::Size16,
+                                       Color::Black, Color::White);
+
+                start = start + Point{0, fh + 5};
+        }
 }
 
 std::chrono::year_month_day from_timestamp_string(std::string timestamp)
@@ -212,7 +367,8 @@ UserAction handle_add_new(const Platform &p,
                 render_wrapped_text(
                     p, customization,
                     "You have reached the maximum number of saved "
-                    "locations. Please overwrite an existing location to add a "
+                    "locations. Please overwrite an existing location "
+                    "to add a "
                     "new one.");
                 auto maybe_interrupt = wait_until_green_pressed(p);
                 if (maybe_interrupt.has_value()) {
@@ -242,9 +398,9 @@ UserAction handle_add_new(const Platform &p,
         sprintf(copy.locations[new_config_idx], "%s", location);
         int storage_offset = get_settings_storage_offset(Game::WeatherApp);
 
-        // Before saving the updated values we need to restore the default
-        // action to avoid overwriting it with the 'add new' action that
-        // we have received in the current `config`
+        // Before saving the updated values we need to restore the
+        // default action to avoid overwriting it with the 'add new'
+        // action that we have received in the current `config`
         auto initial_config = std::unique_ptr<WeatherAppConfiguration>(
             load_initial_weather_app_config(p.persistent_storage));
         copy.action = initial_config->action;
@@ -383,7 +539,8 @@ const std::string HOST = "api.open-meteo.com";
 const std::string BASE_URL = "https://api.open-meteo.com//v1/forecast?";
 
 const std::string METRICS_TO_QUERY =
-    "current=temperature_2m,rain,precipitation_probability&hourly=temperature_"
+    "current=temperature_2m,rain,precipitation_probability&hourly="
+    "temperature_"
     "2m,rain,"
     "precipitation_probability&timezone=auto";
 

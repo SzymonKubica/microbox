@@ -64,6 +64,8 @@ void render_bar_graph(const Platform &p,
                       const UserInterfaceCustomization &customization,
                       int y_start, const std::vector<std::string> &x_labels,
                       const std::vector<float> &y_labels,
-                      std::optional<int> highlighted_bar_index = std::nullopt);
+                      std::optional<int> highlighted_bar_index = std::nullopt,
+                      Color highlighted_bar_color = Red,
+                      bool update_highlight_only = false);
 
 ConfigurationDiff *empty_diff();
