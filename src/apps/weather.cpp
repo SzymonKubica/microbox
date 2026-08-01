@@ -11,7 +11,7 @@
 
 #define TAG "random_seed_picker"
 
-#define CONTROL_POLLING_DELAY 10
+#define CONTROL_POLLING_DELAY 20
 #define LOOP_DELAY 30
 
 WeatherAppConfiguration DEFAULT_WEATHER_APP_CONFIG = {
@@ -236,7 +236,7 @@ UserAction handle_fetch(const Platform &p,
                                     "Use the joystick to scroll through hourly "
                                     "datapoints. Press down to go back to the "
                                     "current time. Press left to advance "
-                                    "slowly advance by one datapoint. Press "
+                                    "slowly by one datapoint. Press "
                                     "right to exit.";
                                 render_wrapped_help_text(p, customization,
                                                          message);
@@ -255,15 +255,6 @@ UserAction handle_fetch(const Platform &p,
                 // We wait slightly longer after an action is
                 // selected.
                 p.time_provider->delay_ms(LOOP_DELAY);
-        }
-
-        auto maybe_interrupt = wait_until_green_pressed(p);
-        // Applicable on the emulator only: if the window is closed
-        // while waiting for input we need to propagate the
-        // `CloseWindow` action back to the top level so that the SFML
-        // window can be closed properly.
-        if (maybe_interrupt.has_value()) {
-                return maybe_interrupt.value();
         }
         return UserAction::PlayAgain;
 }
@@ -514,7 +505,6 @@ void extract_weather_app_config(WeatherAppConfiguration &initial_config,
 {
 
         ConfigurationOption *forecast_days = config.options[0];
-        // TODO: add support for storing multiple locations
         ConfigurationOption *location = config.options[1];
         ConfigurationOption *action = config.options[2];
 
@@ -640,13 +630,13 @@ void WeatherApp::render_thumbnail(
         // rect 21
         tft.fillRect(139, 146, 43, 12, 0xFFFF);
         // ellipse 18 copy 3
-        tft.fillEllipse(163, 149, 8, 8, 0xEF7D);
+        tft.fillEllipse(163, 149, 8, 8, 0xBDF7);
         // ellipse 18 copy 4
-        tft.fillEllipse(172, 155, 8, 8, 0xEF7D);
+        tft.fillEllipse(172, 155, 8, 8, 0xBDF7);
         // ellipse 18 copy 5
-        tft.fillEllipse(154, 155, 8, 8, 0xEF7D);
+        tft.fillEllipse(154, 155, 8, 8, 0xBDF7);
         // rect 26
-        tft.fillRect(155, 153, 15, 11, 0xEF7D);
+        tft.fillRect(155, 153, 15, 11, 0xBDF7);
         // line 27
         tft.drawLine(157, 164, 157, 170, 0x24BE);
         // line 27 copy 1
@@ -654,11 +644,11 @@ void WeatherApp::render_thumbnail(
         // line 27 copy 2
         tft.drawLine(167, 164, 167, 170, 0x24BE);
         // ellipse 18 copy 6
-        tft.fillEllipse(186, 111, 8, 8, 0xEF7D);
+        tft.fillEllipse(186, 111, 8, 8, 0xBDF7);
         // ellipse 18 copy 7
-        tft.fillEllipse(177, 112, 9, 9, 0xEF7D);
+        tft.fillEllipse(177, 112, 9, 9, 0xBDF7);
         // ellipse 18 copy 8
-        tft.fillEllipse(186, 118, 8, 8, 0xEF7D);
+        tft.fillEllipse(186, 118, 8, 8, 0xBDF7);
         // line 27 copy 3
         tft.drawLine(172, 164, 172, 170, 0x24BE);
         // line 27 copy 4

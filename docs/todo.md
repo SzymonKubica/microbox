@@ -40,12 +40,12 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 - [ ] add graceful error handling and reporting when there is no wifi and the user tries to use wifi apps
 
 - [ ] ensure weather app compatibility on V1
-- [ ] add rain probability as a secondary measure on the graph
 
 
 # In Progress
 
 # Done
+- [x] add rain probability as a secondary measure on the graph (decided to not do this as it would mess with the current datapoint highlighting)
 - [x] design the workflow of switching between current / hourly-scrollable data.
 - [x] change UI flow to confirm on 'x'
 - [x] update UI hints to reflect that
