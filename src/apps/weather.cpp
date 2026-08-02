@@ -5,14 +5,12 @@
 #include "../common/logging.hpp"
 #include "../lib/ArduinoJson-v7.4.2.h"
 #include "../common/maths_utils.hpp"
+#include "../common/constants.hpp"
 #include "../menu.hpp"
 #include "weather.hpp"
 #include "settings.hpp"
 
 #define TAG "random_seed_picker"
-
-#define CONTROL_POLLING_DELAY 20
-#define LOOP_DELAY 30
 
 WeatherAppConfiguration DEFAULT_WEATHER_APP_CONFIG = {
     .header = {.magic = CONFIGURATION_MAGIC, .version = 2},
@@ -111,6 +109,15 @@ UserAction handle_fetch(const Platform &p,
         LOG_DEBUG(TAG, "Fetching weather data for location: %s",
                   location_description.c_str());
 
+        if (!p.wifi_provider->is_connected()) {
+                const char *message =
+                    "WiFi connection unavailable, please connect to WiFi "
+                    "before attempting to fetch weather data.";
+                render_wrapped_help_text(p, customization, message);
+                wait_until_green_pressed(p);
+                return UserAction::PlayAgain;
+        }
+
         Location location = geolocation.search_location(location_description);
         auto data = weather.get_weather_data(location, config.forecast_days);
 
@@ -183,7 +190,7 @@ UserAction handle_fetch(const Platform &p,
                 auto maybe_action = poll_action_input(p.action_controllers);
                 if (!maybe_direction.has_value() && !maybe_action.has_value()) {
                         input_registered_last_iteration = false;
-                        p.time_provider->delay_ms(CONTROL_POLLING_DELAY);
+                        p.time_provider->delay_ms(INPUT_POLLING_DELAY);
                         continue;
                 }
 
@@ -208,8 +215,7 @@ UserAction handle_fetch(const Platform &p,
                         // act once to avoid double-processing of slow presses
                         // caused by button debounce issues.
                         if (input_registered_last_iteration) {
-                                p.time_provider->delay_ms(
-                                    CONTROL_POLLING_DELAY);
+                                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
                                 continue;
                         }
                         switch (act) {
@@ -219,7 +225,7 @@ UserAction handle_fetch(const Platform &p,
                                 move_datapoint_selection(prev, curr_idx);
                         } break;
                         case BACK_ACTION:
-                                p.time_provider->delay_ms(LOOP_DELAY);
+                                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
                                 return UserAction::PlayAgain;
                         case FORWARD_ACTION: {
                                 int prev = curr_idx;
@@ -229,7 +235,8 @@ UserAction handle_fetch(const Platform &p,
                                 // Wait a bit longer on forward scroll on button
                                 // presses. This is needed for higher precision
                                 // steering of the highlight selection.
-                                p.time_provider->delay_ms(2 * LOOP_DELAY);
+                                p.time_provider->delay_ms(2 *
+                                                          INPUT_POLLING_DELAY);
                         } break;
                         case HELP_ACTION:
                                 const char *message =
@@ -252,9 +259,7 @@ UserAction handle_fetch(const Platform &p,
                 }
                 input_registered_last_iteration = true;
 
-                // We wait slightly longer after an action is
-                // selected.
-                p.time_provider->delay_ms(LOOP_DELAY);
+                p.time_provider->delay_ms(INPUT_POLLING_DELAY);
         }
         return UserAction::PlayAgain;
 }
