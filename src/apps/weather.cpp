@@ -276,9 +276,9 @@ void render_weather_data(const Platform &p, const WeatherDatapoint &datapoint,
         const char *forecast_days_heading = "Forecast ";
 
         char time_buffer[20];
-        char temperature_buffer[10];
-        char precipitation_buffer[10];
-        char forecast_days_buffer[10];
+        char temperature_buffer[20];
+        char precipitation_buffer[20];
+        char forecast_days_buffer[20];
 
         sprintf(time_buffer, "%s", time.c_str());
         sprintf(temperature_buffer, "%.1f Cel.", temp);

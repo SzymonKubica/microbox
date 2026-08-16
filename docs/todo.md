@@ -40,6 +40,8 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 - [ ] ensure weather app compatibility on V1
 
 - [ ] ensure weather app graph works for places where the temperature dips below 0.
+  - [ ] fix maximum rendering artifacts where the max is positive and min is negative
+  - [x] fix artifacts where rain buffer is rendered in the temperature buffer
 
 
 # In Progress
