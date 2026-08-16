@@ -39,6 +39,8 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] ensure weather app compatibility on V1
 
+- [ ] ensure weather app graph works for places where the temperature dips below 0.
+
 
 # In Progress
 
