@@ -1849,6 +1849,18 @@ void render_bar_graph(const Platform &p,
                 display.draw_line({left_margin, y_start}, origin, Color::White);
                 display.draw_line(origin, origin + Point{available_width, 0},
                                   Color::White);
+                // If we are rendering both positive and negative values, we
+                // need to draw the zero line.
+                if (minimum < 0 && maximum > 0) {
+                        int zero_height = scale(0);
+                        int zero_y = origin.y - zero_height;
+                        display.draw_line(
+                            {left_margin, zero_y},
+                            {left_margin + available_width, zero_y},
+                            Color::White);
+                        draw_y_label((char *)"0.0",
+                                     available_height - zero_height);
+                }
                 draw_y_label(max_str, 0);
                 draw_y_label(min_str, available_height - scale(minimum));
         }
