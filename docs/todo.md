@@ -39,14 +39,15 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] ensure weather app compatibility on V1
 
-- [ ] ensure weather app graph works for places where the temperature dips below 0.
-  - [ ] fix maximum rendering artifacts where the max is positive and min is negative
-  - [x] fix artifacts where rain buffer is rendered in the temperature buffer
+- [ ] bar graph: if temperatures are above & below 0 draw a line that shows the 0
 
 
 # In Progress
 
 # Done
+- [x] ensure weather app graph works for places where the temperature dips below 0.
+  - [x] fix maximum rendering artifacts where the max is positive and min is negative
+  - [x] fix artifacts where rain buffer is rendered in the temperature buffer
 - [x] add graceful error handling and reporting when there is no wifi and the user tries to use wifi apps
 - [x] add rain probability as a secondary measure on the graph (decided to not do this as it would mess with the current datapoint highlighting)
 - [x] design the workflow of switching between current / hourly-scrollable data.

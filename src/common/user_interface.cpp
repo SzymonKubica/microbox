@@ -1807,7 +1807,7 @@ void render_bar_graph(const Platform &p,
                 auto it = std::min_element(y_values.begin(), y_values.end());
                 minimum = *it;
         }
-        char min_str[5], max_str[5];
+        char min_str[10], max_str[10];
         sprintf(max_str, "%.1f", maximum);
         sprintf(min_str, "%.1f", minimum);
         int max_label_len = std::max(strlen(min_str), strlen(max_str));
