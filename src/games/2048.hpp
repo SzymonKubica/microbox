@@ -1,9 +1,7 @@
 #pragma once
 
-#include "../platform/interface/display.hpp"
 #include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
-#include "../common/user_interface.hpp"
 
 #include "../common/common_transitions.hpp"
 #include "../application_executor.hpp"

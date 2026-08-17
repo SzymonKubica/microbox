@@ -1850,7 +1850,7 @@ void render_bar_graph(const Platform &p,
                 display.draw_line(origin, origin + Point{available_width, 0},
                                   Color::White);
                 // If we are rendering both positive and negative values, we
-                // need to draw the zero line.
+                // need to draw the zero line to improve clarity.
                 if (minimum < 0 && maximum > 0) {
                         int zero_height = scale(0);
                         int zero_y = origin.y - zero_height;

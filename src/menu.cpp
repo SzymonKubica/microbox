@@ -13,6 +13,7 @@
 #include "common/thumbnail.hpp"
 
 #include "games/minesweeper.hpp"
+#include "games/pong.hpp"
 #include "games/sudoku.hpp"
 #include "games/game_of_life.hpp"
 #include "games/snake.hpp"
@@ -106,6 +107,8 @@ std::optional<UserAction> select_app_and_run(const Platform &p)
                 return execute_app(*make<BrightnessApp>().get(), p, c);
         case Game::WeatherApp:
                 return execute_app(*make<WeatherApp>().get(), p, c);
+        case Game::Pong:
+                return execute_app(*make<Pong>().get(), p, c);
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return UserAction::Exit;
@@ -164,6 +167,8 @@ get_thumbnail_renderer(Game game)
                 return custom_renderer<PowerManagementApp>();
         case Game::WeatherApp:
                 return custom_renderer<WeatherApp>();
+        case Game::Pong:
+                return simple_name_renderer<Pong>();
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return std::nullopt;
@@ -208,10 +213,11 @@ main_menu_interaction_loop(const Platform &p,
                 // TODO: make this in sync with the set of available games as it
                 // causes out of sync issues when we add new games and forget to
                 // update this list.
-                std::vector<Game> games = {
-                    Game::Clean2048, Game::Minesweeper, Game::GameOfLife,
-                    Game::Snake,     Game::SnakeDuel,   Game::Sudoku,
-                    Game::Settings,  Game::Power,       Game::WeatherApp};
+                std::vector<Game> games = {Game::Clean2048,  Game::Minesweeper,
+                                           Game::GameOfLife, Game::Snake,
+                                           Game::SnakeDuel,  Game::Sudoku,
+                                           Game::Pong,       Game::Settings,
+                                           Game::Power,      Game::WeatherApp};
                 for (auto game : games) {
                         renderers.emplace_back(
                             std::move(get_thumbnail_renderer(game).value()));
@@ -298,6 +304,7 @@ get_available_games(const PlatformCapabilities &capabilities)
             GameStr::to_cstr(Game::Snake),
             GameStr::to_cstr(Game::SnakeDuel),
             GameStr::to_cstr(Game::Sudoku),
+            GameStr::to_cstr(Game::Pong),
             GameStr::to_cstr(Game::Settings),
         };
 

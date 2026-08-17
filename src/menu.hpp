@@ -21,6 +21,7 @@ enum class Game : int {
         DefaultsSetting = 13,
         DisplaySizeSetting = 14,
         WeatherApp = 15,
+        Pong = 16,
 };
 
 namespace GameStr
@@ -41,6 +42,7 @@ constexpr std::pair<Game, const char *> TABLE[] = {
     {Game::DefaultsSetting, "Defaults"},
     {Game::DisplaySizeSetting, "Display Size"},
     {Game::WeatherApp, "Weather"},
+    {Game::Pong, "Pong"},
 };
 constexpr const char *to_cstr(Game type)
 {

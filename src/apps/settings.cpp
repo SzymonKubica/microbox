@@ -12,6 +12,7 @@
 #include "../common/logging.hpp"
 #include "../games/game_of_life.hpp"
 #include "../games/minesweeper.hpp"
+#include "../games/pong.hpp"
 #include "../games/2048.hpp"
 #include "../games/snake.hpp"
 #include "../games/snake_duel.hpp"
@@ -155,6 +156,14 @@ UserAction Settings::app_loop(const Platform &p,
         case Game::WeatherApp: {
                 WeatherAppConfiguration config;
                 auto game = std::make_unique<WeatherApp>();
+                auto action = game->collect_config(p, custom, config);
+                if (action && is_exit_action(action))
+                        return action.value();
+                storage.put(offset, config);
+        } break;
+        case Game::Pong: {
+                PongConfiguration config;
+                auto game = std::make_unique<Pong>();
                 auto action = game->collect_config(p, custom, config);
                 if (action && is_exit_action(action))
                         return action.value();

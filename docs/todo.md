@@ -25,7 +25,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
   - top view of the console
   - actual animated joystick
   - animated buttons
-  - somehow reuse the game logic (figure out if it is possible to run c++ on arduino)
+  - somehow reuse the game logic (figure out if it is possible to run c++ on android)
 
 - make microbox emulator available online in a web UI
 
@@ -39,6 +39,10 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 
 - [ ] ensure weather app compatibility on V1
 
+- [ ] add pong with proper 'physics' (i.e. rotation and friction)
+  - [x] initial plumbing to get the game entrypoint available
+
+- [] redesign the process of adding a new game as it is a huge pain now (takes about 20 mins and a lot of places need to be updated)
 
 
 # In Progress
