@@ -7,6 +7,7 @@
 
 #include "../common/logging.hpp"
 #include "../common/constants.hpp"
+#include "../common/grid.hpp"
 #include "../platform/interface/display.hpp"
 #include "../platform/interface/platform.hpp"
 #include "../common/configuration.hpp"
@@ -24,10 +25,72 @@ PongConfiguration DEFAULT_PONG_GAME_CONFIG = {
 const char *Pong::get_game_name() const { return "Pong"; }
 const char *Pong::get_help_text() const { return "TODO"; }
 
+void draw_pong_canvas(const Platform &p,
+                      const SquareCellGridDimensions &dimensions,
+                      const UserInterfaceCustomization &customization)
+
+{
+        p.display->initialize();
+        p.display->clear(Black);
+
+        if (customization.rendering_mode == Detailed)
+                p.display->draw_rounded_border(customization.accent_color);
+
+        int x_margin = dimensions.left_horizontal_margin;
+        int y_margin = dimensions.top_vertical_margin;
+
+        int actual_width = dimensions.actual_width;
+        int actual_height = dimensions.actual_height;
+
+        int border_width = 2;
+        // We need to make the border rectangle and the canvas slightly
+        // bigger to ensure that it does not overlap with the game area.
+        // Otherwise the caret rendering erases parts of the border as
+        // it moves around (as the caret intersects with the border
+        // partially)
+        int border_offset = 1;
+
+        /* We don't draw the individual rectangles to make rendering
+           faster on the physical Arduino LCD display. */
+        p.display->clear_region(
+            {.x = x_margin - border_offset, .y = y_margin - border_offset},
+            {.x = x_margin + actual_width + border_offset,
+             .y = y_margin + actual_height + border_offset},
+            Black);
+
+        p.display->draw_rectangle(
+            {.x = x_margin - border_offset, .y = y_margin - border_offset},
+            actual_width + 2 * border_offset, actual_height + 2 * border_offset,
+            customization.accent_color, border_width, false);
+
+        if (customization.show_help_text) {
+                std::map<Action, std::string> button_hints;
+                button_hints[BACK_ACTION] = "Quit";
+                button_hints[CONFIRM_ACTION] = "TODO";
+                button_hints[FORWARD_ACTION] = "Pause";
+                button_hints[HELP_ACTION] = "Help";
+                render_controls_explanations(*p.display,
+                                             p.capabilities.action_button_kind,
+                                             button_hints);
+        }
+}
+
 UserAction Pong::app_loop(const Platform &p,
                           const UserInterfaceCustomization &customization,
                           const PongConfiguration &config) const
 {
+
+        int game_cell_width = 2;
+        auto gd =
+            std::unique_ptr<SquareCellGridDimensions>(calculate_grid_dimensions(
+                p.display->get_width(), p.display->get_height(),
+                p.display->get_display_corner_radius(), game_cell_width));
+        int rows = gd->rows;
+        int cols = gd->cols;
+
+        draw_pong_canvas(p, *gd, customization);
+
+        wait_until_green_pressed(p);
         return UserAction::PlayAgain;
 }
 
@@ -57,8 +120,6 @@ PongConfiguration *load_initial_pong_config(const PersistentStorage &storage)
                 memcpy(output, &config, sizeof(PongConfiguration));
         }
 
-        // TODO: log loaded values here
-
         return output;
 }
 
@@ -78,17 +139,10 @@ PongConfiguration *load_initial_pong_config(const PersistentStorage &storage)
 Configuration *assemble_pong_configuration(PersistentStorage *storage,
                                            PongConfiguration *initial_config)
 {
+        auto *initial_speed = ConfigurationOption::of_integers(
+            "Speed", {3, 4, 5}, initial_config->initial_speed);
 
-        // TODO: assemble configuration values here (example below)
-        //// Initialize the first config option: game gridsize
-        // auto *grid_size = ConfigurationOption::of_integers(
-        //     "Grid size", {3, 4, 5}, initial_config->grid_size);
-
-        // auto *game_target = ConfigurationOption::of_integers(
-        //     "Game target", {128, 256, 512, 1024, 2048, 4096},
-        //     initial_config->target_max_tile);
-
-        std::vector<ConfigurationOption *> options = {};
+        std::vector<ConfigurationOption *> options = {initial_speed};
 
         return new Configuration("Pong", options);
 }
@@ -96,22 +150,8 @@ void extract_game_config(PongConfiguration &game_config,
                          const PongConfiguration &initial_config,
                          const Configuration &config)
 {
-
-        // TODO: unwrap config values here (see example below).
-        //// Grid size is the first config option in the game struct
-        //// above.
-        // ConfigurationOption grid_size = *config.options[0];
-        //// Game target is the second config option above.
-        // ConfigurationOption game_target = *config.options[1];
-
-        // game_config.grid_size = grid_size.get_curr_int_value();
-        // game_config.target_max_tile = game_target.get_curr_int_value();
-        // game_config.is_game_in_progress = initial_config.is_game_in_progress;
-        // game_config.saved_grid_size = initial_config.saved_grid_size;
-        // game_config.saved_target_max_tile =
-        //     initial_config.saved_target_max_tile;
-        // memcpy(&game_config.saved_grid, &initial_config.saved_grid,
-        //        sizeof(initial_config.saved_grid));
+        ConfigurationOption initial_speed = *config.options[0];
+        game_config.initial_speed = initial_speed.get_curr_int_value();
 }
 
 std::optional<UserAction>

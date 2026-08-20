@@ -194,6 +194,7 @@ std::vector<int> get_settings_storage_offsets()
             {Game::Settings, sizeof(AppMenuConfiguration)},
             {Game::DisplaySizeSetting, sizeof(DisplayScaleConfiguration)},
             {Game::WeatherApp, sizeof(WeatherAppConfiguration)},
+            {Game::Pong, sizeof(PongConfiguration)},
         };
 
         std::vector<Game> games = {
@@ -201,7 +202,7 @@ std::vector<int> get_settings_storage_offsets()
             Game::GameOfLife, Game::RandomSeedPicker, Game::Snake,
             Game::SnakeDuel,  Game::WifiApp,          Game::Sudoku,
             Game::Brightness, Game::Settings,         Game::DisplaySizeSetting,
-            Game::WeatherApp};
+            Game::WeatherApp, Game::Pong};
 
         // We make the offsets size a two element bigger as the game enum starts
         // at 1 and we skip number 5 as that is the 'Settings' app itself. We
@@ -242,6 +243,7 @@ Configuration *assemble_settings_menu_configuration(const Platform &p)
             GameStr::to_cstr(Game::SnakeDuel),
             GameStr::to_cstr(Game::RandomSeedPicker),
             GameStr::to_cstr(Game::Sudoku),
+            GameStr::to_cstr(Game::Pong),
         };
 
         if (p.capabilities.has_wifi) {

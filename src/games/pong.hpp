@@ -8,6 +8,7 @@
 
 struct PongConfiguration {
         ConfigurationHeader header;
+        int initial_speed;
 };
 
 class Pong : public ApplicationExecutor<PongConfiguration>
