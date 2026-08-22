@@ -80,6 +80,27 @@ struct Ball {
         Point velocity;
 };
 
+struct Segment {
+        Point start;
+        Point end;
+
+        bool contains(const Point &p) const
+        {
+                // for now we assume segments are either only horizontal or
+                // vertical.
+                double eps = 0.01;
+                if (is_horizontal()) {
+                        return start.y - eps < p.y && p.y < start.y + eps;
+                } else {
+                        return start.x - eps < p.x && p.x < start.x + eps;
+                }
+        }
+
+        bool is_horizontal() const { return start.y == end.y; }
+
+        bool is_vertical() const { return start.x == end.x; }
+};
+
 UserAction Pong::app_loop(const Platform &p,
                           const UserInterfaceCustomization &customization,
                           const PongConfiguration &config) const
@@ -95,6 +116,21 @@ UserAction Pong::app_loop(const Platform &p,
 
         draw_pong_canvas(p, *gd, customization);
 
+        // We need to locate the grid vertices to assemble wall segments.
+        Point top_left = {(double)gd->left_horizontal_margin,
+                          (double)gd->top_vertical_margin};
+        Point top_right = top_left + Point{(double)gd->actual_width, 0};
+        Point bottom_left = top_left + Point{0, (double)gd->actual_height};
+        Point bottom_right = top_right + Point{0, (double)gd->actual_height};
+
+        Segment top_wall{top_left, top_right};
+        Segment bottom_wall{bottom_left, bottom_right};
+        Segment left_wall{top_left, bottom_left};
+        Segment right_wall{top_right, bottom_right};
+
+        std::vector<Segment> walls = {top_wall, bottom_wall, left_wall,
+                                      right_wall};
+
         // we do some simulation here
         Point pos = {gd->actual_width / 2.0, gd->actual_height / 2.0};
         Point v = {1.0, 1.0};
@@ -108,9 +144,27 @@ UserAction Pong::app_loop(const Platform &p,
                         break;
                 }
 
+                // erase the previous location
                 p.display->draw_circle(ball.position.cast(), 3, Black, 1, true);
 
+                // take a step
                 ball.position = ball.position + ball.velocity;
+
+                for (const auto &seg : walls) {
+                        // collision detected
+                        if (seg.contains(ball.position)) {
+                                // roll back the previous step
+                                ball.position = ball.position - ball.velocity;
+
+                                if (seg.is_horizontal()) {
+                                        ball.velocity.y = -ball.velocity.y;
+                                }
+
+                                if (seg.is_vertical()) {
+                                        ball.velocity.x = -ball.velocity.x;
+                                }
+                        }
+                }
 
                 p.display->draw_circle(ball.position.cast(), 3, Red, 1, true);
 
