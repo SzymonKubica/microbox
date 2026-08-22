@@ -10,7 +10,10 @@ IntPoint operator+(IntPoint first, IntPoint second)
         return {first.x + second.x, first.y + second.y};
 }
 
-IntPoint IntPoint::operator*(int scalar) const { return {scalar * x, scalar * y}; }
+IntPoint IntPoint::operator*(int scalar) const
+{
+        return {scalar * x, scalar * y};
+}
 
 bool operator==(const IntPoint &first, const IntPoint &second)
 {
@@ -122,8 +125,8 @@ void translate_toroidal_array(IntPoint &p, Direction dir, int rows, int cols)
         }
 }
 
-std::vector<IntPoint> get_neighbours_inside_grid(const IntPoint &point, int rows,
-                                              int cols)
+std::vector<IntPoint> get_neighbours_inside_grid(const IntPoint &point,
+                                                 int rows, int cols)
 {
         std::vector<IntPoint> neighbours;
         // alias for readability;
@@ -153,7 +156,7 @@ std::vector<IntPoint> get_neighbours_inside_grid(const IntPoint &point, int rows
 }
 
 std::vector<IntPoint> get_adjacent_neighbours_inside_grid(const IntPoint &point,
-                                                       int rows, int cols)
+                                                          int rows, int cols)
 {
         std::vector<IntPoint> neighbours;
         // alias for readability;
@@ -172,8 +175,8 @@ std::vector<IntPoint> get_adjacent_neighbours_inside_grid(const IntPoint &point,
         return neighbours;
 }
 
-std::vector<IntPoint> get_neighbours_toroidal_array(const IntPoint &point, int rows,
-                                                 int cols)
+std::vector<IntPoint> get_neighbours_toroidal_array(const IntPoint &point,
+                                                    int rows, int cols)
 {
         std::vector<IntPoint> neighbours;
         // alias for readability;
@@ -201,4 +204,24 @@ std::vector<IntPoint> get_neighbours_toroidal_array(const IntPoint &point, int r
 bool is_adjacent(const IntPoint &p1, const IntPoint &p2)
 {
         return (abs(p1.x - p2.x) <= 1 && abs(p1.y - p2.y) <= 1);
+}
+
+/**
+ * Scalar product
+ */
+Point Point::operator*(double scalar) { return {scalar * x, scalar * y}; }
+/**
+ * Dot product
+ */
+double Point::operator*(Point other) { return x * other.x + y * other.y; }
+
+IntPoint Point::cast() { return IntPoint{(int)x, (int)y}; }
+
+Point operator+(const Point &p1, const Point &p2)
+{
+        return {p1.x + p2.x, p1.y + p2.y};
+}
+Point operator-(const Point &p1, const Point &p2)
+{
+        return {p1.x - p2.x, p1.y - p2.y};
 }

@@ -75,6 +75,11 @@ void draw_pong_canvas(const Platform &p,
         }
 }
 
+struct Ball {
+        Point position;
+        Point velocity;
+};
+
 UserAction Pong::app_loop(const Platform &p,
                           const UserInterfaceCustomization &customization,
                           const PongConfiguration &config) const
@@ -89,6 +94,31 @@ UserAction Pong::app_loop(const Platform &p,
         int cols = gd->cols;
 
         draw_pong_canvas(p, *gd, customization);
+
+        // we do some simulation here
+        Point pos = {gd->actual_width / 2.0, gd->actual_height / 2.0};
+        Point v = {1.0, 1.0};
+        Ball ball{pos, v};
+        int time_delta = 10; // ms
+
+        while (true) {
+                auto maybe_action = poll_action_input(p.action_controllers);
+                if (maybe_action.has_value() &&
+                    maybe_action.value() == BACK_ACTION) {
+                        break;
+                }
+
+                p.display->draw_circle(ball.position.cast(), 3, Black, 1, true);
+
+                ball.position = ball.position + ball.velocity;
+
+                p.display->draw_circle(ball.position.cast(), 3, Red, 1, true);
+
+                if (!p.display->refresh()) {
+                        return UserAction::CloseWindow;
+                }
+                p.time_provider->delay_ms(time_delta);
+        }
 
         wait_until_green_pressed(p);
         return UserAction::PlayAgain;

@@ -3,6 +3,10 @@
 #include <optional>
 #include <vector>
 
+/**
+ * Point useful for discrete (grid-based) simulations. Not the most
+ * useful for actual physics.
+ */
 struct IntPoint {
         int x;
         int y;
@@ -26,17 +30,40 @@ std::optional<Direction> determine_displacement_direction(IntPoint &reference,
 IntPoint translate_pure(const IntPoint &p, Direction dir);
 void translate_within_bounds(IntPoint &p, Direction dir, int rows, int cols);
 void translate_toroidal_array(IntPoint &p, Direction dir, int rows, int cols);
-std::vector<IntPoint> get_neighbours_inside_grid(const IntPoint &point, int rows,
-                                              int cols);
+std::vector<IntPoint> get_neighbours_inside_grid(const IntPoint &point,
+                                                 int rows, int cols);
 std::vector<IntPoint> get_adjacent_neighbours_inside_grid(const IntPoint &point,
-                                                       int rows, int cols);
+                                                          int rows, int cols);
 /**
  * Useful for implementing grids with toroidal array geometry. For a given point
  * touching the edge of the grid, it returns its 'neighbours' on the other
  * side of the grid. For instance, for a point touching the top edge of the
  * grid, three points along the bottom edge of the grid will be returned
  * together with the five cells that are neighbouring the current cell. */
-std::vector<IntPoint> get_neighbours_toroidal_array(const IntPoint &point, int rows,
-                                                 int cols);
+std::vector<IntPoint> get_neighbours_toroidal_array(const IntPoint &point,
+                                                    int rows, int cols);
 
 bool is_adjacent(const IntPoint &p1, const IntPoint &p2);
+
+/**
+ * Point with real-number corrdinates. Useful for physics simulations.
+ */
+struct Point {
+        double x;
+        double y;
+
+  /**
+   * Scalar product
+   */
+  Point operator*(double scalar);
+  /**
+   * Dot product
+   */
+  double operator*(Point other);
+
+  IntPoint cast();
+};
+
+Point operator+(const Point &p1, const Point &p2);
+Point operator-(const Point &p1, const Point &p2);
+
