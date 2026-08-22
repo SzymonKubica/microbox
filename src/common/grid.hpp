@@ -78,5 +78,5 @@ int render_text_above_frame_starting_from(
     const Platform &p, const SquareCellGridDimensions &dimensions, char *text,
     int position, bool erase_previous = false);
 
-bool is_out_of_bounds(const Point &p,
+bool is_out_of_bounds(const IntPoint &p,
                       const SquareCellGridDimensions &dimensions);

@@ -293,11 +293,11 @@ void render_weather_data(const Platform &p, const WeatherDatapoint &datapoint,
         };
 
         // Start with a decent margin.
-        Point first_line_start{fw, fw};
-        Point start = first_line_start;
+        IntPoint first_line_start{fw, fw};
+        IntPoint start = first_line_start;
 
         for (auto [heading, value] : headings_and_values) {
-                auto value_start = start + Point{(int)strlen(heading) * fw, 0};
+                auto value_start = start + IntPoint{(int)strlen(heading) * fw, 0};
 
                 if (refresh_values_only) {
                         // We need to erase a bit further in case a numerical
@@ -307,7 +307,7 @@ void render_weather_data(const Platform &p, const WeatherDatapoint &datapoint,
                         // further to reach the end of the previous value.
                         auto value_end =
                             value_start +
-                            Point{((int)strlen(value) + 2) * fw, fh};
+                            IntPoint{((int)strlen(value) + 2) * fw, fh};
                         p.display->clear_region(value_start, value_end,
                                                 Color::Black);
                 } else {
@@ -319,7 +319,7 @@ void render_weather_data(const Platform &p, const WeatherDatapoint &datapoint,
                 p.display->draw_string(value_start, value, FontSize::Size16,
                                        Color::Black, Color::White);
 
-                start = start + Point{0, fh + 5};
+                start = start + IntPoint{0, fh + 5};
         }
 }
 

@@ -38,9 +38,9 @@ void SfmlDisplay::draw_rounded_border(Color color) const
         int line_width = 3;
         int width = get_width();
         int height = get_height();
-        Point top_left_corner = {.x = rounding_radius + margin,
+        GridPoint top_left_corner = {.x = rounding_radius + margin,
                                  .y = rounding_radius + margin};
-        Point bottom_right_corner = {.x = width - rounding_radius - margin,
+        GridPoint bottom_right_corner = {.x = width - rounding_radius - margin,
                                      .y = height - rounding_radius - margin};
 
         int x_positions[2] = {top_left_corner.x, bottom_right_corner.x};
@@ -133,7 +133,7 @@ void SfmlDisplay::draw_rounded_border(Color color) const
             Black);
 }
 
-void SfmlDisplay::draw_circle(Point center, int radius, Color color,
+void SfmlDisplay::draw_circle(GridPoint center, int radius, Color color,
                               int border_width, bool filled) const
 {
         // Note: the circle is always filled, given the current use cases this
@@ -155,7 +155,7 @@ void SfmlDisplay::draw_circle(Point center, int radius, Color color,
         texture->display();
 };
 
-void SfmlDisplay::draw_rectangle(Point start, int width, int height,
+void SfmlDisplay::draw_rectangle(GridPoint start, int width, int height,
                                  Color color, int border_width,
                                  bool filled) const
 {
@@ -193,12 +193,12 @@ void SfmlDisplay::draw_rectangle(Point start, int width, int height,
         }
         texture->display();
 };
-void SfmlDisplay::draw_rounded_rectangle(Point start, int width, int height,
+void SfmlDisplay::draw_rounded_rectangle(GridPoint start, int width, int height,
                                          int radius, Color color) const
 {
-        Point top_left_corner = {.x = start.x + radius, .y = start.y + radius};
+        GridPoint top_left_corner = {.x = start.x + radius, .y = start.y + radius};
 
-        Point bottom_right_corner = {.x = start.x + width - radius,
+        GridPoint bottom_right_corner = {.x = start.x + width - radius,
                                      .y = start.y + height - radius};
 
         int x_positions[2] = {top_left_corner.x, bottom_right_corner.x};
@@ -225,7 +225,7 @@ void SfmlDisplay::draw_rounded_rectangle(Point start, int width, int height,
                        width - 2 * radius, radius + 1, color, 0, true);
 };
 
-void SfmlDisplay::draw_line(Point start, Point end, Color color) const
+void SfmlDisplay::draw_line(GridPoint start, GridPoint end, Color color) const
 {
         /**
          * SFML aligns lines to pixel edges. LCD libraries align to the pixel
@@ -242,7 +242,7 @@ void SfmlDisplay::draw_line(Point start, Point end, Color color) const
         texture->draw(line, 2, sf::PrimitiveType::Lines);
         texture->display();
 }
-void SfmlDisplay::draw_string(Point start, char *string_buffer,
+void SfmlDisplay::draw_string(GridPoint start, char *string_buffer,
                               FontSize font_size, Color bg_color,
                               Color fg_color) const
 {
@@ -254,7 +254,7 @@ void SfmlDisplay::draw_string(Point start, char *string_buffer,
         texture->draw(text);
         texture->display();
 };
-void SfmlDisplay::clear_region(Point top_left, Point bottom_right,
+void SfmlDisplay::clear_region(GridPoint top_left, GridPoint bottom_right,
                                Color clear_color) const
 {
         draw_rectangle(top_left, bottom_right.x - top_left.x,

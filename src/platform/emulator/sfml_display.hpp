@@ -49,29 +49,29 @@ class SfmlDisplay : public Display, public TftCompatibleDisplay
         /**
          * Draws a circle with specified color, border width and fill.
          */
-        void draw_circle(Point center, int radius, Color color,
+        void draw_circle(IntPoint center, int radius, Color color,
                          int border_width, bool filled) const override;
         /**
          * Draws a rectangle with specified color, border width and fill.
          */
-        void draw_rectangle(Point start, int width, int height, Color color,
+        void draw_rectangle(IntPoint start, int width, int height, Color color,
                             int border_width, bool filled) const override;
         /**
          * Draws a rounded rectangle with specified color. This is useful for
          * drawing nicely-looking game menu items.
          */
-        void draw_rounded_rectangle(Point start, int width, int height,
+        void draw_rounded_rectangle(IntPoint start, int width, int height,
                                     int radius, Color color) const override;
         /**
          * Draws a line from a start point to the end point with specified
          * color. Note that fill and thickness are not controllable yet.
          */
-        void draw_line(Point start, Point end, Color color) const override;
+        void draw_line(IntPoint start, IntPoint end, Color color) const override;
         /**
          * Prints a string on the display, allows for specifying the font size,
          * color and background color.
          */
-        void draw_string(Point start, char *string_buffer, FontSize font_size,
+        void draw_string(IntPoint start, char *string_buffer, FontSize font_size,
                          Color bg_color, Color fg_color) const override;
         /**
          * Clears a rectangular region of the display. This is done by redrawing
@@ -79,7 +79,7 @@ class SfmlDisplay : public Display, public TftCompatibleDisplay
          * display this operation is potentially slow, hence we need to redraw
          * small regions at a time if we want the game to remain usable.
          */
-        void clear_region(Point top_left, Point bottom_right,
+        void clear_region(IntPoint top_left, IntPoint bottom_right,
                           Color clear_color) const override;
 
         /**

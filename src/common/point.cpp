@@ -5,19 +5,19 @@
 #include "maths_utils.hpp"
 #include <optional>
 
-Point operator+(Point first, Point second)
+IntPoint operator+(IntPoint first, IntPoint second)
 {
         return {first.x + second.x, first.y + second.y};
 }
 
-Point Point::operator*(int scalar) const { return {scalar * x, scalar * y}; }
+IntPoint IntPoint::operator*(int scalar) const { return {scalar * x, scalar * y}; }
 
-bool operator==(const Point &first, const Point &second)
+bool operator==(const IntPoint &first, const IntPoint &second)
 {
         return first.x == second.x && first.y == second.y;
 }
 
-void translate(Point &p, Direction dir)
+void translate(IntPoint &p, Direction dir)
 {
         switch (dir) {
         case Direction::UP:
@@ -38,7 +38,7 @@ void translate(Point &p, Direction dir)
         }
 }
 
-Point translate_pure(const Point &p, Direction dir)
+IntPoint translate_pure(const IntPoint &p, Direction dir)
 {
         switch (dir) {
         case Direction::UP:
@@ -55,8 +55,8 @@ Point translate_pure(const Point &p, Direction dir)
         }
 }
 
-std::optional<Direction> determine_displacement_direction(Point &reference,
-                                                          Point &target)
+std::optional<Direction> determine_displacement_direction(IntPoint &reference,
+                                                          IntPoint &target)
 {
 
         bool same_column = reference.x == target.x;
@@ -76,7 +76,7 @@ std::optional<Direction> determine_displacement_direction(Point &reference,
         return std::nullopt;
 }
 
-void translate_within_bounds(Point &p, Direction dir, int rows, int cols)
+void translate_within_bounds(IntPoint &p, Direction dir, int rows, int cols)
 {
         switch (dir) {
         case Direction::UP:
@@ -101,7 +101,7 @@ void translate_within_bounds(Point &p, Direction dir, int rows, int cols)
         }
 }
 
-void translate_toroidal_array(Point &p, Direction dir, int rows, int cols)
+void translate_toroidal_array(IntPoint &p, Direction dir, int rows, int cols)
 {
         switch (dir) {
         case Direction::UP:
@@ -122,10 +122,10 @@ void translate_toroidal_array(Point &p, Direction dir, int rows, int cols)
         }
 }
 
-std::vector<Point> get_neighbours_inside_grid(const Point &point, int rows,
+std::vector<IntPoint> get_neighbours_inside_grid(const IntPoint &point, int rows,
                                               int cols)
 {
-        std::vector<Point> neighbours;
+        std::vector<IntPoint> neighbours;
         // alias for readability;
         auto &p = point;
 
@@ -152,12 +152,12 @@ std::vector<Point> get_neighbours_inside_grid(const Point &point, int rows,
         return neighbours;
 }
 
-std::vector<Point> get_adjacent_neighbours_inside_grid(const Point &point,
+std::vector<IntPoint> get_adjacent_neighbours_inside_grid(const IntPoint &point,
                                                        int rows, int cols)
 {
-        std::vector<Point> neighbours;
+        std::vector<IntPoint> neighbours;
         // alias for readability;
-        Point p = point;
+        IntPoint p = point;
 
         // We add adjacent neighbours if within grid
         if (p.y > 0)
@@ -172,12 +172,12 @@ std::vector<Point> get_adjacent_neighbours_inside_grid(const Point &point,
         return neighbours;
 }
 
-std::vector<Point> get_neighbours_toroidal_array(const Point &point, int rows,
+std::vector<IntPoint> get_neighbours_toroidal_array(const IntPoint &point, int rows,
                                                  int cols)
 {
-        std::vector<Point> neighbours;
+        std::vector<IntPoint> neighbours;
         // alias for readability;
-        Point p = point;
+        IntPoint p = point;
 
         neighbours.push_back(
             {.x = p.x, .y = mathematical_modulo(p.y - 1, rows)});
@@ -198,7 +198,7 @@ std::vector<Point> get_neighbours_toroidal_array(const Point &point, int rows,
         return neighbours;
 }
 
-bool is_adjacent(const Point &p1, const Point &p2)
+bool is_adjacent(const IntPoint &p1, const IntPoint &p2)
 {
         return (abs(p1.x - p2.x) <= 1 && abs(p1.y - p2.y) <= 1);
 }

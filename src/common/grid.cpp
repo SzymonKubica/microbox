@@ -174,7 +174,7 @@ int render_text_above_frame_starting_from(
         return position + text_pixel_len;
 }
 
-bool is_out_of_bounds(const Point &p,
+bool is_out_of_bounds(const IntPoint &p,
                       const SquareCellGridDimensions &dimensions)
 {
         int x = p.x;

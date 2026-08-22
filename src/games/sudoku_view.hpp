@@ -21,16 +21,16 @@ class SudokuView
          * it renders the cell value there.
          */
         virtual void render_cell(const SudokuCell &cell,
-                                 const Point &location) = 0;
+                                 const IntPoint &location) = 0;
         /**
          * Underlines a digit placed in a cell under a given location.
          */
-        virtual void underline_cell(const Point &location) = 0;
-        virtual void underline_cell(const Point &location, Color color) = 0;
+        virtual void underline_cell(const IntPoint &location) = 0;
+        virtual void underline_cell(const IntPoint &location, Color color) = 0;
         /**
          * Erases the digit that was placed on a given cell.
          */
-        virtual void erase_cell_contents(const Point &location) = 0;
+        virtual void erase_cell_contents(const IntPoint &location) = 0;
         /**
          * Underlines all occurrences of the given digit with the specified
          * color. This is a good visual indicator that helps with readability
@@ -52,21 +52,21 @@ class SudokuView
         /**
          * Renders the caret at a given grid location.
          */
-        virtual void render_caret(const Point &location) = 0;
+        virtual void render_caret(const IntPoint &location) = 0;
         /**
          * Erases the caret at a given grid location.
          */
-        virtual void erase_caret(const Point &location) = 0;
+        virtual void erase_caret(const IntPoint &location) = 0;
         /**
          * Moves the caret from a given location on the Sudoku grid to the
          * destination location.
          */
-        virtual void move_caret(const Point &from, const Point &to) = 0;
+        virtual void move_caret(const IntPoint &from, const IntPoint &to) = 0;
         /**
          * Re-renders the caret at a given location. This is sometimes required
          * if updates to cells 'clip' the caret.
          */
-        virtual void rerender_caret(const Point &location) = 0;
+        virtual void rerender_caret(const IntPoint &location) = 0;
 
         /* Active Digit Selector */
         /**
@@ -127,15 +127,15 @@ class SimpleSudokuView : SudokuView
         void remove_underline_all_instances(int digit,
                                             const SudokuGrid &grid) override;
         void render_cell(const SudokuCell &cell,
-                         const Point &location) override;
-        void underline_cell(const Point &location) override;
-        void underline_cell(const Point &location, Color color) override;
-        void erase_cell_contents(const Point &location) override;
+                         const IntPoint &location) override;
+        void underline_cell(const IntPoint &location) override;
+        void underline_cell(const IntPoint &location, Color color) override;
+        void erase_cell_contents(const IntPoint &location) override;
 
-        void move_caret(const Point &from, const Point &to) override;
-        void render_caret(const Point &location) override;
-        void erase_caret(const Point &location) override;
-        void rerender_caret(const Point &location) override;
+        void move_caret(const IntPoint &from, const IntPoint &to) override;
+        void render_caret(const IntPoint &location) override;
+        void erase_caret(const IntPoint &location) override;
+        void rerender_caret(const IntPoint &location) override;
 
         void move_active_digit_selection_indicator(
             int previous_digit, int current_active_digit) override;

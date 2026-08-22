@@ -9,9 +9,9 @@
 
 namespace SnakeDefinitions
 {
-Snake::Snake(Point head, Direction direction) : head(head), direction(direction)
+Snake::Snake(IntPoint head, Direction direction) : head(head), direction(direction)
 {
-        Point tail = head;
+        IntPoint tail = head;
         translate(tail, get_opposite(direction));
         this->tail = tail;
         body = {this->tail, head};
@@ -19,7 +19,7 @@ Snake::Snake(Point head, Direction direction) : head(head), direction(direction)
 
 void Snake::take_step() { translate(this->head, this->direction); }
 
-Point Snake::get_neck() { return *(this->body.end() - 2).base(); }
+IntPoint Snake::get_neck() { return *(this->body.end() - 2).base(); }
 
 /**
  * Renders the head of the snake. This contains snake's eye and a rounded front
@@ -52,7 +52,7 @@ void render_snake_head(const Display &display, Color snake_color,
         // add `width - padding` below to get to that point. Also note
         // that we need to start drawing from the padded vertical start
         // hence we add the padding in the y coordinate
-        Point start = {.x = left_margin + snake.head.x * width,
+        IntPoint start = {.x = left_margin + snake.head.x * width,
                        .y = top_margin + snake.head.y * height};
 
         // We draw a 'half-cell' to connect snake head to the neck.
@@ -72,7 +72,7 @@ void render_snake_head(const Display &display, Color snake_color,
                 rectangle_h = snake_h;
         }
 
-        Point offset, eye_offset;
+        IntPoint offset, eye_offset;
         switch (snake.direction) {
         case Direction::UP:
                 offset = {.x = 0, .y = rectangle_h};
@@ -92,10 +92,10 @@ void render_snake_head(const Display &display, Color snake_color,
                 break;
         }
 
-        Point padded_start = start + Point{snake_padding, snake_padding};
-        Point neck = padded_start + Point{offset.x, offset.y};
-        Point forehead_center = padded_start + Point{snake_w / 2, snake_h / 2};
-        Point eye_center = neck + Point{rectangle_w / 2 + eye_offset.x,
+        IntPoint padded_start = start + IntPoint{snake_padding, snake_padding};
+        IntPoint neck = padded_start + IntPoint{offset.x, offset.y};
+        IntPoint forehead_center = padded_start + IntPoint{snake_w / 2, snake_h / 2};
+        IntPoint eye_center = neck + IntPoint{rectangle_w / 2 + eye_offset.x,
                                         rectangle_h / 2 + eye_offset.y};
         display.draw_rectangle(neck, rectangle_w, rectangle_h, snake_color,
                                border_width, true);
@@ -114,7 +114,7 @@ void render_snake_head(const Display &display, Color snake_color,
  */
 void render_segment_connection(const Display &display, Color snake_color,
                                const SquareCellGridDimensions &dimensions,
-                               Point &first_location, Point &second_location)
+                               IntPoint &first_location, IntPoint &second_location)
 {
 
         // Calculation logic to map from logical cells to the actual pixel
@@ -139,11 +139,11 @@ void render_segment_connection(const Display &display, Color snake_color,
                   first_location.x, first_location.y, second_location.x,
                   second_location.y);
 
-        Point start;
+        IntPoint start;
         int segment_width;
         int segment_height;
         if (adjacent_horizontally) {
-                Point &left_point = first_location.x < second_location.x
+                IntPoint &left_point = first_location.x < second_location.x
                                         ? first_location
                                         : second_location;
 
@@ -158,7 +158,7 @@ void render_segment_connection(const Display &display, Color snake_color,
                 segment_height = height - 2 * padding;
 
         } else {
-                Point top_point = first_location.y < second_location.y
+                IntPoint top_point = first_location.y < second_location.y
                                       ? first_location
                                       : second_location;
                 // We start drawing from the end of the padded square (bottom
@@ -177,7 +177,7 @@ void render_segment_connection(const Display &display, Color snake_color,
 
 void render_grid_cell(const Display &display, Color snake_color,
                       const SquareCellGridDimensions &dimensions,
-                      Cell cell_type, Point &location)
+                      Cell cell_type, IntPoint &location)
 {
         int padding = DEFAULT_PADDING;
         int snake_padding = SNAKE_SEGMENT_PADDING;
@@ -186,7 +186,7 @@ void render_grid_cell(const Display &display, Color snake_color,
         int left_margin = dimensions.left_horizontal_margin;
         int top_margin = dimensions.top_vertical_margin;
 
-        Point start = {.x = left_margin + location.x * width,
+        IntPoint start = {.x = left_margin + location.x * width,
                        .y = top_margin + location.y * height};
 
         // When rendering on the actual lcd display the circle comes out a bit
@@ -195,12 +195,12 @@ void render_grid_cell(const Display &display, Color snake_color,
         int radius_offset = 1;
 
         // Represents the top left corner of the snake segment
-        Point padded_start = {.x = start.x + snake_padding,
+        IntPoint padded_start = {.x = start.x + snake_padding,
                               .y = start.y + snake_padding};
         // We render a large snake segment when the apple is inside of it.
-        Point large_segment_start = {.x = start.x + padding,
+        IntPoint large_segment_start = {.x = start.x + padding,
                                      .y = start.y + padding};
-        Point apple_center = {.x = start.x + width / 2,
+        IntPoint apple_center = {.x = start.x + width / 2,
                               .y = start.y + width / 2};
 
         switch (cell_type) {
@@ -249,7 +249,7 @@ void render_grid_cell(const Display &display, Color snake_color,
                     apple_center,
                     {.x = apple_center.x + 2, .y = apple_center.y},
                     {.x = apple_center.x + 1, .y = apple_center.y - 2}};
-                for (Point loc : locations) {
+                for (IntPoint loc : locations) {
                         display.draw_circle(loc,
                                             (width - 2 * snake_padding) / 2 -
                                                 radius_offset,
@@ -262,13 +262,13 @@ void render_grid_cell(const Display &display, Color snake_color,
 void refresh_grid_cell(const Display &display, Color snake_color,
                        const SquareCellGridDimensions &dimensions,
                        const std::vector<std::vector<Cell>> &grid,
-                       Point &location)
+                       IntPoint &location)
 {
         Cell cell_type = grid[location.y][location.x];
         render_grid_cell(display, snake_color, dimensions, cell_type, location);
 }
 
-Point spawn_apple(std::vector<std::vector<Cell>> &grid)
+IntPoint spawn_apple(std::vector<std::vector<Cell>> &grid)
 {
         int rows = grid.size();
         int cols = (*grid.begin().base()).size();

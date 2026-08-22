@@ -97,7 +97,7 @@ struct GameOfLifeState {
          * the current caret position will be toggled. This can be used for
          * interacting with the automata.
          */
-        Point caret;
+        IntPoint caret;
 
         ~GameOfLifeState()
         {
@@ -158,13 +158,13 @@ void clear_rewind_mode_indicator(
     const SquareCellGridDimensions &dimensions);
 void draw_caret(const Display &display,
                 const SquareCellGridDimensions &dimensions,
-                const Point &grid_position, Color caret_color);
+                const IntPoint &grid_position, Color caret_color);
 void erase_caret(const Display &display,
                  const SquareCellGridDimensions &dimensions,
-                 const Point &grid_position, Color grid_background_color);
+                 const IntPoint &grid_position, Color grid_background_color);
 void draw_game_cell(const Display &display,
                     const SquareCellGridDimensions &dimensions,
-                    const Point &grid_position, Color color);
+                    const IntPoint &grid_position, Color color);
 
 /* Simulation State Transitions (and some UI rendering mixed in (not ideal)) */
 
@@ -468,9 +468,9 @@ StateEvolution take_simulation_step(const SquareCellGridDimensions &dimensions,
                                   "Processing cell at (%d, %d) with state %d",
                                   x, y, current_state);
                         int alive_nb = 0;
-                        Point curr = {.x = x, .y = y};
+                        IntPoint curr = {.x = x, .y = y};
 
-                        std::vector<Point> neighbours;
+                        std::vector<IntPoint> neighbours;
 
                         if (use_toroidal_array) {
                                 neighbours = get_neighbours_toroidal_array(
@@ -480,7 +480,7 @@ StateEvolution take_simulation_step(const SquareCellGridDimensions &dimensions,
                                     curr, rows, cols);
                         }
 
-                        for (Point nb : neighbours) {
+                        for (IntPoint nb : neighbours) {
                                 if (get_cell(nb.x, nb.y, cols, grid) == ALIVE) {
                                         alive_nb++;
                                 }
@@ -641,7 +641,7 @@ void move_caret(const Display &display,
         /* We unwrap the state here to make the code below less verbose */
         Grid grid = state.grid;
         const SquareCellGridDimensions &gd = state.dimensions;
-        Point &caret = state.caret;
+        IntPoint &caret = state.caret;
 
         GameOfLifeCell curr = get_cell(caret.x, caret.y, gd.cols, grid);
         Color bg_color = (curr == EMPTY) ? Black : White;
@@ -717,7 +717,7 @@ void flip_curr_cell(const Display &display,
 
         SimulationMode &mode = state.mode;
         const SquareCellGridDimensions &gd = state.dimensions;
-        Point &caret = state.caret;
+        IntPoint &caret = state.caret;
         int &rewind_buf_idx = state.curr_rewind_buff_idx;
         std::vector<uint8_t *> &rewind_buffer = state.rewind_buff;
 
@@ -770,14 +770,14 @@ void spawn_cells_randomly(const Display &display,
 
 void draw_caret(const Display &display,
                 const SquareCellGridDimensions &dimensions,
-                const Point &grid_position, Color caret_color)
+                const IntPoint &grid_position, Color caret_color)
 {
 
         // We need to ensure that the caret is rendered INSIDE the text
         // cell and its border doesn't overlap the neighbouring cells.
         // Otherwise, we'll get weird rendering artifacts.
         int border_offset = 1;
-        Point actual_position = {
+        IntPoint actual_position = {
             .x = dimensions.left_horizontal_margin +
                  grid_position.x * GAME_CELL_WIDTH + border_offset,
             .y = dimensions.top_vertical_margin +
@@ -790,9 +790,9 @@ void draw_caret(const Display &display,
 
 void draw_game_cell(const Display &display,
                     const SquareCellGridDimensions &dimensions,
-                    const Point &grid_position, Color color)
+                    const IntPoint &grid_position, Color color)
 {
-        Point actual_position = {.x = dimensions.left_horizontal_margin +
+        IntPoint actual_position = {.x = dimensions.left_horizontal_margin +
                                       grid_position.x * GAME_CELL_WIDTH,
                                  .y = dimensions.top_vertical_margin +
                                       grid_position.y * GAME_CELL_WIDTH};
@@ -803,14 +803,14 @@ void draw_game_cell(const Display &display,
 
 void erase_caret(const Display &display,
                  const SquareCellGridDimensions &dimensions,
-                 const Point &grid_position, Color grid_background_color)
+                 const IntPoint &grid_position, Color grid_background_color)
 {
 
         // We need to ensure that the caret is rendered INSIDE the text
         // cell and its border doesn't overlap the neighbouring cells.
         // Otherwise, we'll get weird rendering artifacts.
         int border_offset = 1;
-        Point actual_position = {
+        IntPoint actual_position = {
             .x = dimensions.left_horizontal_margin +
                  grid_position.x * GAME_CELL_WIDTH + border_offset,
             .y = dimensions.top_vertical_margin +
@@ -940,7 +940,7 @@ void GameOfLife::render_thumbnail(
                 display.get_display_corner_radius(), GAME_CELL_WIDTH));
 
         // Shorthand lambda to make the rendering code maximally concise.
-        auto cell = [&](const Point &location) {
+        auto cell = [&](const IntPoint &location) {
                 draw_game_cell(display, *dimensions, location, White);
         };
 
@@ -960,12 +960,12 @@ void GameOfLife::render_thumbnail(
         // clang-format-on
 
         // Top left point of the square where thumbnails get ususally rendered.
-        Point top_left{.x = 13, .y = 10};
+        IntPoint top_left{.x = 13, .y = 10};
 
         for (int y = 0; y < 9; y++) {
                 for (int x = 0; x < 9; x++) {
                         if (pattern[y][x] == 1) {
-                                cell(top_left + Point{x, y});
+                                cell(top_left + IntPoint{x, y});
                         }
                 }
         }

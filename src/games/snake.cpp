@@ -114,11 +114,11 @@ UserAction SnakeGame::app_loop(const Platform &p,
          */
 
         // Sets the required location on the grid to a provided value.
-        auto set_cell = [&grid](const Point &location, Cell value) {
+        auto set_cell = [&grid](const IntPoint &location, Cell value) {
                 grid[location.y][location.x] = value;
         };
         // Performs a lookup of the grid value without explicit array indexing.
-        auto get_cell = [&grid](const Point &location) {
+        auto get_cell = [&grid](const IntPoint &location) {
                 return grid[location.y][location.x];
         };
         // Re-renders the score in the correct location above the grid as
@@ -128,7 +128,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
         };
         // After the value of a given cell in the grid is changed, this
         // re-renders that single cell in the display.
-        auto render_cell = [p, &gd, &grid, customization](Point &location) {
+        auto render_cell = [p, &gd, &grid, customization](IntPoint &location) {
                 refresh_grid_cell(*p.display, customization.accent_color,
                                   *gd.get(), grid, location);
         };
@@ -155,7 +155,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
         Snake snake{{.x = cols / 2, .y = rows / 2}, Direction::RIGHT};
         set_cell(snake.head, Cell::Snake);
         set_cell(snake.tail, Cell::Snake);
-        Point apple_location = spawn_apple(grid);
+        IntPoint apple_location = spawn_apple(grid);
 
         // Render initial state of the game entities.
         render_cell(snake.tail);
@@ -243,7 +243,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
 
                         // We allow the user to change the direction for an
                         // additional tick by rolling back the head position.
-                        Point previous_head = *(snake.body.end() - 1);
+                        IntPoint previous_head = *(snake.body.end() - 1);
                         snake.head = previous_head;
                         state.grace_used = true;
                         if (increment_iteration_and_wait().has_value()) {
@@ -279,7 +279,7 @@ UserAction SnakeGame::app_loop(const Platform &p,
                         // Eating an apple is handled by simply skipping the
                         // step where we erase the last segment of the snake
                         // We then spawn a new apple.
-                        Point apple_loc = spawn_apple(grid);
+                        IntPoint apple_loc = spawn_apple(grid);
                         game_score++;
                         render_cell(apple_loc);
                         render_score(game_score);
@@ -458,7 +458,7 @@ void SnakeGame::render_thumbnail(
 
         // After the value of a given cell in the grid is changed, this
         // re-renders that single cell in the display.
-        auto render_cell = [platform, &gd, customization](Point location,
+        auto render_cell = [platform, &gd, customization](IntPoint location,
                                                           Cell type) {
                 render_grid_cell(*platform.display, customization.accent_color,
                                  *gd.get(), type, location);
@@ -474,8 +474,8 @@ void SnakeGame::render_thumbnail(
                                   *gd.get(), snake);
         };
 
-        auto render_connection = [platform, &gd, customization](Point first,
-                                                                Point second) {
+        auto render_connection = [platform, &gd, customization](IntPoint first,
+                                                                IntPoint second) {
                 render_segment_connection(*platform.display,
                                           customization.accent_color, *gd.get(),
                                           first, second);
@@ -490,8 +490,8 @@ void SnakeGame::render_thumbnail(
 
         // Here we control the layout of the snake's tail by specifying
         // which direction it went starting from the head and going back.
-        Point trail_part = {0, -1};
-        std::vector<Point> snake_trail;
+        IntPoint trail_part = {0, -1};
+        std::vector<IntPoint> snake_trail;
         snake_trail.push_back(trail_part);
         auto add_tail_segment = [&](Direction direction) {
                 translate(trail_part, direction);
@@ -508,15 +508,15 @@ void SnakeGame::render_thumbnail(
         add_tail_segment(Direction::RIGHT);
         add_tail_segment(Direction::UP);
 
-        Point last = snake.get_neck();
+        IntPoint last = snake.get_neck();
         for (const auto &p : snake_trail) {
-                Point translated = snake.get_neck() + p;
+                IntPoint translated = snake.get_neck() + p;
                 render_connection(last, translated);
                 render_cell(translated, Cell::Snake);
                 last = translated;
         }
 
-        Point apple = snake.head;
+        IntPoint apple = snake.head;
         translate(apple, Direction::RIGHT);
         translate(apple, Direction::RIGHT);
         translate(apple, Direction::UP);

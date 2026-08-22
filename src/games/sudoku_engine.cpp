@@ -53,8 +53,8 @@ int size(const ValidNumberSetMask &mask)
 }
 
 /* Forward-declarations of the utility functions used by the Sudoku solver */
-std::optional<Point> find_empty_cell(const SudokuGrid &grid);
-ValidNumberSetMask find_valid_numbers(const SudokuGrid &grid, Point location);
+std::optional<IntPoint> find_empty_cell(const SudokuGrid &grid);
+ValidNumberSetMask find_valid_numbers(const SudokuGrid &grid, IntPoint location);
 
 /**
  * Recursive algorithm that solves the supplied Sudoku grid by modifying it in
@@ -67,10 +67,10 @@ ValidNumberSetMask find_valid_numbers(const SudokuGrid &grid, Point location);
  */
 bool SudokuEngine::solve(SudokuGrid &grid)
 {
-        std::optional<Point> maybe_location = find_empty_cell(grid);
+        std::optional<IntPoint> maybe_location = find_empty_cell(grid);
         if (!maybe_location.has_value())
                 return true;
-        Point empty = maybe_location.value();
+        IntPoint empty = maybe_location.value();
         LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
 
         ValidNumberSetMask valid_numbers = find_valid_numbers(grid, empty);
@@ -94,7 +94,7 @@ bool SudokuEngine::solve(SudokuGrid &grid)
 /**
  * Returns coordinates of an empty cell in a Sudoku grid (if one exists).
  */
-std::optional<Point> find_empty_cell(const SudokuGrid &grid)
+std::optional<IntPoint> find_empty_cell(const SudokuGrid &grid)
 {
         int x, y;
         y = 0;
@@ -102,7 +102,7 @@ std::optional<Point> find_empty_cell(const SudokuGrid &grid)
                 x = 0;
                 for (auto &cell : row) {
                         if (cell.is_user_defined && !cell.digit.has_value()) {
-                                Point location = {x, y};
+                                IntPoint location = {x, y};
                                 return location;
                         }
                         x++;
@@ -121,7 +121,7 @@ std::optional<Point> find_empty_cell(const SudokuGrid &grid)
  * in a fixed-size array of bools. If bool at index n is set, it means that
  * number n+1 is valid.
  */
-ValidNumberSetMask find_valid_numbers(const SudokuGrid &grid, Point location)
+ValidNumberSetMask find_valid_numbers(const SudokuGrid &grid, IntPoint location)
 {
         auto &cell_at_location = grid[location.y][location.x];
 
@@ -157,7 +157,7 @@ ValidNumberSetMask find_valid_numbers(const SudokuGrid &grid, Point location)
         // Check the big square
         // We round down the coordinates of the selected location to the
         // multiple of 3 to find the top left corner of the square.
-        Point square_start = {3 * (location.x / 3), 3 * (location.y / 3)};
+        IntPoint square_start = {3 * (location.x / 3), 3 * (location.y / 3)};
         for (int y = square_start.y; y < square_start.y + 3; y++) {
                 for (int x = square_start.x; x < square_start.x + 3; x++) {
                         const auto &current = grid[y][x];
@@ -200,7 +200,7 @@ SudokuGrid SudokuEngine::generate_grid(int difficulty_level)
         // This gives us: 1 -> 40, 2 -> 50 and 3 -> 60 which is what we want.
         int to_remove = 30 + 10 * difficulty_level;
 
-        std::vector<Point> locations_to_remove;
+        std::vector<IntPoint> locations_to_remove;
 
         for (int y = 0; y < 9; y++) {
                 for (int x = 0; x < 9; x++) {
@@ -222,7 +222,7 @@ SudokuGrid SudokuEngine::generate_grid(int difficulty_level)
                     TAG,
                     "Trying to remove candidate cell %d (%d removed so far)",
                     candidate_idx, removed);
-                Point loc = locations_to_remove[candidate_idx];
+                IntPoint loc = locations_to_remove[candidate_idx];
                 int x = loc.x;
                 int y = loc.y;
 
@@ -263,10 +263,10 @@ SudokuGrid SudokuEngine::generate_grid(int difficulty_level)
  */
 bool populate_solved_grid(std::vector<std::vector<SudokuCell>> &grid)
 {
-        std::optional<Point> maybe_location = find_empty_cell(grid);
+        std::optional<IntPoint> maybe_location = find_empty_cell(grid);
         if (!maybe_location.has_value())
                 return true;
-        Point empty = maybe_location.value();
+        IntPoint empty = maybe_location.value();
         LOG_DEBUG(TAG, "Found empty cell: {x: %d, y: %d}", empty.x, empty.y);
 
         auto valid_numbers = into_vector(find_valid_numbers(grid, empty));
@@ -324,14 +324,14 @@ void test_for_unique_solution(SudokuGrid &grid, int &solution_count)
         if (solution_count > 1)
                 return;
 
-        std::optional<Point> maybe_empty = find_empty_cell(grid);
+        std::optional<IntPoint> maybe_empty = find_empty_cell(grid);
         if (!maybe_empty.has_value()) {
                 // No empty cells means that a solution was found.
                 solution_count++;
                 return;
         }
 
-        Point empty = maybe_empty.value();
+        IntPoint empty = maybe_empty.value();
         auto valid_numbers = find_valid_numbers(grid, empty);
 
         for (int candidate = 1; candidate <= 9; candidate++) {
@@ -405,7 +405,7 @@ bool SudokuEngine::validate(const std::vector<std::vector<SudokuCell>> &grid)
         for (int y = 0; y < 9; y += 3) {
                 for (int x = 0; x < 9; x += 3) {
                         // Check big square
-                        Point square_top_left = {x, y};
+                        IntPoint square_top_left = {x, y};
                         LOG_DEBUG(TAG, "Validating square starting at (%d, %d)",
                                   x, y);
                         int digit_counts[9] = NINE_ZEROS;

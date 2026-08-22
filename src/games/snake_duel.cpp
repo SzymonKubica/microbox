@@ -33,7 +33,7 @@ using namespace SnakeDefinitions;
 struct ColoredSnake : Snake {
         Color color;
 
-        ColoredSnake(Point head_position, Direction initial_direction,
+        ColoredSnake(IntPoint head_position, Direction initial_direction,
                      Color snake_color)
             : Snake(head_position, initial_direction), color(snake_color)
         {
@@ -140,7 +140,7 @@ void take_snake_step(
     const SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
-    std::function<void(Point &point, Color color)> &render_cell,
+    std::function<void(IntPoint &point, Color color)> &render_cell,
     SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary);
 
 UserAction SnakeDuel::app_loop(const Platform &p,
@@ -175,11 +175,11 @@ UserAction SnakeDuel::app_loop(const Platform &p,
          */
 
         // Sets the required location on the grid to a provided value.
-        auto set_cell = [&grid](const Point &location, Cell value) {
+        auto set_cell = [&grid](const IntPoint &location, Cell value) {
                 grid[location.y][location.x] = value;
         };
         // Performs a lookup of the grid value without explicit array indexing.
-        auto get_cell = [&grid](const Point &location) {
+        auto get_cell = [&grid](const IntPoint &location) {
                 return grid[location.y][location.x];
         };
         // Re-renders the score of Player 1 in the correct location above the
@@ -196,8 +196,8 @@ UserAction SnakeDuel::app_loop(const Platform &p,
         };
         // After the value of a given cell in the grid is changed, this
         // re-renders that single cell in the display.
-        std::function<void(Point & location, Color color)> render_cell =
-            [p, &gd, &grid, customization](Point &location, Color color) {
+        std::function<void(IntPoint & location, Color color)> render_cell =
+            [p, &gd, &grid, customization](IntPoint &location, Color color) {
                     refresh_grid_cell(*p.display, color, *gd.get(), grid,
                                       location);
             };
@@ -224,7 +224,7 @@ UserAction SnakeDuel::app_loop(const Platform &p,
 
         int mid_x = cols / 2;
         int mid_y = rows / 2;
-        Point midpoint = {mid_x, mid_y};
+        IntPoint midpoint = {mid_x, mid_y};
 
         // The first snake starts in the middle pointing to the right.
         // The second snake is one cell below in the opposite direction.
@@ -247,7 +247,7 @@ UserAction SnakeDuel::app_loop(const Platform &p,
         render_head(second_snake);
         render_cell(second_snake.head, second_snake.color);
 
-        Point apple_location = spawn_apple(grid);
+        IntPoint apple_location = spawn_apple(grid);
 
         // Here the color doesn't matter as apples are always red.
         render_cell(apple_location, primary_color);
@@ -374,12 +374,12 @@ void take_snake_step(
     const SnakeDuelConfiguration &config, SquareCellGridDimensions *gd,
     int score_text_end_x, std::vector<std::vector<Cell>> &grid,
     std::function<void(ColoredSnake &snake)> &render_head,
-    std::function<void(Point &point, Color color)> &render_cell,
+    std::function<void(IntPoint &point, Color color)> &render_cell,
     SnakeDuelLoopState &state, ColoredSnake &snake, bool is_secondary)
 {
 
         // Performs a lookup of the grid value without explicit array indexing.
-        auto get_cell = [&grid](const Point &location) {
+        auto get_cell = [&grid](const IntPoint &location) {
                 return grid[location.y][location.x];
         };
 
@@ -421,7 +421,7 @@ void take_snake_step(
                 // We allow the user to change the direction for an additional
                 // tick by rolling back the head position.
                 LOG_INFO(TAG, "Snake %d used grace.", snake_number);
-                Point previous_head = *(snake.body.end() - 1);
+                IntPoint previous_head = *(snake.body.end() - 1);
                 snake.head = {previous_head.x, previous_head.y};
 
                 *grace_used = true;
@@ -453,7 +453,7 @@ void take_snake_step(
                 // Eating an apple is handled by simply skipping the step where
                 // we erase the last segment of the snake (the else branch). We
                 // then spawn a new apple.
-                Point apple_location = spawn_apple(grid);
+                IntPoint apple_location = spawn_apple(grid);
                 // Here the color doesn't matter as apples are always red.
                 render_cell(apple_location, snake.color);
                 (*game_score)++;
@@ -642,16 +642,16 @@ std::optional<Direction> next_step(Snake &snake,
  * the entire path works on a powerful desktop machine, however on an
  * arduino we would get crashes which I suspect were memory related.
  */
-bool find_next_step(const Point &start,
+bool find_next_step(const IntPoint &start,
                     const std::vector<std::vector<Cell>> &grid,
-                    Point &next_step);
+                    IntPoint &next_step);
 
 std::optional<Direction>
 find_next_step_towards_apple(Snake &snake, std::vector<std::vector<Cell>> &grid)
 {
 
-        Point curr = snake.head;
-        Point next;
+        IntPoint curr = snake.head;
+        IntPoint next;
         if (!find_next_step(curr, grid, next)) {
                 return std::nullopt;
         };
@@ -677,10 +677,10 @@ find_fallback_next_safe_step(Snake &snake, std::vector<std::vector<Cell>> &grid,
         int rows = grid.size();
         int cols = grid[0].size();
 
-        Point curr = snake.head;
-        Point next = translate_pure(curr, snake.direction);
+        IntPoint curr = snake.head;
+        IntPoint next = translate_pure(curr, snake.direction);
 
-        auto is_accessible = [&grid](Point p) {
+        auto is_accessible = [&grid](IntPoint p) {
                 return grid[p.y][p.x] != Cell::Snake &&
                        grid[p.y][p.x] != Cell::AppleSnake;
         };
@@ -733,8 +733,8 @@ struct CompactPoint {
         uint8_t y;
 
       public:
-        Point into_point() { return {x, y}; }
-        static CompactPoint from_point(const Point &point)
+        IntPoint into_point() { return {x, y}; }
+        static CompactPoint from_point(const IntPoint &point)
         {
                 return {static_cast<uint8_t>(point.x),
                         static_cast<uint8_t>(point.y)};
@@ -772,22 +772,22 @@ static uint32_t visited[MAX_ROWS];
 static CompactPoint parent[MAX_ROWS][MAX_COLS];
 static CompactPoint queue[MAX_ROWS * MAX_COLS];
 
-bool find_next_step(const Point &start,
+bool find_next_step(const IntPoint &start,
                     const std::vector<std::vector<Cell>> &grid,
-                    Point &next_step)
+                    IntPoint &next_step)
 {
 
-        auto is_visited = [](Point point) -> bool {
+        auto is_visited = [](IntPoint point) -> bool {
                 return static_cast<bool>(
                     visited[point.y] & (1u << static_cast<uint32_t>(point.x)));
         };
-        auto set_visited = [](Point point) {
+        auto set_visited = [](IntPoint point) {
                 visited[point.y] |= (1u << static_cast<uint32_t>(point.x));
         };
 
         int rows = grid.size();
         int cols = grid[0].size();
-        Point apple;
+        IntPoint apple;
         // Mark all cells where we cannot go and find the apple.
         for (int y = 0; y < rows; ++y) {
                 // Clear the previous state of visited cells
@@ -810,10 +810,10 @@ bool find_next_step(const Point &start,
 
         int queue_head_idx = 0;
         int queue_tail_idx = 0;
-        auto enqueue = [&queue_tail_idx](Point next) {
+        auto enqueue = [&queue_tail_idx](IntPoint next) {
                 queue[queue_tail_idx++] = CompactPoint::from_point(next);
         };
-        auto dequeue = [&queue_head_idx]() -> Point {
+        auto dequeue = [&queue_head_idx]() -> IntPoint {
                 return queue[queue_head_idx++].into_point();
         };
 
@@ -821,12 +821,12 @@ bool find_next_step(const Point &start,
         set_visited(start);
 
         while (queue_head_idx != queue_tail_idx) {
-                Point cur = dequeue();
+                IntPoint cur = dequeue();
 
                 if (cur.x == apple.x && cur.y == apple.y) {
                         // Traverse back the parent map to only get the next
                         // step.
-                        Point p = apple;
+                        IntPoint p = apple;
                         while (!(parent[p.y][p.x].x == start.x &&
                                  parent[p.y][p.x].y == start.y)) {
                                 p = parent[p.y][p.x].into_point();
@@ -870,12 +870,12 @@ bool find_next_step(const Point &start,
         enqueue(start);
 
         while (queue_head_idx != queue_tail_idx) {
-                Point cur = dequeue();
+                IntPoint cur = dequeue();
 
                 if (cur.x == apple.x && cur.y == apple.y) {
                         // Traverse back the parent map to only get the next
                         // step.
-                        Point p = apple;
+                        IntPoint p = apple;
                         while (!(parent[p.y][p.x].x == start.x &&
                                  parent[p.y][p.x].y == start.y)) {
                                 p = parent[p.y][p.x].into_point();
@@ -918,7 +918,7 @@ void SnakeDuel::render_thumbnail(
         // After the value of a given cell in the grid is changed, this
         // re-renders that single cell in the display.
         auto render_cell = [platform, &gd, customization](
-                               Point location, Cell type, Color color) {
+                               IntPoint location, Cell type, Color color) {
                 render_grid_cell(*platform.display, color, *gd.get(), type,
                                  location);
         };
@@ -933,7 +933,7 @@ void SnakeDuel::render_thumbnail(
         };
 
         auto render_connection = [platform, &gd, customization](
-                                     Point first, Point second, Color color) {
+                                     IntPoint first, IntPoint second, Color color) {
                 render_segment_connection(*platform.display, color, *gd.get(),
                                           first, second);
         };
@@ -948,8 +948,8 @@ void SnakeDuel::render_thumbnail(
 
         // Here we control the layout of the snake's tail by specifying
         // which direction it went starting from the head and going back.
-        Point trail_part = {0, -1};
-        std::vector<Point> snake_trail;
+        IntPoint trail_part = {0, -1};
+        std::vector<IntPoint> snake_trail;
         snake_trail.push_back(trail_part);
         auto add_tail_segment = [&](Direction direction) {
                 translate(trail_part, direction);
@@ -963,31 +963,31 @@ void SnakeDuel::render_thumbnail(
         add_tail_segment(Direction::RIGHT);
 
         {
-                Point last = snake.get_neck();
+                IntPoint last = snake.get_neck();
                 for (const auto &p : snake_trail) {
-                        Point translated = snake.get_neck() + p;
+                        IntPoint translated = snake.get_neck() + p;
                         render_connection(last, translated, primary);
                         render_cell(translated, Cell::Snake, primary);
                         last = translated;
                 }
         }
 
-        Point apple = snake.head;
+        IntPoint apple = snake.head;
         translate(apple, Direction::RIGHT);
         translate(apple, Direction::RIGHT);
         translate(apple, Direction::UP);
         render_cell(apple, Cell::Apple, primary);
 
-        Snake second_snake{Point{.x = cols / 2, .y = rows / 2} + Point{2, 1},
+        Snake second_snake{IntPoint{.x = cols / 2, .y = rows / 2} + IntPoint{2, 1},
                            Direction::UP};
         render_head(second_snake, Red);
         render_cell(second_snake.get_neck(), Cell::Snake, Red);
-        std::vector<Point> second_snake_trail = {
+        std::vector<IntPoint> second_snake_trail = {
             {0, 1}, {-1, 1}, {-1, 1}, {-1, 0}, {-2, 0}};
 
-        Point last = second_snake.get_neck();
+        IntPoint last = second_snake.get_neck();
         for (const auto &p : second_snake_trail) {
-                Point translated = second_snake.get_neck() + p;
+                IntPoint translated = second_snake.get_neck() + p;
                 render_connection(last, translated, Red);
                 render_cell(translated, Cell::Snake, Red);
                 last = translated;

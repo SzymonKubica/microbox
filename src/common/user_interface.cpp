@@ -145,7 +145,7 @@ void render_config_bar_centered(const Display &display, int y_start,
         // then make it longer and taller to properly contain all of the text.
         int h_padding = fw / 2;
         int v_padding = fh / 2;
-        Point bar_start = {.x = left_margin - h_padding,
+        IntPoint bar_start = {.x = left_margin - h_padding,
                            .y = y_start - v_padding};
 
         int bar_width = text_len * fw + 2 * h_padding;
@@ -160,7 +160,7 @@ void render_config_bar_centered(const Display &display, int y_start,
         // because of this we add negative padding to make it fit.
         int value_cell_v_padding = fh / 4;
         int value_cell_y = y_start - value_cell_v_padding;
-        Point value_cell_start = {.x = value_cell_x, .y = value_cell_y};
+        IntPoint value_cell_start = {.x = value_cell_x, .y = value_cell_y};
 
         Color accent_color = customization.accent_color;
 
@@ -173,7 +173,7 @@ void render_config_bar_centered(const Display &display, int y_start,
         }
 
         if (!is_already_rendered) {
-                Point bar_name_str_start = {.x = left_margin, .y = y_start};
+                IntPoint bar_name_str_start = {.x = left_margin, .y = y_start};
 
                 if (customization.rendering_mode == Detailed) {
                         // Draw the background for the two configuration cells.
@@ -188,7 +188,7 @@ void render_config_bar_centered(const Display &display, int y_start,
         }
 
         if (!is_already_rendered || update_option_name) {
-                Point bar_name_str_start = {.x = left_margin, .y = y_start};
+                IntPoint bar_name_str_start = {.x = left_margin, .y = y_start};
 
                 if (customization.rendering_mode == Detailed) {
 
@@ -315,13 +315,13 @@ void render_text_bar_centered(const Display &display, int y_start,
         // then make it longer and taller to properly contain all of the text.
         int h_padding = fw / 2;
         int v_padding = fh / 2;
-        Point bar_start = {.x = left_margin - h_padding,
+        IntPoint bar_start = {.x = left_margin - h_padding,
                            .y = y_start - v_padding};
 
         int bar_width = text_len * fw + 2 * h_padding;
 
         if (!is_already_rendered) {
-                Point text_start = {.x = text_x, .y = y_start};
+                IntPoint text_start = {.x = text_x, .y = y_start};
                 if (rendering_mode == Detailed) {
                         // Draw the background for the two configuration cells.
                         display.draw_rounded_rectangle(
@@ -338,10 +338,10 @@ void render_text_bar_centered(const Display &display, int y_start,
                         // is the previous text is erased. Note that this is
                         // only required on the emulator as the actual LCD
                         // display always clears the background of the text.
-                        display.clear_region(bar_start + Point{-3 * fw, 0},
-                                             Point{bar_start.x + bar_width,
+                        display.clear_region(bar_start + IntPoint{-3 * fw, 0},
+                                             IntPoint{bar_start.x + bar_width,
                                                    bar_start.y + fh * 2} +
-                                                 Point{3 * fw, 0},
+                                                 IntPoint{3 * fw, 0},
                                              Black);
                         // The only other option supported right now is the
                         // `Minimalistic` rendering mode, we render it below
@@ -379,11 +379,11 @@ void render_circle_selector(const Display &display, bool already_rendered,
         }
         if (!already_rendered || prev_pos_idx != curr_pos_idx) {
                 // First clear the old circle
-                Point clear_pos = {.x = x_axis, .y = y_positions[prev_pos_idx]};
+                IntPoint clear_pos = {.x = x_axis, .y = y_positions[prev_pos_idx]};
                 display.draw_circle(clear_pos, radius, bg_color, 0, true);
 
                 // Draw the new circle
-                Point new_pos = {.x = x_axis, .y = y_positions[curr_pos_idx]};
+                IntPoint new_pos = {.x = x_axis, .y = y_positions[curr_pos_idx]};
                 display.draw_circle(new_pos, radius, circle_color, 0, true);
         }
 }
@@ -738,7 +738,7 @@ struct HintIndicatorRenderingStrategy {
          * This strategy takes in the button for which the hint is required,
          * then the x and y coordinates of where the hint needs to be placed.
          */
-        std::function<void(Action button, Point position)>
+        std::function<void(Action button, IntPoint position)>
             render_action_indicator;
 };
 
@@ -811,7 +811,7 @@ void render_controls_explanations(const Display &display,
         case ActionButtonKind::Letters: {
                 int spacing = 2;
                 int indicator_width = fw + spacing;
-                auto render_strategy = [&](Action button, Point position) {
+                auto render_strategy = [&](Action button, IntPoint position) {
                         std::vector<const char *> key_map(4);
                         key_map[static_cast<uint8_t>(Action::BLUE)] = "a";
                         key_map[static_cast<uint8_t>(Action::YELLOW)] = "s";
@@ -830,8 +830,8 @@ void render_controls_explanations(const Display &display,
                 int circle_text_gap_width = 2;
                 int indicator_width = 4 * circle_radius + circle_text_gap_width;
                 auto render_strategy = [&display, fh, fw, circle_radius](
-                                           Action button, Point position) {
-                        std::vector<Point> button_offsets(4);
+                                           Action button, IntPoint position) {
+                        std::vector<IntPoint> button_offsets(4);
                         button_offsets[static_cast<uint8_t>(Action::BLUE)] = {
                             -1, 0};
                         button_offsets[static_cast<uint8_t>(Action::YELLOW)] = {
@@ -844,7 +844,7 @@ void render_controls_explanations(const Display &display,
                         // We first make all possible displacements in gray.
                         for (const auto &d : button_offsets) {
                                 if (!(d ==
-                                      (const Point &)
+                                      (const IntPoint &)
                                           button_offsets[static_cast<uint8_t>(
                                               button)])) {
                                         display.draw_circle(
@@ -873,7 +873,7 @@ void render_controls_explanations(const Display &display,
                 int circle_text_gap_width = fw / 4;
                 int indicator_width = circle_radius + circle_text_gap_width;
                 auto render_strategy = [&display, fh, fw, circle_radius](
-                                           Action button, Point position) {
+                                           Action button, IntPoint position) {
                         std::vector<Color> button_colors(4);
                         button_colors[static_cast<uint8_t>(Action::BLUE)] =
                             Blue;
@@ -1046,9 +1046,9 @@ void render_wrapped_help_text(const Platform &p,
         int ok_green_circle_x = ok_text_x - circle_text_gap_width;
         int ok_green_circle_y = ok_text_y + fh / 2;
 
-        Point center = {.x = ok_green_circle_x, .y = ok_green_circle_y};
+        IntPoint center = {.x = ok_green_circle_x, .y = ok_green_circle_y};
         if (p.capabilities.action_button_kind == ActionButtonKind::Directions) {
-                std::vector<Point> displacements = {
+                std::vector<IntPoint> displacements = {
                     {-1, 0},
                     {0, -1},
                     {1, 0},
@@ -1056,9 +1056,9 @@ void render_wrapped_help_text(const Platform &p,
                 };
                 int circle_radius = 2;
                 for (const auto &d : displacements) {
-                        Color color = d == Point{0, 1} ? White : Gray;
+                        Color color = d == IntPoint{0, 1} ? White : Gray;
                         p.display->draw_circle(
-                            Point{center.x - circle_text_gap_width, center.y} +
+                            IntPoint{center.x - circle_text_gap_width, center.y} +
                                 (d * 2 * circle_radius),
                             circle_radius, color, 0, true);
                 }
@@ -1073,7 +1073,7 @@ void render_wrapped_help_text(const Platform &p,
         }
 }
 
-void draw_cube_perspective(const Display &display, Point position, int size,
+void draw_cube_perspective(const Display &display, IntPoint position, int size,
                            Color color)
 {
         display.draw_rectangle(position, size, size, color, 1, false);
@@ -1086,9 +1086,9 @@ void draw_cube_perspective(const Display &display, Point position, int size,
          * subtract 1 from the size.
          */
         int displacement = size - 1;
-        Point front_top_left_vertex = {position.x, position.y};
-        Point front_top_right_vertex = {position.x + displacement, position.y};
-        Point front_bottom_right_vertex = {position.x + displacement,
+        IntPoint front_top_left_vertex = {position.x, position.y};
+        IntPoint front_top_right_vertex = {position.x + displacement, position.y};
+        IntPoint front_bottom_right_vertex = {position.x + displacement,
                                            position.y + displacement};
         auto front_vertices = {front_top_left_vertex, front_top_right_vertex,
                                front_bottom_right_vertex};
@@ -1096,19 +1096,19 @@ void draw_cube_perspective(const Display &display, Point position, int size,
         // Draw the three visible slanted edges
         int perspective_offset = size / 3;
 
-        auto translate_to_back = [&perspective_offset](Point vertex) {
-                return Point{vertex.x + perspective_offset,
+        auto translate_to_back = [&perspective_offset](IntPoint vertex) {
+                return IntPoint{vertex.x + perspective_offset,
                              vertex.y - perspective_offset};
         };
 
-        for (Point vertex : front_vertices) {
+        for (IntPoint vertex : front_vertices) {
                 display.draw_line(vertex, translate_to_back(vertex), color);
         }
 
         // Draw the two visible back edges
-        Point back_top_left_vertex = translate_to_back(front_top_left_vertex);
-        Point back_top_right_vertex = translate_to_back(front_top_right_vertex);
-        Point back_bottom_right_vertex =
+        IntPoint back_top_left_vertex = translate_to_back(front_top_left_vertex);
+        IntPoint back_top_right_vertex = translate_to_back(front_top_right_vertex);
+        IntPoint back_bottom_right_vertex =
             translate_to_back(front_bottom_right_vertex);
 
         display.draw_line(back_top_left_vertex, back_top_right_vertex, color);
@@ -1120,7 +1120,7 @@ void draw_cube_perspective(const Display &display, Point position, int size,
  * edge width equal to `size`. Note that for pixel accuracy the size of
  * the mu letter should be divisible by 6.
  */
-void draw_mu_letter(const Display &display, Point position, int size,
+void draw_mu_letter(const Display &display, IntPoint position, int size,
                     Color color)
 {
         int width = size / 3;
@@ -1130,8 +1130,8 @@ void draw_mu_letter(const Display &display, Point position, int size,
 
         // First we draw the 'leg' which is the vertical long part of
         // the μ letter
-        Point letter_leg_start = {position.x + h_margin, position.y + v_margin};
-        Point letter_leg_end = {letter_leg_start.x,
+        IntPoint letter_leg_start = {position.x + h_margin, position.y + v_margin};
+        IntPoint letter_leg_end = {letter_leg_start.x,
                                 letter_leg_start.y + height};
 
         display.draw_line(letter_leg_start, letter_leg_end, color);
@@ -1140,16 +1140,16 @@ void draw_mu_letter(const Display &display, Point position, int size,
         // We want the front part to be roughly between 1/2 and 1/3 of the
         // height of the 'back leg'. Hence we go for 5/12.
         int letter_front_height = (height * 5) / 12;
-        Point letter_front_start = {position.x + h_margin + width,
+        IntPoint letter_front_start = {position.x + h_margin + width,
                                     position.y + v_margin};
-        Point letter_front_end = {letter_front_start.x,
+        IntPoint letter_front_end = {letter_front_start.x,
                                   letter_front_start.y + letter_front_height};
 
         display.draw_line(letter_front_start, letter_front_end, color);
 
         // Now we connect the two parts with a semi-circle
         int radius = width / 2;
-        Point center = {letter_leg_start.x + radius, letter_front_end.y};
+        IntPoint center = {letter_leg_start.x + radius, letter_front_end.y};
         // For pixel accuracy we decrease the diameter by 1 as the
         // circle also has some thickness to it.
         display.draw_circle(center, radius, color, 1, false);
@@ -1174,7 +1174,7 @@ void render_input_prompt(const Platform &p, int display_width,
         auto [fw, fh] = p.display->get_font_configuration().font_dimensions;
         int prompt_text_centering_margin =
             (display_width - strlen(input_prompt) * fw) / 2;
-        Point prompt_text_start = {.x = prompt_text_centering_margin, .y = fw};
+        IntPoint prompt_text_start = {.x = prompt_text_centering_margin, .y = fw};
         p.display->draw_string(prompt_text_start, (char *)input_prompt,
                                FontSize::Size16, Black, White);
 }
@@ -1244,13 +1244,13 @@ collect_string_input(const Platform &p,
             "ASDFGHJKL:\" ",
             "ZXCVBNM<>? x",
         };
-        Point cancellation_key_location = {11, 3};
+        IntPoint cancellation_key_location = {11, 3};
 
         std::vector<int> left_indent_map = {0, 1, 2, 3};
 
-        Point input_text_start = {.x = left_horizontal_margin,
+        IntPoint input_text_start = {.x = left_horizontal_margin,
                                   .y = top_vertical_margin};
-        Point input_text_start_second_line = {
+        IntPoint input_text_start_second_line = {
             .x = left_horizontal_margin, .y = top_vertical_margin + fh + 4};
 
         // For now we only support up to two lines of user input. Longer
@@ -1271,13 +1271,13 @@ collect_string_input(const Platform &p,
         // the null terminator.
         output[0] = '\0';
 
-        Point cursor = {0, 0};
+        IntPoint cursor = {0, 0};
 
         int keyboard_start_y = top_vertical_margin + (input_row + spacing) * fh;
 
         auto render_character_at_location =
             [display, &cursor, left_indent_map,
-             keyboard_start_y](Point location, Color color,
+             keyboard_start_y](IntPoint location, Color color,
                                std::vector<const char *> &character_map) {
                     auto [fw, fh] =
                         display->get_font_configuration().font_dimensions;
@@ -1287,7 +1287,7 @@ collect_string_input(const Platform &p,
                     int left_indent = left_indent_map[y];
                     // we mutiply the index by two here to spread out
                     // the keyboard characters a bit.
-                    Point start = {.x = (left_indent + 2 * x) * fw,
+                    IntPoint start = {.x = (left_indent + 2 * x) * fw,
                                    .y = keyboard_start_y + y * fh};
                     char buffer[2];
                     buffer[0] = row[x];
@@ -1300,15 +1300,15 @@ collect_string_input(const Platform &p,
                             // We make the character slightly smaller so that
                             // it doesn't get clipped by the clear region from
                             // the characters around it
-                            auto space_start = start + Point{1, fh - 2};
-                            auto space_end = space_start + Point{fw - 2, 0};
+                            auto space_start = start + IntPoint{1, fh - 2};
+                            auto space_end = space_start + IntPoint{fw - 2, 0};
                             // Main underline
                             display->draw_line(space_start, space_end, color);
                             // Small vertical lines to indicate the space symbol
                             display->draw_line(
-                                space_start, space_start + Point{0, -5}, color);
+                                space_start, space_start + IntPoint{0, -5}, color);
                             display->draw_line(space_end,
-                                               space_end + Point{0, -5}, color);
+                                               space_end + IntPoint{0, -5}, color);
                     }
             };
 
@@ -1524,7 +1524,7 @@ collect_number_input(const Platform &p,
             "0 x",
         };
 
-        Point cancellation_key_location = {2, 3};
+        IntPoint cancellation_key_location = {2, 3};
 
         int centering_margin =
             (usable_width - fw * strlen(base_char_map[0])) / 2 / fw;
@@ -1533,9 +1533,9 @@ collect_number_input(const Platform &p,
         std::vector<int> left_indent_map =
             std::vector<int>(base_char_map.size(), centering_margin);
 
-        Point input_text_start = {.x = left_horizontal_margin,
+        IntPoint input_text_start = {.x = left_horizontal_margin,
                                   .y = top_vertical_margin};
-        Point input_text_start_second_line = {
+        IntPoint input_text_start_second_line = {
             .x = left_horizontal_margin, .y = top_vertical_margin + fh + 4};
 
         // For now we only support up to two lines of user input. Longer
@@ -1556,13 +1556,13 @@ collect_number_input(const Platform &p,
         // the null terminator.
         output[0] = '\0';
 
-        Point cursor = {0, 0};
+        IntPoint cursor = {0, 0};
 
         int keyboard_start_y = top_vertical_margin + (input_row + spacing) * fh;
 
         auto render_character_at_location =
             [display, &cursor, left_indent_map,
-             keyboard_start_y](Point location, Color color,
+             keyboard_start_y](IntPoint location, Color color,
                                std::vector<const char *> &character_map) {
                     auto [fw, fh] =
                         display->get_font_configuration().font_dimensions;
@@ -1572,7 +1572,7 @@ collect_number_input(const Platform &p,
                     int left_indent = left_indent_map[y];
                     // we mutiply the index by two here to spread out
                     // the keyboard characters a bit.
-                    Point start = {.x = (left_indent + 2 * x) * fw,
+                    IntPoint start = {.x = (left_indent + 2 * x) * fw,
                                    .y = keyboard_start_y + 2 * y * fh};
                     char buffer[2];
                     buffer[0] = row[x];
@@ -1739,7 +1739,7 @@ collect_number_input(const Platform &p,
 
 void render_logo(const Display &display,
                  const UserInterfaceCustomization &customization,
-                 Point position)
+                 IntPoint position)
 {
 
         int size = LOGO_CUBE_SIZE;
@@ -1824,7 +1824,7 @@ void render_bar_graph(const Platform &p,
         int available_height = height - y_start - bottom_margin;
         int bar_width = available_width / y_values.size() - bar_spacing;
 
-        auto origin = Point{left_margin, y_start + available_height};
+        auto origin = IntPoint{left_margin, y_start + available_height};
 
         auto draw_y_label = [&](char *label, int height_offset) {
                 int label_len = (fw / 2) * (strlen(label) + 1);
@@ -1847,7 +1847,7 @@ void render_bar_graph(const Platform &p,
 
         if (!update_highlight_only) {
                 display.draw_line({left_margin, y_start}, origin, Color::White);
-                display.draw_line(origin, origin + Point{available_width, 0},
+                display.draw_line(origin, origin + IntPoint{available_width, 0},
                                   Color::White);
                 // If we are rendering both positive and negative values, we
                 // need to draw the zero line to improve clarity.
@@ -1869,7 +1869,7 @@ void render_bar_graph(const Platform &p,
                 double h = y_values[i];
                 int height = scale(h);
                 int bar_x = left_margin + (i + 1) * (bar_width + bar_spacing);
-                Point bar_start = {bar_x, origin.y - height};
+                IntPoint bar_start = {bar_x, origin.y - height};
 
                 Color color = highlighted_bar_index.has_value() &&
                                       highlighted_bar_index.value() == i

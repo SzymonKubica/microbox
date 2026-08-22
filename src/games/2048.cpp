@@ -699,7 +699,7 @@ GridDimensions *calculate_grid_dimensions(const Display &display, int grid_size)
             (grid_start_y - score_cell_height - SCREEN_BORDER_WIDTH) / 2 +
             SCREEN_BORDER_WIDTH;
 
-        Point score_start = {.x = SCREEN_BORDER_WIDTH + corner_radius,
+        IntPoint score_start = {.x = SCREEN_BORDER_WIDTH + corner_radius,
                              .y = score_start_y};
 
         int score_title_x = score_start.x + cell_x_spacing;
@@ -715,7 +715,7 @@ GridDimensions *calculate_grid_dimensions(const Display &display, int grid_size)
 
 void render_cell(const Display &display,
                  const UserInterfaceCustomization &customization,
-                 Point position, int width, int height)
+                 IntPoint position, int width, int height)
 {
         Color bg_color = GRID_BG_COLOR;
         if (customization.rendering_mode == Detailed) {
@@ -739,16 +739,16 @@ static void draw_game_grid(const Display &display, int grid_size,
 
         // We need this lambda to have a reusable way of rendering game
         // cells depending on the UI rendering mode.
-        auto cell_renderer = [&](Point start, int width, int height) {
+        auto cell_renderer = [&](IntPoint start, int width, int height) {
                 render_cell(display, customization, start, width, height);
         };
 
-        Point score_start = {.x = gd->score_start_x, .y = gd->score_start_y};
+        IntPoint score_start = {.x = gd->score_start_x, .y = gd->score_start_y};
         cell_renderer(score_start, gd->score_cell_width, gd->score_cell_height);
 
         const char *buffer = "Score:";
 
-        Point score_title = {.x = gd->score_title_x, .y = gd->score_title_y};
+        IntPoint score_title = {.x = gd->score_title_x, .y = gd->score_title_y};
         display.draw_string(score_title, (char *)buffer, Size16, GRID_BG_COLOR,
                             TEXT_COLOR);
 
@@ -757,7 +757,7 @@ static void draw_game_grid(const Display &display, int grid_size,
 
         for (int i = 0; i < grid_size; i++) {
                 for (int j = 0; j < grid_size; j++) {
-                        Point start = {
+                        IntPoint start = {
                             .x = gd->grid_start_x + j * cell_width_and_spacing,
                             .y =
                                 gd->grid_start_y + i * cell_height_and_spacing};
@@ -800,7 +800,7 @@ Color get_number_color_coding(int number)
         }
 }
 
-void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
+void render_cell_value(const Platform &p, GridDimensions *gd, IntPoint start,
                        int old_digit_len, int cell_value)
 {
         assert(cell_value <= 4096);
@@ -824,10 +824,10 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
         // possible characters, we only clear the characters of the
         // actual number. So if the number is composed of two digits, we
         // clear a region that spans two digits.
-        Point clear_start = {.x = start.x + x_margin + max_cell_text_width -
+        IntPoint clear_start = {.x = start.x + x_margin + max_cell_text_width -
                                   old_digit_text_width,
                              .y = start.y + y_margin};
-        Point clear_end = {.x = start.x + x_margin + max_cell_text_width,
+        IntPoint clear_end = {.x = start.x + x_margin + max_cell_text_width,
                            .y = start.y + y_margin + fh};
         p.display->clear_region(clear_start, clear_end, GRID_BG_COLOR);
 
@@ -836,7 +836,7 @@ void render_cell_value(const Platform &p, GridDimensions *gd, Point start,
         Color color = p.capabilities.has_fast_display
                           ? get_number_color_coding(cell_value)
                           : Black;
-        Point start_with_margin = {.x = start.x + x_margin,
+        IntPoint start_with_margin = {.x = start.x + x_margin,
                                    .y = start.y + y_margin};
         p.display->draw_string(start_with_margin, buffer, Size16, GRID_BG_COLOR,
                                color);
@@ -863,15 +863,15 @@ void update_game_grid(const Platform &p, GameState &gs,
 
         int score_rounding_radius = gd->score_cell_height / 2;
 
-        Point clear_start = {.x = gd->score_title_x + score_title_length + fw,
+        IntPoint clear_start = {.x = gd->score_title_x + score_title_length + fw,
                              .y = gd->score_title_y};
-        Point clear_end = {.x = gd->score_start_x + gd->score_cell_width -
+        IntPoint clear_end = {.x = gd->score_start_x + gd->score_cell_width -
                                 score_rounding_radius,
                            .y = gd->score_title_y + fh};
 
         p.display->clear_region(clear_start, clear_end, GRID_BG_COLOR);
 
-        Point score_start = {.x = gd->score_title_x + score_title_length + fw,
+        IntPoint score_start = {.x = gd->score_title_x + score_title_length + fw,
                              .y = gd->score_title_y};
 
         p.display->draw_string(score_start, score_buffer, Size16, GRID_BG_COLOR,
@@ -879,7 +879,7 @@ void update_game_grid(const Platform &p, GameState &gs,
 
         for (int i = 0; i < grid_size; i++) {
                 for (int j = 0; j < grid_size; j++) {
-                        Point start = {
+                        IntPoint start = {
                             .x = gd->grid_start_x +
                                  j * (gd->cell_width + gd->cell_x_spacing),
                             .y = gd->grid_start_y +
@@ -939,7 +939,7 @@ void Clean2048::render_thumbnail(
         // This is hard-coded to align with the lopaka-generated
         // thumbnails.
         int thumbnail_width = 69;
-        Point thumbnail_start{126, 103};
+        IntPoint thumbnail_start{126, 103};
 
         const auto &display = *platform.display;
         auto gd = std::unique_ptr<GridDimensions>(
@@ -951,16 +951,16 @@ void Clean2048::render_thumbnail(
         int width = (thumbnail_width - spacing) / 2;
         int height = width;
 
-        Point start = thumbnail_start;
+        IntPoint start = thumbnail_start;
 
-        Point x_displacement = Point{1, 0} * (width + x_spacing);
-        Point y_displacement = Point{0, 1} * (height + y_spacing);
+        IntPoint x_displacement = IntPoint{1, 0} * (width + x_spacing);
+        IntPoint y_displacement = IntPoint{0, 1} * (height + y_spacing);
 
-        auto cell = [&](Point position) {
+        auto cell = [&](IntPoint position) {
                 render_cell(*platform.display, customization, position, width,
                             height);
         };
-        auto cell_value = [&](Point position, const char *value) {
+        auto cell_value = [&](IntPoint position, const char *value) {
                 // We only render single-digit numbers
                 int text_width = fw;
 
@@ -969,7 +969,7 @@ void Clean2048::render_thumbnail(
                 int x_margin = (width - text_width) / 2;
                 int y_margin = (height - fh) / 2;
 
-                Point start_with_margin = {.x = position.x + x_margin,
+                IntPoint start_with_margin = {.x = position.x + x_margin,
                                            .y = position.y + y_margin};
                 platform.display->draw_string(start_with_margin, (char *)value,
                                               Size16, GRID_BG_COLOR, Black);

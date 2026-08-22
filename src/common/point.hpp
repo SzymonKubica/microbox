@@ -3,32 +3,32 @@
 #include <optional>
 #include <vector>
 
-struct Point {
+struct IntPoint {
         int x;
         int y;
 
       public:
-        Point operator*(int scalar) const;
+        IntPoint operator*(int scalar) const;
 };
 
-Point operator+(Point first, Point second);
-bool operator==(const Point &first, const Point &second);
+IntPoint operator+(IntPoint first, IntPoint second);
+bool operator==(const IntPoint &first, const IntPoint &second);
 
-void translate(Point &p, Direction dir);
+void translate(IntPoint &p, Direction dir);
 /**
  * Given two points that are adjacent (horizontally or vertically, not
  * diagonally), returns the direction that we need to take to go from the
  * reference point to the target. Note that if two points are not adjacent, an
  * empty optional will be returned.
  */
-std::optional<Direction> determine_displacement_direction(Point &reference,
-                                                          Point &target);
-Point translate_pure(const Point &p, Direction dir);
-void translate_within_bounds(Point &p, Direction dir, int rows, int cols);
-void translate_toroidal_array(Point &p, Direction dir, int rows, int cols);
-std::vector<Point> get_neighbours_inside_grid(const Point &point, int rows,
+std::optional<Direction> determine_displacement_direction(IntPoint &reference,
+                                                          IntPoint &target);
+IntPoint translate_pure(const IntPoint &p, Direction dir);
+void translate_within_bounds(IntPoint &p, Direction dir, int rows, int cols);
+void translate_toroidal_array(IntPoint &p, Direction dir, int rows, int cols);
+std::vector<IntPoint> get_neighbours_inside_grid(const IntPoint &point, int rows,
                                               int cols);
-std::vector<Point> get_adjacent_neighbours_inside_grid(const Point &point,
+std::vector<IntPoint> get_adjacent_neighbours_inside_grid(const IntPoint &point,
                                                        int rows, int cols);
 /**
  * Useful for implementing grids with toroidal array geometry. For a given point
@@ -36,7 +36,7 @@ std::vector<Point> get_adjacent_neighbours_inside_grid(const Point &point,
  * side of the grid. For instance, for a point touching the top edge of the
  * grid, three points along the bottom edge of the grid will be returned
  * together with the five cells that are neighbouring the current cell. */
-std::vector<Point> get_neighbours_toroidal_array(const Point &point, int rows,
+std::vector<IntPoint> get_neighbours_toroidal_array(const IntPoint &point, int rows,
                                                  int cols);
 
-bool is_adjacent(const Point &p1, const Point &p2);
+bool is_adjacent(const IntPoint &p1, const IntPoint &p2);

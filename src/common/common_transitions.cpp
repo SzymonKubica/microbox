@@ -12,7 +12,7 @@ void display_input_clafification(const Display &display)
                 int width = display.get_width();
                 int x_pos = (width - strlen(msg) * fw) / 2;
                 int y_pos = (height - fh) / 2 + 2 * fh;
-                Point text_position = {.x = x_pos, .y = y_pos};
+                IntPoint text_position = {.x = x_pos, .y = y_pos};
 
                 display.draw_string(text_position, (char *)msg, Size16, Black,
                                     White);
@@ -25,7 +25,7 @@ void display_input_clafification(const Display &display)
                 int width = display.get_width();
                 int x_pos = (width - strlen(msg) * fw) / 2;
                 int y_pos = (height - fh) / 2 + 3 * fh;
-                Point text_position = {.x = x_pos, .y = y_pos};
+                IntPoint text_position = {.x = x_pos, .y = y_pos};
 
                 display.draw_string(text_position, (char *)msg, Size16, Black,
                                     White);
@@ -51,7 +51,7 @@ void display_game_over(const Display &display,
         int x_pos = (width - strlen(msg) * fw) / 2;
         int y_pos = (height - fh) / 2;
 
-        Point text_position = {.x = x_pos, .y = y_pos};
+        IntPoint text_position = {.x = x_pos, .y = y_pos};
 
         display.draw_string(text_position, (char *)msg, Size16, Black, Red);
         display_input_clafification(display);
@@ -74,7 +74,7 @@ void display_game_won(const Display &display,
         int width = display.get_width();
         int x_pos = (width - strlen(msg) * fw) / 2;
         int y_pos = (height - fh) / 2;
-        Point text_position = {.x = x_pos, .y = y_pos};
+        IntPoint text_position = {.x = x_pos, .y = y_pos};
 
         display.draw_string(text_position, (char *)msg, Size16, Black, Green);
 

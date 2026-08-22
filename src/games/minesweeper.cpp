@@ -55,36 +55,36 @@ static void draw_game_canvas(const Platform &p,
                              const MinesweeperGridDimensions &dimensions,
                              const UserInterfaceCustomization &customization);
 
-static void erase_caret(const Display &display, const Point &grid_position,
+static void erase_caret(const Display &display, const IntPoint &grid_position,
                         const MinesweeperGridDimensions &dimensions,
                         Color grid_background_color);
-static void draw_caret(const Display &display, const Point &grid_position,
+static void draw_caret(const Display &display, const IntPoint &grid_position,
                        const MinesweeperGridDimensions &dimensions);
 /**
  * Performs a recursive uncovering waterfall: tries to uncover the current
  * cell, if the cell has 0 adjacent mines it uncovers all of its neighbours.
  */
 static std::optional<UserAction> uncover_grid_cells_starting_from(
-    const Display &display, const Point &grid_position,
+    const Display &display, const IntPoint &grid_position,
     const MinesweeperGridDimensions &dimensions,
     std::vector<std::vector<MinesweeperGridCell>> &grid, int &total_uncovered);
 static void
-uncover_grid_cell(const Display &display, const Point &grid_position,
+uncover_grid_cell(const Display &display, const IntPoint &grid_position,
                   const MinesweeperGridDimensions &dimensions,
                   std::vector<std::vector<MinesweeperGridCell>> &grid,
                   int &total_uncovered);
-static void flag_grid_cell(const Display &display, const Point &grid_position,
+static void flag_grid_cell(const Display &display, const IntPoint &grid_position,
                            const MinesweeperGridDimensions &dimensions,
                            std::vector<std::vector<MinesweeperGridCell>> &grid,
                            const UserInterfaceCustomization &customization);
 static void
-unflag_grid_cell(const Display &display, const Point &grid_position,
+unflag_grid_cell(const Display &display, const IntPoint &grid_position,
                  const MinesweeperGridDimensions &dimensions,
                  std::vector<std::vector<MinesweeperGridCell>> &grid,
                  Color grid_background_color);
 
 void place_bombs(std::vector<std::vector<MinesweeperGridCell>> &grid,
-                 int bomb_number, const Point &caret_position);
+                 int bomb_number, const IntPoint &caret_position);
 
 const char *Minesweeper::get_game_name() const { return "Minesweeper"; }
 const char *Minesweeper::get_help_text() const
@@ -124,7 +124,7 @@ Minesweeper::app_loop(const Platform &p,
         std::vector<std::vector<MinesweeperGridCell>> grid(
             rows, std::vector<MinesweeperGridCell>(cols));
 
-        auto grid_at = [&](const Point &location) -> MinesweeperGridCell {
+        auto grid_at = [&](const IntPoint &location) -> MinesweeperGridCell {
                 return grid[location.y][location.x];
         };
 
@@ -134,7 +134,7 @@ Minesweeper::app_loop(const Platform &p,
            logical error. */
         bool bombs_placed = false;
 
-        Point caret_position = {.x = 0, .y = 0};
+        IntPoint caret_position = {.x = 0, .y = 0};
         draw_caret(*p.display, caret_position, *gd);
         LOG_DEBUG(TAG, "Caret rendered at initial position.");
 
@@ -296,7 +296,7 @@ Minesweeper::app_loop(const Platform &p,
                         for (int x = 0; x < cols; x++) {
                                 MinesweeperGridCell cell = grid[y][x];
                                 if (cell.is_bomb) {
-                                        Point point = {.x = x, .y = y};
+                                        IntPoint point = {.x = x, .y = y};
                                         uncover_grid_cell(*p.display, point,
                                                           *gd, grid,
                                                           total_uncovered);
@@ -321,7 +321,7 @@ Minesweeper::app_loop(const Platform &p,
 }
 
 void place_bombs(std::vector<std::vector<MinesweeperGridCell>> &grid,
-                 int bomb_number, const Point &caret_position)
+                 int bomb_number, const IntPoint &caret_position)
 {
         int rows = grid.size();
         int cols = (*grid.begin().base()).size();
@@ -330,7 +330,7 @@ void place_bombs(std::vector<std::vector<MinesweeperGridCell>> &grid,
                         int x = rand() % cols;
                         int y = rand() % rows;
 
-                        Point random_position = {.x = x, .y = y};
+                        IntPoint random_position = {.x = x, .y = y};
 
                         bool is_close_to_caret =
                             is_adjacent(caret_position, random_position);
@@ -338,8 +338,8 @@ void place_bombs(std::vector<std::vector<MinesweeperGridCell>> &grid,
                                 grid[y][x].is_bomb = true;
                                 grid[y][x].adjacent_bombs = 0;
 
-                                Point current = {.x = x, .y = y};
-                                for (Point nb : get_neighbours_inside_grid(
+                                IntPoint current = {.x = x, .y = y};
+                                for (IntPoint nb : get_neighbours_inside_grid(
                                          current, rows, cols)) {
                                         grid[nb.y][nb.x].adjacent_bombs++;
                                 }
@@ -350,7 +350,7 @@ void place_bombs(std::vector<std::vector<MinesweeperGridCell>> &grid,
         }
 }
 
-void erase_caret(const Display &display, const Point &grid_position,
+void erase_caret(const Display &display, const IntPoint &grid_position,
                  const MinesweeperGridDimensions &dimensions,
                  Color grid_background_color)
 {
@@ -360,7 +360,7 @@ void erase_caret(const Display &display, const Point &grid_position,
         // Otherwise, we'll get weird rendering artifacts where the
         // border get clipped.
         int border_offset = 1;
-        Point actual_position = {.x = dimensions.left_horizontal_margin +
+        IntPoint actual_position = {.x = dimensions.left_horizontal_margin +
                                       grid_position.x * fw + border_offset,
                                  .y = dimensions.top_vertical_margin +
                                       grid_position.y * fh + border_offset};
@@ -370,7 +370,7 @@ void erase_caret(const Display &display, const Point &grid_position,
                                false);
 }
 
-void draw_caret(const Display &display, const Point &grid_position,
+void draw_caret(const Display &display, const IntPoint &grid_position,
                 const MinesweeperGridDimensions &dimensions)
 {
 
@@ -379,7 +379,7 @@ void draw_caret(const Display &display, const Point &grid_position,
         // cell and its border doesn't overlap the neighbouring cells.
         // Otherwise, we'll get weird rendering artifacts.
         int border_offset = 1;
-        Point actual_position = {.x = dimensions.left_horizontal_margin +
+        IntPoint actual_position = {.x = dimensions.left_horizontal_margin +
                                       grid_position.x * fw + border_offset,
                                  .y = dimensions.top_vertical_margin +
                                       grid_position.y * fh + border_offset};
@@ -387,7 +387,7 @@ void draw_caret(const Display &display, const Point &grid_position,
         display.draw_rectangle(actual_position, fw - 2 * border_offset,
                                fh - 2 * border_offset, White, 1, false);
 }
-void uncover_grid_cell(const Display &display, const Point &grid_position,
+void uncover_grid_cell(const Display &display, const IntPoint &grid_position,
                        const MinesweeperGridDimensions &dimensions,
                        std::vector<std::vector<MinesweeperGridCell>> &grid,
                        int &total_uncovered)
@@ -427,7 +427,7 @@ void uncover_grid_cell(const Display &display, const Point &grid_position,
                         break;
                 }
         }
-        Point actual_position = {
+        IntPoint actual_position = {
             .x = dimensions.left_horizontal_margin + grid_position.x * fw,
             .y = dimensions.top_vertical_margin + grid_position.y * fh};
         int border_offset = 1;
@@ -441,7 +441,7 @@ void uncover_grid_cell(const Display &display, const Point &grid_position,
 }
 
 std::optional<UserAction> uncover_grid_cells_starting_from(
-    const Display &display, const Point &grid_position,
+    const Display &display, const IntPoint &grid_position,
     const MinesweeperGridDimensions &dimensions,
     std::vector<std::vector<MinesweeperGridCell>> &grid, int &total_uncovered)
 {
@@ -464,7 +464,7 @@ std::optional<UserAction> uncover_grid_cells_starting_from(
         if (!current_cell.is_bomb && current_cell.adjacent_bombs == 0) {
                 auto neighbours =
                     get_neighbours_inside_grid(grid_position, rows, cols);
-                for (Point nb : neighbours) {
+                for (IntPoint nb : neighbours) {
                         MinesweeperGridCell neighbour_cell = grid[nb.y][nb.x];
 
                         if (!neighbour_cell.is_uncovered &&
@@ -478,14 +478,14 @@ std::optional<UserAction> uncover_grid_cells_starting_from(
         return std::nullopt;
 }
 
-void flag_grid_cell(const Display &display, const Point &grid_position,
+void flag_grid_cell(const Display &display, const IntPoint &grid_position,
                     const MinesweeperGridDimensions &dimensions,
                     std::vector<std::vector<MinesweeperGridCell>> &grid,
                     const UserInterfaceCustomization &customization)
 {
         auto [fw, fh] = display.get_font_configuration().font_dimensions;
         grid[grid_position.y][grid_position.x].is_flagged = true;
-        Point actual_position = {
+        IntPoint actual_position = {
             .x = dimensions.left_horizontal_margin + grid_position.x * fw,
             .y = dimensions.top_vertical_margin + grid_position.y * fh};
 
@@ -497,14 +497,14 @@ void flag_grid_cell(const Display &display, const Point &grid_position,
         }
 }
 
-void unflag_grid_cell(const Display &display, const Point &grid_position,
+void unflag_grid_cell(const Display &display, const IntPoint &grid_position,
                       const MinesweeperGridDimensions &dimensions,
                       std::vector<std::vector<MinesweeperGridCell>> &grid,
                       Color grid_background_color)
 {
         auto [fw, fh] = display.get_font_configuration().font_dimensions;
         grid[grid_position.y][grid_position.x].is_flagged = false;
-        Point actual_position = {
+        IntPoint actual_position = {
             .x = dimensions.left_horizontal_margin + grid_position.x * fw,
             .y = dimensions.top_vertical_margin + grid_position.y * fh};
 

@@ -41,7 +41,7 @@ class SudokuState
          * Validates that a given point location can be used to index the 9x9
          * Sudoku grid.
          */
-        void validate_grid_location(const Point &location)
+        void validate_grid_location(const IntPoint &location)
         {
                 assert(0 <= location.x && location.x <= 9);
                 assert(0 <= location.y && location.y <= 9);
@@ -101,7 +101,7 @@ class SudokuState
          * that was erased. This is requied to properly track the counts of the
          * digits after a number is erased.
          */
-        int erase_digit(const Point &location)
+        int erase_digit(const IntPoint &location)
         {
                 validate_grid_location(location);
 
@@ -123,7 +123,7 @@ class SudokuState
          * places the `active_digit` on the grid and updates the state counters
          * after the addition.
          */
-        void place_digit(const Point &location)
+        void place_digit(const IntPoint &location)
         {
                 validate_grid_location(location);
 
@@ -264,7 +264,7 @@ UserAction SudokuGame::app_loop(const Platform &p,
                         view.mark_digit_completed(digit);
         }
 
-        Point caret = {0, 0};
+        IntPoint caret = {0, 0};
         /*
          * To avoid button debounce issues we keep track of whether the input
          * was also registered on the previous iteration. If that is the case,
@@ -294,7 +294,7 @@ UserAction SudokuGame::app_loop(const Platform &p,
                     poll_directional_input(p.directional_controllers);
                 if (maybe_direction.has_value()) {
                         Direction dir = maybe_direction.value();
-                        Point previous = caret;
+                        IntPoint previous = caret;
                         translate_toroidal_array(caret, dir, 9, 9);
                         // If the current was placed over an underlined cell,
                         // the underline will get clipped when clearing the

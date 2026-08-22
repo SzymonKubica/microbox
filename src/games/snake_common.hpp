@@ -21,13 +21,13 @@ enum class Cell : uint8_t {
 };
 
 struct Snake {
-        Point head;
-        Point tail;
+        IntPoint head;
+        IntPoint tail;
         Direction direction;
-        std::vector<Point> body;
+        std::vector<IntPoint> body;
 
       public:
-        Snake(Point head, Direction direction);
+        Snake(IntPoint head, Direction direction);
 
         /**
          * Moves the snake one unit along its current direction.
@@ -37,14 +37,14 @@ struct Snake {
         /**
          * Returns the location of the segment right behind the head.
          */
-        Point get_neck();
+        IntPoint get_neck();
 };
 
 /**
  * Spawns an apple at a random empty location on the grid. Note that if there
  * are no empty locations left on the grid, this function will spin forever.
  */
-Point spawn_apple(std::vector<std::vector<Cell>> &grid);
+IntPoint spawn_apple(std::vector<std::vector<Cell>> &grid);
 /**
  * (re-)renders a single cell on the grid based on its current value.
  * Note that this needs to be called each time the value of a cell on the grid
@@ -54,16 +54,16 @@ Point spawn_apple(std::vector<std::vector<Cell>> &grid);
 void refresh_grid_cell(const Display &display, Color snake_color,
                        const SquareCellGridDimensions &dimensions,
                        const std::vector<std::vector<Cell>> &grid,
-                       Point &location);
+                       IntPoint &location);
 void render_grid_cell(const Display &display, Color snake_color,
                       const SquareCellGridDimensions &dimensions,
-                      Cell cell_type, Point &location);
+                      Cell cell_type, IntPoint &location);
 /**
  * Renders a segment that connects two adjacent snake segments on the grid.
  */
 void render_segment_connection(const Display &display, Color snake_color,
                                const SquareCellGridDimensions &dimensions,
-                               Point &first_location, Point &second_location);
+                               IntPoint &first_location, IntPoint &second_location);
 /**
  * Renders a segment that connects two adjacent snake segments on the grid.
  */

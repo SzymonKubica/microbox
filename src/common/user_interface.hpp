@@ -38,7 +38,7 @@ collect_number_input(const Platform &p,
                      const char *input_prompt, int *input);
 void render_logo(const Display &display,
                  const UserInterfaceCustomization &customization,
-                 Point position);
+                 IntPoint position);
 void render_default_controls_explanations(const Platform &p);
 void update_wifi_status_indicator(const Platform &p, bool &is_rendered);
 /**
