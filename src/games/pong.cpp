@@ -19,8 +19,7 @@
 
 #define TAG "Pong"
 
-PongConfiguration DEFAULT_PONG_GAME_CONFIG = {
-    .header = {.magic = CONFIGURATION_MAGIC, .version = 2}};
+PongConfiguration DEFAULT_PONG_GAME_CONFIG = {.header = ConfigurationHeader()};
 
 const char *Pong::get_game_name() const { return "Pong"; }
 const char *Pong::get_help_text() const { return "TODO"; }
@@ -340,6 +339,9 @@ UserAction Pong::app_loop(const Platform &p,
                                 } else {
                                         opponent_paddle.velocity.y = 0;
                                 }
+                        } else {
+                                // For now we do no deceleration.
+                                opponent_paddle.velocity = {0, 0};
                         }
                 }
 

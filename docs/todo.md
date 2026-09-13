@@ -49,7 +49,8 @@ todo. They usually start with a 'theme' headline to give the overall idea.
 - [ ] add pong with proper 'physics' (i.e. rotation and friction)
   - [x] initial plumbing to get the game entrypoint available
   - [x] add 'AI' opponent that 'predicts' ball location on impact (but has a fixed probability of getting it wrong)
-  - [ ] add multiplayer mode (D-pad UP/DOWN vs joystick)
+  - [x] add multiplayer mode (D-pad UP/DOWN vs joystick)
+    - [x] update game hints depending on mutiplayer/cpu opponent mode.
   - [ ] add fancy physics
   - [x] make paddle accelerate with its own velocity
   - [ ] add pong thumbnail
