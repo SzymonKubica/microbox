@@ -147,9 +147,9 @@ int calculate_impact_position(double ball_center_y, Point ball_velocity,
  * the caller code is responsible for preventing the paddle from making this
  * move.
  */
-bool about_to_go_outside(const Paddle &paddle, double displacement,
-                         const LineSegment &top_wall,
-                         const LineSegment &bottom_wall);
+bool next_step_outside(const Paddle &paddle, double displacement,
+                       const LineSegment &top_wall,
+                       const LineSegment &bottom_wall);
 UserAction Pong::app_loop(const Platform &p,
                           const UserInterfaceCustomization &customization,
                           const PongConfiguration &config) const
@@ -186,6 +186,9 @@ UserAction Pong::app_loop(const Platform &p,
         LineSegment left_wall{top_left, bottom_left};
         LineSegment right_wall{top_right, bottom_right};
 
+        std::vector<LineSegment *> walls = {&top_wall, &bottom_wall, &left_wall,
+                                            &right_wall};
+
         int paddle_len = gd->actual_height / 4;
         int paddle_w = 5;
         // some intense maths here to make the paddle centered.
@@ -212,12 +215,9 @@ UserAction Pong::app_loop(const Platform &p,
             .acceleration = {0.1, 0.1},
         };
 
-        std::vector<LineSegment *> walls = {&top_wall, &bottom_wall, &left_wall,
-                                            &right_wall};
-
         Point pos = {paddle_end.x + 10, gd->actual_height / 2.0};
-        double initial_velocity = 1.0;
-        Point v = {initial_velocity, initial_velocity};
+        double initial_v = 1.0;
+        Point v = {initial_v, initial_v};
         double friction = 0.25;
         Ball ball{Circle{pos, (double)radius}, v};
         int time_delta = 1000 / config.initial_speed; // ms
@@ -248,7 +248,7 @@ UserAction Pong::app_loop(const Platform &p,
                                       (double)game_area_height};
         int distance_between_paddles =
             game_area_width - 2 * (paddle_w + padding);
-        int expected_impact_y = calculate_impact_position(
+        int ball_impact_y = calculate_impact_position(
             ball.circle.center.y, ball.velocity, distance_between_paddles,
             top_left, game_area_dimensions);
 
@@ -268,7 +268,6 @@ UserAction Pong::app_loop(const Platform &p,
                         action_input_on_last_iteration = true;
                         p.time_provider->delay_ms(INPUT_POLLING_DELAY);
                 }
-
                 if (!maybe_action.has_value())
                         action_input_on_last_iteration = false;
                 if (game_paused) {
@@ -286,8 +285,8 @@ UserAction Pong::app_loop(const Platform &p,
                                     dir_sign * paddle.acceleration.y;
                                 Point off = {0, paddle.velocity.y};
 
-                                if (!about_to_go_outside(
-                                        paddle, off.y, top_wall, bottom_wall)) {
+                                if (!next_step_outside(paddle, off.y, top_wall,
+                                                       bottom_wall)) {
                                         erase_paddle(paddle.body);
                                         paddle.body.top_left =
                                             paddle.body.top_left + off;
@@ -301,38 +300,38 @@ UserAction Pong::app_loop(const Platform &p,
                         paddle.velocity = {0, 0};
                 }
 
-                // Handle cpu paddle.
+                // Handle cpu paddle. We move it until the paddle covers the
+                // calculated ball impact position. We also ensure that if the
+                // ball impact y is to close to the top/bottom border, the
+                // paddle doesn't clip through that wall.
                 erase_paddle(cpu_paddle.body);
-                if (cpu_paddle.body.top_left.y + (double)paddle_len / 2 >
-                    expected_impact_y) {
-                        if (!about_to_go_outside(cpu_paddle, -initial_velocity,
-                                                 top_wall, bottom_wall)) {
-                                cpu_paddle.body.top_left.y -= initial_velocity;
-                        }
-                }
-                if (cpu_paddle.body.top_left.y + (double)paddle_len / 2 <
-                    expected_impact_y) {
-                        if (!about_to_go_outside(cpu_paddle, initial_velocity,
-                                                 top_wall, bottom_wall)) {
-                                cpu_paddle.body.top_left.y += initial_velocity;
-                        }
+                double center_y =
+                    cpu_paddle.body.top_left.y + (double)paddle_len / 2;
+                bool hits_top_wall = next_step_outside(cpu_paddle, -initial_v,
+                                                       top_wall, bottom_wall);
+                bool hits_bottom_wall = next_step_outside(
+                    cpu_paddle, initial_v, top_wall, bottom_wall);
+                if (center_y > ball_impact_y && !hits_top_wall) {
+                        cpu_paddle.body.top_left.y -= initial_v;
+                } else if (center_y < ball_impact_y && !hits_bottom_wall) {
+                        cpu_paddle.body.top_left.y += initial_v;
                 }
                 render_paddle(cpu_paddle.body);
 
                 erase_ball(ball);
-
                 ball.circle.center = ball.circle.center + ball.velocity;
+                render_ball(ball);
 
-                // collision detection
+                // collision detection and handling
                 for (const auto &seg : walls) {
                         if (!collides(ball.circle, *seg))
                                 continue;
                         if (seg == &left_wall || seg == &right_wall)
                                 game_over = true;
                         if (seg->is_horizontal())
-                                ball.velocity.y = -ball.velocity.y;
+                                ball.velocity.y *= -1;
                         if (seg->is_vertical())
-                                ball.velocity.x = -ball.velocity.x;
+                                ball.velocity.x *= -1;
                 }
                 if (collides(ball.circle, paddle.body)) {
                         if (collides(ball.circle, paddle.body.get_top_edge()) ||
@@ -342,6 +341,11 @@ UserAction Pong::app_loop(const Platform &p,
                                 // paddle when it hits the top or bottom edge of
                                 // the paddle.
                                 ball.velocity.y = -ball.velocity.y;
+
+                                // we re-render the paddle just in case the ball
+                                // has erased a part of its top/bottom edge.
+                                erase_paddle(paddle.body);
+                                render_paddle(paddle.body);
                         } else {
                                 ball.velocity.x = -ball.velocity.x;
                                 // the velocity of the paddle is partially
@@ -349,19 +353,19 @@ UserAction Pong::app_loop(const Platform &p,
                                 // ball. This is controlled by the friction
                                 // coefficient.
                                 ball.velocity.y += paddle.velocity.y * friction;
-                                expected_impact_y = calculate_impact_position(
+                                ball_impact_y = calculate_impact_position(
                                     ball.circle.center.y, ball.velocity,
                                     distance_between_paddles, top_left,
                                     game_area_dimensions);
                         }
                 }
-
                 if (collides(ball.circle, cpu_paddle.body)) {
                         ball.velocity.x = -ball.velocity.x;
+                        // here the impact is likely 0 as the CPU paddle will
+                        // have precomputed the required position and so it will
+                        // be fully stationary by the time the ball reaches it.
                         ball.velocity.y += cpu_paddle.velocity.y * friction;
                 }
-
-                render_ball(ball);
 
                 if (!p.display->refresh())
                         return UserAction::CloseWindow;
@@ -372,9 +376,9 @@ UserAction Pong::app_loop(const Platform &p,
         return UserAction::PlayAgain;
 }
 
-bool about_to_go_outside(const Paddle &paddle, double displacement,
-                         const LineSegment &top_wall,
-                         const LineSegment &bottom_wall)
+bool next_step_outside(const Paddle &paddle, double displacement,
+                       const LineSegment &top_wall,
+                       const LineSegment &bottom_wall)
 {
         bool outside = false;
         double new_top, new_bottom;

@@ -60,6 +60,8 @@ todo. They usually start with a 'theme' headline to give the overall idea.
   - [ ] apply proper design patterns to the game executor class hierarchy
   - [ ] remove game enum? (crazy idea)
 
+- [ ] add ability to see precipitation probability graph in the weather app
+
 
 # In Progress
 
