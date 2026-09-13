@@ -20,8 +20,7 @@
 #define TAG "Pong"
 
 PongConfiguration DEFAULT_PONG_GAME_CONFIG = {
-    .header = ConfigurationHeader(),
-};
+    .header = {.magic = CONFIGURATION_MAGIC, .version = 2}};
 
 const char *Pong::get_game_name() const { return "Pong"; }
 const char *Pong::get_help_text() const { return "TODO"; }
@@ -198,18 +197,19 @@ UserAction Pong::app_loop(const Platform &p,
                                   paddle_len / 2.0};
         Point paddle_end = paddle_start + Point{0, (double)paddle_len};
 
-        Paddle paddle{
+        Paddle player_paddle{
             .body = {paddle_start, (double)paddle_w, (double)paddle_len},
             .velocity = {0, 0},
             .acceleration = {0.1, 0.1},
         };
 
-        Point cpu_paddle_offset{(double)gd->actual_width -
-                                    2 * ((double)paddle_w + padding) - paddle_w,
-                                0};
+        Point opponent_paddle_offset{(double)gd->actual_width -
+                                         2 * ((double)paddle_w + padding) -
+                                         paddle_w,
+                                     0};
 
-        Paddle cpu_paddle{
-            .body = {paddle_start + cpu_paddle_offset, (double)paddle_w,
+        Paddle opponent_paddle{
+            .body = {paddle_start + opponent_paddle_offset, (double)paddle_w,
                      (double)paddle_len},
             .velocity = {0, 0},
             .acceleration = {0.1, 0.1},
@@ -241,8 +241,8 @@ UserAction Pong::app_loop(const Platform &p,
                                        1, true);
         };
 
-        render_paddle(paddle.body);
-        render_paddle(cpu_paddle.body);
+        render_paddle(player_paddle.body);
+        render_paddle(opponent_paddle.body);
 
         Point game_area_dimensions = {(double)game_area_width,
                                       (double)game_area_height};
@@ -281,42 +281,67 @@ UserAction Pong::app_loop(const Platform &p,
                         auto dir = maybe_direction.value();
                         if (dir == Direction::UP || dir == Direction::DOWN) {
                                 int dir_sign = dir == Direction::UP ? -1 : 1;
-                                paddle.velocity.y +=
-                                    dir_sign * paddle.acceleration.y;
-                                Point off = {0, paddle.velocity.y};
+                                player_paddle.velocity.y +=
+                                    dir_sign * player_paddle.acceleration.y;
+                                Point off = {0, player_paddle.velocity.y};
 
-                                if (!next_step_outside(paddle, off.y, top_wall,
-                                                       bottom_wall)) {
-                                        erase_paddle(paddle.body);
-                                        paddle.body.top_left =
-                                            paddle.body.top_left + off;
-                                        render_paddle(paddle.body);
+                                if (!next_step_outside(player_paddle, off.y,
+                                                       top_wall, bottom_wall)) {
+                                        erase_paddle(player_paddle.body);
+                                        player_paddle.body.top_left =
+                                            player_paddle.body.top_left + off;
+                                        render_paddle(player_paddle.body);
                                 } else {
-                                        paddle.velocity.y = 0;
+                                        player_paddle.velocity.y = 0;
                                 }
                         }
                 } else {
                         // For now we do no deceleration.
-                        paddle.velocity = {0, 0};
+                        player_paddle.velocity = {0, 0};
                 }
 
-                // Handle cpu paddle. We move it until the paddle covers the
-                // calculated ball impact position. We also ensure that if the
-                // ball impact y is to close to the top/bottom border, the
-                // paddle doesn't clip through that wall.
-                erase_paddle(cpu_paddle.body);
-                double center_y =
-                    cpu_paddle.body.top_left.y + (double)paddle_len / 2;
-                bool hits_top_wall = next_step_outside(cpu_paddle, -initial_v,
-                                                       top_wall, bottom_wall);
-                bool hits_bottom_wall = next_step_outside(
-                    cpu_paddle, initial_v, top_wall, bottom_wall);
-                if (center_y > ball_impact_y && !hits_top_wall) {
-                        cpu_paddle.body.top_left.y -= initial_v;
-                } else if (center_y < ball_impact_y && !hits_bottom_wall) {
-                        cpu_paddle.body.top_left.y += initial_v;
+                if (!config.multiplayer) {
+                        // Handle cpu paddle. We move it until the paddle covers
+                        // the calculated ball impact position. We also ensure
+                        // that if the ball impact y is to close to the
+                        // top/bottom border, the paddle doesn't clip through
+                        // that wall.
+                        erase_paddle(opponent_paddle.body);
+                        double center_y = opponent_paddle.body.top_left.y +
+                                          (double)paddle_len / 2;
+                        bool hits_top_wall = next_step_outside(
+                            opponent_paddle, -initial_v, top_wall, bottom_wall);
+                        bool hits_bottom_wall = next_step_outside(
+                            opponent_paddle, initial_v, top_wall, bottom_wall);
+                        if (center_y > ball_impact_y && !hits_top_wall) {
+                                opponent_paddle.body.top_left.y -= initial_v;
+                        } else if (center_y < ball_impact_y &&
+                                   !hits_bottom_wall) {
+                                opponent_paddle.body.top_left.y += initial_v;
+                        }
+                        render_paddle(opponent_paddle.body);
+                } else {
+                        if (maybe_action.has_value() &&
+                            (maybe_action.value() == CONFIRM_ACTION ||
+                             maybe_action.value() == HELP_ACTION)) {
+                                int dir_sign =
+                                    maybe_action.value() == HELP_ACTION ? -1
+                                                                        : 1;
+                                opponent_paddle.velocity.y +=
+                                    dir_sign * opponent_paddle.acceleration.y;
+                                Point off = {0, opponent_paddle.velocity.y};
+
+                                if (!next_step_outside(opponent_paddle, off.y,
+                                                       top_wall, bottom_wall)) {
+                                        erase_paddle(opponent_paddle.body);
+                                        opponent_paddle.body.top_left =
+                                            opponent_paddle.body.top_left + off;
+                                        render_paddle(opponent_paddle.body);
+                                } else {
+                                        opponent_paddle.velocity.y = 0;
+                                }
+                        }
                 }
-                render_paddle(cpu_paddle.body);
 
                 erase_ball(ball);
                 ball.circle.center = ball.circle.center + ball.velocity;
@@ -333,10 +358,11 @@ UserAction Pong::app_loop(const Platform &p,
                         if (seg->is_vertical())
                                 ball.velocity.x *= -1;
                 }
-                if (collides(ball.circle, paddle.body)) {
-                        if (collides(ball.circle, paddle.body.get_top_edge()) ||
+                if (collides(ball.circle, player_paddle.body)) {
+                        if (collides(ball.circle,
+                                     player_paddle.body.get_top_edge()) ||
                             collides(ball.circle,
-                                     paddle.body.get_bottom_edge())) {
+                                     player_paddle.body.get_bottom_edge())) {
                                 // This prevents the ball from clipping into the
                                 // paddle when it hits the top or bottom edge of
                                 // the paddle.
@@ -344,27 +370,29 @@ UserAction Pong::app_loop(const Platform &p,
 
                                 // we re-render the paddle just in case the ball
                                 // has erased a part of its top/bottom edge.
-                                erase_paddle(paddle.body);
-                                render_paddle(paddle.body);
+                                erase_paddle(player_paddle.body);
+                                render_paddle(player_paddle.body);
                         } else {
                                 ball.velocity.x = -ball.velocity.x;
                                 // the velocity of the paddle is partially
                                 // tranferred to the vertical velocity of the
                                 // ball. This is controlled by the friction
                                 // coefficient.
-                                ball.velocity.y += paddle.velocity.y * friction;
+                                ball.velocity.y +=
+                                    player_paddle.velocity.y * friction;
                                 ball_impact_y = calculate_impact_position(
                                     ball.circle.center.y, ball.velocity,
                                     distance_between_paddles, top_left,
                                     game_area_dimensions);
                         }
                 }
-                if (collides(ball.circle, cpu_paddle.body)) {
+                if (collides(ball.circle, opponent_paddle.body)) {
                         ball.velocity.x = -ball.velocity.x;
                         // here the impact is likely 0 as the CPU paddle will
                         // have precomputed the required position and so it will
                         // be fully stationary by the time the ball reaches it.
-                        ball.velocity.y += cpu_paddle.velocity.y * friction;
+                        ball.velocity.y +=
+                            opponent_paddle.velocity.y * friction;
                 }
 
                 if (!p.display->refresh())
@@ -438,7 +466,12 @@ Configuration *assemble_pong_configuration(PersistentStorage *storage,
             "Speed (px/s)", {100, 150, 200, 250},
             initial_config->initial_speed);
 
-        std::vector<ConfigurationOption *> options = {initial_speed};
+        auto *multiplayer = ConfigurationOption::of_strings(
+            "Multiplayer", {"Yes", "No"},
+            map_boolean_to_yes_or_no(initial_config->multiplayer));
+
+        std::vector<ConfigurationOption *> options = {initial_speed,
+                                                      multiplayer};
 
         return new Configuration("Pong", options);
 }
@@ -448,6 +481,10 @@ void extract_game_config(PongConfiguration &game_config,
 {
         ConfigurationOption initial_speed = *config.options[0];
         game_config.initial_speed = initial_speed.get_curr_int_value();
+
+        ConfigurationOption multiplayer = *config.options[1];
+        game_config.multiplayer =
+            extract_yes_or_no_option(multiplayer.get_current_str_value());
 }
 
 std::optional<UserAction>

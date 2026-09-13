@@ -9,6 +9,7 @@
 struct PongConfiguration {
         ConfigurationHeader header;
         int initial_speed;
+        bool multiplayer;
 };
 
 class Pong : public ApplicationExecutor<PongConfiguration>
