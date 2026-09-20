@@ -12,7 +12,8 @@ struct PongConfiguration {
         bool multiplayer;
 };
 
-class Pong : public ApplicationExecutor<PongConfiguration>
+class Pong : public ApplicationExecutor<PongConfiguration>,
+             public ThumbnailRenderer
 {
       public:
         Pong() {}
@@ -26,4 +27,8 @@ class Pong : public ApplicationExecutor<PongConfiguration>
                        PongConfiguration &game_config) const override;
         const char *get_game_name() const override;
         const char *get_help_text() const override;
+
+        void render_thumbnail(
+            const Platform &platform,
+            const UserInterfaceCustomization &customization) override;
 };

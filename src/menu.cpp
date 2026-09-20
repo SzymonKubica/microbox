@@ -170,7 +170,7 @@ get_thumbnail_renderer(Game game)
         case Game::WeatherApp:
                 return custom_renderer<WeatherApp>();
         case Game::Pong:
-                return simple_name_renderer<Pong>();
+                return custom_renderer<Pong>();
         default:
                 LOG_DEBUG(TAG, "Unsupported game selected, exiting...");
                 return std::nullopt;

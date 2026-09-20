@@ -53,7 +53,7 @@ todo. They usually start with a 'theme' headline to give the overall idea.
     - [x] update game hints depending on mutiplayer/cpu opponent mode.
   - [ ] add fancy physics
   - [x] make paddle accelerate with its own velocity
-  - [ ] add pong thumbnail
+  - [x] add pong thumbnail
 
 - [ ] add floating-point joystick controller (so that we can control velocity / acceleration vectors)
 

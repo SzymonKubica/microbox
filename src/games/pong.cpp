@@ -505,3 +505,25 @@ Pong::collect_config(const Platform &p,
         extract_game_config(game_config, *initial_cfg, *cfg);
         return std::nullopt;
 }
+
+void Pong::render_thumbnail(const Platform &platform,
+                            const UserInterfaceCustomization &customization)
+{
+
+        const Display &display = *platform.display;
+
+        clear_half_display_and_render_subtitle(platform, customization, "Pong");
+
+        TftCompatibleDisplay &tft =
+            *platform.display->cast_into_tft_compatible();
+        // rect 103
+        tft.fillRect(127, 110, 8, 23, customization.accent_color);
+        // rect 103
+        tft.fillRect(188, 144, 8, 23, customization.accent_color);
+        // ellipse 105
+        tft.fillEllipse(161, 138, 3, 3, Color::Red);
+        // rect 106
+        tft.drawRect(127, 104, 69, 2, 0xBDF7);
+        // rect 106
+        tft.drawRect(127, 171, 69, 2, 0xBDF7);
+}
